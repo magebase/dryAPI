@@ -96,7 +96,7 @@
     {
       "id": "maintenance-programs",
       "title": "Preventive Maintenance Programs",
-      "body": "Reduce emergency callouts with recurring maintenance designed around runtime hours, compliance, and site conditions.",
+      "body": "Reduce emergency callouts with GenFix preventive maintenance programs designed around runtime hours, compliance, and site conditions.",
       "cards": [
         {
           "id": "maintenance-programs-1",
@@ -189,7 +189,7 @@
   ],
   "contactPanel": {
     "heading": "Need Diesel Generator Support Now?",
-    "body": "Share your site location, generator details, and fault symptoms. GenFix will recommend a response pathway and coordinate field support.",
+    "body": "Share your site location, generator details, and fault symptoms. The GenFix service team will recommend a response pathway and coordinate field support.",
     "responseTime": "Initial response target: within 30 minutes during service hours"
   }
 }

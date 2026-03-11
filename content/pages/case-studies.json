@@ -6,67 +6,75 @@
   "hero": {
     "kicker": "Case Studies",
     "heading": "Case Studies",
-    "body": "See how GenFix teams deliver resilient outcomes across demanding industrial projects.",
+    "body": "See how GenFix teams solve temporary and standby power challenges across construction, industrial, and infrastructure projects.",
     "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
     "actions": [
-      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
-      { "label": "View Resources", "href": "/resources", "style": "ghost" }
+      {
+        "label": "Talk To Sales",
+        "href": "/contact",
+        "style": "outline"
+      },
+      {
+        "label": "View Resources",
+        "href": "/resources",
+        "style": "ghost"
+      }
     ]
   },
   "sections": [
     {
       "id": "overview",
-      "title": "Case Studies Overview",
-      "body": "GenFix delivers practical equipment and support programs aligned to industrial uptime, safety, and project outcomes.",
+      "title": "What Our Case Studies Cover",
+      "body": "Each case study highlights the original site problem, the delivery approach, and the measurable operational result.",
       "cards": [
         {
           "id": "overview-card-1",
-          "title": "Scope Planning",
-          "description": "Define requirements, load profiles, and site constraints before mobilisation.",
-          "href": "/contact",
-          "ctaLabel": "Start Planning"
+          "title": "Construction Continuity Projects",
+          "description": "Examples of temporary power rollouts that kept site programs running through changing demand.",
+          "href": "/rental",
+          "ctaLabel": "Explore Rental Capability"
         },
         {
           "id": "overview-card-2",
-          "title": "Delivery Model",
-          "description": "Flexible purchase and diesel generator rental options for 5-20 kVA site needs.",
-          "href": "/rental",
-          "ctaLabel": "Explore Rental"
+          "title": "Planned Outage Support",
+          "description": "Projects where standby and temporary systems protected operations during maintenance windows.",
+          "href": "/turnkey-solutions",
+          "ctaLabel": "View Turnkey Approach"
         },
         {
           "id": "overview-card-3",
-          "title": "Operational Support",
-          "description": "Monitoring, maintenance, and response services to keep critical loads online.",
+          "title": "Reliability Recovery Programs",
+          "description": "Service-led improvements that reduced repeat faults and stabilised power output.",
           "href": "/services",
-          "ctaLabel": "See Services"
+          "ctaLabel": "See Service Outcomes"
         }
       ]
     },
     {
       "id": "delivery",
-      "title": "How We Deliver",
-      "body": "Our teams combine engineering, field service, and nationwide logistics to deploy rapidly and reliably.",
+      "title": "Results You Can Validate",
+      "body": "Our case studies focus on evidence-based outcomes teams can apply to future deployments.",
       "cards": [
         {
           "id": "delivery-card-1",
-          "title": "Engineering",
-          "description": "In-house experts shape dependable system architecture for each project phase.",
-          "href": "/on-site-analysis",
-          "ctaLabel": "Technical Analysis"
+          "title": "Measured Uptime Outcomes",
+          "description": "Reported uptime improvements and reduced interruption risk from better planning and execution.",
+          "href": "/resources/performance-optimization",
+          "ctaLabel": "Read Performance Guide"
         },
         {
           "id": "delivery-card-2",
-          "title": "Commissioning",
-          "description": "Structured testing and handover with clear operational documentation.",
-          "href": "/turnkey-solutions",
-          "ctaLabel": "Turnkey Delivery"
+          "title": "Safety And Compliance Gains",
+          "description": "Examples of improved handover quality, documentation, and safer site operation.",
+          "href": "/resources/commissioning-handover",
+          "ctaLabel": "View Compliance Framework"
         },
         {
           "id": "delivery-card-3",
-          "title": "Continuous Improvement",
-          "description": "Performance reviews and optimization backed by real operating data.",
-          "href": "/case-studies",
-          "ctaLabel": "View Case Studies"
+          "title": "Lessons For Future Rollouts",
+          "description": "Practical implementation lessons to improve speed, cost control, and reliability next time.",
+          "href": "/on-site-analysis",
+          "ctaLabel": "Start With Analysis"
         }
       ]
     }

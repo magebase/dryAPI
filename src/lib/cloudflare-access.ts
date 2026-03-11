@@ -132,6 +132,12 @@ function getConfig(): CloudflareAccessConfig | CloudflareAccessFailure | null {
   }
 }
 
+function isFailureConfig(
+  config: CloudflareAccessConfig | CloudflareAccessFailure
+): config is CloudflareAccessFailure {
+  return "ok" in config && config.ok === false
+}
+
 function isEmailAllowed(email: string, config: CloudflareAccessConfig) {
   if (config.allowedEmails.has(email)) {
     return true
@@ -171,7 +177,7 @@ export async function verifyCloudflareAccess(request: Request): Promise<Cloudfla
     }
   }
 
-  if ("ok" in config && !config.ok) {
+  if (isFailureConfig(config)) {
     return config
   }
 

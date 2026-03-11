@@ -6,67 +6,75 @@
   "hero": {
     "kicker": "On-Site Analysis",
     "heading": "On-Site Power Analysis",
-    "body": "Site-first assessment for power quality, demand planning, and implementation risk reduction.",
+    "body": "GenFix on-site analysis identifies real load behaviour, installation constraints, and operating risks before equipment selection or deployment.",
     "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
     "actions": [
-      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
-      { "label": "View Resources", "href": "/resources", "style": "ghost" }
+      {
+        "label": "Talk To Sales",
+        "href": "/contact",
+        "style": "outline"
+      },
+      {
+        "label": "View Resources",
+        "href": "/resources",
+        "style": "ghost"
+      }
     ]
   },
   "sections": [
     {
       "id": "overview",
-      "title": "On-Site Power Analysis Overview",
-      "body": "GenFix delivers practical equipment and support programs aligned to industrial uptime, safety, and project outcomes.",
+      "title": "What We Assess On Site",
+      "body": "Our engineers assess technical and operational conditions so recommendations are grounded in how your site actually runs.",
       "cards": [
         {
           "id": "overview-card-1",
-          "title": "Scope Planning",
-          "description": "Define requirements, load profiles, and site constraints before mobilisation.",
+          "title": "Load Profile And Peak Demand",
+          "description": "We map running loads, startup spikes, and critical circuits to reduce undersizing or oversizing risk.",
           "href": "/contact",
-          "ctaLabel": "Start Planning"
+          "ctaLabel": "Book A Site Review"
         },
         {
           "id": "overview-card-2",
-          "title": "Delivery Model",
-          "description": "Flexible purchase and diesel generator rental options for 5-20 kVA site needs.",
-          "href": "/rental",
-          "ctaLabel": "Explore Rental"
+          "title": "Access, Environment, And Layout",
+          "description": "Site access, ventilation, weather exposure, and noise considerations are built into deployment planning.",
+          "href": "/turnkey-solutions",
+          "ctaLabel": "Plan Installation"
         },
         {
           "id": "overview-card-3",
-          "title": "Operational Support",
-          "description": "Monitoring, maintenance, and response services to keep critical loads online.",
-          "href": "/services",
-          "ctaLabel": "See Services"
+          "title": "Compliance And Safety Checks",
+          "description": "Earthing, isolation, and handover requirements are reviewed to support safe operation from day one.",
+          "href": "/resources/commissioning-handover",
+          "ctaLabel": "Review Compliance"
         }
       ]
     },
     {
       "id": "delivery",
-      "title": "How We Deliver",
-      "body": "Our teams combine engineering, field service, and nationwide logistics to deploy rapidly and reliably.",
+      "title": "Analysis Outcomes",
+      "body": "Every assessment ends with practical recommendations that support procurement, mobilisation, and long-term reliability.",
       "cards": [
         {
           "id": "delivery-card-1",
-          "title": "Engineering",
-          "description": "In-house experts shape dependable system architecture for each project phase.",
-          "href": "/on-site-analysis",
-          "ctaLabel": "Technical Analysis"
+          "title": "Recommended Equipment Path",
+          "description": "Clear guidance on rental versus purchase options based on runtime and project duration.",
+          "href": "/sales",
+          "ctaLabel": "Discuss Equipment Options"
         },
         {
           "id": "delivery-card-2",
-          "title": "Commissioning",
-          "description": "Structured testing and handover with clear operational documentation.",
+          "title": "Deployment Plan",
+          "description": "Staged mobilisation notes cover installation sequence, checks, and commissioning milestones.",
           "href": "/turnkey-solutions",
-          "ctaLabel": "Turnkey Delivery"
+          "ctaLabel": "See Turnkey Delivery"
         },
         {
           "id": "delivery-card-3",
-          "title": "Continuous Improvement",
-          "description": "Performance reviews and optimization backed by real operating data.",
-          "href": "/case-studies",
-          "ctaLabel": "View Case Studies"
+          "title": "Cost And Risk Visibility",
+          "description": "Risk controls and lifecycle implications are documented so teams can approve with confidence.",
+          "href": "/resources/equipment-rental-vs-ownership",
+          "ctaLabel": "Compare Commercial Models"
         }
       ]
     }

@@ -9,8 +9,16 @@
     "body": "Rent reliable 5-20 kVA diesel generators for construction, civil, utilities, and contingency backup. GenFix handles delivery, setup, testing, and ongoing support so your site stays powered without delay.",
     "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
     "actions": [
-      { "label": "Get A Rental Quote", "href": "/contact", "style": "outline" },
-      { "label": "Call Rental Team", "href": "tel:+61813061471", "style": "ghost" }
+      {
+        "label": "Get A Rental Quote",
+        "href": "/contact",
+        "style": "outline"
+      },
+      {
+        "label": "Call Rental Team",
+        "href": "tel:+61813061471",
+        "style": "ghost"
+      }
     ]
   },
   "sections": [
@@ -45,7 +53,7 @@
     {
       "id": "rental-services",
       "title": "What Is Included In Diesel Rental",
-      "body": "Every rental includes practical planning, logistics, and technical support designed to reduce risk and keep your operation online.",
+      "body": "Every GenFix rental includes planning, logistics, and technical support designed to reduce risk and keep your operation online.",
       "cards": [
         {
           "id": "rental-services-card-1",
@@ -129,7 +137,7 @@
   ],
   "contactPanel": {
     "heading": "Need 5-20 kVA Diesel Generators For Rent?",
-    "body": "Share your project location, load requirements, and required start date. Our rental team will provide a practical 5-20 kVA diesel package and deployment plan.",
+    "body": "Share your project location, load requirements, and required start date. The GenFix rental team will provide a practical 5-20 kVA diesel package and deployment plan.",
     "responseTime": "Typical quote turnaround: within 2 business hours"
   }
 }
