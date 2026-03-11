@@ -4,6 +4,7 @@ import { tinaField } from "tinacms/dist/react"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { BlogPost, SiteConfig } from "@/lib/site-content-schema"
 
 type BlogPostPageTemplateProps = {
@@ -70,7 +71,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
           <Reveal
             as="section"
             key={section.id}
-            className="rounded-md border border-white/10 bg-[#18283a] px-5 py-5 md:px-6 md:py-6"
+            className={`${getGradientVariant(index)} rounded-md border border-white/10 px-5 py-5 md:px-6 md:py-6`}
             delay={index * 0.08}
             data-tina-field={tinaField(section)}
           >
@@ -84,7 +85,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
         ))}
       </article>
 
-      <Reveal as="section" className="mx-auto mt-10 max-w-4xl rounded-md border border-white/10 bg-[#18283a] px-5 py-5 md:mt-12 md:px-6 md:py-6">
+      <Reveal as="section" className={`${getGradientVariant(3)} mx-auto mt-10 max-w-4xl rounded-md border border-white/10 px-5 py-5 md:mt-12 md:px-6 md:py-6`}>
         <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]">Next Step</p>
         <h2 className="mt-2 text-lg font-semibold uppercase tracking-[0.14em] text-white">
           <KeywordGradientText text="Need Help On Your Site?" />

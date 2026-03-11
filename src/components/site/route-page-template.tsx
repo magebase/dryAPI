@@ -6,6 +6,7 @@ import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { RoutePageElements } from "@/components/site/route-page-elements"
 import { Reveal } from "@/components/site/reveal"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema"
 
 export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteConfig }) {
@@ -56,7 +57,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
           {heroGalleryImages.length > 0 ? (
             <div className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3" data-tina-field={tinaField(page.hero, "galleryImages")}>
               {heroGalleryImages.slice(0, 6).map((image) => (
-                <div key={image.id} className="overflow-hidden rounded-sm border border-white/20 bg-black/20">
+                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
                   <Image
                     alt={image.alt || `${page.hero.heading} gallery image`}
                     className="h-28 w-full object-cover"
@@ -95,7 +96,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
               {galleryImages.length > 0 ? (
                 <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-tina-field={tinaField(section, "galleryImages")}>
                   {galleryImages.slice(0, 6).map((image) => (
-                    <div key={image.id} className="overflow-hidden rounded-sm border border-white/15 bg-[#0f1826]">
+                    <div key={image.id} className={`${getGradientVariant(1)} overflow-hidden rounded-sm border border-white/15`}>
                       <Image
                         alt={image.alt || `${section.title} image`}
                         className="h-36 w-full object-cover"
@@ -118,7 +119,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
                 {section.cards.map((card, index) => (
                   <Reveal
                     as="article"
-                    className="overflow-hidden rounded-md border border-white/10 bg-[#1a2739] shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-[#ff8b2b]/45"
+                    className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-[#ff8b2b]/45`}
                     delay={index * 0.08}
                     y={0}
                     key={card.id}
@@ -158,7 +159,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
       })}
 
       <Reveal as="section" className="mx-auto mt-10 max-w-7xl px-4 md:mt-14">
-        <div className="rounded-md border border-white/10 bg-[#18283a] px-6 py-6 md:flex md:items-center md:justify-between md:gap-8">
+        <div className={`${getGradientVariant(2)} rounded-md border border-white/10 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-[#ff8b2b]">Need Fast Advice?</p>
             <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
@@ -189,7 +190,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
 
       {page.contactPanel ? (
         <section className="mx-auto mt-12 grid max-w-7xl gap-6 px-4 lg:mt-14 lg:grid-cols-2 lg:gap-8">
-          <Reveal as="div" className="rounded-md border border-white/10 bg-[#1a2739] p-6">
+          <Reveal as="div" className={`${getGradientVariant(3)} rounded-md border border-white/10 p-6`}>
             <h3 className="text-2xl font-semibold uppercase tracking-[0.08em] text-white">
               <KeywordGradientText dataTinaField={tinaField(page.contactPanel, "heading")} text={page.contactPanel.heading} />
             </h3>
@@ -198,7 +199,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
               {page.contactPanel.responseTime}
             </p>
           </Reveal>
-          <Reveal as="div" className="rounded-md border border-white/10 bg-[#1a2739] p-6" delay={0.1}>
+          <Reveal as="div" className={`${getGradientVariant(4)} rounded-md border border-white/10 p-6`} delay={0.1}>
             <ContactForm
               description="Share your scope and required dates."
               heading="Request Project Support"

@@ -4,6 +4,7 @@ import { tinaField } from "tinacms/dist/react"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { BlogPost, RoutePage, SiteConfig } from "@/lib/site-content-schema"
 
 type BlogListPageTemplateProps = {
@@ -85,7 +86,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
           {heroGalleryImages.length > 0 ? (
             <div className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3" data-tina-field={tinaField(page.hero, "galleryImages")}>
               {heroGalleryImages.slice(0, 6).map((image) => (
-                <div key={image.id} className="overflow-hidden rounded-sm border border-white/20 bg-black/20">
+                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
                   <Image
                     alt={image.alt || `${page.hero.heading} gallery image`}
                     className="h-24 w-full object-cover"
@@ -105,7 +106,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
         <section className="mx-auto mt-10 max-w-7xl px-4">
           <Reveal
             as="article"
-            className="grid overflow-hidden rounded-md border border-white/10 bg-[#18283a] md:grid-cols-[1.1fr_1fr]"
+            className={`${getGradientVariant(1)} grid overflow-hidden rounded-md border border-white/10 md:grid-cols-[1.1fr_1fr]`}
             data-tina-field={tinaField(featuredPost)}
           >
             <Image
@@ -144,7 +145,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
             <Reveal
               as="article"
               key={post.slug}
-              className="overflow-hidden rounded-md border border-white/10 bg-[#19283b] shadow-[0_14px_30px_rgba(0,0,0,0.25)]"
+              className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.25)]`}
               delay={index * 0.08}
               data-tina-field={tinaField(post)}
             >
@@ -191,7 +192,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
 
       {page.sections.map((section) => (
         <section key={section.id} className="mx-auto mt-12 max-w-7xl px-4">
-          <Reveal as="div" className="rounded-md border border-white/10 bg-[#18283a] px-6 py-7">
+          <Reveal as="div" className={`${getGradientVariant(2)} rounded-md border border-white/10 px-6 py-7`}>
             <h2 className="text-2xl font-semibold uppercase tracking-[0.1em] text-white md:text-3xl">
               <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
             </h2>
@@ -202,7 +203,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                 <Reveal
                   as="article"
                   key={card.id}
-                  className="overflow-hidden rounded-md border border-white/10 bg-[#142233]"
+                  className={`${getGradientVariant(index + 1)} overflow-hidden rounded-md border border-white/10`}
                   delay={index * 0.08}
                   data-tina-field={tinaField(card)}
                 >
@@ -240,7 +241,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
       ))}
 
       <section className="mx-auto mt-12 max-w-7xl px-4">
-        <Reveal className="rounded-md border border-white/10 bg-[#18283a] px-5 py-5 md:flex md:items-center md:justify-between md:gap-8 md:px-6 md:py-6">
+        <Reveal className={`${getGradientVariant(3)} rounded-md border border-white/10 px-5 py-5 md:flex md:items-center md:justify-between md:gap-8 md:px-6 md:py-6`}>
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]">Need Project Guidance?</p>
             <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">

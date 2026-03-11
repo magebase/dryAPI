@@ -7,6 +7,7 @@ import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
 import { SiteIcon } from "@/components/site/site-icon"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { HomeContent } from "@/lib/site-content-schema"
 
 export function HomeSections({ home }: { home: HomeContent }) {
@@ -69,7 +70,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 {trustStripCards.map((card, index) => (
                   <Reveal
                     as="article"
-                    className="rounded-md border border-white/14 bg-[#15263a]/64 p-4 backdrop-blur md:p-5"
+                    className={`${getGradientVariant(index)} rounded-md border border-white/14 p-4 backdrop-blur md:p-5`}
                     delay={index * 0.08}
                     key={card.id}
                     revealKey={`home-trust-${card.id}`}
@@ -107,7 +108,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 </p>
               </Reveal>
 
-              <Reveal as="div" className="border border-white/12 bg-[#111a25] p-4" delay={0.08}>
+              <Reveal as="div" className={`${getGradientVariant(0)} border border-white/12 p-4`} delay={0.08}>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]">At A Glance</p>
                 <div className="mt-3 grid gap-2">
                   {capabilitySignals.map((signal) => (
@@ -124,7 +125,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
               {visibleSpotlightCards.map((card, index) => (
                 <Reveal
                   as="article"
-                  className="group border border-white/14 bg-[#121c28] px-6 py-7 transition duration-300 hover:border-[#ff8b2b]/55"
+                  className={`${getGradientVariant(index + 1)} group border border-white/14 px-6 py-7 transition duration-300 hover:border-[#ff8b2b]/55`}
                   delay={index * 0.08}
                   key={card.id}
                   data-tina-field={tinaField(card)}
@@ -141,7 +142,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                   <p className="mt-3 text-sm leading-relaxed text-slate-300" data-tina-field={tinaField(card, "description")}>
                     {card.description}
                   </p>
-                  <div className="mt-5 border border-white/12 bg-[#172434] px-3 py-2">
+                  <div className={`${getGradientVariant(index + 2)} mt-5 border border-white/12 px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.17em] text-[#ffb67f]">Field Note</p>
                     <p className="mt-1 text-xs text-slate-200">{spotlightMicroProofs[index] ?? spotlightMicroProofs[0]}</p>
                   </div>
@@ -177,7 +178,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 </p>
               </Reveal>
 
-              <Reveal as="div" className="border border-white/12 bg-[#121c28] p-4" delay={0.08}>
+              <Reveal as="div" className={`${getGradientVariant(2)} border border-white/12 p-4`} delay={0.08}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffb67f]">What You Get</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {[
@@ -185,7 +186,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                     "Predictable delivery",
                     "Real support",
                   ].map((signal, index) => (
-                    <Reveal as="div" className="border border-white/10 bg-[#182638] px-2.5 py-2" delay={0.12 + index * 0.05} key={signal} y={0}>
+                    <Reveal as="div" className={`${getGradientVariant(index)} border border-white/10 px-2.5 py-2`} delay={0.12 + index * 0.05} key={signal} y={0}>
                       <p className="text-[10px] uppercase tracking-[0.16em] text-slate-200">{signal}</p>
                     </Reveal>
                   ))}
@@ -197,7 +198,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
               {visibleCapabilityCards.map((card, index) => (
                 <Reveal
                   as="article"
-                  className="group relative overflow-hidden border border-white/10 bg-[#121c28] px-5 py-6 transition duration-300 hover:border-[#ff8b2b]/55"
+                  className={`${getGradientVariant(index + 2)} group relative overflow-hidden border border-white/10 px-5 py-6 transition duration-300 hover:border-[#ff8b2b]/55`}
                   delay={index * 0.08}
                   key={card.id}
                   data-tina-field={tinaField(card)}
@@ -236,7 +237,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                   body: "Escalation paths that stay active after hours, so your project is never left waiting.",
                 },
               ].map((item, index) => (
-                <Reveal as="div" className="border border-white/10 bg-[#121c28] px-4 py-3" delay={index * 0.08} key={item.title} y={0}>
+                <Reveal as="div" className={`${getGradientVariant(index + 1)} border border-white/10 px-4 py-3`} delay={index * 0.08} key={item.title} y={0}>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]">{item.title}</p>
                   <p className="mt-2 text-sm text-slate-300">{item.body}</p>
                 </Reveal>
@@ -261,7 +262,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
 
       {home.contactPanel.visible && (
         <Reveal className="mx-auto max-w-7xl px-4 py-10 md:py-14" data-tina-field={tinaField(home, "contactPanel")}>
-          <div className="rounded-md border border-white/10 bg-[#18283a] px-6 py-6 md:flex md:items-center md:justify-between md:gap-8">
+          <div className={`${getGradientVariant(1)} rounded-md border border-white/10 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={tinaField(home.contactPanel, "kicker")}>
                 {home.contactPanel.kicker}
@@ -322,7 +323,7 @@ function OperationalProofSection({
             return (
               <Reveal
                 as="article"
-                className="overflow-hidden rounded-md border border-white/10 bg-[#18283c] shadow-[0_20px_38px_rgba(0,0,0,0.28)]"
+                className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_20px_38px_rgba(0,0,0,0.28)]`}
                 delay={index * 0.08}
                 key={item.id}
                 data-tina-field={tinaField(item)}
@@ -355,7 +356,7 @@ function OperationalProofSection({
                       {storyHighlights.map((highlight, highlightIndex) => (
                         <Reveal
                           as="div"
-                          className="flex items-start gap-2.5 rounded-sm border border-white/10 bg-[#111f31]/85 px-3 py-2"
+                          className={`${getGradientVariant(highlightIndex)} flex items-start gap-2.5 rounded-sm border border-white/10 px-3 py-2`}
                           delay={0.04 * (highlightIndex + 1)}
                           key={`${item.id}-${highlight.id}`}
                           data-tina-field={tinaField(highlight)}
@@ -408,7 +409,7 @@ function PlanningSplitSection({
     <section className="bg-[#132338] py-20" data-tina-field={tinaField(home, "contactPanel")}>
       <Reveal
         as="div"
-        className="mx-auto grid max-w-7xl gap-0 overflow-hidden rounded-md border border-white/10 bg-[#0f1b2c] shadow-[0_22px_44px_rgba(0,0,0,0.28)] lg:grid-cols-2"
+        className={`${getGradientVariant(3)} mx-auto grid max-w-7xl gap-0 overflow-hidden rounded-md border border-white/10 shadow-[0_22px_44px_rgba(0,0,0,0.28)] lg:grid-cols-2`}
       >
         <div className="relative min-h-[320px]" data-tina-field={tinaField(home.hero, "backgroundImage")}>
           <Image alt="GenFix field planning" className="h-full w-full object-cover" height={900} src={featureImage} width={1200} />
@@ -435,7 +436,7 @@ function PlanningSplitSection({
             {trustCards.map((card, index) => (
               <Reveal
                 as="div"
-                className="rounded-sm border border-white/10 bg-[#182a40] p-3"
+                className={`${getGradientVariant(index + 1)} rounded-sm border border-white/10 p-3`}
                 delay={index * 0.08}
                 key={card.id}
                 data-tina-field={tinaField(card)}
@@ -467,7 +468,7 @@ function CommandCtaSection({ home }: { home: HomeContent }) {
       <div className="mx-auto max-w-7xl px-4">
         <Reveal
           as="div"
-          className="rounded-md border border-[#ff9d4a]/30 bg-[linear-gradient(120deg,#1a2c42_0%,#122237_62%,#1b2f45_100%)] px-6 py-8 shadow-[0_16px_34px_rgba(0,0,0,0.26)] md:px-10 md:py-10"
+          className={`${getGradientVariant(4)} rounded-md border border-[#ff9d4a]/30 px-6 py-8 shadow-[0_16px_34px_rgba(0,0,0,0.26)] md:px-10 md:py-10`}
         >
           <div className="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
             <Reveal as="div" y={0}>
@@ -524,7 +525,7 @@ function TrustSnippet({
   title: string
 }) {
   return (
-    <div className="rounded-sm border border-white/12 bg-[#0e1a2b]/82 px-4 py-3">
+    <div className={`${getGradientVariant(2)} rounded-sm border border-white/12 px-4 py-3`}>
       <div className="flex items-start gap-2.5">
         <Icon aria-hidden className="mt-0.5 size-4 shrink-0 text-[#ff9d4a]" />
         <div>
@@ -625,7 +626,7 @@ function ShowcaseSection({
           {visibleItems.map((item, index) => (
             <Reveal
               as="article"
-              className="group overflow-hidden rounded-md border border-white/10 bg-[#182638] transition duration-300 hover:-translate-y-1 hover:border-[#ff8b2b]/55"
+              className={`${getGradientVariant(index)} group overflow-hidden rounded-md border border-white/10 transition duration-300 hover:-translate-y-1 hover:border-[#ff8b2b]/55`}
               delay={index * 0.08}
               key={item.id}
               data-tina-field={tinaField(item)}
