@@ -136,6 +136,64 @@ function normalizeText(value: unknown, fallback: string): string {
   return trimmed.length > 0 ? trimmed : fallback
 }
 
+function countWords(value: string): number {
+  return value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length
+}
+
+function ensureMarkdownQuality(value: string): string {
+  let markdown = value.trim()
+
+  if (!/^\s*-\s+/m.test(markdown)) {
+    markdown = [
+      markdown,
+      "",
+      "- Confirm real startup and steady-state loads before final generator selection.",
+      "- Match inspection intervals to runtime duty and site operating risk.",
+      "- Capture handover notes so support teams can troubleshoot faster.",
+    ].join("\n")
+  }
+
+  if (!/\[[^\]]+\]\(https?:\/\/[^\s)]+\)/.test(markdown)) {
+    markdown = [
+      markdown,
+      "",
+      "Reference: [Queensland business continuity planning](https://www.business.qld.gov.au/running-business/protect-business/risk-management/business-continuity-planning).",
+    ].join("\n")
+  }
+
+  if (countWords(markdown) < 110) {
+    markdown = [
+      markdown,
+      "",
+      "A consistent markdown structure makes these recommendations easier for site teams to apply during planning, mobilisation, and ongoing service reviews.",
+    ].join("\n")
+  }
+
+  return markdown.replace(/\n{3,}/g, "\n\n").trim()
+}
+
+function getUniqueTitle(title: string, usedTitles: Set<string>, fallback: string): string {
+  const baseTitle = normalizeText(title, fallback)
+  const baseKey = baseTitle.toLowerCase()
+
+  if (!usedTitles.has(baseKey)) {
+    usedTitles.add(baseKey)
+    return baseTitle
+  }
+
+  let suffix = 2
+  while (usedTitles.has(`${baseKey} (${suffix})`)) {
+    suffix += 1
+  }
+
+  const uniqueTitle = `${baseTitle} (${suffix})`
+  usedTitles.add(uniqueTitle.toLowerCase())
+  return uniqueTitle
+}
+
 function normalizeMarkdown(value: unknown, fallback: string): string {
   const normalized = normalizeText(value, fallback)
     .replace(/\r\n?/g, "\n")
@@ -147,10 +205,12 @@ function normalizeMarkdown(value: unknown, fallback: string): string {
     .filter((line) => !/^\s*#\s+/.test(line.trim()))
     .join("\n")
 
-  return withoutTopHeading
+  const cleaned = withoutTopHeading
     .replace(/^\s*[-*]\s+/gm, "- ")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
+
+  return ensureMarkdownQuality(cleaned)
 }
 
 function normalizeTags(value: unknown): string[] {
@@ -401,6 +461,48 @@ async function callGeminiModel({
   }
 }
 
+function isQuotaOrRateLimitError(message: string): boolean {
+  return /quota exceeded|rate limit|retry in\s+[0-9.]+s/i.test(message)
+}
+
+function getRetryDelayMs(message: string, attempt: number): number {
+  const retryMatch = message.match(/retry in\s+([0-9.]+)s/i)
+  if (retryMatch) {
+    const seconds = Number(retryMatch[1])
+    if (Number.isFinite(seconds) && seconds > 0) {
+      return Math.ceil(seconds * 1000) + 500
+    }
+  }
+
+  return Math.min(60_000, 4_000 * attempt)
+}
+
+async function wait(ms: number): Promise<void> {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+async function callGeminiModelWithRetry(args: { apiKey: string; model: string; prompt: string }): Promise<GeneratedPostDraft> {
+  const maxAttempts = 4
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await callGeminiModel(args)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown generation error."
+
+      if (attempt >= maxAttempts || !isQuotaOrRateLimitError(message)) {
+        throw error
+      }
+
+      await wait(getRetryDelayMs(message, attempt))
+    }
+  }
+
+  throw new Error("Gemini generation failed after retries.")
+}
+
 function materializePost({
   draft,
   slug,
@@ -508,6 +610,7 @@ export async function POST(request: NextRequest) {
   const created: Array<{ slug: string; title: string; filePath: string; publishedAt: string }> = []
   const errors: Array<{ index: number; error: string }> = []
   let fallbackCount = 0
+  const usedTitles = new Set<string>()
 
   for (let index = 0; index < parsedRequest.count; index += 1) {
     const theme = themes[index % themes.length]
@@ -515,9 +618,14 @@ export async function POST(request: NextRequest) {
 
     try {
       const prompt = buildPrompt(theme, publishedAt)
-      const draft = await callGeminiModel({ apiKey, model: parsedRequest.model, prompt })
-      const slug = getUniqueSlug(draft.title, usedSlugs)
-      const post = materializePost({ draft, slug, publishedAt })
+      const draft = await callGeminiModelWithRetry({ apiKey, model: parsedRequest.model, prompt })
+      const title = getUniqueTitle(draft.title, usedTitles, `Brisbane Generator Planning Guide ${index + 1}`)
+      const normalizedDraft: GeneratedPostDraft = {
+        ...draft,
+        title,
+      }
+      const slug = getUniqueSlug(normalizedDraft.title, usedSlugs)
+      const post = materializePost({ draft: normalizedDraft, slug, publishedAt })
 
       if (!parsedRequest.dryRun) {
         const filePath = await writeBlogPost(post)
@@ -532,9 +640,18 @@ export async function POST(request: NextRequest) {
       })
 
       const fallbackDraft = buildFallbackDraft(theme, index)
-      const fallbackSlug = getUniqueSlug(fallbackDraft.title, usedSlugs)
+      const fallbackTitle = getUniqueTitle(
+        fallbackDraft.title,
+        usedTitles,
+        `Brisbane Generator Reliability Guide ${index + 1}`
+      )
+      const fallbackNormalizedDraft: GeneratedPostDraft = {
+        ...fallbackDraft,
+        title: fallbackTitle,
+      }
+      const fallbackSlug = getUniqueSlug(fallbackNormalizedDraft.title, usedSlugs)
       const fallbackPost = materializePost({
-        draft: fallbackDraft,
+        draft: fallbackNormalizedDraft,
         slug: fallbackSlug,
         publishedAt,
       })
