@@ -1,9 +1,10 @@
 import { execSync } from "node:child_process"
 
 import { createDatabase, createLocalDatabase, FilesystemBridge } from "@tinacms/datalayer"
-import type { Level } from "@tinacms/graphql"
 import { GitHubProvider } from "tinacms-gitprovider-github"
 import { RedisLevel } from "upstash-redis-level"
+
+type DatabaseAdapter = Parameters<typeof createDatabase>[0]["databaseAdapter"]
 
 const branch =
   process.env.GITHUB_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || process.env.CF_PAGES_BRANCH || "main"
@@ -57,7 +58,7 @@ const database = (() => {
     },
     debug: process.env.DEBUG === "true",
     namespace: branch,
-  }) as unknown as Level
+  }) as unknown as DatabaseAdapter
 
   return createDatabase({
     bridge: new FilesystemBridge(process.cwd()),
