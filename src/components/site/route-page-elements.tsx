@@ -4,6 +4,7 @@ import { tinaField } from "tinacms/dist/react"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage } from "@/lib/site-content-schema"
 
 type RoutePageElement = NonNullable<RoutePage["pageContent"]>["elements"][number]
@@ -81,7 +82,7 @@ function PageElement({ element }: { element: RoutePageElement }) {
     case "custom":
       return (
         <div
-          className="rounded-md border border-white/10 bg-[#1a2739] p-4 text-sm text-slate-200"
+          className={`${getGradientVariant(2)} rounded-md border border-white/10 p-4 text-sm text-slate-200`}
           data-tina-field={tinaField(element, "text")}
         >
           {element.text || "Custom element"}

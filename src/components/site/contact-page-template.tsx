@@ -142,7 +142,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
             </div>
           </Reveal>
 
-          <Reveal as="div" className={`${getGradientVariant(2)} rounded-md border border-slate-300/30 p-5 md:p-7`} delay={0.1}>
+          <Reveal as="div" className="rounded-md border border-slate-300/30 bg-slate-100 p-5 md:p-7" delay={0.1}>
             <ContactPageForm responseTime={page.contactPanel?.responseTime ?? "Typical response within one business day"} />
           </Reveal>
         </div>

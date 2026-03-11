@@ -4,6 +4,7 @@ import { tinaField } from "tinacms/dist/react"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema"
 
 function buildFallbackQuestions(brandMark: string) {
@@ -132,7 +133,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           {heroGalleryImages.length > 0 ? (
             <div className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3" data-tina-field={tinaField(page.hero, "galleryImages")}>
               {heroGalleryImages.slice(0, 6).map((image) => (
-                <div key={image.id} className="overflow-hidden rounded-sm border border-white/20 bg-black/25">
+                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
                   <Image
                     alt={image.alt || `${page.hero.heading} gallery image`}
                     className="h-24 w-full object-cover"
@@ -161,7 +162,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
               demanding environments.
             </p>
           </div>
-          <div className="relative overflow-hidden rounded-sm border border-white/10 bg-[#1a2637] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+          <div className={`${getGradientVariant(1)} relative overflow-hidden rounded-sm border border-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}>
             <Image
               alt="Industrial generator fleet"
               className="h-full w-full object-cover"
@@ -216,7 +217,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                   </div>
 
                   <div className={reverse ? "lg:order-1" : ""}>
-                    <div className="relative overflow-hidden rounded-sm border border-white/10 bg-[#121d2d] p-4">
+                    <div className={`${getGradientVariant(index + 1)} relative overflow-hidden rounded-sm border border-white/10 p-4`}>
                       <Image
                         alt={feature.title}
                         className="h-full w-full object-cover"
@@ -270,7 +271,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
             </QuoteAwareLink>
           </div>
 
-          <div className="rounded-sm border border-white/10 bg-[#0f1826] p-6">
+          <div className={`${getGradientVariant(3)} rounded-sm border border-white/10 p-6`}>
             <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]">For Site, Commercial, And Industrial Use</p>
             <p className="mt-5 text-slate-300">
               {brandMark} is a trusted supplier for site operations that need dependable 5-20 kVA diesel power. Our
