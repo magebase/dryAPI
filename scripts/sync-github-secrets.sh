@@ -29,7 +29,11 @@ for sync_var in "${sync_vars[@]}"; do
     continue
   fi
 
-  printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${worker_name}" --config wrangler.jsonc > /dev/null
+  # Cloudflare Workers with Versions enabled require `versions secret put`.
+  # Fallback to legacy command for older wrangler installations.
+  if ! printf "%s" "${secret_value}" | pnpm wrangler versions secret put "${secret_name}" --name "${worker_name}" --config wrangler.jsonc > /dev/null; then
+    printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${worker_name}" --config wrangler.jsonc > /dev/null
+  fi
   echo "Synced ${secret_name}"
 done
 
