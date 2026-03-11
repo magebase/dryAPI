@@ -3,9 +3,12 @@ import { promises as fs } from "node:fs"
 import path from "node:path"
 
 import { NextRequest, NextResponse } from "next/server"
+import { parseMDX } from "@tinacms/mdx"
 import { z } from "zod"
 
+import { isAutomaticBlogEnabled } from "@/lib/feature-flags"
 import { blogPostSchema, type BlogPost } from "@/lib/site-content-schema"
+import { recordStripeMeterUsage } from "@/lib/stripe-metering"
 
 export const runtime = "nodejs"
 
@@ -14,6 +17,7 @@ type GeneratedPostDraft = {
   excerpt: string
   seoTitle: string
   seoDescription: string
+  seoKeywords: string[]
   tags: string[]
   sections: Array<{
     heading: string
@@ -38,6 +42,7 @@ const blogRoot = path.join(process.cwd(), "content", "blog")
 const defaultModel = "gemini-3-flash-preview"
 const defaultProvider = "gemini"
 const fallbackCoverImage = "https://images.unsplash.com/photo-1567789884554-0b844b597180"
+const richTextBodyField = { type: "rich-text", name: "body" } as const
 
 const keywordThemes = [
   "generator hire brisbane",
@@ -226,6 +231,19 @@ function normalizeTags(value: unknown): string[] {
   return deduped.length > 0 ? deduped : ["Generator Hire", "Generator Service", "Brisbane"]
 }
 
+function normalizeSeoKeywords(value: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(value)) {
+    return fallback
+  }
+
+  const keywords = value
+    .map((keyword) => (typeof keyword === "string" ? keyword.trim() : ""))
+    .filter(Boolean)
+
+  const deduped = Array.from(new Set(keywords))
+  return deduped.length > 0 ? deduped : fallback
+}
+
 function normalizeSections(value: unknown): Array<{ heading: string; body: string }> {
   if (!Array.isArray(value)) {
     return []
@@ -287,6 +305,7 @@ function buildPrompt(theme: string, publishedAt: string): string {
     '  "excerpt": "string",',
     '  "seoTitle": "string",',
     '  "seoDescription": "string",',
+    '  "seoKeywords": ["string", "string", "string"],',
     '  "tags": ["string", "string", "string"],',
     '  "sections": [',
     '    { "heading": "string", "body": "string" },',
@@ -326,6 +345,7 @@ function buildFallbackDraft(theme: string, index: number): GeneratedPostDraft {
     seoTitle: `Brisbane Generator Hire Service Sales Guide ${index + 1}`,
     seoDescription:
       "Generic SEO guide for Brisbane businesses covering generator hire, service planning, and generator sales decision points.",
+    seoKeywords: ["generator hire brisbane", "generator service brisbane", "temporary power planning"],
     tags: ["Brisbane", "Generator Hire", "Generator Service", "Generator Sales"],
     sections: [
       {
@@ -413,6 +433,16 @@ async function callGeminiModel({
 
   const payload = (await response.json()) as GeminiResponse
 
+  await recordStripeMeterUsage({
+    eventType: "ai_model_call",
+    metadata: {
+      provider: "gemini",
+      surface: "blog-generator",
+      model,
+      status: response.status,
+    },
+  })
+
   if (!response.ok) {
     const message = payload.error?.message || `Gemini request failed with status ${response.status}`
     throw new Error(message)
@@ -441,9 +471,12 @@ async function callGeminiModel({
     excerpt?: unknown
     seoTitle?: unknown
     seoDescription?: unknown
+    seoKeywords?: unknown
     tags?: unknown
     sections?: unknown
   }
+
+  const tags = normalizeTags(draft.tags)
 
   return {
     title: normalizeText(draft.title, "Generator Hire And Service Guide For Brisbane Sites"),
@@ -456,7 +489,8 @@ async function callGeminiModel({
       draft.seoDescription,
       "Practical guide to generator hire, service, and sales planning in Brisbane for commercial and industrial projects."
     ),
-    tags: normalizeTags(draft.tags),
+    seoKeywords: normalizeSeoKeywords(draft.seoKeywords, tags),
+    tags,
     sections: normalizeSections(draft.sections),
   }
 }
@@ -529,27 +563,31 @@ function materializePost({
         },
       ]
 
+  const richTextMarkdown = sections
+    .map((section) => `## ${section.heading}\n\n${normalizeMarkdown(section.body, section.body)}`)
+    .join("\n\n")
+
+  const richTextBody = parseMDX(richTextMarkdown, richTextBodyField, (value) => value)
+
   const post: BlogPost = {
     slug,
     title: draft.title,
     excerpt: draft.excerpt,
     seoTitle: draft.seoTitle,
     seoDescription: draft.seoDescription,
+    seoKeywords: draft.seoKeywords,
+    canonicalPath: `/blog/${slug}`,
+    ogImage: fallbackCoverImage,
+    noindex: false,
     publishedAt,
     author: {
       name: "GenFix Editorial Team",
       role: "Generator Solutions Specialists",
+      bio: "GenFix specialists in temporary power, generator servicing, and backup system planning for Australian sites.",
     },
     coverImage: fallbackCoverImage,
     tags: draft.tags,
-    sections: sections.map((section) => ({
-      id: slugify(section.heading).slice(0, 64) || `section-${randomUUID().slice(0, 8)}`,
-      heading: section.heading,
-      body: normalizeMarkdown(
-        section.body,
-        "Reliable generator outcomes in Brisbane depend on clear planning, fast support, and regular service checks."
-      ),
-    })),
+    body: richTextBody,
   }
 
   return blogPostSchema.parse(post)
@@ -563,6 +601,16 @@ async function writeBlogPost(post: BlogPost): Promise<string> {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isAutomaticBlogEnabled()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Automatic blog generation is disabled.",
+      },
+      { status: 404 }
+    )
+  }
+
   const authFailure = ensureAuthorized(request)
   if (authFailure) {
     return authFailure

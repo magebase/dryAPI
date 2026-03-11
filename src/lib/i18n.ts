@@ -1,9 +1,15 @@
+import { isInternationalizationEnabledClient } from "@/lib/feature-flags"
+
 const configuredLocales = (process.env.NEXT_PUBLIC_SITE_LOCALES ?? "en")
   .split(",")
   .map((value) => value.trim().toLowerCase())
   .filter(Boolean)
 
-export const SUPPORTED_LOCALES = configuredLocales.length > 0 ? configuredLocales : ["en"]
+const internationalizationEnabled = isInternationalizationEnabledClient()
+
+export const SUPPORTED_LOCALES = internationalizationEnabled
+  ? (configuredLocales.length > 0 ? configuredLocales : ["en"])
+  : ["en"]
 
 export const DEFAULT_LOCALE = SUPPORTED_LOCALES.includes(
   (process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? "").trim().toLowerCase()

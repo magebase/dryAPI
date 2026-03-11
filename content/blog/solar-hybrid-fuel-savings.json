@@ -7,25 +7,83 @@
   "publishedAt": "2025-12-12",
   "author": {
     "name": "Noah Barrett",
-    "role": "Applications Engineer"
+    "role": "Applications Engineer",
+    "bio": "GenFix specialists in temporary power, generator servicing, and backup system planning for Australian sites."
   },
   "coverImage": "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1600&q=80",
-  "tags": ["Hybrid Systems", "Fuel Efficiency", "Engineering"],
-  "sections": [
-    {
-      "id": "profile-before-design",
-      "heading": "Profile The Load Before Final Design",
-      "body": "Hybrid performance depends on demand shape, not just average demand. Capture daytime peaks, overnight baseload, and startup transients before finalizing battery and PV contributions. Better load data means fewer control surprises after deployment."
-    },
-    {
-      "id": "control-logic",
-      "heading": "Treat Control Logic As Core Infrastructure",
-      "body": "Fuel savings disappear when controls are too conservative or poorly tuned for site behavior. Define clear priority rules for renewables, battery dispatch, and generator start thresholds. Review setpoints after the first operating period and adjust with real telemetry."
-    },
-    {
-      "id": "operations-discipline",
-      "heading": "Operational Discipline Protects The Savings",
-      "body": "Hybrid systems still require structured maintenance and operator routines. Keep firmware consistent, check sensor integrity, and verify data pathways for monitoring dashboards. Teams that treat hybrid controls as an operating discipline get both lower fuel use and better reliability."
-    }
-  ]
+  "tags": [
+    "Hybrid Systems",
+    "Fuel Efficiency",
+    "Engineering"
+  ],
+  "seoKeywords": [
+    "Hybrid Systems",
+    "Fuel Efficiency",
+    "Engineering",
+    "Solar Hybrid Fuel Savings",
+    "Brisbane generator services",
+    "Generator reliability planning"
+  ],
+  "canonicalPath": "/blog/solar-hybrid-fuel-savings",
+  "ogImage": "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1600&q=80",
+  "noindex": false,
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Profile The Load Before Final Design"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Hybrid performance depends on demand shape, not just average demand. Capture daytime peaks, overnight baseload, and startup transients before finalizing battery and PV contributions. Better load data means fewer control surprises after deployment."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Treat Control Logic As Core Infrastructure"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Fuel savings disappear when controls are too conservative or poorly tuned for site behavior. Define clear priority rules for renewables, battery dispatch, and generator start thresholds. Review setpoints after the first operating period and adjust with real telemetry."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Operational Discipline Protects The Savings"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Hybrid systems still require structured maintenance and operator routines. Keep firmware consistent, check sensor integrity, and verify data pathways for monitoring dashboards. Teams that treat hybrid controls as an operating discipline get both lower fuel use and better reliability."
+          }
+        ]
+      }
+    ]
+  }
 }

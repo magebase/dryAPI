@@ -10,6 +10,7 @@ Example:
   node scripts/cf-zero-trust-admin-provision.mjs \
     --site-host genfix.com.au \
     --cal-host cal.genfix.com.au \
+    --crm-host crm.genfix.com.au \
     --allow-emails editor@example.com,owner@example.com
 
 Required:
@@ -21,6 +22,7 @@ Allowlist (required: at least one):
   --allow-domains <csv>  Email domain allowlist for Access policy
 
 Optional:
+  --crm-host <host>      CRM hostname (default: crm.<site-host>)
   --policy-name <name>   Access policy name (default: GenFix Zero Trust allowlist)
   --dry-run              Print planned actions without writing changes
   -h, --help             Show this help
@@ -35,6 +37,7 @@ function parseArgs(argv) {
   const args = {
     siteHost: "",
     calHost: "",
+    crmHost: "",
     allowEmails: "",
     allowDomains: "",
     policyName: "GenFix Zero Trust allowlist",
@@ -67,6 +70,12 @@ function parseArgs(argv) {
 
     if (value === "--cal-host") {
       args.calHost = next
+      index += 1
+      continue
+    }
+
+    if (value === "--crm-host") {
+      args.crmHost = next
       index += 1
       continue
     }
@@ -297,7 +306,7 @@ function buildIncludeRules({ emails, domains }) {
   return rules
 }
 
-function buildRouteDefinitions(siteHost, calHost) {
+function buildRouteDefinitions(siteHost, calHost, crmHost) {
   return [
     {
       key: "tina-admin-root",
@@ -359,6 +368,18 @@ function buildRouteDefinitions(siteHost, calHost) {
       name: "GenFix Cal Admin (/apps/admin/*)",
       includeInOriginAud: false,
     },
+    {
+      key: "crm-root",
+      domain: crmHost,
+      name: "GenFix CRM (root)",
+      includeInOriginAud: true,
+    },
+    {
+      key: "crm-prefix",
+      domain: `${crmHost}/*`,
+      name: "GenFix CRM (all paths)",
+      includeInOriginAud: true,
+    },
   ]
 }
 
@@ -386,6 +407,7 @@ async function main() {
 
   const siteHost = ensureHost(args.siteHost, "--site-host")
   const calHost = ensureHost(args.calHost, "--cal-host")
+  const crmHost = ensureHost(args.crmHost || `crm.${siteHost}`, "--crm-host")
 
   const token =
     process.env.CLOUDFLARE_API_TOKEN?.trim() || process.env.CF_API_TOKEN?.trim() || ""
@@ -416,11 +438,12 @@ async function main() {
   }
 
   const includeRules = buildIncludeRules({ emails: allowEmails, domains: allowDomains })
-  const routes = buildRouteDefinitions(siteHost, calHost)
+  const routes = buildRouteDefinitions(siteHost, calHost, crmHost)
 
   console.log(`Using account_id=${accountId}`)
   console.log(`Site host=${siteHost}`)
   console.log(`Cal host=${calHost}`)
+  console.log(`CRM host=${crmHost}`)
 
   const results = []
   for (const route of routes) {
@@ -479,6 +502,11 @@ async function main() {
 
   console.log("\nCal admin routes covered:")
   for (const route of results.filter((item) => !item.includeInOriginAud)) {
+    console.log(`- ${route.domain}`)
+  }
+
+  console.log("\nCRM routes covered:")
+  for (const route of results.filter((item) => item.key.startsWith("crm-"))) {
     console.log(`- ${route.domain}`)
   }
 }

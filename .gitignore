@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -17,6 +18,8 @@
 /.next/
 /out/
 /.open-next/
+public/sw*
+public/swe-worker*
 
 # production
 /build

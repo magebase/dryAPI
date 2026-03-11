@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { parseAsStringLiteral, useQueryState } from "nuqs"
 
 import { openQuoteDialog } from "@/components/site/quote-dialog"
 
@@ -29,6 +30,14 @@ export function QuoteAwareLink({
   children,
   ...props
 }: QuoteAwareLinkProps) {
+  const [, setQuoteQuery] = useQueryState(
+    "quote",
+    parseAsStringLiteral(["open"]).withOptions({
+      history: "replace",
+      scroll: false,
+      shallow: true,
+    })
+  )
   const hrefString = getHrefString(href)
   const childText = typeof children === "string" ? children : ""
   const label = `${quoteLabel} ${childText}`.trim()
@@ -45,6 +54,7 @@ export function QuoteAwareLink({
         }
 
         event.preventDefault()
+        void setQuoteQuery("open")
         openQuoteDialog()
       }}
       {...props}

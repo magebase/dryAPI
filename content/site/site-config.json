@@ -170,5 +170,643 @@
         "href": "/privacy-policy"
       }
     ]
-  }
+  },
+  "uiText": [
+    {
+      "key": "blogList.cardCtaLabel",
+      "value": "Read Article >"
+    },
+    {
+      "key": "blogList.ctaBody",
+      "value": "Get practical recommendations for equipment, timing, and site rollout."
+    },
+    {
+      "key": "blogList.ctaHeading",
+      "value": "Talk To A Power Specialist"
+    },
+    {
+      "key": "blogList.ctaKicker",
+      "value": "Need Project Guidance?"
+    },
+    {
+      "key": "blogList.explorePrefix",
+      "value": "Explore"
+    },
+    {
+      "key": "blogList.featuredCtaLabel",
+      "value": "Read Featured Article"
+    },
+    {
+      "key": "blogList.featuredLabel",
+      "value": "Featured Insight"
+    },
+    {
+      "key": "blogList.readTimeSuffix",
+      "value": "min read"
+    },
+    {
+      "key": "blogPost.backToBlog",
+      "value": "Back To Blog"
+    },
+    {
+      "key": "blogPost.nextStepBody",
+      "value": "Talk to the GENFIX team for practical guidance on temporary power strategy, deployment, and support."
+    },
+    {
+      "key": "blogPost.nextStepHeading",
+      "value": "Need Help On Your Site?"
+    },
+    {
+      "key": "blogPost.nextStepKicker",
+      "value": "Next Step"
+    },
+    {
+      "key": "blogPost.resourcesPrefix",
+      "value": "View"
+    },
+    {
+      "key": "contactForm.companyLabel",
+      "value": "Company"
+    },
+    {
+      "key": "contactForm.companyPlaceholder",
+      "value": "Optional"
+    },
+    {
+      "key": "contactForm.emailLabel",
+      "value": "Email"
+    },
+    {
+      "key": "contactForm.emailPlaceholder",
+      "value": "you@company.com"
+    },
+    {
+      "key": "contactForm.messageLabel",
+      "value": "Project details"
+    },
+    {
+      "key": "contactForm.messagePlaceholder",
+      "value": "Tell us about your timeline, scope, and site requirements"
+    },
+    {
+      "key": "contactForm.nameLabel",
+      "value": "Name"
+    },
+    {
+      "key": "contactForm.namePlaceholder",
+      "value": "Your name"
+    },
+    {
+      "key": "contactForm.projectEnquiryLabel",
+      "value": "Project Enquiry"
+    },
+    {
+      "key": "contactForm.submitBusyLabel",
+      "value": "Sending..."
+    },
+    {
+      "key": "contactForm.submitErrorMessage",
+      "value": "We could not submit your request right now."
+    },
+    {
+      "key": "contactForm.submitIdleLabel",
+      "value": "Send Inquiry"
+    },
+    {
+      "key": "contactPage.locationFallbackLabel",
+      "value": "Get A Quote"
+    },
+    {
+      "key": "contactPage.locationsHeading",
+      "value": "Our Locations"
+    },
+    {
+      "key": "contactPage.locationsSubheading",
+      "value": "Nation-wide support"
+    },
+    {
+      "key": "contactPage.urgentBody",
+      "value": "For critical jobs and shutdown timelines, direct phone contact is the fastest path."
+    },
+    {
+      "key": "contactPage.urgentHeading",
+      "value": "Call Our Team Directly"
+    },
+    {
+      "key": "contactPage.urgentKicker",
+      "value": "Need An Urgent Response?"
+    },
+    {
+      "key": "contactPageForm.bestContactLabel",
+      "value": "What is the best way to contact you?"
+    },
+    {
+      "key": "contactPageForm.companyLabel",
+      "value": "Company name"
+    },
+    {
+      "key": "contactPageForm.companyPlaceholder",
+      "value": "Company"
+    },
+    {
+      "key": "contactPageForm.contactMethod.call-me",
+      "value": "Call me"
+    },
+    {
+      "key": "contactPageForm.contactMethod.email-me",
+      "value": "Email me"
+    },
+    {
+      "key": "contactPageForm.emailLabel",
+      "value": "Email"
+    },
+    {
+      "key": "contactPageForm.emailPlaceholder",
+      "value": "you@company.com"
+    },
+    {
+      "key": "contactPageForm.enquiryType.other",
+      "value": "Other"
+    },
+    {
+      "key": "contactPageForm.enquiryType.parts",
+      "value": "Parts"
+    },
+    {
+      "key": "contactPageForm.enquiryType.rental",
+      "value": "Rental"
+    },
+    {
+      "key": "contactPageForm.enquiryType.sales",
+      "value": "Sales"
+    },
+    {
+      "key": "contactPageForm.enquiryType.service",
+      "value": "Service"
+    },
+    {
+      "key": "contactPageForm.enquiryTypeLabel",
+      "value": "Enquiry type"
+    },
+    {
+      "key": "contactPageForm.firstNameLabel",
+      "value": "First name"
+    },
+    {
+      "key": "contactPageForm.firstNamePlaceholder",
+      "value": "First name"
+    },
+    {
+      "key": "contactPageForm.introText",
+      "value": "Complete the fields below and we will route your enquiry to the right specialist."
+    },
+    {
+      "key": "contactPageForm.lastNameLabel",
+      "value": "Last name"
+    },
+    {
+      "key": "contactPageForm.lastNamePlaceholder",
+      "value": "Last name"
+    },
+    {
+      "key": "contactPageForm.messageLabel",
+      "value": "Message"
+    },
+    {
+      "key": "contactPageForm.messagePlaceholder",
+      "value": "Tell us about your project requirements"
+    },
+    {
+      "key": "contactPageForm.phoneLabel",
+      "value": "Phone number (optional)"
+    },
+    {
+      "key": "contactPageForm.phonePlaceholder",
+      "value": "0412 345 678"
+    },
+    {
+      "key": "contactPageForm.stateLabel",
+      "value": "State"
+    },
+    {
+      "key": "contactPageForm.statePlaceholder",
+      "value": "Please select"
+    },
+    {
+      "key": "contactPageForm.submitBusyLabel",
+      "value": "Sending..."
+    },
+    {
+      "key": "contactPageForm.submitErrorMessage",
+      "value": "We could not submit your request right now."
+    },
+    {
+      "key": "contactPageForm.submitIdleLabel",
+      "value": "Submit"
+    },
+    {
+      "key": "footer.quickContactFallback",
+      "value": "Talk To Team"
+    },
+    {
+      "key": "footer.supportPrompt",
+      "value": "Need Fast Project Pricing Or Deployment Support?"
+    },
+    {
+      "key": "home.capabilityBottomCard.body.1",
+      "value": "Clear recommendations based on load profile, compliance risk, and practical site access."
+    },
+    {
+      "key": "home.capabilityBottomCard.body.2",
+      "value": "Structured mobilisation and commissioning workflows that reduce rework and surprise downtime."
+    },
+    {
+      "key": "home.capabilityBottomCard.body.3",
+      "value": "Escalation paths that stay active after hours, so your project is never left waiting."
+    },
+    {
+      "key": "home.capabilityBottomCard.title.1",
+      "value": "Design Confidence"
+    },
+    {
+      "key": "home.capabilityBottomCard.title.2",
+      "value": "Delivery Discipline"
+    },
+    {
+      "key": "home.capabilityBottomCard.title.3",
+      "value": "Support Readiness"
+    },
+    {
+      "key": "home.capabilityCardPrefix",
+      "value": "Capability"
+    },
+    {
+      "key": "home.capabilityIntroBody",
+      "value": "One partner from specification through support. Every capability below is designed to reduce delay, protect output, and keep decisions simple."
+    },
+    {
+      "key": "home.capabilitySignal.label.1",
+      "value": "Generator Range"
+    },
+    {
+      "key": "home.capabilitySignal.label.2",
+      "value": "Support Window"
+    },
+    {
+      "key": "home.capabilitySignal.label.3",
+      "value": "Service Footprint"
+    },
+    {
+      "key": "home.capabilitySignal.value.1",
+      "value": "5-20 kVA"
+    },
+    {
+      "key": "home.capabilitySignal.value.2",
+      "value": "24/7"
+    },
+    {
+      "key": "home.capabilitySignal.value.3",
+      "value": "National"
+    },
+    {
+      "key": "home.capabilityWhatYouGet",
+      "value": "What You Get"
+    },
+    {
+      "key": "home.capabilityWhatYouGetItem.1",
+      "value": "Clear scope"
+    },
+    {
+      "key": "home.capabilityWhatYouGetItem.2",
+      "value": "Predictable delivery"
+    },
+    {
+      "key": "home.capabilityWhatYouGetItem.3",
+      "value": "Real support"
+    },
+    {
+      "key": "home.commandCta.bodySuffix",
+      "value": "Talk to a specialist and get a practical recommendation for sizing, timeline, and on-site support options."
+    },
+    {
+      "key": "home.commandCta.heading",
+      "value": "Start With A Fast Scope Call, Leave With A Clear Power Plan"
+    },
+    {
+      "key": "home.commandCta.kicker",
+      "value": "Immediate Next Step"
+    },
+    {
+      "key": "home.commandCta.trustSnippet.body.1",
+      "value": "Clear options around duty cycle, runtime, and compliance so project teams can decide quickly."
+    },
+    {
+      "key": "home.commandCta.trustSnippet.body.2",
+      "value": "Sales, rental, and support teams stay coordinated from quote through commissioning and handover."
+    },
+    {
+      "key": "home.commandCta.trustSnippet.body.3",
+      "value": "When conditions shift on site, your team has a direct route to practical support and backup actions."
+    },
+    {
+      "key": "home.commandCta.trustSnippet.title.1",
+      "value": "Transparent Technical Advice"
+    },
+    {
+      "key": "home.commandCta.trustSnippet.title.2",
+      "value": "Field-Tested Delivery Workflow"
+    },
+    {
+      "key": "home.commandCta.trustSnippet.title.3",
+      "value": "Fast Escalation Path"
+    },
+    {
+      "key": "home.operationalProof.body",
+      "value": "High-trust power projects are won with proof, not promises. These project snapshots and field guides show how GenFix teams plan, deliver, and support critical power outcomes."
+    },
+    {
+      "key": "home.operationalProof.exploreStoryLabel",
+      "value": "Explore Story"
+    },
+    {
+      "key": "home.operationalProof.heading",
+      "value": "Real Deployments, Practical Guidance, Faster Decisions"
+    },
+    {
+      "key": "home.operationalProof.kicker",
+      "value": "Operational Proof"
+    },
+    {
+      "key": "home.operationalProof.trustedDeliverySuffix",
+      "value": "Trusted Delivery"
+    },
+    {
+      "key": "home.planning.bodySuffix",
+      "value": "We combine product guidance, hire flexibility, and support planning so your team can lock in power decisions with confidence."
+    },
+    {
+      "key": "home.planning.heading",
+      "value": "One Team Across Sales, Hire, Service, and Support"
+    },
+    {
+      "key": "home.planning.kicker",
+      "value": "High Trust Planning"
+    },
+    {
+      "key": "home.planning.responseDisciplineBody",
+      "value": "From first call to handover, your plan is shaped around uptime, straightforward communication, and fast site-readiness."
+    },
+    {
+      "key": "home.planning.responseDisciplineLabel",
+      "value": "Response Discipline"
+    },
+    {
+      "key": "home.showcase.readMoreLabel",
+      "value": "Read More /"
+    },
+    {
+      "key": "home.showcase.secondaryCtaLabel",
+      "value": "Request A Quote /"
+    },
+    {
+      "key": "home.spotlightAction.1",
+      "value": "Talk Sales"
+    },
+    {
+      "key": "home.spotlightAction.2",
+      "value": "Check Fleet"
+    },
+    {
+      "key": "home.spotlightAction.3",
+      "value": "Request Support"
+    },
+    {
+      "key": "home.spotlightAtAGlance",
+      "value": "At A Glance"
+    },
+    {
+      "key": "home.spotlightFieldNoteLabel",
+      "value": "Field Note"
+    },
+    {
+      "key": "home.spotlightIntroBody",
+      "value": "Straightforward service lines for teams that need clear answers quickly. No inflated claims, just practical power planning and delivery."
+    },
+    {
+      "key": "home.spotlightMicroProof.1",
+      "value": "Typical scope response: same business day"
+    },
+    {
+      "key": "home.spotlightMicroProof.2",
+      "value": "Short and long hire terms available"
+    },
+    {
+      "key": "home.spotlightMicroProof.3",
+      "value": "After-hours escalation available"
+    },
+    {
+      "key": "home.trustedBy.partnerBandLabel",
+      "value": "Infinite partner band"
+    },
+    {
+      "key": "productsPage.expertsBody",
+      "value": "GENFIX supplies robust 5-20 kVA diesel generator systems for site services, shutdowns, and critical backup. Our team combines planning, deployment, and continuous service support to keep power online in demanding environments."
+    },
+    {
+      "key": "productsPage.expertsHeading",
+      "value": "Engineered Systems For Tough Australian Operating Conditions"
+    },
+    {
+      "key": "productsPage.expertsKicker",
+      "value": "5-20 kVA Diesel Generation Experts"
+    },
+    {
+      "key": "productsPage.faqHeading",
+      "value": "Frequently Asked Questions"
+    },
+    {
+      "key": "productsPage.packagesBody",
+      "value": "We collaborate with your site team to configure enclosure, controls, and fuel-system requirements for 5-20 kVA diesel outcomes. Options are aligned to duty cycles, environmental constraints, and compliance targets."
+    },
+    {
+      "key": "productsPage.packagesHeading",
+      "value": "5-20 kVA Diesel Packages"
+    },
+    {
+      "key": "productsPage.packagesPanelBody",
+      "value": "GENFIX is a trusted supplier for site operations that need dependable 5-20 kVA diesel power. Our rental and sales packages are designed to maintain uptime and simplify field operations from day one."
+    },
+    {
+      "key": "productsPage.packagesPanelKicker",
+      "value": "For Site, Commercial, And Industrial Use"
+    },
+    {
+      "key": "productsPage.rangeKicker",
+      "value": "Our 5-20 kVA Diesel Generator Range"
+    },
+    {
+      "key": "quoteDialog.description",
+      "value": "Share a few project details and our team will get back to you quickly."
+    },
+    {
+      "key": "quoteDialog.enquiryOption.rental",
+      "value": "Rental"
+    },
+    {
+      "key": "quoteDialog.enquiryOption.sales",
+      "value": "Sales"
+    },
+    {
+      "key": "quoteDialog.field.company",
+      "value": "Company name"
+    },
+    {
+      "key": "quoteDialog.field.delivery",
+      "value": "Do you need delivery? (If yes please enter suburb/postcode, if no move to next)*"
+    },
+    {
+      "key": "quoteDialog.field.email",
+      "value": "Email*"
+    },
+    {
+      "key": "quoteDialog.field.enquiry",
+      "value": "Are you enquiring about rental or sales?*"
+    },
+    {
+      "key": "quoteDialog.field.firstName",
+      "value": "First name*"
+    },
+    {
+      "key": "quoteDialog.field.interest",
+      "value": "What are you interested in?*"
+    },
+    {
+      "key": "quoteDialog.field.lastName",
+      "value": "Last name*"
+    },
+    {
+      "key": "quoteDialog.field.notes",
+      "value": "Any other notes or comments?"
+    },
+    {
+      "key": "quoteDialog.field.phone",
+      "value": "Phone number"
+    },
+    {
+      "key": "quoteDialog.field.postcode",
+      "value": "Postcode/suburb of project*"
+    },
+    {
+      "key": "quoteDialog.interestOption.airTools",
+      "value": "Air Power Tools"
+    },
+    {
+      "key": "quoteDialog.interestOption.generators",
+      "value": "Generators"
+    },
+    {
+      "key": "quoteDialog.interestOption.lighting",
+      "value": "Lighting"
+    },
+    {
+      "key": "quoteDialog.interestOption.other",
+      "value": "Other"
+    },
+    {
+      "key": "quoteDialog.interestOption.service",
+      "value": "Service Support"
+    },
+    {
+      "key": "quoteDialog.interestOption.solar",
+      "value": "Solar Generators"
+    },
+    {
+      "key": "quoteDialog.interestOption.welders",
+      "value": "Welders"
+    },
+    {
+      "key": "quoteDialog.requiredHint",
+      "value": "Required fields are marked with an asterisk."
+    },
+    {
+      "key": "quoteDialog.responseTime",
+      "value": "We usually respond within one business day."
+    },
+    {
+      "key": "quoteDialog.select.placeholder",
+      "value": "Please Select"
+    },
+    {
+      "key": "quoteDialog.submitBusy",
+      "value": "Submitting..."
+    },
+    {
+      "key": "quoteDialog.submitError",
+      "value": "We could not submit your request right now."
+    },
+    {
+      "key": "quoteDialog.submitIdle",
+      "value": "Submit"
+    },
+    {
+      "key": "quoteDialog.submitSuccess",
+      "value": "Thanks, your quote request has been sent."
+    },
+    {
+      "key": "quoteDialog.title",
+      "value": "Get A Quote"
+    },
+    {
+      "key": "quoteDialog.validation.delivery",
+      "value": "Please add your delivery details."
+    },
+    {
+      "key": "quoteDialog.validation.email",
+      "value": "Email is required."
+    },
+    {
+      "key": "quoteDialog.validation.enquiry",
+      "value": "Please choose rental or sales."
+    },
+    {
+      "key": "quoteDialog.validation.firstName",
+      "value": "First name is required."
+    },
+    {
+      "key": "quoteDialog.validation.interest",
+      "value": "Please select what you are interested in."
+    },
+    {
+      "key": "quoteDialog.validation.lastName",
+      "value": "Last name is required."
+    },
+    {
+      "key": "quoteDialog.validation.postcode",
+      "value": "Postcode/suburb of project is required."
+    },
+    {
+      "key": "routePage.contactFormDescription",
+      "value": "Share your scope and required dates."
+    },
+    {
+      "key": "routePage.contactFormHeading",
+      "value": "Request Project Support"
+    },
+    {
+      "key": "routePage.ctaBody",
+      "value": "Speak with the GENFIX team about the right equipment and service model for your site timeline."
+    },
+    {
+      "key": "routePage.ctaHeading",
+      "value": "Get Scope And Pricing Support"
+    },
+    {
+      "key": "routePage.ctaKicker",
+      "value": "Need Fast Advice?"
+    },
+    {
+      "key": "routePage.productsPrefix",
+      "value": "View"
+    }
+  ]
 }

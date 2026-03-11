@@ -2,6 +2,7 @@ import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react"
 import { tinaField } from "tinacms/dist/react"
 
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
+import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { Reveal } from "@/components/site/reveal"
 import type { SiteConfig } from "@/lib/site-content-schema"
 
@@ -14,9 +15,15 @@ const iconMap = {
 
 export function SiteFooter({ site }: { site: SiteConfig }) {
   const quickContactHref = site.footer.contactLinks[0]?.href ?? "/contact"
-  const quickContactLabel = site.footer.contactLinks[0]?.label ?? "Talk To Team"
+  const quickContactFallback = resolveSiteUiText(site, "footer.quickContactFallback", "Talk To Team")
+  const quickContactLabel = site.footer.contactLinks[0]?.label ?? quickContactFallback.value
   const quoteHref = site.header.quoteCta.href
   const quoteLabel = site.header.quoteCta.label
+  const supportPrompt = resolveSiteUiText(
+    site,
+    "footer.supportPrompt",
+    "Need Fast Project Pricing Or Deployment Support?"
+  )
 
   return (
     <footer className="relative border-t border-white/10 bg-[color:var(--site-surface-0)]">
@@ -28,9 +35,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
           data-aos-delay="30"
           data-aos-duration="420"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-100">
-            Need Fast Project Pricing Or Deployment Support?
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-100" data-tina-field={supportPrompt.field}>{supportPrompt.value}</p>
           <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
             <QuoteAwareLink
               className="inline-flex w-full items-center justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"

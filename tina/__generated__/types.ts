@@ -297,6 +297,12 @@ export type SiteConfigFooter = {
   legalLinks?: Maybe<Array<Maybe<SiteConfigFooterLegalLinks>>>;
 };
 
+export type SiteConfigUiText = {
+  __typename?: 'SiteConfigUiText';
+  key: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
 export type SiteConfig = Node & Document & {
   __typename?: 'SiteConfig';
   brand?: Maybe<SiteConfigBrand>;
@@ -304,6 +310,7 @@ export type SiteConfig = Node & Document & {
   announcement: Scalars['String']['output'];
   header?: Maybe<SiteConfigHeader>;
   footer?: Maybe<SiteConfigFooter>;
+  uiText?: Maybe<Array<Maybe<SiteConfigUiText>>>;
   id: Scalars['ID']['output'];
   _sys: SystemInfo;
   _values: Scalars['JSON']['output'];
@@ -382,12 +389,18 @@ export type SiteConfigFooterFilter = {
   legalLinks?: InputMaybe<SiteConfigFooterLegalLinksFilter>;
 };
 
+export type SiteConfigUiTextFilter = {
+  key?: InputMaybe<StringFilter>;
+  value?: InputMaybe<StringFilter>;
+};
+
 export type SiteConfigFilter = {
   brand?: InputMaybe<SiteConfigBrandFilter>;
   contact?: InputMaybe<SiteConfigContactFilter>;
   announcement?: InputMaybe<StringFilter>;
   header?: InputMaybe<SiteConfigHeaderFilter>;
   footer?: InputMaybe<SiteConfigFooterFilter>;
+  uiText?: InputMaybe<SiteConfigUiTextFilter>;
 };
 
 export type SiteConfigConnectionEdges = {
@@ -805,13 +818,8 @@ export type BlogPostsAuthor = {
   __typename?: 'BlogPostsAuthor';
   name: Scalars['String']['output'];
   role: Scalars['String']['output'];
-};
-
-export type BlogPostsSections = {
-  __typename?: 'BlogPostsSections';
-  id: Scalars['String']['output'];
-  heading: Scalars['String']['output'];
-  body: Scalars['String']['output'];
+  bio?: Maybe<Scalars['String']['output']>;
+  avatar?: Maybe<Scalars['String']['output']>;
 };
 
 export type BlogPosts = Node & Document & {
@@ -819,13 +827,17 @@ export type BlogPosts = Node & Document & {
   slug: Scalars['String']['output'];
   title: Scalars['String']['output'];
   excerpt: Scalars['String']['output'];
-  seoTitle: Scalars['String']['output'];
-  seoDescription: Scalars['String']['output'];
   publishedAt: Scalars['String']['output'];
   author?: Maybe<BlogPostsAuthor>;
   coverImage: Scalars['String']['output'];
   tags: Array<Scalars['String']['output']>;
-  sections?: Maybe<Array<Maybe<BlogPostsSections>>>;
+  body: Scalars['JSON']['output'];
+  seoTitle: Scalars['String']['output'];
+  seoDescription: Scalars['String']['output'];
+  seoKeywords?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  canonicalPath?: Maybe<Scalars['String']['output']>;
+  ogImage?: Maybe<Scalars['String']['output']>;
+  noindex?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   _sys: SystemInfo;
   _values: Scalars['JSON']['output'];
@@ -834,25 +846,31 @@ export type BlogPosts = Node & Document & {
 export type BlogPostsAuthorFilter = {
   name?: InputMaybe<StringFilter>;
   role?: InputMaybe<StringFilter>;
+  bio?: InputMaybe<StringFilter>;
+  avatar?: InputMaybe<ImageFilter>;
 };
 
-export type BlogPostsSectionsFilter = {
-  id?: InputMaybe<StringFilter>;
-  heading?: InputMaybe<StringFilter>;
-  body?: InputMaybe<StringFilter>;
+export type RichTextFilter = {
+  startsWith?: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  exists?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type BlogPostsFilter = {
   slug?: InputMaybe<StringFilter>;
   title?: InputMaybe<StringFilter>;
   excerpt?: InputMaybe<StringFilter>;
-  seoTitle?: InputMaybe<StringFilter>;
-  seoDescription?: InputMaybe<StringFilter>;
   publishedAt?: InputMaybe<StringFilter>;
   author?: InputMaybe<BlogPostsAuthorFilter>;
   coverImage?: InputMaybe<ImageFilter>;
   tags?: InputMaybe<StringFilter>;
-  sections?: InputMaybe<BlogPostsSectionsFilter>;
+  body?: InputMaybe<RichTextFilter>;
+  seoTitle?: InputMaybe<StringFilter>;
+  seoDescription?: InputMaybe<StringFilter>;
+  seoKeywords?: InputMaybe<StringFilter>;
+  canonicalPath?: InputMaybe<StringFilter>;
+  ogImage?: InputMaybe<ImageFilter>;
+  noindex?: InputMaybe<BooleanFilter>;
 };
 
 export type BlogPostsConnectionEdges = {
@@ -1223,12 +1241,18 @@ export type SiteConfigFooterMutation = {
   legalLinks?: InputMaybe<Array<InputMaybe<SiteConfigFooterLegalLinksMutation>>>;
 };
 
+export type SiteConfigUiTextMutation = {
+  key?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type SiteConfigMutation = {
   brand?: InputMaybe<SiteConfigBrandMutation>;
   contact?: InputMaybe<SiteConfigContactMutation>;
   announcement?: InputMaybe<Scalars['String']['input']>;
   header?: InputMaybe<SiteConfigHeaderMutation>;
   footer?: InputMaybe<SiteConfigFooterMutation>;
+  uiText?: InputMaybe<Array<InputMaybe<SiteConfigUiTextMutation>>>;
 };
 
 export type HomeHeroPrimaryActionMutation = {
@@ -1408,25 +1432,25 @@ export type HomeMutation = {
 export type BlogPostsAuthorMutation = {
   name?: InputMaybe<Scalars['String']['input']>;
   role?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type BlogPostsSectionsMutation = {
-  id?: InputMaybe<Scalars['String']['input']>;
-  heading?: InputMaybe<Scalars['String']['input']>;
-  body?: InputMaybe<Scalars['String']['input']>;
+  bio?: InputMaybe<Scalars['String']['input']>;
+  avatar?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type BlogPostsMutation = {
   slug?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
   excerpt?: InputMaybe<Scalars['String']['input']>;
-  seoTitle?: InputMaybe<Scalars['String']['input']>;
-  seoDescription?: InputMaybe<Scalars['String']['input']>;
   publishedAt?: InputMaybe<Scalars['String']['input']>;
   author?: InputMaybe<BlogPostsAuthorMutation>;
   coverImage?: InputMaybe<Scalars['String']['input']>;
   tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  sections?: InputMaybe<Array<InputMaybe<BlogPostsSectionsMutation>>>;
+  body?: InputMaybe<Scalars['JSON']['input']>;
+  seoTitle?: InputMaybe<Scalars['String']['input']>;
+  seoDescription?: InputMaybe<Scalars['String']['input']>;
+  seoKeywords?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  canonicalPath?: InputMaybe<Scalars['String']['input']>;
+  ogImage?: InputMaybe<Scalars['String']['input']>;
+  noindex?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type RoutePagesPageContentElementsMutation = {
@@ -1504,11 +1528,11 @@ export type RoutePagesMutation = {
   contactPanel?: InputMaybe<RoutePagesContactPanelMutation>;
 };
 
-export type SiteConfigPartsFragment = { __typename: 'SiteConfig', announcement: string, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null };
+export type SiteConfigPartsFragment = { __typename: 'SiteConfig', announcement: string, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null, uiText?: Array<{ __typename: 'SiteConfigUiText', key: string, value: string } | null> | null };
 
 export type HomePartsFragment = { __typename: 'Home', seoTitle: string, seoDescription: string, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, testimonialsSection?: { __typename: 'HomeTestimonialsSection', visible: boolean, kicker: string, title: string, items?: Array<{ __typename: 'HomeTestimonialsSectionItems', id: string, company: string, quote: string, person: string, role: string, metric?: string | null } | null> | null } | null, trustedBySection?: { __typename: 'HomeTrustedBySection', visible: boolean, kicker: string, title: string, logos?: Array<{ __typename: 'HomeTrustedBySectionLogos', id: string, name: string, abbreviation: string } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null };
 
-export type BlogPostsPartsFragment = { __typename: 'BlogPosts', slug: string, title: string, excerpt: string, seoTitle: string, seoDescription: string, publishedAt: string, coverImage: string, tags: Array<string>, author?: { __typename: 'BlogPostsAuthor', name: string, role: string } | null, sections?: Array<{ __typename: 'BlogPostsSections', id: string, heading: string, body: string } | null> | null };
+export type BlogPostsPartsFragment = { __typename: 'BlogPosts', slug: string, title: string, excerpt: string, publishedAt: string, coverImage: string, tags: Array<string>, body: any, seoTitle: string, seoDescription: string, seoKeywords?: Array<string | null> | null, canonicalPath?: string | null, ogImage?: string | null, noindex?: boolean | null, author?: { __typename: 'BlogPostsAuthor', name: string, role: string, bio?: string | null, avatar?: string | null } | null };
 
 export type RoutePagesPartsFragment = { __typename: 'RoutePages', slug: string, navLabel: string, seoTitle: string, seoDescription: string, pageContent?: { __typename: 'RoutePagesPageContent', elements?: Array<{ __typename: 'RoutePagesPageContentElements', id: string, type: string, text?: string | null, href?: string | null, src?: string | null } | null> | null } | null, hero?: { __typename: 'RoutePagesHero', kicker: string, heading: string, body: string, image: string, galleryImages?: Array<{ __typename: 'RoutePagesHeroGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null, actions?: Array<{ __typename: 'RoutePagesHeroActions', label: string, href: string, style: string } | null> | null } | null, sections?: Array<{ __typename: 'RoutePagesSections', id: string, title: string, body: string, galleryImages?: Array<{ __typename: 'RoutePagesSectionsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null, cards?: Array<{ __typename: 'RoutePagesSectionsCards', id: string, title: string, description: string, image?: string | null, href: string, ctaLabel: string } | null> | null } | null> | null, contactPanel?: { __typename: 'RoutePagesContactPanel', heading?: string | null, body?: string | null, responseTime?: string | null } | null };
 
@@ -1517,7 +1541,7 @@ export type SiteConfigQueryVariables = Exact<{
 }>;
 
 
-export type SiteConfigQuery = { __typename?: 'Query', siteConfig: { __typename: 'SiteConfig', id: string, announcement: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null } };
+export type SiteConfigQuery = { __typename?: 'Query', siteConfig: { __typename: 'SiteConfig', id: string, announcement: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null, uiText?: Array<{ __typename: 'SiteConfigUiText', key: string, value: string } | null> | null } };
 
 export type SiteConfigConnectionQueryVariables = Exact<{
   before?: InputMaybe<Scalars['String']['input']>;
@@ -1529,7 +1553,7 @@ export type SiteConfigConnectionQueryVariables = Exact<{
 }>;
 
 
-export type SiteConfigConnectionQuery = { __typename?: 'Query', siteConfigConnection: { __typename?: 'SiteConfigConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'SiteConfigConnectionEdges', cursor: string, node?: { __typename: 'SiteConfig', id: string, announcement: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null } | null } | null> | null } };
+export type SiteConfigConnectionQuery = { __typename?: 'Query', siteConfigConnection: { __typename?: 'SiteConfigConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'SiteConfigConnectionEdges', cursor: string, node?: { __typename: 'SiteConfig', id: string, announcement: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null, uiText?: Array<{ __typename: 'SiteConfigUiText', key: string, value: string } | null> | null } | null } | null> | null } };
 
 export type HomeQueryVariables = Exact<{
   relativePath: Scalars['String']['input'];
@@ -1555,7 +1579,7 @@ export type BlogPostsQueryVariables = Exact<{
 }>;
 
 
-export type BlogPostsQuery = { __typename?: 'Query', blogPosts: { __typename: 'BlogPosts', id: string, slug: string, title: string, excerpt: string, seoTitle: string, seoDescription: string, publishedAt: string, coverImage: string, tags: Array<string>, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, author?: { __typename: 'BlogPostsAuthor', name: string, role: string } | null, sections?: Array<{ __typename: 'BlogPostsSections', id: string, heading: string, body: string } | null> | null } };
+export type BlogPostsQuery = { __typename?: 'Query', blogPosts: { __typename: 'BlogPosts', id: string, slug: string, title: string, excerpt: string, publishedAt: string, coverImage: string, tags: Array<string>, body: any, seoTitle: string, seoDescription: string, seoKeywords?: Array<string | null> | null, canonicalPath?: string | null, ogImage?: string | null, noindex?: boolean | null, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, author?: { __typename: 'BlogPostsAuthor', name: string, role: string, bio?: string | null, avatar?: string | null } | null } };
 
 export type BlogPostsConnectionQueryVariables = Exact<{
   before?: InputMaybe<Scalars['String']['input']>;
@@ -1567,7 +1591,7 @@ export type BlogPostsConnectionQueryVariables = Exact<{
 }>;
 
 
-export type BlogPostsConnectionQuery = { __typename?: 'Query', blogPostsConnection: { __typename?: 'BlogPostsConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'BlogPostsConnectionEdges', cursor: string, node?: { __typename: 'BlogPosts', id: string, slug: string, title: string, excerpt: string, seoTitle: string, seoDescription: string, publishedAt: string, coverImage: string, tags: Array<string>, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, author?: { __typename: 'BlogPostsAuthor', name: string, role: string } | null, sections?: Array<{ __typename: 'BlogPostsSections', id: string, heading: string, body: string } | null> | null } | null } | null> | null } };
+export type BlogPostsConnectionQuery = { __typename?: 'Query', blogPostsConnection: { __typename?: 'BlogPostsConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'BlogPostsConnectionEdges', cursor: string, node?: { __typename: 'BlogPosts', id: string, slug: string, title: string, excerpt: string, publishedAt: string, coverImage: string, tags: Array<string>, body: any, seoTitle: string, seoDescription: string, seoKeywords?: Array<string | null> | null, canonicalPath?: string | null, ogImage?: string | null, noindex?: boolean | null, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, author?: { __typename: 'BlogPostsAuthor', name: string, role: string, bio?: string | null, avatar?: string | null } | null } | null } | null> | null } };
 
 export type RoutePagesQueryVariables = Exact<{
   relativePath: Scalars['String']['input'];
@@ -1649,6 +1673,11 @@ export const SiteConfigPartsFragmentDoc = gql`
       label
       href
     }
+  }
+  uiText {
+    __typename
+    key
+    value
   }
 }
     `;
@@ -1813,22 +1842,23 @@ export const BlogPostsPartsFragmentDoc = gql`
   slug
   title
   excerpt
-  seoTitle
-  seoDescription
   publishedAt
   author {
     __typename
     name
     role
+    bio
+    avatar
   }
   coverImage
   tags
-  sections {
-    __typename
-    id
-    heading
-    body
-  }
+  body
+  seoTitle
+  seoDescription
+  seoKeywords
+  canonicalPath
+  ogImage
+  noindex
 }
     `;
 export const RoutePagesPartsFragmentDoc = gql`

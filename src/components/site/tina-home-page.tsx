@@ -37,7 +37,7 @@ export function TinaHomePage({ siteDocument, homeDocument }: TinaHomePageProps) 
 
   return (
     <SiteFrame site={siteData.siteConfig}>
-      <HomeSections home={homeData.home} />
+      <HomeSections home={homeData.home} site={siteData.siteConfig} />
     </SiteFrame>
   )
 }

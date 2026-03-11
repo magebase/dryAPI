@@ -78,6 +78,11 @@ export const trustedLogoSchema = z.object({
   abbreviation: requiredText,
 })
 
+export const uiTextEntrySchema = z.object({
+  key: requiredText,
+  value: requiredText,
+})
+
 export const siteConfigSchema = z.object({
   brand: z.object({
     name: requiredText,
@@ -114,6 +119,7 @@ export const siteConfigSchema = z.object({
     ),
     legalLinks: z.array(linkSchema),
   }),
+  uiText: z.array(uiTextEntrySchema).default([]),
 })
 
 export const homeContentSchema = z.object({
@@ -279,10 +285,18 @@ export const routePageSchema = z.object({
     .optional(),
 })
 
-export const blogSectionSchema = z.object({
-  id: requiredText,
-  heading: requiredText,
-  body: requiredText,
+const tinaRichTextSchema = z
+  .object({
+    type: z.string(),
+    children: z.array(z.unknown()).default([]),
+  })
+  .passthrough()
+
+export const blogAuthorSchema = z.object({
+  name: requiredText,
+  role: requiredText,
+  bio: z.string().trim().optional(),
+  avatar: z.string().trim().optional(),
 })
 
 export const blogPostSchema = z.object({
@@ -291,14 +305,15 @@ export const blogPostSchema = z.object({
   excerpt: requiredText,
   seoTitle: requiredText,
   seoDescription: requiredText,
+  seoKeywords: z.array(requiredText).default([]),
+  canonicalPath: requiredText.optional(),
+  ogImage: requiredText.optional(),
+  noindex: z.boolean().default(false),
   publishedAt: requiredText,
-  author: z.object({
-    name: requiredText,
-    role: requiredText,
-  }),
+  author: blogAuthorSchema,
   coverImage: requiredText,
   tags: z.array(requiredText).min(1),
-  sections: z.array(blogSectionSchema).min(1),
+  body: tinaRichTextSchema,
 })
 
 export type SiteConfig = z.infer<typeof siteConfigSchema>

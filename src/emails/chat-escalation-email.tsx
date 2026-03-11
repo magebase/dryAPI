@@ -12,16 +12,22 @@ import {
 
 type ChatEscalationEmailProps = {
   question: string
+  queue?: string
   pagePath: string
   visitorId: string
+  visitorEmail: string | null
+  visitorPhone: string | null
   conversation: string
   submittedAt: string
 }
 
 export function ChatEscalationEmail({
   question,
+  queue,
   pagePath,
   visitorId,
+  visitorEmail,
+  visitorPhone,
   conversation,
   submittedAt,
 }: ChatEscalationEmailProps) {
@@ -39,6 +45,12 @@ export function ChatEscalationEmail({
             <Text style={value}>{pagePath}</Text>
             <Text style={label}>Visitor</Text>
             <Text style={value}>{visitorId}</Text>
+            <Text style={label}>Queue</Text>
+            <Text style={value}>{queue || "general"}</Text>
+            <Text style={label}>Visitor Email</Text>
+            <Text style={value}>{visitorEmail || "Not provided"}</Text>
+            <Text style={label}>Visitor Mobile</Text>
+            <Text style={value}>{visitorPhone || "Not provided"}</Text>
           </Section>
           <Hr style={separator} />
           <Section>

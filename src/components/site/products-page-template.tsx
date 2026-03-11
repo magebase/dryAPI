@@ -4,19 +4,9 @@ import { tinaField } from "tinacms/dist/react"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema"
-
-function buildFallbackQuestions(brandMark: string) {
-  return [
-    "What 5-20 kVA diesel sizes are available for hire and purchase?",
-    `Can ${brandMark} help choose between 5-8, 10-15, and 16-20 kVA models?`,
-    "Do you offer fuel management and remote monitoring services?",
-    "How quickly can equipment be delivered and commissioned?",
-    "Can systems be customised for mining or shutdown environments?",
-    "How do I request a quote for a complete package?",
-  ]
-}
 
 type ProductsPageTemplateProps = {
   page: RoutePage
@@ -63,6 +53,8 @@ function buildProductFeatures(productPages: RoutePage[]): ProductFeature[] {
 }
 
 function buildFallbackFeatures(page: RoutePage): ProductFeature[] {
+  const sectionSpecs = page.sections.map((section) => section.title.toUpperCase()).slice(0, 4)
+
   return page.sections
     .flatMap((section) => section.cards)
     .slice(0, 4)
@@ -73,7 +65,7 @@ function buildFallbackFeatures(page: RoutePage): ProductFeature[] {
       image: card.image ?? page.hero.image,
       galleryImages: page.hero.galleryImages ?? [],
       href: card.href,
-      specs: ["5-20 kVA Diesel", "Prime And Standby", "Site Ready Deployment"],
+      specs: sectionSpecs,
       ctaLabel: card.ctaLabel,
       titleField: tinaField(card, "title"),
       descriptionField: tinaField(card, "description"),
@@ -85,12 +77,57 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
   const brandMark = site.brand.mark
   const quoteHref = site.header.quoteCta.href
   const quoteLabel = site.header.quoteCta.label
-  const fallbackQuestions = buildFallbackQuestions(brandMark)
   const heroGalleryImages = page.hero.galleryImages?.filter((image) => image.src.trim().length > 0) ?? []
   const features =
     productPages.length > 0 ? buildProductFeatures(productPages) : buildFallbackFeatures(page)
+  const faqItems =
+    features.length > 0
+      ? features.slice(0, 6).map((feature) => ({
+          question: feature.title,
+          answer: feature.description,
+          questionField: feature.titleField,
+          answerField: feature.descriptionField,
+        }))
+      : [
+          {
+            question: page.hero.heading,
+            answer: page.hero.body,
+            questionField: tinaField(page.hero, "heading"),
+            answerField: tinaField(page.hero, "body"),
+          },
+        ]
   const systemsShowcaseImage =
     heroGalleryImages[0]?.src ?? "https://images.unsplash.com/photo-1567789884554-0b844b597180"
+
+  const expertsKicker = resolveSiteUiText(site, "productsPage.expertsKicker", "5-20 kVA Diesel Generation Experts")
+  const expertsHeading = resolveSiteUiText(
+    site,
+    "productsPage.expertsHeading",
+    "Engineered Systems For Tough Australian Operating Conditions"
+  )
+  const expertsBody = resolveSiteUiText(
+    site,
+    "productsPage.expertsBody",
+    `${brandMark} supplies robust 5-20 kVA diesel generator systems for site services, shutdowns, and critical backup. Our team combines planning, deployment, and continuous service support to keep power online in demanding environments.`
+  )
+  const rangeKicker = resolveSiteUiText(site, "productsPage.rangeKicker", "Our 5-20 kVA Diesel Generator Range")
+  const packagesHeading = resolveSiteUiText(site, "productsPage.packagesHeading", "5-20 kVA Diesel Packages")
+  const packagesBody = resolveSiteUiText(
+    site,
+    "productsPage.packagesBody",
+    "We collaborate with your site team to configure enclosure, controls, and fuel-system requirements for 5-20 kVA diesel outcomes. Options are aligned to duty cycles, environmental constraints, and compliance targets."
+  )
+  const packagesPanelKicker = resolveSiteUiText(
+    site,
+    "productsPage.packagesPanelKicker",
+    "For Site, Commercial, And Industrial Use"
+  )
+  const packagesPanelBody = resolveSiteUiText(
+    site,
+    "productsPage.packagesPanelBody",
+    `${brandMark} is a trusted supplier for site operations that need dependable 5-20 kVA diesel power. Our rental and sales packages are designed to maintain uptime and simplify field operations from day one.`
+  )
+  const faqHeading = resolveSiteUiText(site, "productsPage.faqHeading", "Frequently Asked Questions")
 
   return (
     <main className="overflow-x-clip bg-[#0b1421] text-slate-100">
@@ -152,15 +189,11 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
       <Reveal className="border-b border-white/10 bg-[linear-gradient(180deg,#101a2b,#132034)]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:py-20">
           <div className="space-y-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]">5-20 kVA Diesel Generation Experts</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={expertsKicker.field}>{expertsKicker.value}</p>
             <h2 className="max-w-xl font-display text-3xl uppercase leading-tight tracking-[0.03em] text-white md:text-4xl">
-              <KeywordGradientText text="Engineered Systems For Tough Australian Operating Conditions" />
+              <KeywordGradientText dataTinaField={expertsHeading.field} text={expertsHeading.value} />
             </h2>
-            <p className="max-w-xl text-slate-300">
-              {brandMark} supplies robust 5-20 kVA diesel generator systems for site services, shutdowns, and critical
-              backup. Our team combines planning, deployment, and continuous service support to keep power online in
-              demanding environments.
-            </p>
+            <p className="max-w-xl text-slate-300" data-tina-field={expertsBody.field}>{expertsBody.value}</p>
           </div>
           <div className={`${getGradientVariant(1)} relative overflow-hidden rounded-sm border border-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}>
             <Image
@@ -178,7 +211,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
       <section className="border-b border-white/10 bg-[#1a2535]">
         <div className="mx-auto max-w-7xl px-4 py-14 lg:py-16">
           <Reveal className="mb-8">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]">Our 5-20 kVA Diesel Generator Range</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={rangeKicker.field}>{rangeKicker.value}</p>
           </Reveal>
 
           <div className="space-y-12">
@@ -198,7 +231,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                     </h3>
                     <p className="mt-4 max-w-xl text-slate-300" data-tina-field={feature.descriptionField}>{feature.description}</p>
                     <ul className="mt-6 space-y-2 text-xs uppercase tracking-[0.16em] text-slate-300">
-                      {(feature.specs.length > 0 ? feature.specs : ["5-20 kVA Diesel", "Prime And Standby", "Low Emissions"])
+                      {(feature.specs.length > 0 ? feature.specs : [feature.title.toUpperCase()])
                         .slice(0, 4)
                         .map((spec) => (
                           <li key={`${feature.id}-${spec}`} className="border-b border-white/20 pb-2">
@@ -253,13 +286,9 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:py-14 lg:grid-cols-2 lg:py-20">
           <div>
             <h2 className="font-display text-3xl uppercase tracking-[0.04em] text-white md:text-4xl">
-              <KeywordGradientText text="5-20 kVA Diesel Packages" />
+              <KeywordGradientText dataTinaField={packagesHeading.field} text={packagesHeading.value} />
             </h2>
-            <p className="mt-4 max-w-xl text-slate-300">
-              We collaborate with your site team to configure enclosure, controls, and fuel-system requirements for
-              5-20 kVA diesel outcomes. Options are aligned to duty cycles, environmental constraints, and compliance
-              targets.
-            </p>
+            <p className="mt-4 max-w-xl text-slate-300" data-tina-field={packagesBody.field}>{packagesBody.value}</p>
             <QuoteAwareLink
               className="mt-7 inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}
@@ -272,11 +301,8 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           </div>
 
           <div className={`${getGradientVariant(3)} rounded-sm border border-white/10 p-6`}>
-            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]">For Site, Commercial, And Industrial Use</p>
-            <p className="mt-5 text-slate-300">
-              {brandMark} is a trusted supplier for site operations that need dependable 5-20 kVA diesel power. Our
-              rental and sales packages are designed to maintain uptime and simplify field operations from day one.
-            </p>
+            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={packagesPanelKicker.field}>{packagesPanelKicker.value}</p>
+            <p className="mt-5 text-slate-300" data-tina-field={packagesPanelBody.field}>{packagesPanelBody.value}</p>
           </div>
         </div>
       </Reveal>
@@ -285,22 +311,19 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
         <div className="mx-auto max-w-7xl px-4">
           <Reveal className="border-b border-white/10 pb-6">
             <h2 className="font-display text-3xl uppercase tracking-[0.03em] text-white">
-              <KeywordGradientText text="Frequently Asked Questions" />
+              <KeywordGradientText dataTinaField={faqHeading.field} text={faqHeading.value} />
             </h2>
           </Reveal>
 
           <div className="mt-4 divide-y divide-white/10 border-b border-white/10">
-            {fallbackQuestions.map((question, index) => (
-              <Reveal key={question} className="py-3" id={`product-faq-${index + 1}`}>
+            {faqItems.map((item, index) => (
+              <Reveal key={`${item.question}-${index}`} className="py-3" id={`product-faq-${index + 1}`}>
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold uppercase tracking-[0.13em] text-slate-100">
-                    <span>{question}</span>
+                    <span data-tina-field={item.questionField}>{item.question}</span>
                     <span className="text-lg leading-none text-[#ff8b2b] transition group-open:rotate-45">+</span>
                   </summary>
-                  <p className="mt-3 max-w-4xl text-sm text-slate-300">
-                    Our team can tailor a 5-20 kVA diesel package for your operating profile, compliance targets, and
-                    deployment schedule. Contact {brandMark} for project-specific sizing and service recommendations.
-                  </p>
+                  <p className="mt-3 max-w-4xl text-sm text-slate-300" data-tina-field={item.answerField}>{item.answer}</p>
                 </details>
               </Reveal>
             ))}

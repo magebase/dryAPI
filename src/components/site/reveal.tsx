@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useId, useMemo, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -34,7 +34,6 @@ export function Reveal({
 }: RevealProps) {
   const depth = useContext(RevealDepthContext)
   const isNested = depth > 0
-  const fallbackRevealKey = useId()
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
@@ -58,8 +57,8 @@ export function Reveal({
     if (revealKey) return revealKey
     if (id) return `id:${id}`
     if (typeof dataField === "string" && dataField.length > 0) return `tina:${dataField}`
-    return `uid:${fallbackRevealKey}`
-  }, [dataField, fallbackRevealKey, id, revealKey])
+    return undefined
+  }, [dataField, id, revealKey])
 
   const delayMs = Math.max(0, Math.round(delay * 1000))
   const durationMs = Math.max(150, Math.round(duration * 1000))

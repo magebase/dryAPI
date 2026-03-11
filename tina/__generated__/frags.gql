@@ -59,6 +59,11 @@ fragment SiteConfigParts on SiteConfig {
       href
     }
   }
+  uiText {
+    __typename
+    key
+    value
+  }
 }
 
 fragment HomeParts on Home {
@@ -220,22 +225,23 @@ fragment BlogPostsParts on BlogPosts {
   slug
   title
   excerpt
-  seoTitle
-  seoDescription
   publishedAt
   author {
     __typename
     name
     role
+    bio
+    avatar
   }
   coverImage
   tags
-  sections {
-    __typename
-    id
-    heading
-    body
-  }
+  body
+  seoTitle
+  seoDescription
+  seoKeywords
+  canonicalPath
+  ogImage
+  noindex
 }
 
 fragment RoutePagesParts on RoutePages {

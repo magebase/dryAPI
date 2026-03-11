@@ -5,6 +5,9 @@ import { describe, expect, it } from "vitest";
 
 type ServicePackageTier = {
   id: string;
+  displayName?: string;
+  priceMonthly?: number;
+  setupFeeOneTime?: number;
   targetSetupWindowHours: string;
   includes: string[];
   analytics: {
@@ -19,6 +22,8 @@ type ServicePackagesCatalog = {
     id: string;
     label: string;
     priceMonthly: number;
+    unit?: string;
+    note?: string;
     model?: string;
     platform?: string;
     billing?: string;
@@ -96,6 +101,7 @@ const automationEnvDefaults = parseEnvDocument(extractClientHeredoc("automation.
 describe("tiered plan scaffold policy", () => {
   it("declares exactly three tiers in ascending order", () => {
     expect(servicePackages.tiers.map((tier) => tier.id)).toEqual(["basic", "growth", "pro"]);
+    expect(servicePackages.tiers.map((tier) => tier.displayName)).toEqual(["Starter", "Growth", "Pro"]);
   });
 
   it("keeps setup windows increasing by tier", () => {
@@ -117,22 +123,34 @@ describe("tiered plan scaffold policy", () => {
     expect(servicePackages.tiers.every((tier) => tier.includes.length > 0)).toBe(true);
   });
 
+  it("pins monthly prices and setup fees to the revenue model", () => {
+    const byTier = new Map(servicePackages.tiers.map((tier) => [tier.id, tier]));
+
+    expect(byTier.get("basic")?.priceMonthly).toBe(89);
+    expect(byTier.get("growth")?.priceMonthly).toBe(279);
+    expect(byTier.get("pro")?.priceMonthly).toBe(599);
+
+    expect(byTier.get("basic")?.setupFeeOneTime).toBe(0);
+    expect(byTier.get("growth")?.setupFeeOneTime).toBe(99);
+    expect(byTier.get("pro")?.setupFeeOneTime).toBe(149);
+  });
+
   it("exposes workflow automation in growth and pro package copy", () => {
     const growth = servicePackages.tiers.find((tier) => tier.id === "growth");
     const pro = servicePackages.tiers.find((tier) => tier.id === "pro");
 
     expect(growth?.includes.some((item) => item.includes("Cloudflare Workflow"))).toBe(true);
-    expect(pro?.includes.some((item) => item.includes("automation workflow"))).toBe(true);
+    expect(pro?.includes.some((item) => item.includes("Cloudflare Workflow automations"))).toBe(true);
   });
 
-  it("keeps CRM sync scoped to pro copy", () => {
+  it("keeps multi-seat inclusion scoped to pro copy", () => {
     const basic = servicePackages.tiers.find((tier) => tier.id === "basic");
     const growth = servicePackages.tiers.find((tier) => tier.id === "growth");
     const pro = servicePackages.tiers.find((tier) => tier.id === "pro");
 
-    expect(basic?.includes.some((item) => item.includes("CRM"))).toBe(false);
-    expect(growth?.includes.some((item) => item.includes("CRM"))).toBe(false);
-    expect(pro?.includes.some((item) => item.includes("CRM"))).toBe(true);
+    expect(basic?.includes.some((item) => item.toLowerCase().includes("multi-seat"))).toBe(false);
+    expect(growth?.includes.some((item) => item.toLowerCase().includes("multi-seat"))).toBe(false);
+    expect(pro?.includes.some((item) => item.toLowerCase().includes("multi-seat"))).toBe(true);
   });
 
   it("pins CRM provider options to the supported trio", () => {
@@ -146,22 +164,30 @@ describe("tiered plan scaffold policy", () => {
   });
 
   it("keeps AI add-on implementation details stable", () => {
-    const autoblogger = servicePackages.addOns.find((item) => item.id === "ai-autoblogger");
-    const advancedChatbot = servicePackages.addOns.find((item) => item.id === "advanced-ai-chatbot");
+    const autoblogger = servicePackages.addOns.find((item) => item.id === "automatic-blog-daily");
+    const advancedChatbot = servicePackages.addOns.find((item) => item.id === "ai-chatbot");
 
     expect(autoblogger?.model).toBe("gemini-3-flash");
     expect(advancedChatbot?.platform).toBe("cloudflare-ai-search");
-    expect(advancedChatbot?.billing).toBe("overage");
+    expect(advancedChatbot?.billing).toBe("flat-rate");
   });
 
   it("sets automation env defaults to pro tier with optional clarity id", () => {
     expect(automationEnvDefaults.NEXT_PUBLIC_PLAN_TIER).toBe("pro");
     expect(automationEnvDefaults).toHaveProperty("NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID");
+    expect(automationEnvDefaults).toHaveProperty("FEATURE_AI_CHATBOT_ENABLED", "true");
+    expect(automationEnvDefaults).toHaveProperty("FEATURE_STRIPE_DEPOSITS_ENABLED", "false");
+    expect(automationEnvDefaults).toHaveProperty("NEXT_PUBLIC_FEATURE_INTERNATIONALIZATION_ENABLED", "false");
+    expect(automationEnvDefaults).toHaveProperty("FEATURE_CRM_DASHBOARD_ENABLED", "true");
+    expect(automationEnvDefaults).toHaveProperty("FEATURE_WORKFLOW_AUTOMATIONS_ENABLED", "true");
   });
 
   it("keeps site worker vars defaulting to basic tier", () => {
     expect(siteWranglerTemplate).toContain('"NEXT_PUBLIC_PLAN_TIER": "basic"');
     expect(siteWranglerTemplate).toContain('"NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID": ""');
+    expect(siteWranglerTemplate).toContain('"NEXT_PUBLIC_FEATURE_AI_CHATBOT_ENABLED": "true"');
+    expect(siteWranglerTemplate).toContain('"NEXT_PUBLIC_FEATURE_STRIPE_DEPOSITS_ENABLED": "false"');
+    expect(siteWranglerTemplate).toContain('"NEXT_PUBLIC_FEATURE_INTERNATIONALIZATION_ENABLED": "false"');
   });
 
   it("keeps pro workflow templates unique", () => {

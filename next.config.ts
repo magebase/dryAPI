@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
 const posthogDomains = [
   "https://us-assets.i.posthog.com",
@@ -65,6 +66,12 @@ const adminCspValue =
     ? adminDevelopmentCsp.join(" ")
     : adminProductionCsp.join(" ");
 
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development",
+});
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -116,4 +123,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

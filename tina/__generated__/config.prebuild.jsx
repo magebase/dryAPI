@@ -264,6 +264,22 @@ var config_default = defineConfig({
               },
               { name: "legalLinks", type: "object", list: true, fields: linkFields }
             ]
+          },
+          {
+            name: "uiText",
+            label: "UI Text Overrides",
+            type: "object",
+            list: true,
+            description: "Optional key/value copy overrides used across page templates for visual editing.",
+            fields: [
+              { name: "key", type: "string", required: true },
+              { name: "value", type: "string", ui: { component: "textarea" }, required: true }
+            ],
+            ui: {
+              itemProps: (item) => ({
+                label: item?.key || "ui-text"
+              })
+            }
           }
         ]
       },
@@ -502,36 +518,52 @@ var config_default = defineConfig({
           { name: "slug", type: "string", required: true },
           { name: "title", type: "string", required: true },
           { name: "excerpt", type: "string", ui: { component: "textarea" }, required: true },
-          { name: "seoTitle", type: "string", required: true },
-          { name: "seoDescription", type: "string", ui: { component: "textarea" }, required: true },
           { name: "publishedAt", type: "string", required: true },
           {
             name: "author",
             type: "object",
             fields: [
               { name: "name", type: "string", required: true },
-              { name: "role", type: "string", required: true }
+              { name: "role", type: "string", required: true },
+              { name: "bio", type: "string", ui: { component: "textarea" } },
+              { name: "avatar", type: "image" }
             ]
           },
           { name: "coverImage", type: "image", required: true },
           { name: "tags", type: "string", list: true, required: true },
           {
-            name: "sections",
-            type: "object",
+            name: "body",
+            label: "Body (WYSIWYG)",
+            type: "rich-text",
+            required: true
+          },
+          { name: "seoTitle", type: "string", required: true },
+          { name: "seoDescription", type: "string", ui: { component: "textarea" }, required: true },
+          {
+            name: "seoKeywords",
+            type: "string",
             list: true,
-            fields: [
-              { name: "id", type: "string", required: true },
-              { name: "heading", type: "string", required: true },
-              {
-                name: "body",
-                type: "string",
-                ui: {
-                  component: "textarea",
-                  description: "Supports Markdown (lists, links, tables, emphasis)."
-                },
-                required: true
-              }
-            ]
+            ui: {
+              description: "Target keywords and topics for this article."
+            }
+          },
+          {
+            name: "canonicalPath",
+            type: "string",
+            ui: {
+              description: "Canonical path such as /blog/my-article. Leave blank to auto-generate from slug."
+            }
+          },
+          {
+            name: "ogImage",
+            type: "image",
+            ui: {
+              description: "Optional social preview image. Falls back to cover image."
+            }
+          },
+          {
+            name: "noindex",
+            type: "boolean"
           }
         ]
       },

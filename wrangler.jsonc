@@ -11,6 +11,12 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"routes": [
+		{
+			"pattern": "crm.genfix.com.au/*",
+			"zone_name": "genfix.com.au"
+		}
+	],
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
@@ -33,5 +39,8 @@
 	],
 	"images": {
 		"binding": "IMAGES"
+	},
+	"ai": {
+		"binding": "AI"
 	}
 }

@@ -162,12 +162,18 @@ type SiteConfigFooter {
   legalLinks: [SiteConfigFooterLegalLinks]
 }
 
+type SiteConfigUiText {
+  key: String!
+  value: String!
+}
+
 type SiteConfig implements Node & Document {
   brand: SiteConfigBrand
   contact: SiteConfigContact
   announcement: String!
   header: SiteConfigHeader
   footer: SiteConfigFooter
+  uiText: [SiteConfigUiText]
   id: ID!
   _sys: SystemInfo!
   _values: JSON!
@@ -246,12 +252,18 @@ input SiteConfigFooterFilter {
   legalLinks: SiteConfigFooterLegalLinksFilter
 }
 
+input SiteConfigUiTextFilter {
+  key: StringFilter
+  value: StringFilter
+}
+
 input SiteConfigFilter {
   brand: SiteConfigBrandFilter
   contact: SiteConfigContactFilter
   announcement: StringFilter
   header: SiteConfigHeaderFilter
   footer: SiteConfigFooterFilter
+  uiText: SiteConfigUiTextFilter
 }
 
 type SiteConfigConnectionEdges {
@@ -642,25 +654,25 @@ type HomeConnection implements Connection {
 type BlogPostsAuthor {
   name: String!
   role: String!
-}
-
-type BlogPostsSections {
-  id: String!
-  heading: String!
-  body: String!
+  bio: String
+  avatar: String
 }
 
 type BlogPosts implements Node & Document {
   slug: String!
   title: String!
   excerpt: String!
-  seoTitle: String!
-  seoDescription: String!
   publishedAt: String!
   author: BlogPostsAuthor
   coverImage: String!
   tags: [String!]!
-  sections: [BlogPostsSections]
+  body: JSON!
+  seoTitle: String!
+  seoDescription: String!
+  seoKeywords: [String]
+  canonicalPath: String
+  ogImage: String
+  noindex: Boolean
   id: ID!
   _sys: SystemInfo!
   _values: JSON!
@@ -669,25 +681,31 @@ type BlogPosts implements Node & Document {
 input BlogPostsAuthorFilter {
   name: StringFilter
   role: StringFilter
+  bio: StringFilter
+  avatar: ImageFilter
 }
 
-input BlogPostsSectionsFilter {
-  id: StringFilter
-  heading: StringFilter
-  body: StringFilter
+input RichTextFilter {
+  startsWith: String
+  eq: String
+  exists: Boolean
 }
 
 input BlogPostsFilter {
   slug: StringFilter
   title: StringFilter
   excerpt: StringFilter
-  seoTitle: StringFilter
-  seoDescription: StringFilter
   publishedAt: StringFilter
   author: BlogPostsAuthorFilter
   coverImage: ImageFilter
   tags: StringFilter
-  sections: BlogPostsSectionsFilter
+  body: RichTextFilter
+  seoTitle: StringFilter
+  seoDescription: StringFilter
+  seoKeywords: StringFilter
+  canonicalPath: StringFilter
+  ogImage: ImageFilter
+  noindex: BooleanFilter
 }
 
 type BlogPostsConnectionEdges {
@@ -962,12 +980,18 @@ input SiteConfigFooterMutation {
   legalLinks: [SiteConfigFooterLegalLinksMutation]
 }
 
+input SiteConfigUiTextMutation {
+  key: String
+  value: String
+}
+
 input SiteConfigMutation {
   brand: SiteConfigBrandMutation
   contact: SiteConfigContactMutation
   announcement: String
   header: SiteConfigHeaderMutation
   footer: SiteConfigFooterMutation
+  uiText: [SiteConfigUiTextMutation]
 }
 
 input HomeHeroPrimaryActionMutation {
@@ -1147,25 +1171,25 @@ input HomeMutation {
 input BlogPostsAuthorMutation {
   name: String
   role: String
-}
-
-input BlogPostsSectionsMutation {
-  id: String
-  heading: String
-  body: String
+  bio: String
+  avatar: String
 }
 
 input BlogPostsMutation {
   slug: String
   title: String
   excerpt: String
-  seoTitle: String
-  seoDescription: String
   publishedAt: String
   author: BlogPostsAuthorMutation
   coverImage: String
   tags: [String]
-  sections: [BlogPostsSectionsMutation]
+  body: JSON
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: [String]
+  canonicalPath: String
+  ogImage: String
+  noindex: Boolean
 }
 
 input RoutePagesPageContentElementsMutation {

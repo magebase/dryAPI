@@ -1,3 +1,5 @@
+import { recordStripeMeterUsage } from "@/lib/stripe-metering"
+
 export type CalcomInternalRequestInit = {
   method?: string
   path: string
@@ -48,13 +50,25 @@ export async function fetchCalcomInternal(init: CalcomInternalRequestInit): Prom
   const url = buildUrl(init.path, init.searchParams)
   const headers = withInternalAuth(init.headers)
 
-  return fetch(url, {
+  const response = await fetch(url, {
     method: init.method ?? "GET",
     headers,
     body: init.body,
     signal: init.signal,
     cache: init.cache,
   })
+
+  await recordStripeMeterUsage({
+    eventType: "cal_request",
+    metadata: {
+      surface: "calcom-internal-client",
+      method: init.method ?? "GET",
+      path: url.pathname,
+      status: response.status,
+    },
+  })
+
+  return response
 }
 
 export async function fetchCalcomInternalJson<T>(init: CalcomInternalRequestInit): Promise<T> {

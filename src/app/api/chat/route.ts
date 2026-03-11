@@ -11,22 +11,79 @@ import {
   type ChatMessage,
 } from "@/lib/chat-assistant"
 import { sendBrevoReactEmail } from "@/lib/brevo-email"
+import { moderateInput } from "@/lib/content-moderation"
+import {
+  inferEnquiryQueue,
+  resolveFromEmailForChannel,
+  resolveFromNameForChannel,
+  resolveRecipientForQueue,
+  type EnquiryQueue,
+} from "@/lib/enquiry-routing"
+import {
+  isAiChatbotEnabledServer,
+  isBrevoEmailNotificationsEnabled,
+  isBrevoSmsNotificationsEnabled,
+  isWorkflowAutomationsEnabled,
+} from "@/lib/feature-flags"
+import { buildEscalationFollowupNote, extractVisitorContact } from "@/lib/chat-followup"
+import { persistModerationRejectionAttempt } from "@/lib/moderation-rejection-store"
 import { readSiteConfig } from "@/lib/site-content-loader"
+import { recordStripeMeterUsage } from "@/lib/stripe-metering"
 import { getRequestIp, verifyTurnstileToken } from "@/lib/turnstile"
 
 export const runtime = "nodejs"
 
-const chatRequestSchema = z.object({
-  messages: z.array(
-    z.object({
-      role: z.enum(["user", "assistant"]),
-      content: z.string().trim().min(1),
+const chatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().trim().min(1),
+})
+
+const contactCaptureSchema = z.object({
+  email: z.string().trim().optional().default(""),
+  phone: z.string().trim().optional().default(""),
+}).superRefine((value, ctx) => {
+  if (!value.email && !value.phone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Provide an email or phone for chat contact capture.",
     })
-  ).min(1),
+  }
+
+  if (value.email && !z.string().email().safeParse(value.email).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Contact capture email must be valid.",
+      path: ["email"],
+    })
+  }
+
+  if (value.phone) {
+    const digitsOnly = value.phone.replace(/\D/g, "")
+    if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Contact capture phone must include 8-15 digits.",
+        path: ["phone"],
+      })
+    }
+  }
+})
+
+const chatRequestSchema = z.object({
+  messages: z.array(chatMessageSchema).optional().default([]),
   pagePath: z.string().trim().default("/"),
   visitorId: z.string().trim().default("anonymous"),
   allowEscalation: z.boolean().optional().default(true),
   turnstileToken: z.string().trim().optional().default(""),
+  contactCapture: contactCaptureSchema.optional(),
+}).superRefine((value, ctx) => {
+  if (!value.contactCapture && value.messages.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "No user message provided.",
+      path: ["messages"],
+    })
+  }
 })
 
 const CHAT_FREQUENCY_WINDOW_MS = 5 * 60 * 1000
@@ -190,6 +247,16 @@ async function callGemini({
 
   const payload = (await response.json()) as GeminiResponse
 
+  await recordStripeMeterUsage({
+    eventType: "ai_model_call",
+    metadata: {
+      provider: "gemini",
+      surface: "chat",
+      model,
+      status: response.status,
+    },
+  })
+
   if (!response.ok) {
     const message = payload.error?.message || `Gemini request failed with status ${response.status}`
     throw new Error(message)
@@ -251,24 +318,50 @@ async function sendEscalationWebhook({
     body: JSON.stringify(payload),
   })
 
+  await recordStripeMeterUsage({
+    eventType: "workflow_dispatch",
+    metadata: {
+      surface: "chat",
+      flow: "chat-escalation",
+      status: response.status,
+    },
+  })
+
   return response.ok
 }
 
 async function sendEscalationEmail({
   recipient,
+  queue,
   question,
   conversation,
   pagePath,
   visitorId,
+  visitorEmail,
+  visitorPhone,
 }: {
   recipient: string
+  queue: EnquiryQueue
   question: string
   conversation: ChatMessage[]
   pagePath: string
   visitorId: string
+  visitorEmail: string | null
+  visitorPhone: string | null
 }): Promise<boolean> {
+  if (!isBrevoEmailNotificationsEnabled()) {
+    return false
+  }
+
   const apiKey = process.env.BREVO_API_KEY?.trim()
-  const fromEmail = process.env.BREVO_FROM_EMAIL?.trim()
+  const fromEmail = resolveFromEmailForChannel({
+    channel: "chat",
+    env: process.env,
+  })
+  const fromName = resolveFromNameForChannel({
+    channel: "chat",
+    env: process.env,
+  })
 
   if (!apiKey || !fromEmail) {
     return false
@@ -278,14 +371,17 @@ async function sendEscalationEmail({
     apiKey,
     from: {
       email: fromEmail,
-      name: process.env.BREVO_FROM_NAME?.trim() || "GenFix",
+      name: fromName,
     },
     to: [{ email: recipient }],
-    subject: `Chat escalation: ${question.slice(0, 72)}`,
+    subject: `Chat escalation (${queue}): ${question.slice(0, 72)}`,
     react: ChatEscalationEmail({
       question,
+      queue,
       pagePath,
       visitorId,
+      visitorEmail,
+      visitorPhone,
       submittedAt: new Date().toISOString(),
       conversation: formatConversation(conversation),
     }),
@@ -296,6 +392,10 @@ async function sendEscalationEmail({
 }
 
 async function sendEscalationSms({ question }: { question: string }): Promise<boolean> {
+  if (!isBrevoSmsNotificationsEnabled()) {
+    return false
+  }
+
   const apiKey = process.env.BREVO_API_KEY?.trim()
   const sender = process.env.BREVO_SMS_SENDER?.trim()
   const recipient = process.env.BREVO_ESCALATION_SMS_TO?.trim()
@@ -319,36 +419,56 @@ async function sendEscalationSms({ question }: { question: string }): Promise<bo
     }),
   })
 
+  await recordStripeMeterUsage({
+    eventType: "brevo_sms_send",
+    metadata: {
+      provider: "brevo",
+      surface: "chat",
+      status: response.status,
+    },
+  })
+
   return response.ok
 }
 
 async function notifyEscalation({
+  queue,
   question,
   conversation,
   pagePath,
   visitorId,
   recipient,
+  visitorEmail,
+  visitorPhone,
 }: {
+  queue: EnquiryQueue
   question: string
   conversation: ChatMessage[]
   pagePath: string
   visitorId: string
   recipient: string | null
+  visitorEmail: string | null
+  visitorPhone: string | null
 }): Promise<boolean> {
   const webhookUrl = process.env.WORKFLOW_CHAT_ESCALATION_WEBHOOK_URL?.trim() || ""
   const webhookToken = process.env.WORKFLOW_CHAT_ESCALATION_WEBHOOK_TOKEN?.trim() || null
+  const workflowAutomationsEnabled = isWorkflowAutomationsEnabled()
 
   const tasks: Array<Promise<boolean>> = []
 
-  if (webhookUrl) {
+  if (workflowAutomationsEnabled && webhookUrl) {
     tasks.push(
       sendEscalationWebhook({
         url: webhookUrl,
         token: webhookToken,
         payload: {
           source: "genfix-chatbot",
+          queue,
           pagePath,
           visitorId,
+          visitorEmail,
+          visitorPhone,
+          emailTo: recipient,
           question,
           conversation,
           requestedAt: new Date().toISOString(),
@@ -362,10 +482,13 @@ async function notifyEscalation({
     tasks.push(
       sendEscalationEmail({
         recipient,
+        queue,
         question,
         conversation,
         pagePath,
         visitorId,
+        visitorEmail,
+        visitorPhone,
       }).catch(() => false)
     )
   }
@@ -377,58 +500,188 @@ async function notifyEscalation({
 }
 
 export async function POST(request: NextRequest) {
+  if (!isAiChatbotEnabledServer()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "AI chatbot is currently disabled.",
+      },
+      { status: 503 }
+    )
+  }
+
   try {
     const body = await request.json()
     const parsed = chatRequestSchema.parse(body)
     const messages = normalizeConversation(parsed.messages)
+    const normalizedPagePath = normalizePath(parsed.pagePath)
     const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")
+    const capturedContact = parsed.contactCapture
+      ? {
+          email: parsed.contactCapture.email || null,
+          phone: parsed.contactCapture.phone || null,
+          hasContact: Boolean(parsed.contactCapture.email || parsed.contactCapture.phone),
+        }
+      : null
 
-    if (!latestUserMessage) {
+    if (!latestUserMessage && !capturedContact) {
       return NextResponse.json({ ok: false, error: "No user message provided." }, { status: 400 })
     }
 
-    const frequencyKey = getChatFrequencyKey({
-      visitorId: parsed.visitorId,
-      request,
-    })
-    const requiresTurnstile = trimAndTrackVisitorFrequency(frequencyKey)
-
-    if (requiresTurnstile) {
-      const turnstile = await verifyTurnstileToken({
-        token: parsed.turnstileToken,
-        action: "chat_frequent",
-        remoteIp: getRequestIp(request),
+    if (!capturedContact) {
+      const frequencyKey = getChatFrequencyKey({
+        visitorId: parsed.visitorId,
+        request,
       })
+      const requiresTurnstile = trimAndTrackVisitorFrequency(frequencyKey)
 
-      if (!turnstile.ok) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Please complete verification to continue chatting.",
-            requiresTurnstile: true,
-            codes: turnstile.codes,
-          },
-          { status: 429 }
-        )
+      if (requiresTurnstile) {
+        const turnstile = await verifyTurnstileToken({
+          token: parsed.turnstileToken,
+          action: "chat_frequent",
+          remoteIp: getRequestIp(request),
+        })
+
+        if (!turnstile.ok) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "Please complete verification to continue chatting.",
+              requiresTurnstile: true,
+              codes: turnstile.codes,
+            },
+            { status: 429 }
+          )
+        }
       }
     }
 
     let quoteCtaLabel = "Get A Quote"
-    let escalationRecipient: string | null = process.env.CHAT_ESCALATION_EMAIL_TO?.trim() || null
+    let escalationRecipientFallback: string | null = process.env.CHAT_ESCALATION_EMAIL_DEFAULT_TO?.trim()
+      || process.env.CHAT_ESCALATION_EMAIL_TO?.trim()
+      || null
     let brandMark = "GenFix"
 
     try {
       const siteConfig = await readSiteConfig()
       quoteCtaLabel = siteConfig.header.quoteCta.label
       brandMark = siteConfig.brand.mark
-      if (!escalationRecipient) {
-        escalationRecipient = siteConfig.contact.contactEmail
+      if (!escalationRecipientFallback) {
+        escalationRecipientFallback = siteConfig.contact.contactEmail
       }
     } catch {
       // Continue with safe defaults if site config is unavailable.
     }
 
-    const question = latestUserMessage.content
+    if (capturedContact) {
+      const referenceQuestion =
+        latestUserMessage?.content || "Visitor shared follow-up contact details from the chat widget."
+
+      const contactCaptureModeration = await moderateInput({
+        channel: "chat",
+        textParts: [referenceQuestion, capturedContact.email || "", capturedContact.phone || ""],
+      })
+
+      if (!contactCaptureModeration.allowed) {
+        try {
+          await persistModerationRejectionAttempt({
+            channel: "chat",
+            sourcePath: normalizedPagePath,
+            reason: contactCaptureModeration.reason,
+            model: contactCaptureModeration.model,
+            categories: contactCaptureModeration.categories,
+          })
+        } catch (error) {
+          console.error("Unable to store chat moderation rejection", error)
+        }
+
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "Your message was blocked by safety checks.",
+          },
+          { status: 400 }
+        )
+      }
+
+      const queue = inferEnquiryQueue({
+        question: referenceQuestion,
+        message: formatConversation(messages),
+      })
+      const escalationRecipient = resolveRecipientForQueue({
+        channel: "chat",
+        queue,
+        env: process.env,
+        fallbackRecipient: escalationRecipientFallback,
+      })
+
+      const escalated = parsed.allowEscalation
+        ? await notifyEscalation({
+            queue,
+            question: referenceQuestion,
+            conversation: messages,
+            pagePath: normalizedPagePath,
+            visitorId: parsed.visitorId,
+            recipient: escalationRecipient,
+            visitorEmail: capturedContact.email,
+            visitorPhone: capturedContact.phone,
+          })
+        : false
+
+      return NextResponse.json({
+        ok: true,
+        answer: escalated
+          ? `Thanks, I have shared your contact details with our ${queue === "general" ? "team" : `${queue} team`} for follow-up.`
+          : "Thanks, I captured your contact details. We could not dispatch the alert automatically, so please also use the quote form if your request is urgent.",
+        showQuoteButton: !escalated,
+        escalated,
+        needsContactCapture: false,
+      })
+    }
+
+    const question = latestUserMessage?.content || ""
+    const userInputsForModeration = messages
+      .filter((message) => message.role === "user")
+      .map((message) => message.content)
+      .slice(-4)
+    const chatModeration = await moderateInput({
+      channel: "chat",
+      textParts: userInputsForModeration,
+    })
+
+    if (!chatModeration.allowed) {
+      try {
+        await persistModerationRejectionAttempt({
+          channel: "chat",
+          sourcePath: normalizedPagePath,
+          reason: chatModeration.reason,
+          model: chatModeration.model,
+          categories: chatModeration.categories,
+        })
+      } catch (error) {
+        console.error("Unable to store chat moderation rejection", error)
+      }
+
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Your message was blocked by safety checks.",
+        },
+        { status: 400 }
+      )
+    }
+
+    const visitorContact = extractVisitorContact(messages)
+    const queue = inferEnquiryQueue({
+      question,
+      message: formatConversation(messages),
+    })
+    const escalationRecipient = resolveRecipientForQueue({
+      channel: "chat",
+      queue,
+      env: process.env,
+      fallbackRecipient: escalationRecipientFallback,
+    })
     const quoteIntent = detectQuoteIntent(question)
     const explicitEscalation = detectEscalationIntent(question)
 
@@ -440,7 +693,7 @@ export async function POST(request: NextRequest) {
     if (apiKey) {
       const prompt = buildPrompt({
         messages,
-        pagePath: normalizePath(parsed.pagePath),
+        pagePath: normalizedPagePath,
         quoteCtaLabel,
         brandMark,
       })
@@ -464,16 +717,24 @@ export async function POST(request: NextRequest) {
     let escalated = false
     if (shouldEscalate) {
       escalated = await notifyEscalation({
+        queue,
         question,
         conversation: messages,
-        pagePath: normalizePath(parsed.pagePath),
+        pagePath: normalizedPagePath,
         visitorId: parsed.visitorId,
         recipient: escalationRecipient,
+        visitorEmail: visitorContact.email,
+        visitorPhone: visitorContact.phone,
       })
     }
 
+    const needsContactCapture = shouldEscalate && !visitorContact.hasContact
+
     const answer = shouldEscalate
-      ? `${assistant.answer}\n\nI have also flagged this for a team follow-up by email/SMS so we can give you a precise response.`
+      ? `${assistant.answer}\n\n${buildEscalationFollowupNote({
+        escalated,
+        hasVisitorContact: visitorContact.hasContact,
+      })}`
       : assistant.answer
 
     return NextResponse.json({
@@ -481,6 +742,7 @@ export async function POST(request: NextRequest) {
       answer,
       showQuoteButton,
       escalated,
+      needsContactCapture,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

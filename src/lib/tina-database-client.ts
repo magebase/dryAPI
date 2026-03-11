@@ -35,6 +35,22 @@ type TinaResolveResult = {
   errors?: Array<{ message?: string }>;
 };
 
+function hasGraphQLSchemaDrift(
+  indexedSchema: unknown,
+  generatedSchema: Record<string, unknown>,
+): boolean {
+  if (!indexedSchema || typeof indexedSchema !== "object") {
+    return true;
+  }
+
+  try {
+    return JSON.stringify(indexedSchema) !== JSON.stringify(generatedSchema);
+  } catch {
+    // Fall back to reindexing if either schema cannot be serialized safely.
+    return true;
+  }
+}
+
 const CORE_SITE_RECORDS = [
   { key: "content/site/home.json", collectionName: "home" },
   { key: "content/site/site-config.json", collectionName: "siteConfig" },
@@ -150,24 +166,30 @@ async function ensureTinaMetadataIndexed(): Promise<void> {
   }
 
   tinaMetadataBootstrapPromise = (async () => {
-    let hasGraphQLSchema = false;
+    const { graphQLSchema, tinaSchemaDocument, lookup } =
+      await readGeneratedArtifacts();
+
+    let shouldReindex = false;
 
     try {
       const existingGraphQLSchema = await tinaDatabase.getGraphQLSchema();
-      hasGraphQLSchema = Boolean(existingGraphQLSchema);
+      shouldReindex = hasGraphQLSchemaDrift(
+        existingGraphQLSchema,
+        graphQLSchema,
+      );
     } catch (error) {
       if (!isMissingGraphQLSchemaError(error)) {
         throw error;
       }
+
+      shouldReindex = true;
     }
 
-    if (hasGraphQLSchema) {
+    if (!shouldReindex) {
       tinaMetadataReady = true;
       return;
     }
 
-    const { graphQLSchema, tinaSchemaDocument, lookup } =
-      await readGeneratedArtifacts();
     const tinaSchema = await tinaDatabase.getSchema(
       undefined,
       tinaSchemaDocument,

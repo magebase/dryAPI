@@ -9,7 +9,7 @@ Original industrial website implementation inspired by the provided reference st
 - TinaCMS (JSON collections, WYSIWYG editing UI)
 - Cloudflare R2 media upload/list/delete API integration
 - OpenNext for Cloudflare (`@opennextjs/cloudflare`)
-- Resend + React Email for contact inquiries
+- Brevo + React Email for contact inquiries
 - Zod schema validation
 - Vitest
 
@@ -220,11 +220,95 @@ Required for Cloudflare Zero Trust protection of TinaCMS routes:
 - `TINA_ALLOWED_GOOGLE_EMAILS` (comma-separated allowlist, e.g. `editor1@gmail.com,editor2@company.com`)
 - `TINA_ALLOWED_GOOGLE_DOMAINS` (optional comma-separated domain allowlist)
 
-Required for contact emails:
+Required for website inquiry emails:
 
-- `RESEND_API_KEY`
-- `RESEND_FROM_EMAIL`
-- `RESEND_TO_EMAIL`
+- `BREVO_API_KEY`
+- `BREVO_FROM_EMAIL_CONTACT`
+- `BREVO_FROM_EMAIL_QUOTE`
+- `BREVO_FROM_EMAIL_CHAT`
+
+Recommended routing vars for contact/quote/chat queues:
+
+- `CONTACT_EMAIL_SALES_TO`
+- `CONTACT_EMAIL_RENTALS_TO`
+- `CONTACT_EMAIL_SERVICING_TO`
+- `CONTACT_EMAIL_PARTS_TO`
+- `CONTACT_EMAIL_DEFAULT_TO`
+- `QUOTE_EMAIL_SALES_TO`
+- `QUOTE_EMAIL_RENTALS_TO`
+- `QUOTE_EMAIL_SERVICING_TO`
+- `QUOTE_EMAIL_PARTS_TO`
+- `QUOTE_EMAIL_DEFAULT_TO`
+- `CHAT_ESCALATION_EMAIL_SALES_TO`
+- `CHAT_ESCALATION_EMAIL_RENTALS_TO`
+- `CHAT_ESCALATION_EMAIL_SERVICING_TO`
+- `CHAT_ESCALATION_EMAIL_PARTS_TO`
+- `CHAT_ESCALATION_EMAIL_DEFAULT_TO`
+
+Optional shared fallback recipients:
+
+- `GENFIX_EMAIL_SALES_TO`
+- `GENFIX_EMAIL_RENTALS_TO`
+- `GENFIX_EMAIL_SERVICING_TO`
+- `GENFIX_EMAIL_PARTS_TO`
+- `GENFIX_EMAIL_DEFAULT_TO`
+
+Optional for contact emails:
+
+- `BREVO_FROM_NAME`
+- `BREVO_FROM_NAME_CONTACT`
+- `BREVO_FROM_NAME_QUOTE`
+- `BREVO_FROM_NAME_CHAT`
+
+Optional for CRM workflow dispatch + mailing list sync:
+
+- `CRM_AUTOMATION_DISPATCH_URL`
+- `CRM_AUTOMATION_API_TOKEN`
+- `BREVO_API_KEY`
+- `BREVO_MARKETING_LIST_ID`
+
+Optional for Stripe Billing Portal (tiered consultancy plans):
+
+- `STRIPE_PORTAL_CONFIGURATION_ID`
+- `STRIPE_PORTAL_CONFIGURATION_NAME`
+- `STRIPE_PORTAL_RETURN_URL`
+- `STRIPE_PORTAL_BUSINESS_HEADLINE`
+- `STRIPE_PORTAL_PRIVACY_POLICY_URL`
+- `STRIPE_PORTAL_TERMS_URL`
+- `STRIPE_PORTAL_BASIC_PRODUCT_ID`
+- `STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID`
+- `STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID`
+- `STRIPE_PORTAL_GROWTH_PRODUCT_ID`
+- `STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID`
+- `STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID`
+- `STRIPE_PORTAL_PRO_PRODUCT_ID`
+- `STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID`
+- `STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID`
+
+Optional for dynamic Cal.com deposit checkout sessions (user-defined amount):
+
+- `NEXT_PUBLIC_FEATURE_STRIPE_DEPOSITS_ENABLED`
+- `FEATURE_STRIPE_DEPOSITS_ENABLED`
+- `STRIPE_DEPOSIT_DEFAULT_CURRENCY`
+- `STRIPE_DEPOSIT_DEFAULT_SUCCESS_URL`
+- `STRIPE_DEPOSIT_DEFAULT_CANCEL_URL`
+- `STRIPE_DEPOSIT_TURNSTILE_REQUIRED`
+
+API endpoint:
+
+- `POST /api/calcom/deposit-checkout`
+
+Request body supports either `amount` (major units, e.g. `150.00`) or `amountCents` (minor units), plus optional `calcomBookingUrl`, `successUrl`, `cancelUrl`, `customerEmail`, `description`, and `metadata`.
+
+Tier product/price IDs are optional when `STRIPE_PRIVATE_KEY` is set and your Stripe catalog contains recognizable Basic/Growth/Pro recurring prices (or `plan_tier` metadata), because the portal script can auto-discover them.
+
+To create or update a portal configuration in Stripe:
+
+```bash
+npm run stripe:portal:init-local
+npm run stripe:portal:ensure -- --dry-run
+npm run stripe:portal:ensure
+```
 
 Required for D1 migration commands:
 
@@ -239,7 +323,10 @@ wrangler secret put TINA_TOKEN
 wrangler secret put CLOUDFLARE_ACCESS_TEAM_DOMAIN
 wrangler secret put CLOUDFLARE_ACCESS_AUD
 wrangler secret put TINA_ALLOWED_GOOGLE_EMAILS
-wrangler secret put RESEND_API_KEY
+wrangler secret put BREVO_API_KEY
+wrangler secret put BREVO_FROM_EMAIL_CONTACT
+wrangler secret put BREVO_FROM_EMAIL_QUOTE
+wrangler secret put BREVO_FROM_EMAIL_CHAT
 wrangler secret put BETTER_AUTH_SECRET
 wrangler secret put TINA_AUTH_TOKEN_SECRET
 ```
@@ -281,10 +368,12 @@ Workflow file: `.github/workflows/cloudflare-deploy.yml`
 What it does on every commit push:
 
 1. Installs dependencies.
-2. Syncs `SYNC_SECRET_*` GitHub Actions env values to Cloudflare Worker secrets.
-3. Applies D1 migrations remotely.
-4. Builds OpenNext output.
-5. Deploys to Cloudflare Workers.
+2. Resolves Stripe portal inputs into step outputs/files (instead of job-wide env wiring).
+3. Syncs `SYNC_SECRET_*` values (including Stripe portal values when present) to Cloudflare Worker secrets.
+4. Ensures Stripe Billing Portal configuration when Stripe tier inputs are configured.
+5. Applies D1 migrations remotely.
+6. Builds OpenNext output.
+7. Deploys to Cloudflare Workers.
 
 Secret sync script:
 
@@ -308,11 +397,55 @@ GitHub repository secrets expected by the workflow:
 - `R2_SECRET_ACCESS_KEY`
 - `R2_PUBLIC_URL`
 - `R2_ENDPOINT`
-- `RESEND_API_KEY`
-- `RESEND_FROM_EMAIL`
-- `RESEND_TO_EMAIL`
+- `BREVO_API_KEY`
+- `BREVO_FROM_EMAIL`
+- `BREVO_FROM_EMAIL_CONTACT`
+- `BREVO_FROM_EMAIL_QUOTE`
+- `BREVO_FROM_EMAIL_CHAT`
+- `BREVO_FROM_NAME` (optional)
+- `CONTACT_EMAIL_SALES_TO`
+- `CONTACT_EMAIL_RENTALS_TO`
+- `CONTACT_EMAIL_SERVICING_TO`
+- `CONTACT_EMAIL_PARTS_TO`
+- `CONTACT_EMAIL_DEFAULT_TO`
+- `QUOTE_EMAIL_SALES_TO`
+- `QUOTE_EMAIL_RENTALS_TO`
+- `QUOTE_EMAIL_SERVICING_TO`
+- `QUOTE_EMAIL_PARTS_TO`
+- `QUOTE_EMAIL_DEFAULT_TO`
+- `CHAT_ESCALATION_EMAIL_SALES_TO`
+- `CHAT_ESCALATION_EMAIL_RENTALS_TO`
+- `CHAT_ESCALATION_EMAIL_SERVICING_TO`
+- `CHAT_ESCALATION_EMAIL_PARTS_TO`
+- `CHAT_ESCALATION_EMAIL_DEFAULT_TO`
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
+
+Optional Stripe portal automation secrets:
+
+- `STRIPE_PRIVATE_KEY`
+- `NEXT_PUBLIC_SITE_URL` (or `SITE_URL`)
+- `SITE_URL` (fallback if `NEXT_PUBLIC_SITE_URL` is unset)
+- `STRIPE_PORTAL_CONFIGURATION_ID`
+- `STRIPE_PORTAL_CONFIGURATION_NAME`
+- `STRIPE_PORTAL_RETURN_URL`
+- `STRIPE_PORTAL_BUSINESS_HEADLINE`
+- `STRIPE_PORTAL_PRIVACY_POLICY_URL`
+- `STRIPE_PORTAL_TERMS_URL`
+- `STRIPE_PORTAL_BASIC_PRODUCT_ID`
+- `STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID`
+- `STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID`
+- `STRIPE_PORTAL_GROWTH_PRODUCT_ID`
+- `STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID`
+- `STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID`
+- `STRIPE_PORTAL_PRO_PRODUCT_ID`
+- `STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID`
+- `STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID`
+
+Local and production availability for Stripe portal values:
+
+- Local: set the same `STRIPE_PORTAL_*` keys in `.env` and run `pnpm stripe:portal:ensure`.
+- Production: CI converts Stripe portal secrets into `SYNC_SECRET_*` values and pushes them to Cloudflare Worker secrets via `scripts/sync-github-secrets.sh`.
 
 Any additional GitHub secret can be synced by adding it to workflow `env` with the `SYNC_SECRET_` prefix.
 

@@ -51,9 +51,19 @@ interface Env {
   AUTOMATION_WORKFLOW: Workflow<FlowRequest>;
   AUTOMATION_API_TOKEN?: string;
   AUTOMATION_SCHEDULED_FLOWS?: string;
+  STRIPE_PRIVATE_KEY?: string;
+  STRIPE_METER_BILLING_CUSTOMER_ID?: string;
+  STRIPE_METER_PROJECT_KEY?: string;
+  STRIPE_METER_EVENT_BREVO_EMAIL_SEND?: string;
+  STRIPE_METER_EVENT_BREVO_SMS_SEND?: string;
+  STRIPE_METER_EVENT_WORKFLOW_DISPATCH?: string;
+  STRIPE_METER_EVENT_WORKFLOW_RUN?: string;
+  STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST?: string;
   BREVO_API_KEY?: string;
   BREVO_FROM_EMAIL?: string;
   BREVO_FROM_NAME?: string;
+  BREVO_FROM_EMAIL_CHAT?: string;
+  BREVO_FROM_NAME_CHAT?: string;
   BREVO_SMS_SENDER?: string;
   BREVO_ESCALATION_SMS_TO?: string;
   CHAT_ESCALATION_EMAIL_TO?: string;
@@ -96,6 +106,163 @@ const FLOW_ALIASES: Record<LegacyFlowKind, CanonicalFlowKind> = {
   "team-notifications": "vip-high-value-lead-alerts",
   "review-aggregation-and-alerting": "review-aggregation-and-posting",
 };
+
+type StripeMeterEventType =
+  | "brevo_email_send"
+  | "brevo_sms_send"
+  | "workflow_dispatch"
+  | "workflow_run"
+  | "cloudflare_worker_request";
+
+type StripeMeterMetadataValue = string | number | boolean | null | undefined;
+
+const STRIPE_METER_API_URL = "https://api.stripe.com/v1/billing/meter_events";
+const DEFAULT_PROJECT_KEY = "genfix";
+
+const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
+  brevo_email_send: "genfix_brevo_email_send",
+  brevo_sms_send: "genfix_brevo_sms_send",
+  workflow_dispatch: "genfix_workflow_dispatch",
+  workflow_run: "genfix_workflow_run",
+  cloudflare_worker_request: "genfix_cloudflare_worker_request",
+};
+
+const STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS: Record<StripeMeterEventType, keyof Env> = {
+  brevo_email_send: "STRIPE_METER_EVENT_BREVO_EMAIL_SEND",
+  brevo_sms_send: "STRIPE_METER_EVENT_BREVO_SMS_SEND",
+  workflow_dispatch: "STRIPE_METER_EVENT_WORKFLOW_DISPATCH",
+  workflow_run: "STRIPE_METER_EVENT_WORKFLOW_RUN",
+  cloudflare_worker_request: "STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST",
+};
+
+function resolveStripeMeterEventName(env: Env, eventType: StripeMeterEventType): string {
+  const overrideKey = STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS[eventType];
+  const overrideValue = env[overrideKey]?.trim();
+
+  if (overrideValue) {
+    return overrideValue;
+  }
+
+  return STRIPE_METER_EVENT_DEFAULTS[eventType];
+}
+
+function sanitizeStripeDimensionKey(key: string): string {
+  return key
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+}
+
+function stringifyStripeDimensionValue(value: StripeMeterMetadataValue): string {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value).trim().slice(0, 120);
+}
+
+function normalizeStripeMeterValue(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(value));
+}
+
+function buildStripeIdentifier(input: {
+  projectKey: string;
+  eventType: StripeMeterEventType;
+  timestamp: number;
+  identifier?: string;
+}): string {
+  const provided = input.identifier?.trim();
+  if (provided) {
+    return provided.slice(0, 200);
+  }
+
+  return `${input.projectKey}:${input.eventType}:${input.timestamp}:${crypto.randomUUID()}`.slice(0, 200);
+}
+
+async function recordStripeMeterUsage(
+  env: Env,
+  input: {
+    eventType: StripeMeterEventType;
+    value?: number;
+    metadata?: Record<string, StripeMeterMetadataValue>;
+    identifier?: string;
+    timestamp?: number;
+  },
+): Promise<boolean> {
+  const apiKey = env.STRIPE_PRIVATE_KEY?.trim() || "";
+  const customerId = env.STRIPE_METER_BILLING_CUSTOMER_ID?.trim() || "";
+
+  if (!apiKey || !customerId) {
+    return false;
+  }
+
+  const projectKey = env.STRIPE_METER_PROJECT_KEY?.trim() || DEFAULT_PROJECT_KEY;
+  const eventName = resolveStripeMeterEventName(env, input.eventType);
+  const value = normalizeStripeMeterValue(input.value);
+  const timestamp = input.timestamp ?? Math.floor(Date.now() / 1000);
+  const identifier = buildStripeIdentifier({
+    projectKey,
+    eventType: input.eventType,
+    timestamp,
+    identifier: input.identifier,
+  });
+
+  const payload = new URLSearchParams();
+  payload.set("event_name", eventName);
+  payload.set("payload[value]", String(value));
+  payload.set("payload[stripe_customer_id]", customerId);
+  payload.set("payload[project_key]", projectKey);
+  payload.set("timestamp", String(timestamp));
+  payload.set("identifier", identifier);
+
+  if (input.metadata) {
+    let dimensions = 0;
+    for (const [rawKey, rawValue] of Object.entries(input.metadata)) {
+      if (dimensions >= 6) {
+        break;
+      }
+
+      const key = sanitizeStripeDimensionKey(rawKey);
+      const valueText = stringifyStripeDimensionValue(rawValue);
+      if (!key || !valueText) {
+        continue;
+      }
+
+      payload.set(`payload[${key}]`, valueText);
+      dimensions += 1;
+    }
+  }
+
+  try {
+    const response = await fetch(STRIPE_METER_API_URL, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/x-www-form-urlencoded",
+        "idempotency-key": identifier,
+      },
+      body: payload.toString(),
+    });
+
+    if (!response.ok) {
+      const details = await response.text().catch(() => "");
+      console.warn(`Stripe meter event failed (${response.status}) for ${eventName}: ${details || "no body"}`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn(`Stripe meter event request failed for ${eventName}`, error);
+    return false;
+  }
+}
 
 function asRecord(input: unknown): JsonObject {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
@@ -234,9 +401,10 @@ async function sendBrevoEmail(
   subject: string,
   textContent: string,
   overrideTo?: string,
+  options?: { fromEmail?: string; fromName?: string },
 ): Promise<boolean> {
   const apiKey = env.BREVO_API_KEY?.trim();
-  const fromEmail = env.BREVO_FROM_EMAIL?.trim();
+  const fromEmail = (options?.fromEmail || env.BREVO_FROM_EMAIL || "").trim();
   const to = (overrideTo || env.CHAT_ESCALATION_EMAIL_TO || "").trim();
   if (!apiKey || !fromEmail || !to) {
     return false;
@@ -247,7 +415,7 @@ async function sendBrevoEmail(
     {
       sender: {
         email: fromEmail,
-        name: env.BREVO_FROM_NAME?.trim() || "GenFix",
+        name: (options?.fromName || env.BREVO_FROM_NAME || "").trim() || "GenFix",
       },
       to: [{ email: to }],
       subject,
@@ -259,6 +427,15 @@ async function sendBrevoEmail(
       accept: "application/json",
     },
   );
+
+  await recordStripeMeterUsage(env, {
+    eventType: "brevo_email_send",
+    metadata: {
+      provider: "brevo",
+      surface: "cloudflare-workflows",
+      channel: "email",
+    },
+  });
 
   return true;
 }
@@ -285,6 +462,15 @@ async function sendBrevoSms(env: Env, content: string, overrideTo?: string): Pro
       accept: "application/json",
     },
   );
+
+  await recordStripeMeterUsage(env, {
+    eventType: "brevo_sms_send",
+    metadata: {
+      provider: "brevo",
+      surface: "cloudflare-workflows",
+      channel: "sms",
+    },
+  });
 
   return true;
 }
@@ -431,6 +617,9 @@ async function runChatEscalation(step: WorkflowStep, env: Env, payload: JsonObje
   const question = readString(payload, "question") || "Unknown question";
   const pagePath = readString(payload, "pagePath") || "/";
   const visitorId = readString(payload, "visitorId") || "anonymous";
+  const queue = readString(payload, "queue") || "general";
+  const emailTo = readString(payload, "emailTo") || undefined;
+  const smsTo = readString(payload, "smsTo") || undefined;
 
   const emailSent = await step.do("notify escalation email", async () => {
     return sendBrevoEmail(
@@ -438,21 +627,28 @@ async function runChatEscalation(step: WorkflowStep, env: Env, payload: JsonObje
       `Chat escalation: ${question.slice(0, 72)}`,
       joinLines([
         "New chat escalation received.",
+        `Queue: ${queue}`,
         `Question: ${question}`,
         `Page path: ${pagePath}`,
         `Visitor ID: ${visitorId}`,
       ]),
+      emailTo,
+      {
+        fromEmail: env.BREVO_FROM_EMAIL_CHAT,
+        fromName: env.BREVO_FROM_NAME_CHAT,
+      },
     );
   });
 
   const smsSent = await step.do("notify escalation sms", async () => {
-    return sendBrevoSms(env, `GenFix chat escalation: ${question}`);
+    return sendBrevoSms(env, `GenFix chat escalation (${queue}): ${question}`, smsTo);
   });
 
   const crmSynced = await step.do("forward escalation to crm webhook", async () => {
     return postToWebhook(env.CRM_WEBHOOK_URL, {
       type: "chat-escalation",
       source: "genfix-chatbot",
+      queue,
       question,
       pagePath,
       visitorId,
@@ -1008,6 +1204,7 @@ async function runInternalKpiDashboardSync(
 
 export class AutomationWorkflow extends WorkflowEntrypoint<Env, FlowRequest> {
   async run(event: WorkflowEvent<FlowRequest>, step: WorkflowStep): Promise<JsonObject> {
+    const env = (this as unknown as { env: Env }).env;
     const requestPayload = asRecord(event.payload || {});
     const rawKind = String(requestPayload.kind || "chat-escalation");
     const kind = resolveFlowKind(rawKind);
@@ -1016,48 +1213,55 @@ export class AutomationWorkflow extends WorkflowEntrypoint<Env, FlowRequest> {
       throw new Error(`Unsupported flow kind: ${rawKind}`);
     }
 
+    await recordStripeMeterUsage(env, {
+      eventType: "workflow_run",
+      metadata: {
+        kind,
+      },
+    });
+
     const payload = asRecord(requestPayload.payload);
     let result: JsonObject;
 
     switch (kind) {
       case "chat-escalation":
-        result = await runChatEscalation(step, this.env, payload);
+        result = await runChatEscalation(step, env, payload);
         break;
       case "lead-scoring-and-tagging":
-        result = await runLeadScoringAndTagging(step, this.env, payload);
+        result = await runLeadScoringAndTagging(step, env, payload);
         break;
       case "multi-channel-follow-up-sequencer":
-        result = await runMultiChannelFollowUpSequencer(step, this.env, payload);
+        result = await runMultiChannelFollowUpSequencer(step, env, payload);
         break;
       case "upsell-cross-sell-suggestions":
-        result = await runUpsellCrossSellSuggestions(step, this.env, payload);
+        result = await runUpsellCrossSellSuggestions(step, env, payload);
         break;
       case "review-aggregation-and-posting":
-        result = await runReviewAggregationAndPosting(step, this.env, payload);
+        result = await runReviewAggregationAndPosting(step, env, payload);
         break;
       case "payment-deposit-follow-up":
-        result = await runPaymentDepositFollowUp(step, this.env, payload);
+        result = await runPaymentDepositFollowUp(step, env, payload);
         break;
       case "lost-lead-recovery":
-        result = await runLostLeadRecovery(step, this.env, payload);
+        result = await runLostLeadRecovery(step, env, payload);
         break;
       case "event-webinar-reminders":
-        result = await runEventWebinarReminders(step, this.env, payload);
+        result = await runEventWebinarReminders(step, env, payload);
         break;
       case "vip-high-value-lead-alerts":
-        result = await runVipHighValueLeadAlerts(step, this.env, payload);
+        result = await runVipHighValueLeadAlerts(step, env, payload);
         break;
       case "abandoned-form-recovery":
-        result = await runAbandonedFormRecovery(step, this.env, payload);
+        result = await runAbandonedFormRecovery(step, env, payload);
         break;
       case "loyalty-repeat-client-automation":
-        result = await runLoyaltyRepeatClientAutomation(step, this.env, payload);
+        result = await runLoyaltyRepeatClientAutomation(step, env, payload);
         break;
       case "geo-targeted-promotions":
-        result = await runGeoTargetedPromotions(step, this.env, payload);
+        result = await runGeoTargetedPromotions(step, env, payload);
         break;
       case "internal-kpi-dashboard-sync":
-        result = await runInternalKpiDashboardSync(step, this.env, payload);
+        result = await runInternalKpiDashboardSync(step, env, payload);
         break;
       default:
         throw new Error(`Unsupported flow kind: ${kind}`);
@@ -1076,6 +1280,16 @@ async function triggerFlow(env: Env, flow: FlowRequest): Promise<{ id: string }>
   const instance = await env.AUTOMATION_WORKFLOW.create({
     params: flow,
   });
+
+  await recordStripeMeterUsage(env, {
+    eventType: "workflow_dispatch",
+    metadata: {
+      kind: flow.kind,
+      source: "automation-workflow",
+      instance_id: instance.id,
+    },
+  });
+
   return { id: instance.id };
 }
 
@@ -1089,10 +1303,34 @@ async function dispatchScheduledFlows(env: Env): Promise<void> {
 const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (!ensureToken(request, env)) {
-      return new Response("Unauthorized", { status: 401 });
+      const unauthorizedResponse = new Response("Unauthorized", { status: 401 });
+      await recordStripeMeterUsage(env, {
+        eventType: "cloudflare_worker_request",
+        metadata: {
+          surface: "cloudflare-workflows",
+          method: request.method,
+          path: new URL(request.url).pathname,
+          status: unauthorizedResponse.status,
+        },
+      });
+      return unauthorizedResponse;
     }
 
     const url = new URL(request.url);
+
+    const respond = async (response: Response): Promise<Response> => {
+      await recordStripeMeterUsage(env, {
+        eventType: "cloudflare_worker_request",
+        metadata: {
+          surface: "cloudflare-workflows",
+          method: request.method,
+          path: url.pathname,
+          status: response.status,
+        },
+      });
+
+      return response;
+    };
 
     if (request.method === "POST" && url.pathname === "/automation/dispatch") {
       const body = asRecord(await request.json());
@@ -1104,14 +1342,14 @@ const worker = {
       if (rawKind) {
         kind = resolveFlowKind(rawKind);
         if (!kind) {
-          return Response.json(
+          return respond(Response.json(
             {
               ok: false,
               error: `Unsupported flow kind: ${rawKind}`,
               supportedFlowKinds: CANONICAL_FLOWS,
             },
             { status: 400 },
-          );
+          ));
         }
         payload = asRecord(body.payload);
       } else {
@@ -1120,28 +1358,32 @@ const worker = {
       }
 
       const instance = await triggerFlow(env, { kind, payload });
-      return Response.json({ ok: true, kind, instanceId: instance.id }, { status: 202 });
+      return respond(Response.json({ ok: true, kind, instanceId: instance.id }, { status: 202 }));
     }
 
     if (request.method === "GET" && url.pathname.startsWith("/automation/instances/")) {
       const id = url.pathname.slice("/automation/instances/".length).trim();
       if (!id) {
-        return new Response("Missing instance id", { status: 400 });
+        return respond(new Response("Missing instance id", { status: 400 }));
       }
 
       const instance = await env.AUTOMATION_WORKFLOW.get(id);
       const status = await instance.status();
-      return Response.json({ ok: true, id, status });
+      return respond(Response.json({ ok: true, id, status }));
     }
 
     if (request.method === "GET" && url.pathname === "/automation/kinds") {
-      return Response.json({ ok: true, flowKinds: CANONICAL_FLOWS });
+      return respond(Response.json({ ok: true, flowKinds: CANONICAL_FLOWS }));
     }
 
-    return new Response("Not found", { status: 404 });
+    return respond(new Response("Not found", { status: 404 }));
   },
 
-  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(
+    _controller: unknown,
+    env: Env,
+    ctx: { waitUntil: (promise: Promise<unknown>) => void },
+  ): Promise<void> {
     ctx.waitUntil(dispatchScheduledFlows(env));
   },
 };

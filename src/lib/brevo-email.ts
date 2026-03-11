@@ -1,6 +1,8 @@
 import { render } from "@react-email/render"
 import type { ReactElement } from "react"
 
+import { recordStripeMeterUsage } from "@/lib/stripe-metering"
+
 type BrevoRecipient = {
   email: string
   name?: string
@@ -11,6 +13,12 @@ type BrevoReplyTo = {
   name?: string
 }
 
+type BrevoAttachment = {
+  name: string
+  content: string
+  contentType?: string
+}
+
 type SendBrevoReactEmailOptions = {
   apiKey: string
   from: BrevoRecipient
@@ -19,6 +27,7 @@ type SendBrevoReactEmailOptions = {
   react: ReactElement
   replyTo?: BrevoReplyTo
   tags?: string[]
+  attachments?: BrevoAttachment[]
 }
 
 type BrevoSendResult = {
@@ -48,6 +57,7 @@ export async function sendBrevoReactEmail(options: SendBrevoReactEmailOptions): 
       htmlContent,
       replyTo: options.replyTo,
       tags: options.tags,
+      attachment: options.attachments,
     }),
   })
 
@@ -64,6 +74,16 @@ export async function sendBrevoReactEmail(options: SendBrevoReactEmailOptions): 
       : "no response body"
     throw new Error(`Brevo transactional email failed (${response.status}): ${details}`)
   }
+
+  await recordStripeMeterUsage({
+    eventType: "brevo_email_send",
+    value: options.to.length,
+    metadata: {
+      provider: "brevo",
+      tag: options.tags?.[1] || options.tags?.[0] || "unlabeled",
+      attachments: options.attachments?.length || 0,
+    },
+  })
 
   return {
     messageId: typeof payload?.messageId === "string" ? payload.messageId : null,

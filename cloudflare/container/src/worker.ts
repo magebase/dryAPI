@@ -45,6 +45,11 @@ const parsedRuleCache = new Map<string, RouteRule[]>();
 
 export interface Env {
   CALCOM_CONTAINER: DurableObjectNamespace<CalcomContainer>;
+  STRIPE_PRIVATE_KEY?: string;
+  STRIPE_METER_BILLING_CUSTOMER_ID?: string;
+  STRIPE_METER_PROJECT_KEY?: string;
+  STRIPE_METER_EVENT_CAL_REQUEST?: string;
+  STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST?: string;
   INTERNAL_CRON_TOKEN: string;
   BREVO_API_KEY: string;
   BREVO_FROM_EMAIL: string;
@@ -235,6 +240,151 @@ function collectOptionalStripeEnv(env: Env): Record<string, string> {
   return forwarded;
 }
 
+type StripeMeterEventType = "cal_request" | "cloudflare_worker_request";
+type StripeMeterMetadataValue = string | number | boolean | null | undefined;
+
+const STRIPE_METER_API_URL = "https://api.stripe.com/v1/billing/meter_events";
+const DEFAULT_PROJECT_KEY = "genfix";
+
+const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
+  cal_request: "genfix_cal_request",
+  cloudflare_worker_request: "genfix_cloudflare_worker_request",
+};
+
+const STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS: Record<StripeMeterEventType, keyof Env> = {
+  cal_request: "STRIPE_METER_EVENT_CAL_REQUEST",
+  cloudflare_worker_request: "STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST",
+};
+
+function resolveStripeMeterEventName(env: Env, eventType: StripeMeterEventType): string {
+  const overrideKey = STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS[eventType];
+  const overrideValue = env[overrideKey];
+
+  if (typeof overrideValue === "string" && overrideValue.trim()) {
+    return overrideValue.trim();
+  }
+
+  return STRIPE_METER_EVENT_DEFAULTS[eventType];
+}
+
+function sanitizeStripeDimensionKey(key: string): string {
+  return key
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+}
+
+function stringifyStripeDimensionValue(value: StripeMeterMetadataValue): string {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value).trim().slice(0, 120);
+}
+
+function normalizeStripeMeterValue(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(value));
+}
+
+function buildStripeIdentifier(input: {
+  projectKey: string;
+  eventType: StripeMeterEventType;
+  timestamp: number;
+  identifier?: string;
+}): string {
+  const provided = input.identifier?.trim();
+  if (provided) {
+    return provided.slice(0, 200);
+  }
+
+  return `${input.projectKey}:${input.eventType}:${input.timestamp}:${crypto.randomUUID()}`.slice(0, 200);
+}
+
+async function recordStripeMeterUsage(
+  env: Env,
+  input: {
+    eventType: StripeMeterEventType;
+    value?: number;
+    metadata?: Record<string, StripeMeterMetadataValue>;
+    identifier?: string;
+    timestamp?: number;
+  },
+): Promise<boolean> {
+  const apiKey = env.STRIPE_PRIVATE_KEY?.trim() || "";
+  const customerId = env.STRIPE_METER_BILLING_CUSTOMER_ID?.trim() || "";
+
+  if (!apiKey || !customerId) {
+    return false;
+  }
+
+  const projectKey = env.STRIPE_METER_PROJECT_KEY?.trim() || DEFAULT_PROJECT_KEY;
+  const eventName = resolveStripeMeterEventName(env, input.eventType);
+  const value = normalizeStripeMeterValue(input.value);
+  const timestamp = input.timestamp ?? Math.floor(Date.now() / 1000);
+  const identifier = buildStripeIdentifier({
+    projectKey,
+    eventType: input.eventType,
+    timestamp,
+    identifier: input.identifier,
+  });
+
+  const payload = new URLSearchParams();
+  payload.set("event_name", eventName);
+  payload.set("payload[value]", String(value));
+  payload.set("payload[stripe_customer_id]", customerId);
+  payload.set("payload[project_key]", projectKey);
+  payload.set("timestamp", String(timestamp));
+  payload.set("identifier", identifier);
+
+  if (input.metadata) {
+    let dimensions = 0;
+    for (const [rawKey, rawValue] of Object.entries(input.metadata)) {
+      if (dimensions >= 6) {
+        break;
+      }
+
+      const key = sanitizeStripeDimensionKey(rawKey);
+      const valueText = stringifyStripeDimensionValue(rawValue);
+      if (!key || !valueText) {
+        continue;
+      }
+
+      payload.set(`payload[${key}]`, valueText);
+      dimensions += 1;
+    }
+  }
+
+  try {
+    const response = await fetch(STRIPE_METER_API_URL, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/x-www-form-urlencoded",
+        "idempotency-key": identifier,
+      },
+      body: payload.toString(),
+    });
+
+    if (!response.ok) {
+      const details = await response.text().catch(() => "");
+      console.warn(`Stripe meter event failed (${response.status}) for ${eventName}: ${details || "no body"}`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn(`Stripe meter event request failed for ${eventName}`, error);
+    return false;
+  }
+}
+
 function buildContainerEnv(env: Env): Record<string, string> {
   const postgresPort = env.CALCOM_POSTGRES_PORT ?? "5432";
   const dbName = env.CALCOM_DB_NAME ?? "calcom";
@@ -333,7 +483,19 @@ async function fetchContainerWithRetry(
         },
       });
 
-      return await container.fetch(request);
+      const response = await container.fetch(request);
+
+      await recordStripeMeterUsage(env, {
+        eventType: "cal_request",
+        metadata: {
+          surface: "calcom-container",
+          method: request.method,
+          path: new URL(request.url).pathname,
+          status: response.status,
+        },
+      });
+
+      return response;
     } catch (error) {
       if (!isContainerNotRunningError(error) || attempt === 2) {
         throw error;
@@ -451,41 +613,59 @@ const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
+    const respond = async (response: Response): Promise<Response> => {
+      await recordStripeMeterUsage(env, {
+        eventType: "cloudflare_worker_request",
+        metadata: {
+          surface: "calcom-container",
+          method: request.method,
+          path: url.pathname,
+          status: response.status,
+        },
+      });
+
+      return response;
+    };
+
     if (url.pathname === "/_ops/wake") {
       if (!(await requireAdminToken(request, env))) {
-        return new Response("Unauthorized", { status: 401 });
+        return respond(new Response("Unauthorized", { status: 401 }));
       }
       await runWake(env);
-      return new Response("Wake trigger sent", { status: 202 });
+      return respond(new Response("Wake trigger sent", { status: 202 }));
     }
 
     if (url.pathname === "/_ops/backup") {
       if (!(await requireAdminToken(request, env))) {
-        return new Response("Unauthorized", { status: 401 });
+        return respond(new Response("Unauthorized", { status: 401 }));
       }
       await runBackup(env);
-      return new Response("Backup trigger sent", { status: 202 });
+      return respond(new Response("Backup trigger sent", { status: 202 }));
     }
 
     if (isRoutePolicyEnabled(env)) {
       const isPublicAllowed = isPublicRouteAllowed(request, url, env);
       if (!isPublicAllowed && !isInternalRequestAuthorized(request, env)) {
-        return new Response("Forbidden", { status: 403 });
+        return respond(new Response("Forbidden", { status: 403 }));
       }
     }
 
     if (!isInternalRequestAuthorized(request, env) && isBookingMutationRequest(request, url)) {
       const turnstileError = await verifyBookingTurnstile(request, env);
       if (turnstileError) {
-        return turnstileError;
+        return respond(turnstileError);
       }
     }
 
     const upstreamResponse = await fetchContainerWithRetry(env, request);
-    return patchImageCsp(upstreamResponse);
+    return respond(patchImageCsp(upstreamResponse));
   },
 
-  async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(
+    controller: { cron: string },
+    env: Env,
+    ctx: { waitUntil: (promise: Promise<unknown>) => void },
+  ): Promise<void> {
     if (controller.cron === HOURLY_WAKE_CRON) {
       ctx.waitUntil(runWake(env));
       return;

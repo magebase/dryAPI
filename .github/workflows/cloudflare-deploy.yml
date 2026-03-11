@@ -23,9 +23,12 @@ jobs:
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
       R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
-      RESEND_TO_EMAIL: ${{ secrets.RESEND_TO_EMAIL }}
+      BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+      BREVO_MARKETING_LIST_ID: ${{ secrets.BREVO_MARKETING_LIST_ID }}
+      BREVO_FROM_EMAIL: ${{ secrets.BREVO_FROM_EMAIL }}
+      BREVO_FROM_NAME: ${{ secrets.BREVO_FROM_NAME }}
+      CRM_AUTOMATION_DISPATCH_URL: ${{ secrets.CRM_AUTOMATION_DISPATCH_URL }}
+      CRM_AUTOMATION_API_TOKEN: ${{ secrets.CRM_AUTOMATION_API_TOKEN }}
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
       SYNC_SECRET_NEXT_PUBLIC_TINA_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_TINA_CLIENT_ID }}
@@ -36,9 +39,12 @@ jobs:
       SYNC_SECRET_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       SYNC_SECRET_R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
       SYNC_SECRET_R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-      SYNC_SECRET_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      SYNC_SECRET_RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
-      SYNC_SECRET_RESEND_TO_EMAIL: ${{ secrets.RESEND_TO_EMAIL }}
+      SYNC_SECRET_BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+      SYNC_SECRET_BREVO_MARKETING_LIST_ID: ${{ secrets.BREVO_MARKETING_LIST_ID }}
+      SYNC_SECRET_BREVO_FROM_EMAIL: ${{ secrets.BREVO_FROM_EMAIL }}
+      SYNC_SECRET_BREVO_FROM_NAME: ${{ secrets.BREVO_FROM_NAME }}
+      SYNC_SECRET_CRM_AUTOMATION_DISPATCH_URL: ${{ secrets.CRM_AUTOMATION_DISPATCH_URL }}
+      SYNC_SECRET_CRM_AUTOMATION_API_TOKEN: ${{ secrets.CRM_AUTOMATION_API_TOKEN }}
       SYNC_SECRET_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       SYNC_SECRET_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
       SYNC_SECRET_CF_D1_DATABASE_NAME: ${{ secrets.CF_D1_DATABASE_NAME || 'genfix-db' }}
@@ -61,6 +67,90 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare Stripe portal outputs
+        id: stripe_portal
+        env:
+          STRIPE_PRIVATE_KEY: ${{ secrets.STRIPE_PRIVATE_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+          STRIPE_PORTAL_CONFIGURATION_ID: ${{ secrets.STRIPE_PORTAL_CONFIGURATION_ID }}
+          STRIPE_PORTAL_CONFIGURATION_NAME: ${{ secrets.STRIPE_PORTAL_CONFIGURATION_NAME }}
+          STRIPE_PORTAL_RETURN_URL: ${{ secrets.STRIPE_PORTAL_RETURN_URL }}
+          STRIPE_PORTAL_BUSINESS_HEADLINE: ${{ secrets.STRIPE_PORTAL_BUSINESS_HEADLINE }}
+          STRIPE_PORTAL_PRIVACY_POLICY_URL: ${{ secrets.STRIPE_PORTAL_PRIVACY_POLICY_URL }}
+          STRIPE_PORTAL_TERMS_URL: ${{ secrets.STRIPE_PORTAL_TERMS_URL }}
+          STRIPE_PORTAL_BASIC_PRODUCT_ID: ${{ secrets.STRIPE_PORTAL_BASIC_PRODUCT_ID }}
+          STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID }}
+          STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID }}
+          STRIPE_PORTAL_GROWTH_PRODUCT_ID: ${{ secrets.STRIPE_PORTAL_GROWTH_PRODUCT_ID }}
+          STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID }}
+          STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID }}
+          STRIPE_PORTAL_PRO_PRODUCT_ID: ${{ secrets.STRIPE_PORTAL_PRO_PRODUCT_ID }}
+          STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID }}
+          STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID }}
+        run: |
+          set -euo pipefail
+
+          portal_env_file="${RUNNER_TEMP}/stripe-portal.env"
+          sync_env_file="${RUNNER_TEMP}/stripe-portal-sync.env"
+
+          : > "${portal_env_file}"
+          : > "${sync_env_file}"
+
+          append_env_var() {
+            local name="$1"
+            local value="${!name:-}"
+
+            if [[ -z "${value}" ]]; then
+              return
+            fi
+
+            printf '%s=%q\n' "${name}" "${value}" >> "${portal_env_file}"
+            printf 'SYNC_SECRET_%s=%q\n' "${name}" "${value}" >> "${sync_env_file}"
+          }
+
+          append_env_var "STRIPE_PRIVATE_KEY"
+          append_env_var "STRIPE_PORTAL_CONFIGURATION_ID"
+          append_env_var "STRIPE_PORTAL_CONFIGURATION_NAME"
+          append_env_var "STRIPE_PORTAL_RETURN_URL"
+          append_env_var "STRIPE_PORTAL_BUSINESS_HEADLINE"
+          append_env_var "STRIPE_PORTAL_PRIVACY_POLICY_URL"
+          append_env_var "STRIPE_PORTAL_TERMS_URL"
+          append_env_var "STRIPE_PORTAL_BASIC_PRODUCT_ID"
+          append_env_var "STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID"
+          append_env_var "STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID"
+          append_env_var "STRIPE_PORTAL_GROWTH_PRODUCT_ID"
+          append_env_var "STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID"
+          append_env_var "STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID"
+          append_env_var "STRIPE_PORTAL_PRO_PRODUCT_ID"
+          append_env_var "STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID"
+          append_env_var "STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID"
+
+          if [[ -n "${NEXT_PUBLIC_SITE_URL:-}" ]]; then
+            printf 'NEXT_PUBLIC_SITE_URL=%q\n' "${NEXT_PUBLIC_SITE_URL}" >> "${portal_env_file}"
+            printf 'SYNC_SECRET_NEXT_PUBLIC_SITE_URL=%q\n' "${NEXT_PUBLIC_SITE_URL}" >> "${sync_env_file}"
+          fi
+
+          if [[ -n "${SITE_URL:-}" ]]; then
+            printf 'SITE_URL=%q\n' "${SITE_URL}" >> "${portal_env_file}"
+            printf 'SYNC_SECRET_SITE_URL=%q\n' "${SITE_URL}" >> "${sync_env_file}"
+          fi
+
+          portal_enabled="false"
+          if [[ -n "${STRIPE_PRIVATE_KEY:-}" ]]; then
+            portal_enabled="true"
+          fi
+
+          sync_enabled="false"
+          if [[ -s "${sync_env_file}" ]]; then
+            sync_enabled="true"
+          fi
+
+          echo "portal_enabled=${portal_enabled}" >> "${GITHUB_OUTPUT}"
+          echo "sync_enabled=${sync_enabled}" >> "${GITHUB_OUTPUT}"
+          echo "portal_env_file=${portal_env_file}" >> "${GITHUB_OUTPUT}"
+          echo "sync_env_file=${sync_env_file}" >> "${GITHUB_OUTPUT}"
+
       - name: Validate required deployment inputs
         run: |
           set -euo pipefail
@@ -69,7 +159,33 @@ jobs:
           test -n "${CF_D1_DATABASE_NAME}"
 
       - name: Sync GitHub secrets to Cloudflare Worker secrets
-        run: bash ./scripts/sync-github-secrets.sh
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ steps.stripe_portal.outputs.sync_enabled }}" == "true" ]]; then
+            set -a
+            # shellcheck source=/dev/null
+            source "${{ steps.stripe_portal.outputs.sync_env_file }}"
+            set +a
+          fi
+
+          bash ./scripts/sync-github-secrets.sh
+
+      - name: Ensure Stripe billing portal configuration
+        if: ${{ steps.stripe_portal.outputs.portal_enabled == 'true' }}
+        run: |
+          set -euo pipefail
+
+          set -a
+          # shellcheck source=/dev/null
+          source "${{ steps.stripe_portal.outputs.portal_env_file }}"
+          set +a
+
+          pnpm stripe:portal:ensure
+
+      - name: Skip Stripe billing portal configuration
+        if: ${{ steps.stripe_portal.outputs.portal_enabled != 'true' }}
+        run: echo "Skipping Stripe portal ensure (missing STRIPE_PRIVATE_KEY)."
 
       - name: Apply D1 migrations (remote)
         run: pnpm db:migrate:remote

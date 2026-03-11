@@ -39,18 +39,17 @@ function isTinaPreviewEnabled(value: string | null): boolean {
 type HybridHomePageProps = {
   siteDocument: TinaDocument<{ siteConfig: SiteConfig }>
   homeDocument: TinaDocument<{ home: HomeContent }>
-  locale: string
   children: React.ReactNode
 }
 
-export function HybridHomePage({ siteDocument, homeDocument, locale, children }: HybridHomePageProps) {
+export function HybridHomePage({ siteDocument, homeDocument, children }: HybridHomePageProps) {
   const searchParams = useSearchParams()
 
   if (!isTinaPreviewEnabled(searchParams?.get("tina") ?? null)) {
     return <>{children}</>
   }
 
-  return <TinaHomePage homeDocument={homeDocument} locale={locale} siteDocument={siteDocument} />
+  return <TinaHomePage homeDocument={homeDocument} siteDocument={siteDocument} />
 }
 
 type HybridRoutePageProps = {
@@ -58,7 +57,6 @@ type HybridRoutePageProps = {
   pageDocument: TinaDocument<{ routePages: RoutePage }>
   productPages: RoutePage[]
   blogPosts: BlogPost[]
-  locale: string
   children: React.ReactNode
 }
 
@@ -67,7 +65,6 @@ export function HybridRoutePage({
   pageDocument,
   productPages,
   blogPosts,
-  locale,
   children,
 }: HybridRoutePageProps) {
   const searchParams = useSearchParams()
@@ -79,7 +76,6 @@ export function HybridRoutePage({
   return (
     <TinaRoutePage
       blogPosts={blogPosts}
-      locale={locale}
       pageDocument={pageDocument}
       productPages={productPages}
       siteDocument={siteDocument}
@@ -90,14 +86,12 @@ export function HybridRoutePage({
 type HybridBlogPostPageProps = {
   siteDocument: TinaDocument<{ siteConfig: SiteConfig }>
   postDocument: TinaDocument<{ blogPosts: BlogPost }>
-  locale: string
   children: React.ReactNode
 }
 
 export function HybridBlogPostPage({
   siteDocument,
   postDocument,
-  locale,
   children,
 }: HybridBlogPostPageProps) {
   const searchParams = useSearchParams()
@@ -106,5 +100,5 @@ export function HybridBlogPostPage({
     return <>{children}</>
   }
 
-  return <TinaBlogPostPage locale={locale} postDocument={postDocument} siteDocument={siteDocument} />
+  return <TinaBlogPostPage postDocument={postDocument} siteDocument={siteDocument} />
 }

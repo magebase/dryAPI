@@ -6,6 +6,7 @@ import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { RoutePageElements } from "@/components/site/route-page-elements"
 import { Reveal } from "@/components/site/reveal"
+import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema"
 
@@ -16,6 +17,16 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
   const productsHref = productsLink?.href ?? "/products"
   const productsLabel = productsLink?.label ?? "Product Range"
   const heroGalleryImages = page.hero.galleryImages?.filter((image) => image.src.trim().length > 0) ?? []
+  const ctaKicker = resolveSiteUiText(site, "routePage.ctaKicker", "Need Fast Advice?")
+  const ctaHeading = resolveSiteUiText(site, "routePage.ctaHeading", "Get Scope And Pricing Support")
+  const ctaBody = resolveSiteUiText(
+    site,
+    "routePage.ctaBody",
+    `Speak with the ${site.brand.mark} team about the right equipment and service model for your site timeline.`
+  )
+  const productsPrefix = resolveSiteUiText(site, "routePage.productsPrefix", "View")
+  const formHeading = resolveSiteUiText(site, "routePage.contactFormHeading", "Request Project Support")
+  const formDescription = resolveSiteUiText(site, "routePage.contactFormDescription", "Share your scope and required dates.")
 
   return (
     <main className="overflow-x-clip bg-[#101a28] pb-16 md:pb-20">
@@ -165,13 +176,11 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
       <Reveal as="section" className="mx-auto mt-10 max-w-7xl px-4 md:mt-14">
         <div className={`${getGradientVariant(2)} rounded-md border border-white/10 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[#ff8b2b]">Need Fast Advice?</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#ff8b2b]" data-tina-field={ctaKicker.field}>{ctaKicker.value}</p>
             <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
-              <KeywordGradientText text="Get Scope And Pricing Support" />
+              <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
-            <p className="mt-2 text-sm text-slate-300 md:text-base">
-              Speak with the {site.brand.mark} team about the right equipment and service model for your site timeline.
-            </p>
+            <p className="mt-2 text-sm text-slate-300 md:text-base" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
@@ -186,7 +195,7 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
               href={productsHref}
             >
-              View {productsLabel}
+              {productsPrefix.value} {productsLabel}
             </QuoteAwareLink>
           </div>
         </div>
@@ -205,9 +214,12 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
           </Reveal>
           <Reveal as="div" className={`${getGradientVariant(4)} rounded-md border border-white/10 p-6`} delay={0.1}>
             <ContactForm
-              description="Share your scope and required dates."
-              heading="Request Project Support"
+              description={formDescription.value}
+              descriptionField={formDescription.field}
+              heading={formHeading.value}
+              headingField={formHeading.field}
               responseTime={page.contactPanel.responseTime}
+              site={site}
             />
           </Reveal>
         </section>

@@ -141,6 +141,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             {phoneLabel}
           </Link>
           <QuoteDialog
+            site={site}
             triggerClassName="rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
             triggerLabel={site.header.quoteCta.label}
             triggerTinaField={tinaField(site.header, "quoteCta")}

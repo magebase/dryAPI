@@ -4,6 +4,7 @@ import { tinaField } from "tinacms/dist/react"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { BlogPost, RoutePage, SiteConfig } from "@/lib/site-content-schema"
 
@@ -28,14 +29,35 @@ function formatPublishedDate(value: string) {
 }
 
 function estimateReadTime(post: BlogPost) {
-  const words = post.sections
-    .flatMap((section) => [section.heading, section.body])
-    .join(" ")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length
+  const words: string[] = []
 
-  return Math.max(1, Math.ceil(words / 220))
+  const appendWords = (value: string) => {
+    words.push(...value.trim().split(/\s+/).filter(Boolean))
+  }
+
+  const collectRichText = (value: unknown) => {
+    if (!value || typeof value !== "object") {
+      return
+    }
+
+    const node = value as { text?: unknown; children?: unknown[] }
+
+    if (typeof node.text === "string") {
+      appendWords(node.text)
+    }
+
+    if (Array.isArray(node.children)) {
+      node.children.forEach((child) => collectRichText(child))
+    }
+  }
+
+  collectRichText(post.body)
+
+  if (words.length === 0) {
+    appendWords(post.excerpt)
+  }
+
+  return Math.max(1, Math.ceil(words.length / 220))
 }
 
 export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplateProps) {
@@ -44,6 +66,18 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
   const productsLink = site.header.primaryLinks.find((link) => link.href === "/products")
   const heroGalleryImages = page.hero.galleryImages?.filter((image) => image.src.trim().length > 0) ?? []
   const [featuredPost, ...remainingPosts] = posts
+  const featuredLabel = resolveSiteUiText(site, "blogList.featuredLabel", "Featured Insight")
+  const readTimeSuffix = resolveSiteUiText(site, "blogList.readTimeSuffix", "min read")
+  const featuredCtaLabel = resolveSiteUiText(site, "blogList.featuredCtaLabel", "Read Featured Article")
+  const cardCtaLabel = resolveSiteUiText(site, "blogList.cardCtaLabel", "Read Article >")
+  const ctaKicker = resolveSiteUiText(site, "blogList.ctaKicker", "Need Project Guidance?")
+  const ctaHeading = resolveSiteUiText(site, "blogList.ctaHeading", "Talk To A Power Specialist")
+  const ctaBody = resolveSiteUiText(
+    site,
+    "blogList.ctaBody",
+    "Get practical recommendations for equipment, timing, and site rollout."
+  )
+  const explorePrefix = resolveSiteUiText(site, "blogList.explorePrefix", "Explore")
 
   return (
     <main className="overflow-x-clip bg-[#0f1a2a] pb-16 text-slate-100 md:pb-20">
@@ -121,12 +155,17 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               width={1200}
             />
             <div className="space-y-4 px-5 py-5 md:px-7 md:py-7">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff8b2b]">Featured Insight</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={featuredLabel.field}>{featuredLabel.value}</p>
               <h2 className="font-display text-3xl uppercase leading-[1.08] tracking-[0.03em] text-white md:text-4xl">
                 <KeywordGradientText dataTinaField={tinaField(featuredPost, "title")} text={featuredPost.title} />
               </h2>
               <p className="text-sm uppercase tracking-[0.16em] text-slate-300" data-tina-field={tinaField(featuredPost, "publishedAt")}>
-                {formatPublishedDate(featuredPost.publishedAt)} · {estimateReadTime(featuredPost)} min read
+                {formatPublishedDate(featuredPost.publishedAt)} · {estimateReadTime(featuredPost)}{" "}
+                <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
+              </p>
+              <p className="text-xs uppercase tracking-[0.14em] text-slate-400">
+                <span data-tina-field={tinaField(featuredPost.author, "name")}>{featuredPost.author.name}</span> ·{" "}
+                <span data-tina-field={tinaField(featuredPost.author, "role")}>{featuredPost.author.role}</span>
               </p>
               <p className="text-sm text-slate-300 md:text-base" data-tina-field={tinaField(featuredPost, "excerpt")}>
                 {featuredPost.excerpt}
@@ -136,7 +175,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                 data-tina-field={tinaField(featuredPost, "slug")}
                 href={`/blog/${featuredPost.slug}`}
               >
-                Read Featured Article
+                <span data-tina-field={featuredCtaLabel.field}>{featuredCtaLabel.value}</span>
               </QuoteAwareLink>
             </div>
           </Reveal>
@@ -163,7 +202,11 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
 
               <div className="space-y-4 px-5 py-5">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400" data-tina-field={tinaField(post, "publishedAt")}>
-                  {formatPublishedDate(post.publishedAt)} · {estimateReadTime(post)} min read
+                  {formatPublishedDate(post.publishedAt)} · {estimateReadTime(post)}{" "}
+                  <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
+                </p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                  <span data-tina-field={tinaField(post.author, "name")}>{post.author.name}</span>
                 </p>
                 <h2 className="text-lg font-semibold text-white">
                   <KeywordGradientText dataTinaField={tinaField(post, "title")} text={post.title} />
@@ -186,7 +229,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                   data-tina-field={tinaField(post, "slug")}
                   href={`/blog/${post.slug}`}
                 >
-                  Read Article &gt;
+                  <span data-tina-field={cardCtaLabel.field}>{cardCtaLabel.value}</span>
                 </QuoteAwareLink>
               </div>
             </Reveal>
@@ -247,11 +290,11 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
       <section className="mx-auto mt-12 max-w-7xl px-4">
         <Reveal className={`${getGradientVariant(3)} rounded-md border border-white/10 px-5 py-5 md:flex md:items-center md:justify-between md:gap-8 md:px-6 md:py-6`}>
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]">Need Project Guidance?</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={ctaKicker.field}>{ctaKicker.value}</p>
             <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
-              <KeywordGradientText text="Talk To A Power Specialist" />
+              <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
-            <p className="mt-2 text-sm text-slate-300">Get practical recommendations for equipment, timing, and site rollout.</p>
+            <p className="mt-2 text-sm text-slate-300" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
@@ -268,7 +311,8 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
               href={productsLink?.href ?? "/products"}
             >
-              Explore {productsLink?.label ?? "Products"}
+              <span data-tina-field={explorePrefix.field}>{explorePrefix.value}</span>{" "}
+              {productsLink?.label ?? "Products"}
             </QuoteAwareLink>
           </div>
         </Reveal>

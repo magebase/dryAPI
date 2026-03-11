@@ -14,3 +14,13 @@ export const quoteRequests = sqliteTable("quote_requests", {
   sourcePath: text("source_path").notNull().default(""),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 })
+
+export const moderationRejections = sqliteTable("moderation_rejections", {
+  id: text("id").primaryKey(),
+  channel: text("channel").notNull(),
+  sourcePath: text("source_path").notNull().default(""),
+  reason: text("reason").notNull(),
+  model: text("model").notNull().default(""),
+  categories: text("categories").notNull().default(""),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+})

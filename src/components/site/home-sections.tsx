@@ -6,22 +6,85 @@ import { Lightning } from "@/components/site/lightning"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { SiteIcon } from "@/components/site/site-icon"
 import { getGradientVariant } from "@/components/site/gradient-variants"
-import type { HomeContent } from "@/lib/site-content-schema"
+import type { HomeContent, SiteConfig } from "@/lib/site-content-schema"
 
-export function HomeSections({ home }: { home: HomeContent }) {
+export function HomeSections({ home, site }: { home: HomeContent; site: SiteConfig }) {
   const visibleSpotlightCards = home.spotlightCards.filter((card) => card.visible)
   const visibleCapabilityCards = home.capabilityCards.filter((card) => card.visible)
   const visibleProjectItems = home.projectShowcase.items.filter((item) => item.visible)
   const visibleResourceItems = home.resourceShowcase.items.filter((item) => item.visible)
   const trustStripCards = visibleSpotlightCards.slice(0, 3)
-  const spotlightMicroProofs = ["Typical scope response: same business day", "Short and long hire terms available", "After-hours escalation available"]
-  const spotlightActions = ["Talk Sales", "Check Fleet", "Request Support"]
+  const spotlightMicroProofs = [
+    resolveSiteUiText(site, "home.spotlightMicroProof.1", "Typical scope response: same business day"),
+    resolveSiteUiText(site, "home.spotlightMicroProof.2", "Short and long hire terms available"),
+    resolveSiteUiText(site, "home.spotlightMicroProof.3", "After-hours escalation available"),
+  ]
+  const spotlightActions = [
+    resolveSiteUiText(site, "home.spotlightAction.1", "Talk Sales"),
+    resolveSiteUiText(site, "home.spotlightAction.2", "Check Fleet"),
+    resolveSiteUiText(site, "home.spotlightAction.3", "Request Support"),
+  ]
   const capabilitySignals = [
-    { label: "Generator Range", value: "5-20 kVA" },
-    { label: "Support Window", value: "24/7" },
-    { label: "Service Footprint", value: "National" },
+    {
+      label: resolveSiteUiText(site, "home.capabilitySignal.label.1", "Generator Range"),
+      value: resolveSiteUiText(site, "home.capabilitySignal.value.1", "5-20 kVA"),
+    },
+    {
+      label: resolveSiteUiText(site, "home.capabilitySignal.label.2", "Support Window"),
+      value: resolveSiteUiText(site, "home.capabilitySignal.value.2", "24/7"),
+    },
+    {
+      label: resolveSiteUiText(site, "home.capabilitySignal.label.3", "Service Footprint"),
+      value: resolveSiteUiText(site, "home.capabilitySignal.value.3", "National"),
+    },
+  ]
+  const spotlightIntroBody = resolveSiteUiText(
+    site,
+    "home.spotlightIntroBody",
+    "Straightforward service lines for teams that need clear answers quickly. No inflated claims, just practical power planning and delivery."
+  )
+  const spotlightAtAGlance = resolveSiteUiText(site, "home.spotlightAtAGlance", "At A Glance")
+  const spotlightFieldNoteLabel = resolveSiteUiText(site, "home.spotlightFieldNoteLabel", "Field Note")
+  const capabilityIntroBody = resolveSiteUiText(
+    site,
+    "home.capabilityIntroBody",
+    "One partner from specification through support. Every capability below is designed to reduce delay, protect output, and keep decisions simple."
+  )
+  const capabilityWhatYouGet = resolveSiteUiText(site, "home.capabilityWhatYouGet", "What You Get")
+  const capabilityWhatYouGetItems = [
+    resolveSiteUiText(site, "home.capabilityWhatYouGetItem.1", "Clear scope"),
+    resolveSiteUiText(site, "home.capabilityWhatYouGetItem.2", "Predictable delivery"),
+    resolveSiteUiText(site, "home.capabilityWhatYouGetItem.3", "Real support"),
+  ]
+  const capabilityCardPrefix = resolveSiteUiText(site, "home.capabilityCardPrefix", "Capability")
+  const capabilityBottomCards = [
+    {
+      title: resolveSiteUiText(site, "home.capabilityBottomCard.title.1", "Design Confidence"),
+      body: resolveSiteUiText(
+        site,
+        "home.capabilityBottomCard.body.1",
+        "Clear recommendations based on load profile, compliance risk, and practical site access."
+      ),
+    },
+    {
+      title: resolveSiteUiText(site, "home.capabilityBottomCard.title.2", "Delivery Discipline"),
+      body: resolveSiteUiText(
+        site,
+        "home.capabilityBottomCard.body.2",
+        "Structured mobilisation and commissioning workflows that reduce rework and surprise downtime."
+      ),
+    },
+    {
+      title: resolveSiteUiText(site, "home.capabilityBottomCard.title.3", "Support Readiness"),
+      body: resolveSiteUiText(
+        site,
+        "home.capabilityBottomCard.body.3",
+        "Escalation paths that stay active after hours, so your project is never left waiting."
+      ),
+    },
   ]
 
   return (
@@ -91,7 +154,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
         </section>
       )}
 
-      <TrustedByMarqueeSection section={home.trustedBySection} />
+      <TrustedByMarqueeSection section={home.trustedBySection} site={site} />
 
       {home.spotlightSection.visible && (
         <section
@@ -108,18 +171,16 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 <h2 className="mt-2 font-display text-3xl leading-[1.08] text-white md:text-4xl">
                   <KeywordGradientText dataTinaField={tinaField(home.spotlightSection, "title")} text={home.spotlightSection.title} />
                 </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base">
-                  Straightforward service lines for teams that need clear answers quickly. No inflated claims, just practical power planning and delivery.
-                </p>
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base" data-tina-field={spotlightIntroBody.field}>{spotlightIntroBody.value}</p>
               </Reveal>
 
               <Reveal as="div" className={`${getGradientVariant(0)} border border-white/12 p-4`} delay={0.08}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]">At A Glance</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={spotlightAtAGlance.field}>{spotlightAtAGlance.value}</p>
                 <div className="mt-3 grid gap-2">
                   {capabilitySignals.map((signal) => (
-                    <div className="grid grid-cols-[1fr_auto] items-center border-b border-white/10 pb-2 last:border-b-0 last:pb-0" key={signal.label}>
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">{signal.label}</p>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white">{signal.value}</p>
+                    <div className="grid grid-cols-[1fr_auto] items-center border-b border-white/10 pb-2 last:border-b-0 last:pb-0" key={signal.label.value}>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400" data-tina-field={signal.label.field}>{signal.label.value}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white" data-tina-field={signal.value.field}>{signal.value.value}</p>
                     </div>
                   ))}
                 </div>
@@ -148,15 +209,15 @@ export function HomeSections({ home }: { home: HomeContent }) {
                     {card.description}
                   </p>
                   <div className={`${getGradientVariant(index + 2)} mt-5 border border-white/12 px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.17em] text-[#ffb67f]">Field Note</p>
-                    <p className="mt-1 text-xs text-slate-100">{spotlightMicroProofs[index] ?? spotlightMicroProofs[0]}</p>
+                    <p className="text-[10px] uppercase tracking-[0.17em] text-[#ffb67f]" data-tina-field={spotlightFieldNoteLabel.field}>{spotlightFieldNoteLabel.value}</p>
+                    <p className="mt-1 text-xs text-slate-100" data-tina-field={(spotlightMicroProofs[index] ?? spotlightMicroProofs[0]).field}>{(spotlightMicroProofs[index] ?? spotlightMicroProofs[0]).value}</p>
                   </div>
                   <QuoteAwareLink
                     className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#ff9d4a] transition hover:text-white"
                     href={card.title.toLowerCase().includes("support") ? home.contactPanel.primaryAction.href : card.title.toLowerCase().includes("rental") ? home.hero.secondaryAction.href : home.hero.primaryAction.href}
-                    quoteLabel={spotlightActions[index] ?? "Start Scope Call"}
+                    quoteLabel={(spotlightActions[index] ?? spotlightActions[0]).value}
                   >
-                    {spotlightActions[index] ?? "Start Scope Call"}
+                    <span data-tina-field={(spotlightActions[index] ?? spotlightActions[0]).field}>{(spotlightActions[index] ?? spotlightActions[0]).value}</span>
                     <ArrowRight aria-hidden className="size-3" />
                   </QuoteAwareLink>
                 </Reveal>
@@ -181,21 +242,15 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 <h2 className="mt-2 font-display text-3xl leading-[1.08] text-white md:text-4xl">
                   <KeywordGradientText dataTinaField={tinaField(home.capabilitySection, "title")} text={home.capabilitySection.title} />
                 </h2>
-                <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base">
-                  One partner from specification through support. Every capability below is designed to reduce delay, protect output, and keep decisions simple.
-                </p>
+                <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base" data-tina-field={capabilityIntroBody.field}>{capabilityIntroBody.value}</p>
               </Reveal>
 
               <Reveal as="div" className={`${getGradientVariant(2)} border border-white/12 p-4`} delay={0.08}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffb67f]">What You Get</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffb67f]" data-tina-field={capabilityWhatYouGet.field}>{capabilityWhatYouGet.value}</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  {[
-                    "Clear scope",
-                    "Predictable delivery",
-                    "Real support",
-                  ].map((signal, index) => (
-                    <Reveal as="div" className={`${getGradientVariant(index)} border border-white/10 px-2.5 py-2`} delay={0.12 + index * 0.05} key={signal} y={0}>
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-200">{signal}</p>
+                  {capabilityWhatYouGetItems.map((signal, index) => (
+                    <Reveal as="div" className={`${getGradientVariant(index)} border border-white/10 px-2.5 py-2`} delay={0.12 + index * 0.05} key={signal.value} y={0}>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-200" data-tina-field={signal.field}>{signal.value}</p>
                     </Reveal>
                   ))}
                 </div>
@@ -217,7 +272,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                       <SiteIcon className="size-4 text-[#ff8b2b]" icon={card.icon} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">Capability {String(index + 1).padStart(2, "0")}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300" data-tina-field={capabilityCardPrefix.field}>{capabilityCardPrefix.value} {String(index + 1).padStart(2, "0")}</p>
                       <h3 className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-white">
                         <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                       </h3>
@@ -231,23 +286,10 @@ export function HomeSections({ home }: { home: HomeContent }) {
             </div>
 
             <div className="mt-8 grid gap-3 md:grid-cols-3">
-              {[
-                {
-                  title: "Design Confidence",
-                  body: "Clear recommendations based on load profile, compliance risk, and practical site access.",
-                },
-                {
-                  title: "Delivery Discipline",
-                  body: "Structured mobilisation and commissioning workflows that reduce rework and surprise downtime.",
-                },
-                {
-                  title: "Support Readiness",
-                  body: "Escalation paths that stay active after hours, so your project is never left waiting.",
-                },
-              ].map((item, index) => (
-                <Reveal as="div" className={`${getGradientVariant(index + 1)} border border-white/10 px-4 py-3`} delay={index * 0.08} key={item.title} y={0}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]">{item.title}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]">{item.body}</p>
+              {capabilityBottomCards.map((item, index) => (
+                <Reveal as="div" className={`${getGradientVariant(index + 1)} border border-white/10 px-4 py-3`} delay={index * 0.08} key={item.title.value} y={0}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={item.title.field}>{item.title.value}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={item.body.field}>{item.body.value}</p>
                 </Reveal>
               ))}
             </div>
@@ -258,17 +300,18 @@ export function HomeSections({ home }: { home: HomeContent }) {
       <OperationalProofSection
         capabilityCards={visibleCapabilityCards}
         home={home}
+        site={site}
         stories={[...visibleProjectItems.slice(0, 2), ...visibleResourceItems.slice(0, 2)]}
       />
 
-      <PlanningSplitSection home={home} trustCards={trustStripCards} />
+      <PlanningSplitSection home={home} site={site} trustCards={trustStripCards} />
 
       <TestimonialsMarqueeSection section={home.testimonialsSection} />
 
-      <ShowcaseSection section={home.projectShowcase} />
-      <ShowcaseSection section={home.resourceShowcase} />
+      <ShowcaseSection section={home.projectShowcase} site={site} />
+      <ShowcaseSection section={home.resourceShowcase} site={site} />
 
-      <CommandCtaSection home={home} />
+      <CommandCtaSection home={home} site={site} />
 
       {home.contactPanel.visible && (
         <Reveal className="mx-auto max-w-7xl px-4 py-10 md:py-14" data-tina-field={tinaField(home, "contactPanel")}>
@@ -304,28 +347,41 @@ type TrustedLogoItem = HomeContent["trustedBySection"]["logos"][number]
 function OperationalProofSection({
   capabilityCards,
   home,
+  site,
   stories,
 }: {
   capabilityCards: IconCard[]
   home: HomeContent
+  site: SiteConfig
   stories: ShowcaseItem[]
 }) {
   if (!stories.length || !capabilityCards.length) {
     return null
   }
 
+  const sectionKicker = resolveSiteUiText(site, "home.operationalProof.kicker", "Operational Proof")
+  const sectionHeading = resolveSiteUiText(
+    site,
+    "home.operationalProof.heading",
+    "Real Deployments, Practical Guidance, Faster Decisions"
+  )
+  const sectionBody = resolveSiteUiText(
+    site,
+    "home.operationalProof.body",
+    "High-trust power projects are won with proof, not promises. These project snapshots and field guides show how GenFix teams plan, deliver, and support critical power outcomes."
+  )
+  const trustedDeliverySuffix = resolveSiteUiText(site, "home.operationalProof.trustedDeliverySuffix", "Trusted Delivery")
+  const exploreStoryLabel = resolveSiteUiText(site, "home.operationalProof.exploreStoryLabel", "Explore Story")
+
   return (
     <section className="bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-20" data-tina-field={tinaField(home, "projectShowcase")}>
       <div className="mx-auto max-w-7xl px-4">
         <Reveal as="div" className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]">Operational Proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={sectionKicker.field}>{sectionKicker.value}</p>
           <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-            <KeywordGradientText text="Real Deployments, Practical Guidance, Faster Decisions" />
+            <KeywordGradientText dataTinaField={sectionHeading.field} text={sectionHeading.value} />
           </h2>
-          <p className="mt-5 text-base leading-relaxed text-[color:var(--site-text-muted)] md:text-lg">
-            High-trust power projects are won with proof, not promises. These project snapshots and field guides show how GenFix teams plan, deliver,
-            and support critical power outcomes.
-          </p>
+          <p className="mt-5 text-base leading-relaxed text-[color:var(--site-text-muted)] md:text-lg" data-tina-field={sectionBody.field}>{sectionBody.value}</p>
         </Reveal>
 
         <div className="mt-12 space-y-8">
@@ -355,7 +411,7 @@ function OperationalProofSection({
 
                   <div className="p-7 md:p-9">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={tinaField(item, "tag")}>
-                      {item.tag} / Trusted Delivery
+                      {item.tag} / <span data-tina-field={trustedDeliverySuffix.field}>{trustedDeliverySuffix.value}</span>
                     </p>
                     <h3 className="mt-3 text-2xl font-semibold text-white">
                       <KeywordGradientText dataTinaField={tinaField(item, "title")} text={item.title} />
@@ -394,7 +450,7 @@ function OperationalProofSection({
                         href={item.href}
                         quoteLabel={item.title}
                       >
-                        Explore Story
+                        <span data-tina-field={exploreStoryLabel.field}>{exploreStoryLabel.value}</span>
                         <ArrowRight aria-hidden className="size-3.5" />
                       </QuoteAwareLink>
                       <HeroAction action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} />
@@ -412,12 +468,31 @@ function OperationalProofSection({
 
 function PlanningSplitSection({
   home,
+  site,
   trustCards,
 }: {
   home: HomeContent
+  site: SiteConfig
   trustCards: HomeContent["spotlightCards"]
 }) {
   const featureImage = home.resourceShowcase.items.find((item) => item.visible)?.image ?? home.hero.backgroundImage
+  const responseDisciplineLabel = resolveSiteUiText(site, "home.planning.responseDisciplineLabel", "Response Discipline")
+  const responseDisciplineBody = resolveSiteUiText(
+    site,
+    "home.planning.responseDisciplineBody",
+    "From first call to handover, your plan is shaped around uptime, straightforward communication, and fast site-readiness."
+  )
+  const planningKicker = resolveSiteUiText(site, "home.planning.kicker", "High Trust Planning")
+  const planningHeading = resolveSiteUiText(
+    site,
+    "home.planning.heading",
+    "One Team Across Sales, Hire, Service, and Support"
+  )
+  const planningBodySuffix = resolveSiteUiText(
+    site,
+    "home.planning.bodySuffix",
+    "We combine product guidance, hire flexibility, and support planning so your team can lock in power decisions with confidence."
+  )
 
   return (
     <section className="bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)] py-20" data-tina-field={tinaField(home, "contactPanel")}>
@@ -429,21 +504,18 @@ function PlanningSplitSection({
           <Image alt="GenFix field planning" className="h-full w-full object-cover" height={900} src={featureImage} width={1200} />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,10,16,0.25)_0%,rgba(8,15,24,0.76)_100%)]" />
           <div className="absolute bottom-5 left-5 right-5 rounded-sm border border-white/14 bg-[#0f1f31]/86 p-4 backdrop-blur">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]">Response Discipline</p>
-            <p className="mt-2 text-sm text-slate-200">
-              From first call to handover, your plan is shaped around uptime, straightforward communication, and fast site-readiness.
-            </p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={responseDisciplineLabel.field}>{responseDisciplineLabel.value}</p>
+            <p className="mt-2 text-sm text-slate-200" data-tina-field={responseDisciplineBody.field}>{responseDisciplineBody.value}</p>
           </div>
         </div>
 
         <div className="p-7 md:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]">High Trust Planning</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={planningKicker.field}>{planningKicker.value}</p>
           <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-            <KeywordGradientText text="One Team Across Sales, Hire, Service, and Support" />
+            <KeywordGradientText dataTinaField={planningHeading.field} text={planningHeading.value} />
           </h2>
           <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(home.contactPanel, "body")}>
-            {home.contactPanel.body} We combine product guidance, hire flexibility, and support planning so your team can lock in power decisions with
-            confidence.
+            {home.contactPanel.body} <span data-tina-field={planningBodySuffix.field}>{planningBodySuffix.value}</span>
           </p>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-3">
@@ -539,10 +611,12 @@ function TestimonialsMarqueeSection({ section }: { section: HomeContent["testimo
   )
 }
 
-function TrustedByMarqueeSection({ section }: { section: HomeContent["trustedBySection"] }) {
+function TrustedByMarqueeSection({ section, site }: { section: HomeContent["trustedBySection"]; site: SiteConfig }) {
   if (!section.visible || !section.logos.length) {
     return null
   }
+
+  const partnerBandLabel = resolveSiteUiText(site, "home.trustedBy.partnerBandLabel", "Infinite partner band")
 
   const marqueeItems: TrustedLogoItem[] = [...section.logos, ...section.logos, ...section.logos]
 
@@ -558,7 +632,7 @@ function TrustedByMarqueeSection({ section }: { section: HomeContent["trustedByS
               {section.title}
             </h2>
           </div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-300">Infinite partner band</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-300" data-tina-field={partnerBandLabel.field}>{partnerBandLabel.value}</p>
         </Reveal>
       </div>
 
@@ -586,7 +660,37 @@ function TrustedByMarqueeSection({ section }: { section: HomeContent["trustedByS
   )
 }
 
-function CommandCtaSection({ home }: { home: HomeContent }) {
+function CommandCtaSection({ home, site }: { home: HomeContent; site: SiteConfig }) {
+  const nextStepKicker = resolveSiteUiText(site, "home.commandCta.kicker", "Immediate Next Step")
+  const nextStepHeading = resolveSiteUiText(
+    site,
+    "home.commandCta.heading",
+    "Start With A Fast Scope Call, Leave With A Clear Power Plan"
+  )
+  const nextStepBodySuffix = resolveSiteUiText(
+    site,
+    "home.commandCta.bodySuffix",
+    "Talk to a specialist and get a practical recommendation for sizing, timeline, and on-site support options."
+  )
+  const trustSnippetTitle1 = resolveSiteUiText(site, "home.commandCta.trustSnippet.title.1", "Transparent Technical Advice")
+  const trustSnippetBody1 = resolveSiteUiText(
+    site,
+    "home.commandCta.trustSnippet.body.1",
+    "Clear options around duty cycle, runtime, and compliance so project teams can decide quickly."
+  )
+  const trustSnippetTitle2 = resolveSiteUiText(site, "home.commandCta.trustSnippet.title.2", "Field-Tested Delivery Workflow")
+  const trustSnippetBody2 = resolveSiteUiText(
+    site,
+    "home.commandCta.trustSnippet.body.2",
+    "Sales, rental, and support teams stay coordinated from quote through commissioning and handover."
+  )
+  const trustSnippetTitle3 = resolveSiteUiText(site, "home.commandCta.trustSnippet.title.3", "Fast Escalation Path")
+  const trustSnippetBody3 = resolveSiteUiText(
+    site,
+    "home.commandCta.trustSnippet.body.3",
+    "When conditions shift on site, your team has a direct route to practical support and backup actions."
+  )
+
   return (
     <section className="bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-16" data-tina-field={tinaField(home, "hero")}>
       <div className="mx-auto max-w-7xl px-4">
@@ -596,12 +700,12 @@ function CommandCtaSection({ home }: { home: HomeContent }) {
         >
           <div className="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
             <Reveal as="div" y={0}>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]">Immediate Next Step</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]" data-tina-field={nextStepKicker.field}>{nextStepKicker.value}</p>
               <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-                <KeywordGradientText text="Start With A Fast Scope Call, Leave With A Clear Power Plan" />
+                <KeywordGradientText dataTinaField={nextStepHeading.field} text={nextStepHeading.value} />
               </h2>
               <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(home.hero, "subheading")}>
-                {home.hero.subheading} Talk to a specialist and get a practical recommendation for sizing, timeline, and on-site support options.
+                {home.hero.subheading} <span data-tina-field={nextStepBodySuffix.field}>{nextStepBodySuffix.value}</span>
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <HeroAction action={home.hero.primaryAction} field={tinaField(home.hero, "primaryAction")} />
@@ -612,23 +716,29 @@ function CommandCtaSection({ home }: { home: HomeContent }) {
             <div className="grid gap-3">
               <Reveal as="div" y={0}>
                 <TrustSnippet
+                  bodyField={trustSnippetBody1.field}
                   icon={ShieldCheck}
-                  title="Transparent Technical Advice"
-                  body="Clear options around duty cycle, runtime, and compliance so project teams can decide quickly."
+                  title={trustSnippetTitle1.value}
+                  titleField={trustSnippetTitle1.field}
+                  body={trustSnippetBody1.value}
                 />
               </Reveal>
               <Reveal as="div" delay={0.08} y={0}>
                 <TrustSnippet
+                  bodyField={trustSnippetBody2.field}
                   icon={BadgeCheck}
-                  title="Field-Tested Delivery Workflow"
-                  body="Sales, rental, and support teams stay coordinated from quote through commissioning and handover."
+                  title={trustSnippetTitle2.value}
+                  titleField={trustSnippetTitle2.field}
+                  body={trustSnippetBody2.value}
                 />
               </Reveal>
               <Reveal as="div" delay={0.16} y={0}>
                 <TrustSnippet
+                  bodyField={trustSnippetBody3.field}
                   icon={PhoneCall}
-                  title="Fast Escalation Path"
-                  body="When conditions shift on site, your team has a direct route to practical support and backup actions."
+                  title={trustSnippetTitle3.value}
+                  titleField={trustSnippetTitle3.field}
+                  body={trustSnippetBody3.value}
                 />
               </Reveal>
             </div>
@@ -641,22 +751,26 @@ function CommandCtaSection({ home }: { home: HomeContent }) {
 
 function TrustSnippet({
   body,
+  bodyField,
   icon: Icon,
   title,
+  titleField,
 }: {
   body: string
+  bodyField?: string
   icon: typeof ShieldCheck
   title: string
+  titleField?: string
 }) {
   return (
     <div className={`${getGradientVariant(2)} rounded-sm border border-white/12 px-4 py-3`}>
       <div className="flex items-start gap-2.5">
         <Icon aria-hidden className="mt-0.5 size-4 shrink-0 text-[#ff9d4a]" />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white" data-tina-field={titleField}>
             <KeywordGradientText text={title} />
           </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-[color:var(--site-text-muted)]">{body}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={bodyField}>{body}</p>
         </div>
       </div>
     </div>
@@ -707,8 +821,10 @@ function HeroAction({
 
 function ShowcaseSection({
   section,
+  site,
 }: {
   section: HomeContent["projectShowcase"] | HomeContent["resourceShowcase"]
+  site: SiteConfig
 }) {
   if (!section.visible) {
     return null
@@ -716,6 +832,8 @@ function ShowcaseSection({
 
   const visibleItems = section.items.filter((item) => item.visible)
   const leadSummary = visibleItems[0]?.summary
+  const secondaryCtaLabel = resolveSiteUiText(site, "home.showcase.secondaryCtaLabel", "Request A Quote /")
+  const readMoreLabel = resolveSiteUiText(site, "home.showcase.readMoreLabel", "Read More /")
 
   return (
     <section
@@ -742,9 +860,9 @@ function ShowcaseSection({
             <QuoteAwareLink
               className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition hover:text-[#ff9d4a]"
               href="/contact"
-              quoteLabel="Request A Quote"
+              quoteLabel={secondaryCtaLabel.value}
             >
-              Request A Quote /
+              <span data-tina-field={secondaryCtaLabel.field}>{secondaryCtaLabel.value}</span>
             </QuoteAwareLink>
           </div>
         </Reveal>
@@ -801,7 +919,7 @@ function ShowcaseSection({
                   data-tina-field={tinaField(item, "href")}
                   href={item.href}
                 >
-                  Read More /
+                  <span data-tina-field={readMoreLabel.field}>{readMoreLabel.value}</span>
                 </QuoteAwareLink>
               </div>
             </Reveal>

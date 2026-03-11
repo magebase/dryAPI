@@ -116,7 +116,12 @@ cat > "${client_dir}/wrangler.site.jsonc" <<EOF
   "vars": {
     "CALCOM_INTERNAL_BASE_URL": "https://schedule.${public_host}",
     "NEXT_PUBLIC_PLAN_TIER": "basic",
-    "NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID": ""
+    "NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID": "",
+    "NEXT_PUBLIC_FEATURE_AI_CHATBOT_ENABLED": "true",
+    "NEXT_PUBLIC_FEATURE_CALCOM_BOOKING_ENABLED": "true",
+    "NEXT_PUBLIC_FEATURE_STRIPE_DEPOSITS_ENABLED": "false",
+    "NEXT_PUBLIC_FEATURE_BLOG_MANUAL_ENABLED": "true",
+    "NEXT_PUBLIC_FEATURE_INTERNATIONALIZATION_ENABLED": "false"
   },
   "images": {
     "binding": "IMAGES"
@@ -327,14 +332,23 @@ EOF
 
 cat > "${client_dir}/service-packages.json" <<EOF
 {
+  "oneDayDeploymentFeasible": true,
+  "automationEngine": "cloudflare-workflows",
+  "aiChatbotDefaultIncluded": false,
   "tiers": [
     {
       "id": "basic",
-      "targetSetupWindowHours": "3-4",
+      "displayName": "Starter",
+      "priceMonthly": 89,
+      "setupFeeOneTime": 0,
+      "targetSetupWindowHours": "8-12",
       "includes": [
-        "Marketing site (3 pages)",
-        "Cal.com self-hosted booking",
-        "AI FAQ chat widget"
+        "Template-based marketing site (1-3 pages)",
+        "Quote and lead capture forms",
+        "Self-hosted Cal.com booking",
+        "Brevo transactional + marketing email notifications",
+        "SSL + Cloudflare Turnstile protection",
+        "Microsoft Clarity basic heatmaps and analytics"
       ],
       "analytics": {
         "microsoftClarity": false
@@ -342,12 +356,16 @@ cat > "${client_dir}/service-packages.json" <<EOF
     },
     {
       "id": "growth",
-      "targetSetupWindowHours": "4-6",
+      "displayName": "Growth",
+      "priceMonthly": 279,
+      "setupFeeOneTime": 99,
+      "targetSetupWindowHours": "12-18",
       "includes": [
-        "Marketing site (3-5 pages)",
-        "Cal.com booking + reminders",
-        "Brevo email/SMS follow-ups",
-        "Cloudflare Workflow lead and review automations"
+        "Everything in Starter",
+        "Brevo SMS alerts and reminders",
+        "Lead tracking dashboard",
+        "Stripe appointment deposits",
+        "Cloudflare Workflow automations (email/SMS reminders, abandoned-form recovery, lead follow-up)"
       ],
       "analytics": {
         "microsoftClarity": true
@@ -355,12 +373,16 @@ cat > "${client_dir}/service-packages.json" <<EOF
     },
     {
       "id": "pro",
-      "targetSetupWindowHours": "6-8",
+      "displayName": "Pro",
+      "priceMonthly": 599,
+      "setupFeeOneTime": 149,
+      "targetSetupWindowHours": "18-24",
       "includes": [
         "Everything in Growth",
-        "Pro automation workflow pack",
-        "CRM sync (HubSpot/Salesforce/Zoho)",
-        "KPI dashboard logging"
+        "Advanced analytics dashboards with Microsoft Clarity",
+        "Review automation (Google/Yelp follow-up workflows)",
+        "Cloudflare Workflow automations for upsells, VIP notifications, lost-lead recovery, KPI sync",
+        "Multi-seat access (up to 5 included)"
       ],
       "analytics": {
         "microsoftClarity": true
@@ -374,29 +396,47 @@ cat > "${client_dir}/service-packages.json" <<EOF
   "crmOptions": ["hubspot", "salesforce", "zoho"],
   "addOns": [
     {
+      "id": "ai-chatbot",
+      "label": "AI chatbot",
+      "priceMonthly": 99,
+      "note": "Prebuilt lead-capture, FAQ, and upsell flows",
+      "platform": "cloudflare-ai-search",
+      "billing": "flat-rate"
+    },
+    {
       "id": "extra-pages",
       "label": "Extra pages",
-      "priceMonthly": 20,
+      "priceMonthly": 29,
       "unit": "per page"
     },
     {
-      "id": "seo-optimization-manual",
-      "label": "SEO optimization (manual)",
-      "priceMonthly": 99,
-      "note": "Developer-run process; edits made later by the client can affect outcomes"
+      "id": "internationalization",
+      "label": "Internationalization",
+      "priceMonthly": 49,
+      "unit": "per language"
     },
     {
-      "id": "ai-autoblogger",
-      "label": "AI powered autoblogger",
-      "priceMonthly": 49,
+      "id": "manual-blog",
+      "label": "Manual blog",
+      "priceMonthly": 59
+    },
+    {
+      "id": "automatic-blog-daily",
+      "label": "Automatic blog (daily posts)",
+      "priceMonthly": 119,
       "model": "gemini-3-flash"
     },
     {
-      "id": "advanced-ai-chatbot",
-      "label": "Advanced AI chatbot",
-      "priceMonthly": 79,
-      "platform": "cloudflare-ai-search",
-      "billing": "overage"
+      "id": "extra-seats",
+      "label": "Extra seats",
+      "priceMonthly": 29,
+      "unit": "per seat"
+    },
+    {
+      "id": "retainer-hourly",
+      "label": "Retainer",
+      "priceMonthly": 99,
+      "unit": "per hour"
     }
   ]
 }
@@ -541,6 +581,26 @@ cat > "${client_dir}/automation.env.example" <<EOF
 NEXT_PUBLIC_PLAN_TIER=pro
 NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID=
 
+# Feature toggles (set to true/false)
+NEXT_PUBLIC_FEATURE_AI_CHATBOT_ENABLED=true
+FEATURE_AI_CHATBOT_ENABLED=true
+NEXT_PUBLIC_FEATURE_CALCOM_BOOKING_ENABLED=true
+FEATURE_CALCOM_BOOKING_ENABLED=true
+NEXT_PUBLIC_FEATURE_STRIPE_DEPOSITS_ENABLED=false
+FEATURE_STRIPE_DEPOSITS_ENABLED=false
+NEXT_PUBLIC_FEATURE_BLOG_MANUAL_ENABLED=true
+FEATURE_BLOG_MANUAL_ENABLED=true
+FEATURE_BLOG_AUTOMATIC_ENABLED=true
+NEXT_PUBLIC_FEATURE_INTERNATIONALIZATION_ENABLED=false
+FEATURE_CRM_DASHBOARD_ENABLED=true
+FEATURE_CRM_WORKFLOW_AUTOMATIONS_ENABLED=true
+FEATURE_CRM_MAILING_LIST_SYNC_ENABLED=true
+FEATURE_BREVO_EMAIL_NOTIFICATIONS_ENABLED=true
+FEATURE_BREVO_SMS_NOTIFICATIONS_ENABLED=true
+FEATURE_WORKFLOW_AUTOMATIONS_ENABLED=true
+FEATURE_WORKFLOW_ENABLED_KINDS=
+FEATURE_WORKFLOW_DISABLED_KINDS=
+
 # CRM provider (top-3 marketshare options)
 CRM_PROVIDER=hubspot
 HUBSPOT_PRIVATE_APP_TOKEN=
@@ -562,11 +622,11 @@ BREVO_FROM_NAME=${client_slug^} Ops
 BREVO_SMS_SENDER=
 BREVO_SMS_WEBHOOK_TOKEN=
 
-# Add-on: AI autoblogger
+# Add-on: Automatic blog (daily posts)
 AUTOBLOGGER_MODEL=gemini-3-flash
 GEMINI_API_KEY=
 
-# Add-on: Advanced AI chatbot (Cloudflare AI Search)
+# Add-on: AI chatbot (Cloudflare AI Search)
 CLOUDFLARE_AI_SEARCH_ACCOUNT_ID=
 CLOUDFLARE_AI_SEARCH_API_TOKEN=
 CLOUDFLARE_AI_SEARCH_INDEX=
