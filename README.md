@@ -378,6 +378,8 @@ What it does on every commit push:
 Secret sync script:
 
 - `scripts/sync-github-secrets.sh`
+- Secret sync runs in parallel with `SYNC_SECRET_CONCURRENCY` set to `8` or `16` (default `8`).
+- In GitHub Actions, set repository variable `SYNC_SECRET_CONCURRENCY` to `8` or `16` to control parallelism.
 
 GitHub repository secrets expected by the workflow:
 

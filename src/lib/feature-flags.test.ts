@@ -4,6 +4,7 @@ import {
   isAiChatbotEnabledServer,
   isCrmDashboardEnabled,
   isCrmWorkflowAutomationsEnabled,
+  isPwaEnabledServer,
   isWorkflowKindEnabled,
   resolveEnabledWorkflowKinds,
 } from "@/lib/feature-flags"
@@ -11,6 +12,7 @@ import {
 describe("feature flags", () => {
   it("defaults to enabled for operational features when unset", () => {
     expect(isAiChatbotEnabledServer({} as NodeJS.ProcessEnv)).toBe(true)
+    expect(isPwaEnabledServer({} as NodeJS.ProcessEnv)).toBe(true)
     expect(isCrmDashboardEnabled({} as NodeJS.ProcessEnv)).toBe(true)
     expect(isCrmWorkflowAutomationsEnabled({} as NodeJS.ProcessEnv)).toBe(true)
   })
@@ -18,11 +20,13 @@ describe("feature flags", () => {
   it("supports explicit false values", () => {
     const env = {
       FEATURE_AI_CHATBOT_ENABLED: "false",
+      FEATURE_PWA_ENABLED: "false",
       FEATURE_CRM_DASHBOARD_ENABLED: "0",
       FEATURE_CRM_WORKFLOW_AUTOMATIONS_ENABLED: "false",
     } as NodeJS.ProcessEnv
 
     expect(isAiChatbotEnabledServer(env)).toBe(false)
+    expect(isPwaEnabledServer(env)).toBe(false)
     expect(isCrmDashboardEnabled(env)).toBe(false)
     expect(isCrmWorkflowAutomationsEnabled(env)).toBe(false)
   })

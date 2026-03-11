@@ -46,9 +46,15 @@ importers:
       '@tinacms/datalayer':
         specifier: 2.0.12
         version: 2.0.12(react@19.2.3)(typescript@5.9.3)
+      '@tinacms/graphql':
+        specifier: 2.2.0
+        version: 2.2.0(react@19.2.3)(typescript@5.9.3)
       '@tinacms/mdx':
         specifier: 2.0.7
         version: 2.0.7(react@19.2.3)(typescript@5.9.3)(yup@1.7.1)
+      '@tinacms/schema-tools':
+        specifier: 2.7.0
+        version: 2.7.0(react@19.2.3)(yup@1.7.1)
       '@unkey/api':
         specifier: ^2.3.1
         version: 2.3.1

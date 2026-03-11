@@ -155,6 +155,7 @@ afterEach(() => {
   delete process.env.NEXT_PUBLIC_PLAN_TIER
   delete process.env.NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID
   delete process.env.NEXT_PUBLIC_FEATURE_AI_CHATBOT_ENABLED
+  delete process.env.NEXT_PUBLIC_FEATURE_PWA_ENABLED
 })
 
 describe("SiteFrame", () => {
@@ -224,5 +225,17 @@ describe("SiteFrame", () => {
     )
 
     expect(screen.queryByTestId("chat-widget")).toBeNull()
+  })
+
+  it("does not render install CTA when PWA feature flag is disabled", () => {
+    process.env.NEXT_PUBLIC_FEATURE_PWA_ENABLED = "false"
+
+    render(
+      <SiteFrame site={siteFixtureWithAddress}>
+        <main data-testid="page-content">Page content</main>
+      </SiteFrame>
+    )
+
+    expect(screen.queryByTestId("pwa-install-cta")).toBeNull()
   })
 })

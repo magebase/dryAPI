@@ -8,7 +8,7 @@ import { PlanTierClaritySlot } from "@/components/site/plan-tier-clarity-slot"
 import { PwaInstallCta } from "@/components/site/pwa-install-cta"
 import { SiteFooter } from "@/components/site/site-footer"
 import { SiteHeader } from "@/components/site/site-header"
-import { isAiChatbotEnabledClient } from "@/lib/feature-flags"
+import { isAiChatbotEnabledClient, isPwaEnabledClient } from "@/lib/feature-flags"
 import { getClarityProjectIdFromEnv, getPlanTierFromEnv } from "@/lib/plan-tier"
 import type { SiteConfig } from "@/lib/site-content-schema"
 
@@ -52,6 +52,7 @@ export function SiteFrame({ site, children }: { site: SiteConfig; children: Reac
   const planTier = getPlanTierFromEnv()
   const clarityProjectId = getClarityProjectIdFromEnv()
   const chatbotEnabled = isAiChatbotEnabledClient()
+  const pwaEnabled = isPwaEnabledClient()
   const siteUrl = normalizeSiteUrl()
   const telephone = resolveTelephone(site)
   const sameAs = resolveSameAs(site)
@@ -84,7 +85,7 @@ export function SiteFrame({ site, children }: { site: SiteConfig; children: Reac
       <SiteHeader pathname={currentPath} site={site} />
       {children}
       <SiteFooter site={site} />
-      <PwaInstallCta />
+      {pwaEnabled ? <PwaInstallCta /> : null}
       {chatbotEnabled ? <AiSalesChatWidget pathname={currentPath} /> : null}
       <PlanTierClaritySlot clarityProjectId={clarityProjectId} planTier={planTier} />
     </div>

@@ -96,6 +96,10 @@ export function isInternationalizationEnabledClient(env: NodeJS.ProcessEnv = pro
   return readFlag(env, "NEXT_PUBLIC_FEATURE_INTERNATIONALIZATION_ENABLED", true)
 }
 
+export function isPwaEnabledClient(env: NodeJS.ProcessEnv = process.env): boolean {
+  return readFlag(env, "NEXT_PUBLIC_FEATURE_PWA_ENABLED", true)
+}
+
 export function isCalcomBookingEnabledServer(env: NodeJS.ProcessEnv = process.env): boolean {
   return readFlagWithPublicFallback({
     env,
@@ -114,6 +118,15 @@ export function isStripeDepositsEnabledServer(env: NodeJS.ProcessEnv = process.e
     env,
     serverKey: "FEATURE_STRIPE_DEPOSITS_ENABLED",
     publicKey: "NEXT_PUBLIC_FEATURE_STRIPE_DEPOSITS_ENABLED",
+    defaultValue: true,
+  })
+}
+
+export function isPwaEnabledServer(env: NodeJS.ProcessEnv = process.env): boolean {
+  return readFlagWithPublicFallback({
+    env,
+    serverKey: "FEATURE_PWA_ENABLED",
+    publicKey: "NEXT_PUBLIC_FEATURE_PWA_ENABLED",
     defaultValue: true,
   })
 }

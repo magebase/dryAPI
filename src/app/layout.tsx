@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { readSiteConfig } from "@/lib/site-content-loader";
+import { isPwaEnabledServer } from "@/lib/feature-flags";
 import { AosProvider } from "@/components/site/aos-provider";
 import { SerwistRegister } from "@/components/site/serwist-register";
 import "./globals.css";
@@ -29,42 +30,47 @@ const geistMono = Geist_Mono({
 export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig();
   const siteUrl = normalizeSiteUrl();
+  const pwaEnabled = isPwaEnabledServer();
 
   return {
     title: site.brand.mark,
     description: site.announcement,
     metadataBase: new URL(siteUrl),
     applicationName: site.brand.mark,
-    manifest: "/manifest.webmanifest",
-    appleWebApp: {
-      capable: true,
-      statusBarStyle: "default",
-      title: site.brand.mark,
-    },
+    manifest: pwaEnabled ? "/manifest.webmanifest" : undefined,
+    appleWebApp: pwaEnabled
+      ? {
+          capable: true,
+          statusBarStyle: "default",
+          title: site.brand.mark,
+        }
+      : undefined,
     formatDetection: {
       telephone: false,
     },
-    icons: {
-      icon: [
-        {
-          url: "/pwa-192x192.png",
-          sizes: "192x192",
-          type: "image/png",
-        },
-        {
-          url: "/pwa-512x512.png",
-          sizes: "512x512",
-          type: "image/png",
-        },
-      ],
-      apple: [
-        {
-          url: "/apple-touch-icon.png",
-          sizes: "180x180",
-          type: "image/png",
-        },
-      ],
-    },
+    icons: pwaEnabled
+      ? {
+          icon: [
+            {
+              url: "/pwa-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+            },
+            {
+              url: "/pwa-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+            },
+          ],
+          apple: [
+            {
+              url: "/apple-touch-icon.png",
+              sizes: "180x180",
+              type: "image/png",
+            },
+          ],
+        }
+      : undefined,
   };
 }
 
@@ -73,13 +79,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pwaEnabled = isPwaEnabledServer();
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
           <NuqsAdapter>
-            <SerwistRegister />
+            {pwaEnabled ? <SerwistRegister /> : null}
             <AosProvider>{children}</AosProvider>
           </NuqsAdapter>
       </body>

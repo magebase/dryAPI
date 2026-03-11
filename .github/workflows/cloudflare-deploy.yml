@@ -51,6 +51,7 @@ jobs:
       SYNC_SECRET_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       SYNC_SECRET_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
       SYNC_SECRET_CF_D1_DATABASE_NAME: ${{ secrets.CF_D1_DATABASE_NAME || 'genfix-db' }}
+      SYNC_SECRET_CONCURRENCY: ${{ vars.SYNC_SECRET_CONCURRENCY || '8' }}
 
     steps:
       - name: Checkout

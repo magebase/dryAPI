@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 
+import { isPwaEnabledServer } from "@/lib/feature-flags"
 import { readSiteConfig } from "@/lib/site-content-loader"
 
 const THEME_COLOR = "#ff8b2b"
@@ -7,6 +8,21 @@ const BACKGROUND_COLOR = "#0b1420"
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const site = await readSiteConfig()
+  const pwaEnabled = isPwaEnabledServer()
+
+  if (!pwaEnabled) {
+    return {
+      id: "/",
+      name: site.brand.name,
+      short_name: site.brand.mark,
+      description: site.announcement,
+      start_url: "/",
+      scope: "/",
+      display: "browser",
+      background_color: BACKGROUND_COLOR,
+      theme_color: THEME_COLOR,
+    }
+  }
 
   return {
     id: "/",

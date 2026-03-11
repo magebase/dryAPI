@@ -1,6 +1,30 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
+const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"]);
+const FALSE_VALUES = new Set(["0", "false", "no", "off", "disabled"]);
+
+function parseBooleanEnv(value: string | undefined, defaultValue: boolean): boolean {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) {
+    return defaultValue;
+  }
+
+  if (TRUE_VALUES.has(normalized)) {
+    return true;
+  }
+
+  if (FALSE_VALUES.has(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
+}
+
 const posthogDomains = [
   "https://us-assets.i.posthog.com",
   "https://us.i.posthog.com",
@@ -66,10 +90,15 @@ const adminCspValue =
     ? adminDevelopmentCsp.join(" ")
     : adminProductionCsp.join(" ");
 
+const pwaEnabled = parseBooleanEnv(
+  process.env.FEATURE_PWA_ENABLED ?? process.env.NEXT_PUBLIC_FEATURE_PWA_ENABLED,
+  true
+);
+
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV === "development" || !pwaEnabled,
 });
 
 const nextConfig: NextConfig = {
