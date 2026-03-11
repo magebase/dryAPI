@@ -526,6 +526,39 @@ export type HomeResourceShowcase = {
   items?: Maybe<Array<Maybe<HomeResourceShowcaseItems>>>;
 };
 
+export type HomeTestimonialsSectionItems = {
+  __typename?: 'HomeTestimonialsSectionItems';
+  id: Scalars['String']['output'];
+  company: Scalars['String']['output'];
+  quote: Scalars['String']['output'];
+  person: Scalars['String']['output'];
+  role: Scalars['String']['output'];
+  metric?: Maybe<Scalars['String']['output']>;
+};
+
+export type HomeTestimonialsSection = {
+  __typename?: 'HomeTestimonialsSection';
+  visible: Scalars['Boolean']['output'];
+  kicker: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  items?: Maybe<Array<Maybe<HomeTestimonialsSectionItems>>>;
+};
+
+export type HomeTrustedBySectionLogos = {
+  __typename?: 'HomeTrustedBySectionLogos';
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  abbreviation: Scalars['String']['output'];
+};
+
+export type HomeTrustedBySection = {
+  __typename?: 'HomeTrustedBySection';
+  visible: Scalars['Boolean']['output'];
+  kicker: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  logos?: Maybe<Array<Maybe<HomeTrustedBySectionLogos>>>;
+};
+
 export type HomeContactPanelPrimaryAction = {
   __typename?: 'HomeContactPanelPrimaryAction';
   label: Scalars['String']['output'];
@@ -561,6 +594,8 @@ export type Home = Node & Document & {
   capabilityCards?: Maybe<Array<Maybe<HomeCapabilityCards>>>;
   projectShowcase?: Maybe<HomeProjectShowcase>;
   resourceShowcase?: Maybe<HomeResourceShowcase>;
+  testimonialsSection?: Maybe<HomeTestimonialsSection>;
+  trustedBySection?: Maybe<HomeTrustedBySection>;
   contactPanel?: Maybe<HomeContactPanel>;
   id: Scalars['ID']['output'];
   _sys: SystemInfo;
@@ -688,6 +723,35 @@ export type HomeResourceShowcaseFilter = {
   items?: InputMaybe<HomeResourceShowcaseItemsFilter>;
 };
 
+export type HomeTestimonialsSectionItemsFilter = {
+  id?: InputMaybe<StringFilter>;
+  company?: InputMaybe<StringFilter>;
+  quote?: InputMaybe<StringFilter>;
+  person?: InputMaybe<StringFilter>;
+  role?: InputMaybe<StringFilter>;
+  metric?: InputMaybe<StringFilter>;
+};
+
+export type HomeTestimonialsSectionFilter = {
+  visible?: InputMaybe<BooleanFilter>;
+  kicker?: InputMaybe<StringFilter>;
+  title?: InputMaybe<StringFilter>;
+  items?: InputMaybe<HomeTestimonialsSectionItemsFilter>;
+};
+
+export type HomeTrustedBySectionLogosFilter = {
+  id?: InputMaybe<StringFilter>;
+  name?: InputMaybe<StringFilter>;
+  abbreviation?: InputMaybe<StringFilter>;
+};
+
+export type HomeTrustedBySectionFilter = {
+  visible?: InputMaybe<BooleanFilter>;
+  kicker?: InputMaybe<StringFilter>;
+  title?: InputMaybe<StringFilter>;
+  logos?: InputMaybe<HomeTrustedBySectionLogosFilter>;
+};
+
 export type HomeContactPanelPrimaryActionFilter = {
   label?: InputMaybe<StringFilter>;
   href?: InputMaybe<StringFilter>;
@@ -719,6 +783,8 @@ export type HomeFilter = {
   capabilityCards?: InputMaybe<HomeCapabilityCardsFilter>;
   projectShowcase?: InputMaybe<HomeProjectShowcaseFilter>;
   resourceShowcase?: InputMaybe<HomeResourceShowcaseFilter>;
+  testimonialsSection?: InputMaybe<HomeTestimonialsSectionFilter>;
+  trustedBySection?: InputMaybe<HomeTrustedBySectionFilter>;
   contactPanel?: InputMaybe<HomeContactPanelFilter>;
 };
 
@@ -1274,6 +1340,35 @@ export type HomeResourceShowcaseMutation = {
   items?: InputMaybe<Array<InputMaybe<HomeResourceShowcaseItemsMutation>>>;
 };
 
+export type HomeTestimonialsSectionItemsMutation = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  company?: InputMaybe<Scalars['String']['input']>;
+  quote?: InputMaybe<Scalars['String']['input']>;
+  person?: InputMaybe<Scalars['String']['input']>;
+  role?: InputMaybe<Scalars['String']['input']>;
+  metric?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type HomeTestimonialsSectionMutation = {
+  visible?: InputMaybe<Scalars['Boolean']['input']>;
+  kicker?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  items?: InputMaybe<Array<InputMaybe<HomeTestimonialsSectionItemsMutation>>>;
+};
+
+export type HomeTrustedBySectionLogosMutation = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  abbreviation?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type HomeTrustedBySectionMutation = {
+  visible?: InputMaybe<Scalars['Boolean']['input']>;
+  kicker?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  logos?: InputMaybe<Array<InputMaybe<HomeTrustedBySectionLogosMutation>>>;
+};
+
 export type HomeContactPanelPrimaryActionMutation = {
   label?: InputMaybe<Scalars['String']['input']>;
   href?: InputMaybe<Scalars['String']['input']>;
@@ -1305,6 +1400,8 @@ export type HomeMutation = {
   capabilityCards?: InputMaybe<Array<InputMaybe<HomeCapabilityCardsMutation>>>;
   projectShowcase?: InputMaybe<HomeProjectShowcaseMutation>;
   resourceShowcase?: InputMaybe<HomeResourceShowcaseMutation>;
+  testimonialsSection?: InputMaybe<HomeTestimonialsSectionMutation>;
+  trustedBySection?: InputMaybe<HomeTrustedBySectionMutation>;
   contactPanel?: InputMaybe<HomeContactPanelMutation>;
 };
 
@@ -1409,7 +1506,7 @@ export type RoutePagesMutation = {
 
 export type SiteConfigPartsFragment = { __typename: 'SiteConfig', announcement: string, brand?: { __typename: 'SiteConfigBrand', name: string, mark: string } | null, contact?: { __typename: 'SiteConfigContact', contactEmail: string, quoteEmail: string } | null, header?: { __typename: 'SiteConfigHeader', primaryLinks?: Array<{ __typename: 'SiteConfigHeaderPrimaryLinks', label: string, href: string } | null> | null, phone?: { __typename: 'SiteConfigHeaderPhone', label: string, href: string } | null, quoteCta?: { __typename: 'SiteConfigHeaderQuoteCta', label: string, href: string, style: string } | null } | null, footer?: { __typename: 'SiteConfigFooter', companyText: string, contactLinks?: Array<{ __typename: 'SiteConfigFooterContactLinks', label: string, href: string } | null> | null, socialLinks?: Array<{ __typename: 'SiteConfigFooterSocialLinks', label: string, href: string, icon: string } | null> | null, columns?: Array<{ __typename: 'SiteConfigFooterColumns', title: string, links?: Array<{ __typename: 'SiteConfigFooterColumnsLinks', label: string, href: string } | null> | null } | null> | null, legalLinks?: Array<{ __typename: 'SiteConfigFooterLegalLinks', label: string, href: string } | null> | null } | null };
 
-export type HomePartsFragment = { __typename: 'Home', seoTitle: string, seoDescription: string, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null };
+export type HomePartsFragment = { __typename: 'Home', seoTitle: string, seoDescription: string, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, testimonialsSection?: { __typename: 'HomeTestimonialsSection', visible: boolean, kicker: string, title: string, items?: Array<{ __typename: 'HomeTestimonialsSectionItems', id: string, company: string, quote: string, person: string, role: string, metric?: string | null } | null> | null } | null, trustedBySection?: { __typename: 'HomeTrustedBySection', visible: boolean, kicker: string, title: string, logos?: Array<{ __typename: 'HomeTrustedBySectionLogos', id: string, name: string, abbreviation: string } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null };
 
 export type BlogPostsPartsFragment = { __typename: 'BlogPosts', slug: string, title: string, excerpt: string, seoTitle: string, seoDescription: string, publishedAt: string, coverImage: string, tags: Array<string>, author?: { __typename: 'BlogPostsAuthor', name: string, role: string } | null, sections?: Array<{ __typename: 'BlogPostsSections', id: string, heading: string, body: string } | null> | null };
 
@@ -1439,7 +1536,7 @@ export type HomeQueryVariables = Exact<{
 }>;
 
 
-export type HomeQuery = { __typename?: 'Query', home: { __typename: 'Home', id: string, seoTitle: string, seoDescription: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null } };
+export type HomeQuery = { __typename?: 'Query', home: { __typename: 'Home', id: string, seoTitle: string, seoDescription: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, testimonialsSection?: { __typename: 'HomeTestimonialsSection', visible: boolean, kicker: string, title: string, items?: Array<{ __typename: 'HomeTestimonialsSectionItems', id: string, company: string, quote: string, person: string, role: string, metric?: string | null } | null> | null } | null, trustedBySection?: { __typename: 'HomeTrustedBySection', visible: boolean, kicker: string, title: string, logos?: Array<{ __typename: 'HomeTrustedBySectionLogos', id: string, name: string, abbreviation: string } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null } };
 
 export type HomeConnectionQueryVariables = Exact<{
   before?: InputMaybe<Scalars['String']['input']>;
@@ -1451,7 +1548,7 @@ export type HomeConnectionQueryVariables = Exact<{
 }>;
 
 
-export type HomeConnectionQuery = { __typename?: 'Query', homeConnection: { __typename?: 'HomeConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'HomeConnectionEdges', cursor: string, node?: { __typename: 'Home', id: string, seoTitle: string, seoDescription: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null } | null } | null> | null } };
+export type HomeConnectionQuery = { __typename?: 'Query', homeConnection: { __typename?: 'HomeConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean, startCursor: string, endCursor: string }, edges?: Array<{ __typename?: 'HomeConnectionEdges', cursor: string, node?: { __typename: 'Home', id: string, seoTitle: string, seoDescription: string, _sys: { __typename?: 'SystemInfo', filename: string, basename: string, hasReferences?: boolean | null, breadcrumbs: Array<string>, path: string, relativePath: string, extension: string }, hero?: { __typename: 'HomeHero', visible: boolean, kicker: string, heading: string, subheading: string, backgroundImage: string, primaryAction?: { __typename: 'HomeHeroPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeHeroSecondaryAction', label: string, href: string, style: string } | null, tertiaryAction?: { __typename: 'HomeHeroTertiaryAction', label: string, href: string, style: string } | null } | null, spotlightSection?: { __typename: 'HomeSpotlightSection', visible: boolean, kicker: string, title: string } | null, spotlightCards?: Array<{ __typename: 'HomeSpotlightCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, capabilitySection?: { __typename: 'HomeCapabilitySection', visible: boolean, kicker: string, title: string } | null, capabilityCards?: Array<{ __typename: 'HomeCapabilityCards', id: string, visible: boolean, title: string, description: string, icon: string } | null> | null, projectShowcase?: { __typename: 'HomeProjectShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeProjectShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeProjectShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, resourceShowcase?: { __typename: 'HomeResourceShowcase', visible: boolean, title: string, ctaLabel: string, ctaHref: string, items?: Array<{ __typename: 'HomeResourceShowcaseItems', id: string, visible: boolean, title: string, summary: string, image: string, href: string, tag: string, galleryImages?: Array<{ __typename: 'HomeResourceShowcaseItemsGalleryImages', id: string, src: string, alt?: string | null, caption?: string | null } | null> | null } | null> | null } | null, testimonialsSection?: { __typename: 'HomeTestimonialsSection', visible: boolean, kicker: string, title: string, items?: Array<{ __typename: 'HomeTestimonialsSectionItems', id: string, company: string, quote: string, person: string, role: string, metric?: string | null } | null> | null } | null, trustedBySection?: { __typename: 'HomeTrustedBySection', visible: boolean, kicker: string, title: string, logos?: Array<{ __typename: 'HomeTrustedBySectionLogos', id: string, name: string, abbreviation: string } | null> | null } | null, contactPanel?: { __typename: 'HomeContactPanel', visible: boolean, kicker: string, heading: string, body: string, primaryAction?: { __typename: 'HomeContactPanelPrimaryAction', label: string, href: string, style: string } | null, secondaryAction?: { __typename: 'HomeContactPanelSecondaryAction', label: string, href: string, style: string } | null } | null } | null } | null> | null } };
 
 export type BlogPostsQueryVariables = Exact<{
   relativePath: Scalars['String']['input'];
@@ -1660,6 +1757,33 @@ export const HomePartsFragmentDoc = gql`
       }
       href
       tag
+    }
+  }
+  testimonialsSection {
+    __typename
+    visible
+    kicker
+    title
+    items {
+      __typename
+      id
+      company
+      quote
+      person
+      role
+      metric
+    }
+  }
+  trustedBySection {
+    __typename
+    visible
+    kicker
+    title
+    logos {
+      __typename
+      id
+      name
+      abbreviation
     }
   }
   contactPanel {

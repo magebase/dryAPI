@@ -70,10 +70,14 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
             {page.hero.body}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            {page.hero.actions.map((action) => (
+            {page.hero.actions.map((action, index) => (
               <QuoteAwareLink
                 key={`${action.href}-${action.label}`}
-                className="inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
+                className={`inline-flex w-full justify-center rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition sm:w-auto ${
+                  index === 0
+                    ? "border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] hover:brightness-110"
+                    : "border border-[#ff8b2b] text-[#ff8b2b] hover:bg-[#ff8b2b] hover:text-white"
+                }`}
                 data-tina-field={tinaField(action)}
                 href={action.href}
                 quoteLabel={action.label}
@@ -128,7 +132,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                 {featuredPost.excerpt}
               </p>
               <QuoteAwareLink
-                className="inline-flex rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white"
+                className="inline-flex rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
                 data-tina-field={tinaField(featuredPost, "slug")}
                 href={`/blog/${featuredPost.slug}`}
               >
@@ -251,7 +255,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
-              className="inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
+              className="inline-flex w-full justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110 sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}
               forceQuoteModal
               href={quoteHref}

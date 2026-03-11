@@ -95,7 +95,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <QuoteAwareLink
-            className="inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
+            className="inline-flex w-full justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110 sm:w-auto"
             data-tina-field={tinaField(site.header, "quoteCta")}
             forceQuoteModal
             href={quoteHref}

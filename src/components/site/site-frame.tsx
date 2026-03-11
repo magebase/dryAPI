@@ -10,7 +10,7 @@ export function SiteFrame({ site, children }: { site: SiteConfig; children: Reac
   const pathname = usePathname()
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#0b121b] text-slate-100">
+    <div className="min-h-screen overflow-x-clip bg-[linear-gradient(180deg,var(--site-surface-0)_0%,var(--site-surface-1)_45%,var(--site-surface-0)_100%)] text-[color:var(--site-text-strong)]">
       <SiteHeader pathname={pathname} site={site} />
       {children}
       <SiteFooter site={site} />

@@ -355,6 +355,100 @@
       }
     ]
   },
+  "testimonialsSection": {
+    "visible": true,
+    "kicker": "Client Testimonials",
+    "title": "What Site Teams Say After Delivery",
+    "items": [
+      {
+        "id": "testimonial-1",
+        "company": "Northline Infrastructure",
+        "quote": "GenFix stabilized our temporary works package in under 24 hours and gave us a clear staged handover plan.",
+        "person": "Riley M.",
+        "role": "Project Manager",
+        "metric": "18 day shutdown delivered"
+      },
+      {
+        "id": "testimonial-2",
+        "company": "HarborWorks Civil",
+        "quote": "The response team was practical, direct, and available after hours. We stayed online during a critical commissioning window.",
+        "person": "Asha T.",
+        "role": "Commissioning Lead",
+        "metric": "0 unplanned outages"
+      },
+      {
+        "id": "testimonial-3",
+        "company": "MetroBuild Queensland",
+        "quote": "Sizing guidance was spot on. Fuel planning and runtime forecasting removed guesswork for our night shifts.",
+        "person": "Cameron L.",
+        "role": "Site Superintendent",
+        "metric": "3 sites supported"
+      },
+      {
+        "id": "testimonial-4",
+        "company": "SunCoast Processing",
+        "quote": "From quote to commissioning, communication was tight and decisions were fast. Exactly what we needed for uptime risk.",
+        "person": "Jordan P.",
+        "role": "Operations Manager",
+        "metric": "2 week mobilisation"
+      },
+      {
+        "id": "testimonial-5",
+        "company": "Atlas Mining Services",
+        "quote": "The team adapted quickly when scope changed and still hit our delivery window without compromising safety checks.",
+        "person": "Mia R.",
+        "role": "Maintenance Coordinator",
+        "metric": "24/7 support coverage"
+      }
+    ]
+  },
+  "trustedBySection": {
+    "visible": true,
+    "kicker": "Trusted By",
+    "title": "Teams Across Construction, Utilities, and Industry",
+    "logos": [
+      {
+        "id": "logo-1",
+        "name": "Northline Infrastructure",
+        "abbreviation": "NI"
+      },
+      {
+        "id": "logo-2",
+        "name": "HarborWorks Civil",
+        "abbreviation": "HW"
+      },
+      {
+        "id": "logo-3",
+        "name": "MetroBuild Queensland",
+        "abbreviation": "MB"
+      },
+      {
+        "id": "logo-4",
+        "name": "Atlas Mining Services",
+        "abbreviation": "AM"
+      },
+      {
+        "id": "logo-5",
+        "name": "SunCoast Processing",
+        "abbreviation": "SP"
+      },
+      {
+        "id": "logo-6",
+        "name": "Pacific Grid Group",
+        "abbreviation": "PG"
+      },
+      {
+        "id": "logo-7",
+        "name": "EastGate Logistics",
+        "abbreviation": "EL"
+      },
+      {
+        "id": "logo-8",
+        "name": "IronRidge Resources",
+        "abbreviation": "IR"
+      }
+    ]
+  },
   "contactPanel": {
     "visible": true,
     "kicker": "Ready To Plan?",

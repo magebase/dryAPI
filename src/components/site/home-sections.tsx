@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { ArrowRight, BadgeCheck, CheckCircle2, PhoneCall, ShieldCheck } from "lucide-react"
+import { ArrowRight, BadgeCheck, CheckCircle2, PhoneCall, Quote, ShieldCheck } from "lucide-react"
 import { tinaField } from "tinacms/dist/react"
 
 import { Lightning } from "@/components/site/lightning"
@@ -28,30 +28,30 @@ export function HomeSections({ home }: { home: HomeContent }) {
     <>
       {home.hero.visible && (
         <section
-          className="relative isolate -mt-[var(--site-header-height)] overflow-hidden border-b border-white/10 bg-[#0d1725] pt-[var(--site-header-height)]"
+          className="relative isolate -mt-[var(--site-header-height)] overflow-hidden border-b border-white/10 bg-[linear-gradient(180deg,var(--site-surface-0)_0%,var(--site-surface-1)_100%)] pt-[var(--site-header-height)]"
           data-tina-field={tinaField(home, "hero")}
         >
           <div className="absolute inset-0" data-tina-field={tinaField(home.hero, "backgroundImage")}>
             <Lightning className="opacity-100" hue={260} intensity={3.6} size={1} speed={1} xOffset={0} />
           </div>
-          <div className="absolute inset-0 bg-[linear-gradient(92deg,rgba(6,14,23,0.68)_16%,rgba(8,18,28,0.28)_56%,rgba(7,15,25,0.68)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(95deg,rgba(7,14,23,0.82)_12%,rgba(8,18,28,0.42)_56%,rgba(7,15,25,0.84)_100%)]" />
           <div className="absolute inset-0 opacity-18 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:72px_72px]" />
           <div className="absolute -left-28 bottom-0 h-60 w-60 rounded-full bg-[#ff8b2b]/18 blur-3xl" />
           <div className="absolute -right-24 top-20 hidden h-72 w-72 rounded-full bg-[#2f4f79]/30 blur-3xl lg:block" />
           <div className="absolute right-0 top-1/2 hidden h-72 w-52 -translate-y-1/2 bg-[linear-gradient(180deg,rgba(255,139,43,0.95),rgba(255,139,43,0.18))] [clip-path:polygon(32%_0,100%_0,68%_50%,100%_100%,32%_100%,0_50%)] lg:block" />
 
           <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 md:pb-24 md:pt-24 lg:pb-32 lg:pt-32">
-            <Reveal as="div" className="text-sm uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={tinaField(home.hero, "kicker")}>
+            <Reveal as="div" className="text-sm uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={tinaField(home.hero, "kicker")}>
               {home.hero.kicker}
             </Reveal>
             <Reveal as="div" className="mt-5 max-w-3xl" delay={0.05} y={0}>
-              <h1 className="text-balance font-display text-3xl uppercase leading-[1.03] tracking-[0.015em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.35)] sm:text-4xl md:text-6xl">
+              <h1 className="text-balance font-display text-3xl uppercase leading-[1.02] tracking-[0.01em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.35)] sm:text-4xl md:text-6xl">
                 <KeywordGradientText dataTinaField={tinaField(home.hero, "heading")} text={home.hero.heading} />
               </h1>
             </Reveal>
             <Reveal
               as="div"
-              className="mt-5 max-w-xl text-pretty text-base font-medium text-slate-200/95 md:text-lg"
+              className="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-[color:var(--site-text-muted)] md:text-lg"
               delay={0.1}
               data-tina-field={tinaField(home.hero, "subheading")}
             >
@@ -80,7 +80,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                     <h2 className="mt-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
                       <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                     </h2>
-                    <p className="mt-2 text-sm text-slate-300" data-tina-field={tinaField(card, "description")}>
+                    <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
                       {card.description}
                     </p>
                   </Reveal>
@@ -91,8 +91,13 @@ export function HomeSections({ home }: { home: HomeContent }) {
         </section>
       )}
 
+      <TrustedByMarqueeSection section={home.trustedBySection} />
+
       {home.spotlightSection.visible && (
-        <section className="relative border-y border-white/8 bg-[#1a232f] py-16" data-tina-field={tinaField(home, "spotlightSection")}>
+        <section
+          className="relative border-y border-white/8 bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-20"
+          data-tina-field={tinaField(home, "spotlightSection")}
+        >
           <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:100%_40px]" />
           <div className="relative mx-auto max-w-7xl px-4">
             <div className="mb-8 grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
@@ -103,7 +108,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 <h2 className="mt-2 font-display text-3xl leading-[1.08] text-white md:text-4xl">
                   <KeywordGradientText dataTinaField={tinaField(home.spotlightSection, "title")} text={home.spotlightSection.title} />
                 </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 md:text-base">
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base">
                   Straightforward service lines for teams that need clear answers quickly. No inflated claims, just practical power planning and delivery.
                 </p>
               </Reveal>
@@ -139,12 +144,12 @@ export function HomeSections({ home }: { home: HomeContent }) {
                   <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-white">
                     <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-300" data-tina-field={tinaField(card, "description")}>
+                  <p className="mt-3 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
                     {card.description}
                   </p>
                   <div className={`${getGradientVariant(index + 2)} mt-5 border border-white/12 px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.17em] text-[#ffb67f]">Field Note</p>
-                    <p className="mt-1 text-xs text-slate-200">{spotlightMicroProofs[index] ?? spotlightMicroProofs[0]}</p>
+                    <p className="mt-1 text-xs text-slate-100">{spotlightMicroProofs[index] ?? spotlightMicroProofs[0]}</p>
                   </div>
                   <QuoteAwareLink
                     className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#ff9d4a] transition hover:text-white"
@@ -162,7 +167,10 @@ export function HomeSections({ home }: { home: HomeContent }) {
       )}
 
       {home.capabilitySection.visible && (
-        <section className="relative border-b border-white/8 bg-[#162331] py-20" data-tina-field={tinaField(home, "capabilitySection")}>
+        <section
+          className="relative border-b border-white/8 bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)] py-20"
+          data-tina-field={tinaField(home, "capabilitySection")}
+        >
           <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:36px_100%]" />
           <div className="mx-auto max-w-7xl px-4">
             <div className="mb-9 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
@@ -173,7 +181,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                 <h2 className="mt-2 font-display text-3xl leading-[1.08] text-white md:text-4xl">
                   <KeywordGradientText dataTinaField={tinaField(home.capabilitySection, "title")} text={home.capabilitySection.title} />
                 </h2>
-                <p className="mt-4 max-w-3xl text-sm text-slate-300 md:text-base">
+                <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base">
                   One partner from specification through support. Every capability below is designed to reduce delay, protect output, and keep decisions simple.
                 </p>
               </Reveal>
@@ -215,7 +223,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
                       </h3>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-slate-300" data-tina-field={tinaField(card, "description")}>
+                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
                     {card.description}
                   </p>
                 </Reveal>
@@ -239,7 +247,7 @@ export function HomeSections({ home }: { home: HomeContent }) {
               ].map((item, index) => (
                 <Reveal as="div" className={`${getGradientVariant(index + 1)} border border-white/10 px-4 py-3`} delay={index * 0.08} key={item.title} y={0}>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]">{item.title}</p>
-                  <p className="mt-2 text-sm text-slate-300">{item.body}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]">{item.body}</p>
                 </Reveal>
               ))}
             </div>
@@ -254,6 +262,8 @@ export function HomeSections({ home }: { home: HomeContent }) {
       />
 
       <PlanningSplitSection home={home} trustCards={trustStripCards} />
+
+      <TestimonialsMarqueeSection section={home.testimonialsSection} />
 
       <ShowcaseSection section={home.projectShowcase} />
       <ShowcaseSection section={home.resourceShowcase} />
@@ -288,6 +298,8 @@ export function HomeSections({ home }: { home: HomeContent }) {
 
 type ShowcaseItem = HomeContent["projectShowcase"]["items"][number]
 type IconCard = HomeContent["capabilityCards"][number]
+type TestimonialItem = HomeContent["testimonialsSection"]["items"][number]
+type TrustedLogoItem = HomeContent["trustedBySection"]["logos"][number]
 
 function OperationalProofSection({
   capabilityCards,
@@ -303,14 +315,14 @@ function OperationalProofSection({
   }
 
   return (
-    <section className="bg-[#101f31] py-20" data-tina-field={tinaField(home, "projectShowcase")}>
+    <section className="bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-20" data-tina-field={tinaField(home, "projectShowcase")}>
       <div className="mx-auto max-w-7xl px-4">
         <Reveal as="div" className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]">Operational Proof</p>
           <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
             <KeywordGradientText text="Real Deployments, Practical Guidance, Faster Decisions" />
           </h2>
-          <p className="mt-5 text-base text-slate-300 md:text-lg">
+          <p className="mt-5 text-base leading-relaxed text-[color:var(--site-text-muted)] md:text-lg">
             High-trust power projects are won with proof, not promises. These project snapshots and field guides show how GenFix teams plan, deliver,
             and support critical power outcomes.
           </p>
@@ -348,7 +360,7 @@ function OperationalProofSection({
                     <h3 className="mt-3 text-2xl font-semibold text-white">
                       <KeywordGradientText dataTinaField={tinaField(item, "title")} text={item.title} />
                     </h3>
-                    <p className="mt-4 text-base leading-relaxed text-slate-300" data-tina-field={tinaField(item, "summary")}>
+                    <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(item, "summary")}>
                       {item.summary}
                     </p>
 
@@ -367,7 +379,9 @@ function OperationalProofSection({
                             <span className="font-semibold text-white">
                               <KeywordGradientText dataTinaField={tinaField(highlight, "title")} text={`${highlight.title}:`} />
                             </span>{" "}
-                            <span data-tina-field={tinaField(highlight, "description")}>{highlight.description}</span>
+                            <span className="text-[color:var(--site-text-muted)]" data-tina-field={tinaField(highlight, "description")}>
+                              {highlight.description}
+                            </span>
                           </p>
                         </Reveal>
                       ))}
@@ -406,7 +420,7 @@ function PlanningSplitSection({
   const featureImage = home.resourceShowcase.items.find((item) => item.visible)?.image ?? home.hero.backgroundImage
 
   return (
-    <section className="bg-[#132338] py-20" data-tina-field={tinaField(home, "contactPanel")}>
+    <section className="bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)] py-20" data-tina-field={tinaField(home, "contactPanel")}>
       <Reveal
         as="div"
         className={`${getGradientVariant(3)} mx-auto grid max-w-7xl gap-0 overflow-hidden rounded-md border border-white/10 shadow-[0_22px_44px_rgba(0,0,0,0.28)] lg:grid-cols-2`}
@@ -427,7 +441,7 @@ function PlanningSplitSection({
           <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
             <KeywordGradientText text="One Team Across Sales, Hire, Service, and Support" />
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-slate-300" data-tina-field={tinaField(home.contactPanel, "body")}>
+          <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(home.contactPanel, "body")}>
             {home.contactPanel.body} We combine product guidance, hire flexibility, and support planning so your team can lock in power decisions with
             confidence.
           </p>
@@ -445,7 +459,7 @@ function PlanningSplitSection({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
                   <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                 </p>
-                <p className="mt-2 text-sm text-slate-300" data-tina-field={tinaField(card, "description")}>
+                <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
                   {card.description}
                 </p>
               </Reveal>
@@ -462,9 +476,119 @@ function PlanningSplitSection({
   )
 }
 
+function TestimonialsMarqueeSection({ section }: { section: HomeContent["testimonialsSection"] }) {
+  if (!section.visible || !section.items.length) {
+    return null
+  }
+
+  const marqueeItems: TestimonialItem[] = [...section.items, ...section.items]
+
+  return (
+    <section className="relative border-y border-white/10 bg-[#101d2e] py-16" data-tina-field={tinaField(section)}>
+      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(rgba(255,157,74,0.22)_1px,transparent_1px)] [background-size:22px_22px]" />
+      <div className="relative mx-auto max-w-7xl px-4">
+        <Reveal as="div" className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]" data-tina-field={tinaField(section, "kicker")}>
+            {section.kicker}
+          </p>
+          <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
+            <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
+          </h2>
+        </Reveal>
+      </div>
+
+      <div className="relative left-1/2 mt-9 w-screen -translate-x-1/2 overflow-hidden">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-[linear-gradient(90deg,#101d2e_0%,rgba(16,29,46,0)_100%)]" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-[linear-gradient(270deg,#101d2e_0%,rgba(16,29,46,0)_100%)]" />
+        <ul className="marquee-track flex w-max gap-4 px-4 sm:px-6 lg:px-10 [--marquee-duration:62s]">
+          {marqueeItems.map((item, index) => (
+            <li
+              className={`${getGradientVariant(index)} w-[20rem] shrink-0 rounded-md border border-white/12 px-5 py-5 shadow-[0_14px_30px_rgba(0,0,0,0.24)] sm:w-[24rem]`}
+              data-tina-field={tinaField(item)}
+              key={`${item.id}-${index}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffb67f]" data-tina-field={tinaField(item, "company")}>
+                  {item.company}
+                </p>
+                <Quote aria-hidden className="size-4 text-[#ff9d4a]" />
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-slate-200" data-tina-field={tinaField(item, "quote")}>
+                {item.quote}
+              </p>
+              <div className="mt-5 flex items-end justify-between gap-3 border-t border-white/10 pt-3">
+                <div>
+                  <p className="text-sm font-semibold text-white" data-tina-field={tinaField(item, "person")}>
+                    {item.person}
+                  </p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-300" data-tina-field={tinaField(item, "role")}>
+                    {item.role}
+                  </p>
+                </div>
+                {item.metric ? (
+                  <span className="rounded-full border border-[#ff9d4a]/45 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#ffc998]" data-tina-field={tinaField(item, "metric")}>
+                    {item.metric}
+                  </span>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+function TrustedByMarqueeSection({ section }: { section: HomeContent["trustedBySection"] }) {
+  if (!section.visible || !section.logos.length) {
+    return null
+  }
+
+  const marqueeItems: TrustedLogoItem[] = [...section.logos, ...section.logos, ...section.logos]
+
+  return (
+    <section className="relative border-b border-white/8 bg-[#182739] py-12" data-tina-field={tinaField(section)}>
+      <div className="mx-auto max-w-7xl px-4">
+        <Reveal as="div" className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]" data-tina-field={tinaField(section, "kicker")}>
+              {section.kicker}
+            </p>
+            <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em] text-white sm:text-2xl" data-tina-field={tinaField(section, "title")}>
+              {section.title}
+            </h2>
+          </div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-300">Infinite partner band</p>
+        </Reveal>
+      </div>
+
+      <div className="relative left-1/2 mt-7 w-screen -translate-x-1/2 overflow-hidden">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-[linear-gradient(90deg,#182739_0%,rgba(24,39,57,0)_100%)]" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-[linear-gradient(270deg,#182739_0%,rgba(24,39,57,0)_100%)]" />
+        <div className="marquee-track marquee-track-reverse flex w-max items-center gap-3 px-4 sm:px-6 lg:px-10 [--marquee-duration:34s]">
+          {marqueeItems.map((logo, index) => (
+            <div
+              className="flex shrink-0 items-center gap-3 rounded-full border border-white/15 bg-white/6 px-4 py-2.5 backdrop-blur"
+              data-tina-field={tinaField(logo)}
+              key={`${logo.id}-${index}`}
+            >
+              <span className="inline-flex size-8 items-center justify-center rounded-full bg-[#ff9d4a] text-[11px] font-bold uppercase tracking-[0.08em] text-[#0f1b2b]" data-tina-field={tinaField(logo, "abbreviation")}>
+                {logo.abbreviation}
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-100" data-tina-field={tinaField(logo, "name")}>
+                {logo.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function CommandCtaSection({ home }: { home: HomeContent }) {
   return (
-    <section className="bg-[#0f1c2d] py-16" data-tina-field={tinaField(home, "hero")}>
+    <section className="bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-16" data-tina-field={tinaField(home, "hero")}>
       <div className="mx-auto max-w-7xl px-4">
         <Reveal
           as="div"
@@ -476,7 +600,7 @@ function CommandCtaSection({ home }: { home: HomeContent }) {
               <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
                 <KeywordGradientText text="Start With A Fast Scope Call, Leave With A Clear Power Plan" />
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300" data-tina-field={tinaField(home.hero, "subheading")}>
+              <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(home.hero, "subheading")}>
                 {home.hero.subheading} Talk to a specialist and get a practical recommendation for sizing, timeline, and on-site support options.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
@@ -532,7 +656,7 @@ function TrustSnippet({
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">
             <KeywordGradientText text={title} />
           </p>
-          <p className="mt-1.5 text-sm text-slate-300">{body}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-[color:var(--site-text-muted)]">{body}</p>
         </div>
       </div>
     </div>
@@ -594,14 +718,17 @@ function ShowcaseSection({
   const leadSummary = visibleItems[0]?.summary
 
   return (
-    <section className="bg-[#2a3645] py-16 even:bg-[#243243]" data-tina-field={tinaField(section)}>
+    <section
+      className="bg-[linear-gradient(180deg,var(--site-surface-3)_0%,var(--site-surface-2)_100%)] py-16 even:bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)]"
+      data-tina-field={tinaField(section)}
+    >
       <div className="mx-auto max-w-7xl px-4">
         <Reveal as="div" className="flex flex-wrap items-end justify-between gap-5">
           <div className="max-w-3xl">
             <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-100">
               <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
             </h2>
-            {leadSummary ? <p className="mt-3 text-sm text-slate-300">{leadSummary}</p> : null}
+              {leadSummary ? <p className="mt-3 text-sm leading-relaxed text-[color:var(--site-text-muted)]">{leadSummary}</p> : null}
           </div>
           <div className="flex flex-wrap gap-3">
             <QuoteAwareLink
@@ -649,7 +776,7 @@ function ShowcaseSection({
                 <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">
                   <KeywordGradientText dataTinaField={tinaField(item, "title")} text={item.title} />
                 </h3>
-                <p className="text-sm text-slate-400" data-tina-field={tinaField(item, "summary")}>
+                  <p className="text-sm leading-relaxed text-[color:var(--site-text-soft)]" data-tina-field={tinaField(item, "summary")}>
                   {item.summary}
                 </p>
 

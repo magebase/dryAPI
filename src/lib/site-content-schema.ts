@@ -63,6 +63,21 @@ export const showcaseCardSchema = z.object({
   tag: requiredText,
 })
 
+export const testimonialCardSchema = z.object({
+  id: requiredText,
+  company: requiredText,
+  quote: requiredText,
+  person: requiredText,
+  role: requiredText,
+  metric: z.string().trim().optional(),
+})
+
+export const trustedLogoSchema = z.object({
+  id: requiredText,
+  name: requiredText,
+  abbreviation: requiredText,
+})
+
 export const siteConfigSchema = z.object({
   brand: z.object({
     name: requiredText,
@@ -139,6 +154,18 @@ export const homeContentSchema = z.object({
     ctaLabel: requiredText,
     ctaHref: requiredText,
     items: z.array(showcaseCardSchema).min(3),
+  }),
+  testimonialsSection: z.object({
+    visible: visibleToggleSchema,
+    kicker: requiredText,
+    title: requiredText,
+    items: z.array(testimonialCardSchema).min(4),
+  }),
+  trustedBySection: z.object({
+    visible: visibleToggleSchema,
+    kicker: requiredText,
+    title: requiredText,
+    logos: z.array(trustedLogoSchema).min(6),
   }),
   contactPanel: z.object({
     visible: visibleToggleSchema,

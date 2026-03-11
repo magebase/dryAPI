@@ -176,6 +176,33 @@ export const HomePartsFragmentDoc = gql`
       tag
     }
   }
+  testimonialsSection {
+    __typename
+    visible
+    kicker
+    title
+    items {
+      __typename
+      id
+      company
+      quote
+      person
+      role
+      metric
+    }
+  }
+  trustedBySection {
+    __typename
+    visible
+    kicker
+    title
+    logos {
+      __typename
+      id
+      name
+      abbreviation
+    }
+  }
   contactPanel {
     __typename
     visible

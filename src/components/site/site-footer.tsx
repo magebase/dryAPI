@@ -19,7 +19,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
   const quoteLabel = site.header.quoteCta.label
 
   return (
-    <footer className="relative border-t border-white/10 bg-[#0a1421]">
+    <footer className="relative border-t border-white/10 bg-[linear-gradient(180deg,var(--site-surface-0)_0%,var(--site-surface-1)_100%)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(255,139,43,0.18),transparent_50%)]" />
 
       <div className="relative border-b border-white/10 bg-[linear-gradient(90deg,rgba(255,139,43,0.13),rgba(255,139,43,0.04))]">
@@ -29,12 +29,12 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
           data-aos-delay="30"
           data-aos-duration="420"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-100">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-100">
             Need Fast Project Pricing Or Deployment Support?
           </p>
           <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
             <QuoteAwareLink
-              className="inline-flex w-full items-center justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#ff9d4a] transition hover:bg-[#ff8b2b] hover:text-white"
+              className="inline-flex w-full items-center justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
               data-tina-field={tinaField(site.header, "quoteCta")}
               forceQuoteModal
               href={quoteHref}
@@ -58,10 +58,10 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
           <p className="font-display text-3xl tracking-[0.28em] text-white" data-tina-field={tinaField(site.brand, "mark")}>
             {site.brand.mark}
           </p>
-          <p className="max-w-sm text-sm text-slate-400" data-tina-field={tinaField(site.footer, "companyText")}>
+          <p className="max-w-sm text-sm leading-relaxed text-[color:var(--site-text-soft)]" data-tina-field={tinaField(site.footer, "companyText")}>
             {site.footer.companyText}
           </p>
-          <div className="space-y-2 text-sm text-slate-300">
+          <div className="space-y-2 text-sm text-[color:var(--site-text-muted)]">
             {site.footer.contactLinks.map((item, index) => (
               <p key={`contact-${item.href}-${item.label}-${index}`} data-tina-field={tinaField(item)}>
                 <QuoteAwareLink className="transition hover:text-white" href={item.href}>
@@ -99,7 +99,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100">
                 <span data-tina-field={tinaField(column, "title")}>{column.title}</span>
               </h3>
-              <ul className="space-y-2 text-sm text-slate-400">
+              <ul className="space-y-2 text-sm text-[color:var(--site-text-soft)]">
                 {column.links.map((link, linkIndex) => (
                   <li key={`column-link-${column.title}-${link.href}-${link.label}-${linkIndex}`} data-tina-field={tinaField(link)}>
                     <QuoteAwareLink className="transition hover:text-white" href={link.href}>
@@ -114,7 +114,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
       </div>
 
       <div className="border-t border-white/10 py-4">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 text-xs text-slate-500">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 text-xs text-slate-400">
           {site.footer.legalLinks.map((link, index) => (
             <QuoteAwareLink
               key={`legal-${link.href}-${link.label}-${index}`}

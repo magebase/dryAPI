@@ -374,6 +374,35 @@ type HomeResourceShowcase {
   items: [HomeResourceShowcaseItems]
 }
 
+type HomeTestimonialsSectionItems {
+  id: String!
+  company: String!
+  quote: String!
+  person: String!
+  role: String!
+  metric: String
+}
+
+type HomeTestimonialsSection {
+  visible: Boolean!
+  kicker: String!
+  title: String!
+  items: [HomeTestimonialsSectionItems]
+}
+
+type HomeTrustedBySectionLogos {
+  id: String!
+  name: String!
+  abbreviation: String!
+}
+
+type HomeTrustedBySection {
+  visible: Boolean!
+  kicker: String!
+  title: String!
+  logos: [HomeTrustedBySectionLogos]
+}
+
 type HomeContactPanelPrimaryAction {
   label: String!
   href: String!
@@ -405,6 +434,8 @@ type Home implements Node & Document {
   capabilityCards: [HomeCapabilityCards]
   projectShowcase: HomeProjectShowcase
   resourceShowcase: HomeResourceShowcase
+  testimonialsSection: HomeTestimonialsSection
+  trustedBySection: HomeTrustedBySection
   contactPanel: HomeContactPanel
   id: ID!
   _sys: SystemInfo!
@@ -532,6 +563,35 @@ input HomeResourceShowcaseFilter {
   items: HomeResourceShowcaseItemsFilter
 }
 
+input HomeTestimonialsSectionItemsFilter {
+  id: StringFilter
+  company: StringFilter
+  quote: StringFilter
+  person: StringFilter
+  role: StringFilter
+  metric: StringFilter
+}
+
+input HomeTestimonialsSectionFilter {
+  visible: BooleanFilter
+  kicker: StringFilter
+  title: StringFilter
+  items: HomeTestimonialsSectionItemsFilter
+}
+
+input HomeTrustedBySectionLogosFilter {
+  id: StringFilter
+  name: StringFilter
+  abbreviation: StringFilter
+}
+
+input HomeTrustedBySectionFilter {
+  visible: BooleanFilter
+  kicker: StringFilter
+  title: StringFilter
+  logos: HomeTrustedBySectionLogosFilter
+}
+
 input HomeContactPanelPrimaryActionFilter {
   label: StringFilter
   href: StringFilter
@@ -563,6 +623,8 @@ input HomeFilter {
   capabilityCards: HomeCapabilityCardsFilter
   projectShowcase: HomeProjectShowcaseFilter
   resourceShowcase: HomeResourceShowcaseFilter
+  testimonialsSection: HomeTestimonialsSectionFilter
+  trustedBySection: HomeTrustedBySectionFilter
   contactPanel: HomeContactPanelFilter
 }
 
@@ -1017,6 +1079,35 @@ input HomeResourceShowcaseMutation {
   items: [HomeResourceShowcaseItemsMutation]
 }
 
+input HomeTestimonialsSectionItemsMutation {
+  id: String
+  company: String
+  quote: String
+  person: String
+  role: String
+  metric: String
+}
+
+input HomeTestimonialsSectionMutation {
+  visible: Boolean
+  kicker: String
+  title: String
+  items: [HomeTestimonialsSectionItemsMutation]
+}
+
+input HomeTrustedBySectionLogosMutation {
+  id: String
+  name: String
+  abbreviation: String
+}
+
+input HomeTrustedBySectionMutation {
+  visible: Boolean
+  kicker: String
+  title: String
+  logos: [HomeTrustedBySectionLogosMutation]
+}
+
 input HomeContactPanelPrimaryActionMutation {
   label: String
   href: String
@@ -1048,6 +1139,8 @@ input HomeMutation {
   capabilityCards: [HomeCapabilityCardsMutation]
   projectShowcase: HomeProjectShowcaseMutation
   resourceShowcase: HomeResourceShowcaseMutation
+  testimonialsSection: HomeTestimonialsSectionMutation
+  trustedBySection: HomeTrustedBySectionMutation
   contactPanel: HomeContactPanelMutation
 }
 

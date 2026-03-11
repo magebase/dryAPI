@@ -328,6 +328,47 @@ export default defineConfig({
             ],
           },
           {
+            name: "testimonialsSection",
+            type: "object",
+            fields: [
+              { name: "visible", type: "boolean", required: true },
+              { name: "kicker", type: "string", required: true },
+              { name: "title", type: "string", required: true },
+              {
+                name: "items",
+                type: "object",
+                list: true,
+                fields: [
+                  { name: "id", type: "string", required: true },
+                  { name: "company", type: "string", required: true },
+                  { name: "quote", type: "string", ui: { component: "textarea" }, required: true },
+                  { name: "person", type: "string", required: true },
+                  { name: "role", type: "string", required: true },
+                  { name: "metric", type: "string" },
+                ],
+              },
+            ],
+          },
+          {
+            name: "trustedBySection",
+            type: "object",
+            fields: [
+              { name: "visible", type: "boolean", required: true },
+              { name: "kicker", type: "string", required: true },
+              { name: "title", type: "string", required: true },
+              {
+                name: "logos",
+                type: "object",
+                list: true,
+                fields: [
+                  { name: "id", type: "string", required: true },
+                  { name: "name", type: "string", required: true },
+                  { name: "abbreviation", type: "string", required: true },
+                ],
+              },
+            ],
+          },
+          {
             name: "contactPanel",
             type: "object",
             fields: [

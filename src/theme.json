@@ -1,33 +1,24 @@
 {
   "keywordText": {
     "keywords": [
-      "generator",
-      "generators",
-      "diesel",
-      "rental",
-      "rentals",
-      "power",
-      "sales",
-      "service",
       "commissioning",
+      "handover",
       "performance",
-      "optimization"
+      "optimization",
+      "compliance",
+      "redundancy",
+      "telemetry",
+      "synchronization"
     ],
     "gradients": [
       {
-        "id": "pink-red-yellow"
+        "id": "brand-amber"
       },
       {
-        "id": "orange-orange"
+        "id": "brand-orange"
       },
       {
-        "id": "yellow-red"
-      },
-      {
-        "id": "fuchsia-red-orange"
-      },
-      {
-        "id": "conic-yellow-red-fuchsia"
+        "id": "brand-deep"
       }
     ]
   }

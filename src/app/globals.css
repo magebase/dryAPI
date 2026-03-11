@@ -52,6 +52,13 @@
   --font-display: var(--font-geist-sans);
   --font-mono-body: var(--font-geist-mono);
   --site-header-height: 9rem;
+  --site-surface-0: #0b1420;
+  --site-surface-1: #101f31;
+  --site-surface-2: #15283d;
+  --site-surface-3: #1b334a;
+  --site-text-strong: #f4f8ff;
+  --site-text-muted: #c4d0df;
+  --site-text-soft: #a7b7ca;
   --radius: 0.325rem;
   --background: oklch(0.18 0.02 250);
   --foreground: oklch(0.94 0.01 250);
@@ -133,14 +140,20 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body), sans-serif;
     letter-spacing: 0.004em;
-    line-height: 1.62;
+    line-height: 1.66;
     font-weight: 440;
     text-rendering: optimizeLegibility;
     background-image:
-      radial-gradient(circle at 20% -15%, rgba(255, 139, 43, 0.25), transparent 42%),
-      linear-gradient(180deg, #0b121b 0%, #132033 55%, #0b121b 100%);
+      radial-gradient(circle at 12% -12%, rgba(255, 139, 43, 0.2), transparent 42%),
+      radial-gradient(circle at 88% 18%, rgba(77, 126, 179, 0.14), transparent 40%),
+      linear-gradient(180deg, var(--site-surface-0) 0%, var(--site-surface-2) 52%, var(--site-surface-0) 100%);
     min-height: 100vh;
     overflow-x: clip;
+  }
+
+  ::selection {
+    background: rgba(255, 139, 43, 0.26);
+    color: #ffffff;
   }
 
   h1,
@@ -153,5 +166,36 @@
     font-family: var(--font-display), sans-serif;
     font-weight: 620;
     letter-spacing: 0.01em;
+  }
+}
+
+@layer utilities {
+  .marquee-track {
+    animation: marquee-scroll var(--marquee-duration, 40s) linear infinite;
+    will-change: transform;
+  }
+
+  .marquee-track-reverse {
+    animation-direction: reverse;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
   }
 }

@@ -81,17 +81,17 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
       ref={headerRef}
       className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow] duration-500 ease-out ${
         hasScrolled
-          ? "border-b border-white/10 bg-[#09111b]/92 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+          ? "border-b border-white/10 bg-[#09111b]/94 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
           : "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
       }`}
     >
       <div
-        className={`hidden md:block text-center text-[11px] text-slate-300 transition-[background-color,border-color] duration-500 ease-out ${
+        className={`hidden md:block text-center text-[12px] text-slate-200 transition-[background-color,border-color] duration-500 ease-out ${
           hasScrolled ? "border-b border-white/10 bg-[#0d1929]" : "border-b border-transparent bg-transparent"
         }`}
       >
         <p
-          className="mx-auto max-w-7xl px-4 py-2 font-medium uppercase tracking-[0.12em]"
+            className="mx-auto max-w-7xl px-4 py-2 font-medium uppercase tracking-[0.1em]"
           data-tina-field={tinaField(site, "announcement")}
         >
           {site.announcement}
@@ -119,10 +119,10 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             <Link
               key={`${link.href}-${link.label}`}
               data-tina-field={tinaField(link)}
-              className={`text-[11px] font-medium uppercase tracking-[0.15em] transition ${
+              className={`rounded-sm px-2 py-1.5 text-[11px] font-medium uppercase tracking-[0.13em] transition ${
                 isCurrentPath(link.href, pathname)
-                  ? "text-[#ff9d4a]"
-                  : "text-slate-300 hover:text-white"
+                  ? "border border-[#ff9d4a]/45 bg-[#ff8b2b]/14 text-[#ffb67f]"
+                  : "text-slate-300 hover:bg-white/5 hover:text-white"
               }`}
               href={link.href}
             >
@@ -133,7 +133,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
 
         <div className="hidden items-center gap-2 xl:flex">
           <Link
-            className="inline-flex items-center gap-2 rounded-sm bg-[#ff8b2b] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white"
+            className="inline-flex items-center gap-2 rounded-sm border border-[#ff9d4a]/45 bg-[#ff8b2b]/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#ffb67f] transition hover:border-[#ffb67f]/70 hover:text-white"
             data-tina-field={tinaField(site.header, "phone")}
             href={site.header.phone.href}
           >
@@ -141,7 +141,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             {phoneLabel}
           </Link>
           <QuoteDialog
-            triggerClassName="rounded-sm border border-[#ff8b2b] bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white"
+            triggerClassName="rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
             triggerLabel={site.header.quoteCta.label}
             triggerTinaField={tinaField(site.header, "quoteCta")}
           />
@@ -198,7 +198,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <Link
-              className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#ff8b2b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#ff9d4a]/45 bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#ffb67f] transition hover:border-[#ffb67f]/70 hover:text-white"
               data-tina-field={tinaField(site.header, "phone")}
               href={site.header.phone.href}
               onClick={() => setMobileMenuPath(null)}
@@ -208,7 +208,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             </Link>
 
             <QuoteAwareLink
-              className="inline-flex items-center justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#ff9d4a] transition hover:bg-[#ff8b2b] hover:text-white"
+              className="inline-flex items-center justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
               data-tina-field={tinaField(site.header, "quoteCta")}
               forceQuoteModal
               href={site.header.quoteCta.href}

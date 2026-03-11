@@ -1,77 +1,14 @@
-import theme from "@/theme.json"
-import { getGradientVariant } from "@/components/site/gradient-variants"
-
 type KeywordGradientTextProps = {
   text: string
   dataTinaField?: string
   seed?: number
   maxHighlights?: number
+  forceFullGradient?: boolean
 }
-
-type ThemeGradient = {
-  id: string
-}
-
-type ThemeKeywordText = {
-  keywords: string[]
-  gradients: ThemeGradient[]
-}
-
-const keywordTheme = theme.keywordText as ThemeKeywordText
-const keywords = [...new Set(keywordTheme.keywords.map((keyword) => keyword.trim().toLowerCase()).filter(Boolean))].sort(
-  (left, right) => right.length - left.length
-)
-const keywordSet = new Set(keywords)
-const keywordPattern = keywords.map((keyword) => escapeRegExp(keyword)).join("|")
-const keywordRegex = keywordPattern.length > 0 ? new RegExp(`\\b(${keywordPattern})\\b`, "gi") : null
-const gradientVariantById: Record<string, string> = {
-  "pink-red-yellow": "bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500",
-  "orange-orange": "bg-gradient-to-r from-orange-600 to-orange-500",
-  "yellow-red": "bg-gradient-to-r from-yellow-600 to-red-600",
-  "fuchsia-red-orange": "bg-gradient-to-r from-fuchsia-500 via-red-600 to-orange-400",
-  "conic-yellow-red-fuchsia": "bg-[conic-gradient(at_left,_var(--tw-gradient-stops))] from-yellow-200 via-red-500 to-fuchsia-500",
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")
-}
-
-export function KeywordGradientText({ text, dataTinaField, seed = 0, maxHighlights = 1 }: KeywordGradientTextProps) {
-  const gradients = keywordTheme.gradients
-  const highlightLimit = Math.max(0, Math.floor(maxHighlights))
-
-  if (!text.trim() || !keywordRegex || gradients.length === 0 || highlightLimit === 0) {
-    return <span data-tina-field={dataTinaField}>{text}</span>
-  }
-
-  const parts = text.split(keywordRegex)
-  const baseIndex = Math.abs(seed) % gradients.length
-  let highlightedWords = 0
-
+export function KeywordGradientText({ text, dataTinaField, forceFullGradient = false }: KeywordGradientTextProps) {
   return (
-    <span data-tina-field={dataTinaField}>
-      {parts.map((part, index) => {
-        const normalizedPart = part.toLowerCase()
-
-        if (!keywordSet.has(normalizedPart)) {
-          return <span key={`plain-${index}`}>{part}</span>
-        }
-
-        if (highlightedWords >= highlightLimit) {
-          return <span key={`plain-${index}`}>{part}</span>
-        }
-
-        const variantIndex = baseIndex + highlightedWords
-        const gradient = gradients[variantIndex % gradients.length]
-        const gradientClass = gradientVariantById[gradient.id] ?? getGradientVariant(variantIndex)
-        highlightedWords += 1
-
-        return (
-          <span className={`${gradientClass} bg-clip-text text-transparent`} key={`keyword-${index}`}>
-            {part}
-          </span>
-        )
-      })}
+    <span className={forceFullGradient ? "text-[#ffbf8a]" : undefined} data-tina-field={dataTinaField}>
+      {text}
     </span>
   )
 }

@@ -151,7 +151,7 @@ export function ContactForm({ heading, description, responseTime }: ContactFormP
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm uppercase tracking-[0.14em] text-slate-400">{responseTime}</p>
           <Button
-            className="rounded-sm bg-[#ff8b2b] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white hover:bg-[#ff7f19]"
+            className="rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
             disabled={isSubmitting}
             type="submit"
           >
