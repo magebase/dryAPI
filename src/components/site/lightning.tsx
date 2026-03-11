@@ -99,6 +99,10 @@ const fragmentShaderSource = `
     vec2 uv = fragCoord / iResolution.xy;
     uv = 2.0 * uv - 1.0;
     uv.x *= iResolution.x / iResolution.y;
+    // Keep strike origins and branches inside the visible width on narrow screens.
+    float viewportHalfWidth = max(iResolution.x / iResolution.y, 0.001);
+    float safeHalfWidth = max(0.16, viewportHalfWidth - 0.05);
+    float trunkHalfRange = safeHalfWidth * 0.84;
     float t = iTime * max(uSpeed, 0.0) * 0.18;
 
     float glow = 0.0;
@@ -122,7 +126,7 @@ const fragmentShaderSource = `
       float spread = clamp(mix(lane, laneRandom, 0.92) + jitter, 0.01, 0.99);
       float primarySpread = mix(0.18, 0.82, hash11(strikeId * 3.17 + seed * 0.37));
       spread = mix(spread, primarySpread, primary);
-      float trunkX = uXOffset + mix(-1.84, 1.84, spread);
+      float trunkX = clamp(uXOffset + mix(-trunkHalfRange, trunkHalfRange, spread), -safeHalfWidth, safeHalfWidth);
 
       float patternSel = hash11(strikeId * 1.37 + seed * 7.9);
       float endY = mix(-0.12, -1.0, hash11(seed * 5.3 + strikeId));
@@ -143,7 +147,8 @@ const fragmentShaderSource = `
       float primaryPersist = primary * 0.12 * smoothstep(0.0, 0.06, strikePhase) * (1.0 - smoothstep(0.58, 0.72, strikePhase));
       float yMask = trunkRange * max(drawMask, primaryPersist);
 
-      float path = trunkX + pathPattern(uv.y, seed, t, 0.19 * uSize, patternSel);
+      float pathAmp = min(0.19 * uSize, trunkHalfRange * 0.26);
+      float path = clamp(trunkX + pathPattern(uv.y, seed, t, pathAmp, patternSel), -safeHalfWidth, safeHalfWidth);
       float dist = abs(uv.x - path);
       float width = mix(0.0042, 0.0105, smoothstep(-1.0, 0.45, uv.y));
       width *= mix(0.70, 1.24, smoothstep(-1.0, 0.9, uv.y));
@@ -193,7 +198,7 @@ const fragmentShaderSource = `
         float branchMask = (1.0 - smoothstep(branchStart, branchStart + 0.03, uv.y)) * smoothstep(branchEnd - 0.03, branchEnd + 0.03, uv.y);
 
         float branchSlope = direction * 0.34 * (branchStart - uv.y);
-        float branchPath = path + branchSlope;
+        float branchPath = clamp(path + branchSlope, -safeHalfWidth, safeHalfWidth);
         float branchDist = abs(uv.x - branchPath);
         float branchWidth = width * (0.62 + fj * 0.08);
         float branchCore = exp(-branchDist / max(branchWidth * 0.44, 0.001));

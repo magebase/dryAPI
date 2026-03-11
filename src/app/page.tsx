@@ -4,6 +4,8 @@ import { TinaHomePage } from "@/components/site/tina-home-page"
 import { readHomeContent, readSiteConfig } from "@/lib/site-content-loader"
 import { tinaHomeQuery, tinaSiteConfigQuery } from "@/lib/tina-documents"
 
+export const dynamic = "force-static"
+
 export async function generateMetadata(): Promise<Metadata> {
   const home = await readHomeContent()
 

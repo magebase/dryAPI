@@ -19,7 +19,7 @@ const siteProductionCsp = [
   ...siteSharedCsp,
   "frame-ancestors 'none';",
   "frame-src 'self';",
-  "script-src 'self';",
+  "script-src 'self' 'unsafe-eval';",
   "script-src-elem 'self' 'unsafe-inline';",
   "script-src-attr 'none';",
   "connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io;",
@@ -40,7 +40,7 @@ const adminProductionCsp = [
   ...siteSharedCsp,
   "frame-ancestors 'none';",
   "frame-src 'self';",
-  "script-src 'self';",
+  "script-src 'self' 'unsafe-eval';",
   "connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io;",
 ];
 

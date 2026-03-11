@@ -5,6 +5,8 @@ import { AosProvider } from "@/components/site/aos-provider";
 import "./globals.css";
 import "aos/dist/aos.css";
 
+export const dynamic = "force-static";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

@@ -8,10 +8,11 @@ import type { SiteConfig } from "@/lib/site-content-schema"
 
 export function SiteFrame({ site, children }: { site: SiteConfig; children: React.ReactNode }) {
   const pathname = usePathname()
+  const currentPath = pathname ?? "/"
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[color:var(--site-surface-0)] text-[color:var(--site-text-strong)]">
-      <SiteHeader pathname={pathname} site={site} />
+      <SiteHeader pathname={currentPath} site={site} />
       {children}
       <SiteFooter site={site} />
     </div>

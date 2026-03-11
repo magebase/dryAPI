@@ -13,6 +13,8 @@ import {
 } from "@/lib/site-content-loader"
 import { tinaBlogPostQuery, tinaRoutePageQuery, tinaSiteConfigQuery } from "@/lib/tina-documents"
 
+export const dynamic = "force-static"
+
 type CatchAllPageProps = {
   params: Promise<{ slug: string[] }>
 }

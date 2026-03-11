@@ -1,4 +1,4 @@
-import { defineConfig } from "tinacms"
+import { AbstractAuthProvider, defineConfig } from "tinacms"
 
 const branch =
   process.env.GITHUB_BRANCH ||
@@ -56,11 +56,62 @@ const pageElementFields = [
   { name: "src", label: "Image", type: "image" },
 ]
 
+const contentApiUrlOverride = process.env.NEXT_PUBLIC_TINA_CONTENT_API_URL || "/api/tina/gql"
+const isSelfHostedApi = contentApiUrlOverride.startsWith("/api/tina/")
+
+class TinaBetterAuthProvider extends AbstractAuthProvider {
+  async authenticate() {
+    if (typeof window !== "undefined") {
+      const callbackUrl = encodeURIComponent(window.location.href)
+      window.location.assign(`/api/tina/auth/signin?callbackUrl=${callbackUrl}`)
+    }
+
+    return null
+  }
+
+  async getUser() {
+    const response = await fetch("/api/tina/auth/user", {
+      credentials: "include",
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const payload = await response.json().catch(() => null)
+    return payload?.user || null
+  }
+
+  async getToken() {
+    const response = await fetch("/api/tina/auth/token", {
+      credentials: "include",
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return { id_token: null }
+    }
+
+    const payload = await response.json().catch(() => null)
+    return { id_token: payload?.id_token || null }
+  }
+
+  async logout() {
+    await fetch("/api/tina/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    })
+  }
+}
+
 export default defineConfig({
   branch,
   clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID || null,
   token: process.env.TINA_TOKEN || null,
-  contentApiUrlOverride: process.env.NEXT_PUBLIC_TINA_CONTENT_API_URL || "http://localhost:4001/graphql",
+  contentApiUrlOverride,
+  authProvider: isSelfHostedApi ? new TinaBetterAuthProvider() : undefined,
   build: {
     outputFolder: "admin",
     publicFolder: "public",

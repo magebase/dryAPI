@@ -128,6 +128,10 @@ Tina config:
 
 - `tina/config.js`
 
+Tina backend endpoint:
+
+- `src/pages/api/tina/[...routes].ts`
+
 ## OpenNext + Cloudflare Hosting Pattern
 
 Cloudflare worker config:
@@ -192,6 +196,23 @@ Required for Tina Git mode:
 - `NEXT_PUBLIC_TINA_CLIENT_ID`
 - `TINA_TOKEN`
 
+Optional Tina endpoint override:
+
+- `NEXT_PUBLIC_TINA_CONTENT_API_URL` (defaults to `/api/tina/gql`)
+
+Optional: Better Auth as Tina auth provider (`bring-your-own` auth mode):
+
+- `TINA_AUTH_PROVIDER=better-auth`
+- `BETTER_AUTH_SECRET` (required in production)
+- `BETTER_AUTH_URL` (recommended, e.g. `https://your-domain.com`)
+- `TINA_AUTH_TOKEN_SECRET` (recommended separate secret for Tina editor JWTs)
+- `TINA_BETTER_AUTH_PROVIDER` (optional, defaults to `google`)
+- `TINA_ALLOWED_GOOGLE_EMAILS` and/or `TINA_ALLOWED_GOOGLE_DOMAINS` (editor allowlist)
+- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (if using Google social login)
+- `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` (if using GitHub social login)
+
+When `TINA_AUTH_PROVIDER=better-auth`, the middleware bypasses Cloudflare checks for Tina paths and uses Better Auth + signed Tina editor tokens for `/api/tina/gql` authorization.
+
 Required for Cloudflare Zero Trust protection of TinaCMS routes:
 
 - `CLOUDFLARE_ACCESS_TEAM_DOMAIN` (example: `your-team.cloudflareaccess.com`)
@@ -219,15 +240,20 @@ wrangler secret put CLOUDFLARE_ACCESS_TEAM_DOMAIN
 wrangler secret put CLOUDFLARE_ACCESS_AUD
 wrangler secret put TINA_ALLOWED_GOOGLE_EMAILS
 wrangler secret put RESEND_API_KEY
+wrangler secret put BETTER_AUTH_SECRET
+wrangler secret put TINA_AUTH_TOKEN_SECRET
 ```
 
 ## Cloudflare Zero Trust for TinaCMS
+
+Use this section when `TINA_AUTH_PROVIDER` is not set to `better-auth`.
 
 Protected paths:
 
 - `/admin/*`
 - `/api/cms/*`
 - `/api/media/*`
+- `/api/tina/*`
 - `/api/verify-zjwt`
 
 How it works:
@@ -271,7 +297,6 @@ GitHub repository secrets expected by the workflow:
 - `CLOUDFLARE_WORKER_NAME`
 - `CF_D1_DATABASE_NAME`
 - `NEXT_PUBLIC_TINA_CLIENT_ID`
-- `NEXT_PUBLIC_TINA_CONTENT_API_URL`
 - `TINA_TOKEN`
 - `CLOUDFLARE_ACCESS_TEAM_DOMAIN`
 - `CLOUDFLARE_ACCESS_AUD`
