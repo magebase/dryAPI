@@ -59,6 +59,7 @@
     "@tinacms/schema-tools": "2.7.0",
     "@unkey/api": "^2.3.1",
     "@upstash/redis": "^1.36.3",
+    "abstract-level": "^1.0.4",
     "aos": "^2.3.4",
     "better-auth": "^1.5.4",
     "class-variance-authority": "^0.7.1",
