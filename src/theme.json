@@ -15,16 +15,19 @@
     ],
     "gradients": [
       {
-        "id": "industrial-1",
-        "css": "linear-gradient(94deg, #d06a1d 0%, #a94812 52%, #6f2308 100%)"
+        "id": "pink-red-yellow"
       },
       {
-        "id": "industrial-2",
-        "css": "linear-gradient(94deg, #c45d1a 0%, #8f3510 52%, #541c09 100%)"
+        "id": "orange-orange"
       },
       {
-        "id": "industrial-3",
-        "css": "linear-gradient(94deg, #b24f17 0%, #7d2c0d 52%, #431607 100%)"
+        "id": "yellow-red"
+      },
+      {
+        "id": "fuchsia-red-orange"
+      },
+      {
+        "id": "conic-yellow-red-fuchsia"
       }
     ]
   }

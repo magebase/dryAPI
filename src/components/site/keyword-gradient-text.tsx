@@ -1,6 +1,5 @@
-import type { CSSProperties } from "react"
-
 import theme from "@/theme.json"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 
 type KeywordGradientTextProps = {
   text: string
@@ -11,7 +10,6 @@ type KeywordGradientTextProps = {
 
 type ThemeGradient = {
   id: string
-  css: string
 }
 
 type ThemeKeywordText = {
@@ -29,15 +27,6 @@ const keywordRegex = keywordPattern.length > 0 ? new RegExp(`\\b(${keywordPatter
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")
-}
-
-function buildKeywordStyle(gradientCss: string): CSSProperties {
-  return {
-    backgroundImage: gradientCss,
-    WebkitBackgroundClip: "text",
-    backgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  }
 }
 
 export function KeywordGradientText({ text, dataTinaField, seed = 0, maxHighlights = 1 }: KeywordGradientTextProps) {
@@ -69,7 +58,7 @@ export function KeywordGradientText({ text, dataTinaField, seed = 0, maxHighligh
         highlightedWords += 1
 
         return (
-          <span className="bg-clip-text text-transparent" key={`keyword-${index}`} style={buildKeywordStyle(gradient.css)}>
+          <span className={`${getGradientVariant(baseIndex + highlightedWords)} bg-clip-text text-transparent`} key={`keyword-${index}`}>
             {part}
           </span>
         )
