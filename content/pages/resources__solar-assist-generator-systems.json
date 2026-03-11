@@ -1,0 +1,74 @@
+{
+  "slug": "/resources/solar-assist-generator-systems",
+  "navLabel": "Solar-Assist Generator Systems",
+  "seoTitle": "Solar-Assist Generator Systems | Atlas Industrial Energy",
+  "seoDescription": "How hybrid solar-assist generator packages reduce fuel use, improve runtime efficiency, and support remote project resilience.",
+  "hero": {
+    "kicker": "Resource Guide",
+    "heading": "Solar-Assist Generator Systems",
+    "body": "How hybrid solar-assist generator packages reduce fuel use, improve runtime efficiency, and support remote project resilience.",
+    "image": "https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1600&q=80",
+    "actions": [
+      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
+      { "label": "Back To Resources", "href": "/resources", "style": "ghost" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "hybrid-architecture",
+      "title": "Hybrid Architecture Fundamentals",
+      "body": "Effective solar-assist packages combine PV, storage, and generator controls so fuel-powered runtime is used only when required.",
+      "cards": [
+        {
+          "id": "hybrid-architecture-1",
+          "title": "Load Matching",
+          "description": "Align PV and storage contribution to daytime load shape and overnight critical demand.",
+          "href": "/on-site-analysis",
+          "ctaLabel": "Assess Site Load"
+        },
+        {
+          "id": "hybrid-architecture-2",
+          "title": "Control Strategy",
+          "description": "Set charge, dispatch, and generator start thresholds to balance uptime with fuel reduction.",
+          "href": "/turnkey-solutions",
+          "ctaLabel": "Discuss Integration"
+        },
+        {
+          "id": "hybrid-architecture-3",
+          "title": "Operational Compliance",
+          "description": "Validate protection settings, switching logic, and reporting expectations before deployment.",
+          "href": "/services",
+          "ctaLabel": "Plan Commissioning"
+        }
+      ]
+    },
+    {
+      "id": "project-delivery",
+      "title": "Project Delivery Considerations",
+      "body": "Hybrid outcomes improve when delivery includes staged commissioning, operator training, and regular performance review cycles.",
+      "cards": [
+        {
+          "id": "project-delivery-1",
+          "title": "Fuel Use Baseline",
+          "description": "Establish pre-hybrid generator fuel baseline so savings are measured with operational context.",
+          "href": "/resources/performance-optimization",
+          "ctaLabel": "View Optimization Notes"
+        },
+        {
+          "id": "project-delivery-2",
+          "title": "Service Coverage",
+          "description": "Combine hybrid deployment with preventive maintenance support to protect uptime in remote conditions.",
+          "href": "/services",
+          "ctaLabel": "Build Service Plan"
+        },
+        {
+          "id": "project-delivery-3",
+          "title": "Commercial Pathways",
+          "description": "Evaluate rental, purchase, and staged ownership options based on project duration and capex objectives.",
+          "href": "/resources/equipment-rental-vs-ownership",
+          "ctaLabel": "Compare Commercial Models"
+        }
+      ]
+    }
+  ]
+}
