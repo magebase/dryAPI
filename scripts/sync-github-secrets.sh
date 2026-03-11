@@ -43,7 +43,7 @@ echo "Syncing ${#sync_vars[@]} secrets to ${worker_name} with concurrency=${sync
 is_transient_versions_error() {
   local output="$1"
 
-  grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit' <<<"${output}"
+  grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit|An unknown error has occurred|code:[[:space:]]*10013' <<<"${output}"
 }
 
 supports_versions_secret_put() {
