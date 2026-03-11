@@ -136,6 +136,23 @@ function normalizeText(value: unknown, fallback: string): string {
   return trimmed.length > 0 ? trimmed : fallback
 }
 
+function normalizeMarkdown(value: unknown, fallback: string): string {
+  const normalized = normalizeText(value, fallback)
+    .replace(/\r\n?/g, "\n")
+    .replace(/^```(?:md|markdown)?\s*/i, "")
+    .replace(/\s*```$/, "")
+
+  const withoutTopHeading = normalized
+    .split("\n")
+    .filter((line) => !/^\s*#\s+/.test(line.trim()))
+    .join("\n")
+
+  return withoutTopHeading
+    .replace(/^\s*[-*]\s+/gm, "- ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+}
+
 function normalizeTags(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return ["Generator Hire", "Generator Service", "Brisbane"]
@@ -161,9 +178,9 @@ function normalizeSections(value: unknown): Array<{ heading: string; body: strin
       }
 
       const heading = normalizeText((section as { heading?: unknown }).heading, "Generator Support In Brisbane")
-      const body = normalizeText(
+      const body = normalizeMarkdown(
         (section as { body?: unknown }).body,
-        "Reliable generator outcomes in Brisbane depend on clear planning, fast support, and regular service checks."
+        "Reliable generator outcomes in Brisbane depend on clear planning, fast support, and regular service checks.\n\n- Confirm actual site load profile before selecting equipment.\n- Align service intervals to runtime risk and duty cycle.\n- Capture handover notes so support teams can respond quickly.\n\nThis practical structure helps Brisbane teams reduce avoidable downtime and keep operations predictable."
       )
 
       return { heading, body }
@@ -203,7 +220,7 @@ function buildPrompt(theme: string, publishedAt: string): string {
     "Tone: practical, trustworthy, direct, no hype, no exaggerated claims.",
     "Use Australian English spelling.",
     `The article date context is ${publishedAt}.`,
-    "Return ONLY valid JSON, no markdown, no explanation.",
+    "Return ONLY valid JSON. Do not wrap in code fences. Do not add commentary.",
     "JSON shape:",
     "{",
     '  "title": "string",',
@@ -223,7 +240,16 @@ function buildPrompt(theme: string, publishedAt: string): string {
     "- Excerpt: 140-190 characters.",
     "- seoTitle: under 65 characters.",
     "- seoDescription: under 160 characters.",
-    "- Each section body should be 90-150 words.",
+    "- Each section body MUST be clean GitHub-Flavoured Markdown (GFM) as a JSON string.",
+    "- Each section body should be 130-220 words and follow this structure:",
+    "  1) A short lead paragraph (2-3 sentences)",
+    "  2) One markdown list with 3-5 actionable bullet points using '- '",
+    "  3) A closing paragraph (1-2 sentences)",
+    "- Optional: include one simple markdown table in ONE section only when it improves clarity.",
+    "- Add at least one inline markdown link per section to a relevant high-authority source (government, standards, or manufacturer docs).",
+    "- Never include raw HTML or JSX in section bodies.",
+    "- Never include markdown code fences.",
+    "- Do not start section bodies with '#' headings; headings are provided separately.",
     "- Include intent around hire, service, and sales where relevant.",
     "- Keep content generic and evergreen.",
   ].join("\n")
@@ -244,23 +270,56 @@ function buildFallbackDraft(theme: string, index: number): GeneratedPostDraft {
     sections: [
       {
         heading: "Start With Site Load And Runtime Planning",
-        body:
-          "Reliable temporary power outcomes begin with realistic load and runtime assumptions. Brisbane project teams should review startup loads, critical equipment, and expected daily operating windows before selecting equipment. This helps avoid over-sizing, underperformance, and fuel waste. A simple load profile also improves quoting accuracy for generator hire and allows service teams to plan inspections around real duty cycles. Even for short projects, this discipline reduces avoidable changes after mobilisation and supports steadier on-site operations.",
+        body: [
+          "Reliable temporary power outcomes begin with realistic load and runtime assumptions. Brisbane project teams should identify startup surges, critical equipment, and expected operating windows before finalising a generator plan.",
+          "",
+          "- Record peak and average load demand separately before requesting hire quotes.",
+          "- Map runtime expectations by shift pattern, not just by total daily hours.",
+          "- Confirm fuel logistics and refill access early for constrained sites.",
+          "- Align mobilisation and commissioning windows with site readiness milestones.",
+          "",
+          "A simple planning baseline improves hire accuracy, reduces avoidable changeovers, and gives service teams clearer inspection timing throughout the project lifecycle.",
+        ].join("\n"),
       },
       {
         heading: "Match Service Coverage To Project Risk",
-        body:
-          "Generator service terms should match operational risk rather than follow a one-size-fits-all schedule. Higher-demand periods, weather exposure, and constrained access can all increase failure consequences. In Brisbane, teams often benefit from clear escalation contacts, planned inspection intervals, and documented pre-start checks. Defining these controls early gives operators confidence and helps service providers prioritise response pathways. Whether equipment is hired or owned, practical maintenance discipline is usually the most cost-effective way to preserve uptime.",
+        body: [
+          "Service terms should match operational risk instead of following a fixed, one-size-fits-all interval. Sites with weather exposure, access constraints, or high consequence downtime need clearer inspection and escalation pathways.",
+          "",
+          "- Define who responds first, second, and third for after-hours faults.",
+          "- Set inspection frequency based on duty cycle and environmental conditions.",
+          "- Capture pre-start checks in a repeatable checklist used across crews.",
+          "- Track alarms and trend changes so service teams can intervene earlier.",
+          "",
+          "Practical, risk-based maintenance standards make response decisions faster and help preserve uptime for both hired and owned generator assets.",
+        ].join("\n"),
       },
       {
         heading: "Compare Sales Options Beyond Purchase Price",
-        body:
-          "When evaluating generator sales options, total lifecycle considerations matter more than headline pricing. Procurement teams should compare expected operating hours, maintenance requirements, spare parts support, and commissioning standards. A unit that is easier to service and better aligned to duty profile can reduce long-term disruption and ownership cost. Brisbane businesses can improve outcomes by setting clear acceptance criteria before purchase, including load test expectations and handover documentation for operators and maintenance personnel.",
+        body: [
+          "Generator sales decisions are stronger when teams assess lifecycle fit, not just upfront cost. Procurement teams should compare runtime profile, maintainability, commissioning quality, and support availability before selecting equipment.",
+          "",
+          "| Decision Area | Why It Matters |",
+          "| --- | --- |",
+          "| Service access | Reduces maintenance labour time and safety exposure |",
+          "| Parts support | Minimises downtime during unplanned repairs |",
+          "| Commissioning standards | Confirms performance before handover |",
+          "",
+          "Use purchase acceptance criteria that include load testing, documentation quality, and operator handover requirements so ownership outcomes remain stable over time.",
+        ].join("\n"),
       },
       {
         heading: "Use One Handover Standard Across Hire And Ownership",
-        body:
-          "A consistent handover process improves continuity between hire periods and owned fleet operations. Practical handover records should include baseline settings, inspection observations, alarm status, and support contacts. This creates traceability for both internal teams and external service providers. For Brisbane sites with changing project phases, standardised documentation helps teams transition smoothly and maintain confidence in power reliability. Over time, this approach also improves planning accuracy for future generator hire, service, and sales decisions.",
+        body: [
+          "A consistent handover process improves continuity between short-term hire and long-term ownership. Teams can move between providers and project phases with less friction when documentation standards stay the same.",
+          "",
+          "- Record baseline settings, alarm status, and key inspection observations at handover.",
+          "- Include site-specific support contacts and escalation windows in every pack.",
+          "- Store commissioning evidence where operations and maintenance teams can both access it.",
+          "- Reuse the same checklist format for temporary and permanent generator assets.",
+          "",
+          "Standardised handover records build traceability, reduce onboarding delays, and improve planning confidence for future hire, service, and sales decisions.",
+        ].join("\n"),
       },
     ],
   }
@@ -384,7 +443,10 @@ function materializePost({
     sections: sections.map((section) => ({
       id: slugify(section.heading).slice(0, 64) || `section-${randomUUID().slice(0, 8)}`,
       heading: section.heading,
-      body: section.body,
+      body: normalizeMarkdown(
+        section.body,
+        "Reliable generator outcomes in Brisbane depend on clear planning, fast support, and regular service checks."
+      ),
     })),
   }
 

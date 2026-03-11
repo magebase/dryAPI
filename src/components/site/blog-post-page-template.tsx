@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { tinaField } from "tinacms/dist/react"
 
+import { BlogSectionMarkdown } from "./blog-section-markdown"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
@@ -78,9 +79,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
             <h2 className="text-xl font-semibold text-white">
               <KeywordGradientText dataTinaField={tinaField(section, "heading")} text={section.heading} />
             </h2>
-            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-slate-300" data-tina-field={tinaField(section, "body")}>
-              {section.body}
-            </p>
+            <BlogSectionMarkdown content={section.body} dataTinaField={tinaField(section, "body")} />
           </Reveal>
         ))}
       </article>

@@ -19,10 +19,9 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
   const quoteLabel = site.header.quoteCta.label
 
   return (
-    <footer className="relative border-t border-white/10 bg-[linear-gradient(180deg,var(--site-surface-0)_0%,var(--site-surface-1)_100%)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(255,139,43,0.18),transparent_50%)]" />
+    <footer className="relative border-t border-white/10 bg-[color:var(--site-surface-0)]">
 
-      <div className="relative border-b border-white/10 bg-[linear-gradient(90deg,rgba(255,139,43,0.13),rgba(255,139,43,0.04))]">
+      <div className="relative border-b border-white/10">
         <div
           className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5"
           data-aos="fade-up"

@@ -481,7 +481,15 @@ var config_default = defineConfig({
             fields: [
               { name: "id", type: "string", required: true },
               { name: "heading", type: "string", required: true },
-              { name: "body", type: "string", ui: { component: "textarea" }, required: true }
+              {
+                name: "body",
+                type: "string",
+                ui: {
+                  component: "textarea",
+                  description: "Supports Markdown (lists, links, tables, emphasis)."
+                },
+                required: true
+              }
             ]
           }
         ]

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare": "lefthook install",
+    "hooks:install": "lefthook install",
+    "sync:github-env": "bash ./scripts/sync-github-env.sh --env-file .env",
     "dev": "tinacms dev -c \"next dev\"",
     "dev:next": "next dev",
     "dev:tina": "tinacms dev -c \"next dev\"",
@@ -39,6 +42,8 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "resend": "^6.9.3",
     "shadcn": "^3.8.5",
     "tailwind-merge": "^3.5.0",
@@ -61,6 +66,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jsdom": "^28.1.0",
+    "lefthook": "^1.12.4",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.0.18"

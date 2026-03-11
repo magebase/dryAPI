@@ -1,0 +1,4 @@
+pre-commit:
+  commands:
+    sync-github-env:
+      run: bash ./scripts/sync-github-env.sh --env-file .env
