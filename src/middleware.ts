@@ -56,7 +56,7 @@ function isBetterAuthManagedPath(pathname: string) {
   )
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname === "/ADMIN/INDEX.HTML") {
     const url = request.nextUrl.clone()
     url.pathname = "/admin/index.html"
