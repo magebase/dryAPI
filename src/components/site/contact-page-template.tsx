@@ -6,6 +6,7 @@ import { ContactPageForm } from "@/components/site/contact-page-form"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
+import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema"
 
 type ContactPageTemplateProps = {
@@ -67,7 +68,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
             {heroGalleryImages.length > 0 ? (
               <div className="mt-5 grid gap-3 sm:grid-cols-2" data-tina-field={tinaField(page.hero, "galleryImages")}>
                 {heroGalleryImages.slice(0, 4).map((image) => (
-                  <div key={image.id} className="overflow-hidden rounded-sm border border-white/20 bg-black/25">
+                    <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
                     <Image
                       alt={image.alt || `${page.hero.heading} gallery image`}
                       className="h-24 w-full object-cover"
@@ -86,7 +87,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
 
       <section className="border-b border-white/10 bg-[linear-gradient(90deg,#0d1724,#111f30)] py-12 md:py-16">
         <div className="mx-auto grid max-w-7xl gap-7 px-4 lg:grid-cols-[0.95fr_1.15fr] lg:items-start">
-          <Reveal as="div" className="rounded-sm border border-white/10 bg-[#0f1b2a] p-6 md:p-8">
+          <Reveal as="div" className={`${getGradientVariant(1)} rounded-sm border border-white/10 p-6 md:p-8`}>
             <h2
               className="font-display text-3xl uppercase tracking-[0.06em] text-white"
             >
@@ -141,7 +142,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
             </div>
           </Reveal>
 
-          <Reveal as="div" className="rounded-md border border-slate-300/30 bg-slate-100 p-5 md:p-7" delay={0.1}>
+          <Reveal as="div" className={`${getGradientVariant(2)} rounded-md border border-slate-300/30 p-5 md:p-7`} delay={0.1}>
             <ContactPageForm responseTime={page.contactPanel?.responseTime ?? "Typical response within one business day"} />
           </Reveal>
         </div>
@@ -149,7 +150,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
 
       <section className="bg-[#262f3d] py-12 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr]">
-          <Reveal as="div" className="rounded-md border border-white/10 bg-[#1d2735] p-6">
+          <Reveal as="div" className={`${getGradientVariant(3)} rounded-md border border-white/10 p-6`}>
             <p className="text-xs uppercase tracking-[0.2em] text-[#ff9d53]">Need An Urgent Response?</p>
             <h2 className="mt-3 font-display text-2xl uppercase tracking-[0.06em] text-white">
               <KeywordGradientText text="Call Our Team Directly" />
