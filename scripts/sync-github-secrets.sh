@@ -115,13 +115,13 @@ failed_jobs=0
 
 for sync_var in "${sync_vars[@]}"; do
   sync_secret_var "${sync_var}" &
-  ((active_jobs += 1))
+  active_jobs=$((active_jobs + 1))
 
   if (( active_jobs >= sync_concurrency )); then
     if ! wait -n; then
       failed_jobs=1
     fi
-    ((active_jobs -= 1))
+    active_jobs=$((active_jobs - 1))
   fi
 done
 
@@ -129,7 +129,7 @@ while (( active_jobs > 0 )); do
   if ! wait -n; then
     failed_jobs=1
   fi
-  ((active_jobs -= 1))
+  active_jobs=$((active_jobs - 1))
 done
 
 if (( failed_jobs != 0 )); then
