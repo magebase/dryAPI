@@ -1,0 +1,37 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "genfix-site",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-03-10",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "genfix-site"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "NEXT_INC_CACHE_R2_BUCKET",
+			"bucket_name": "genfix-site-opennext-cache"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "QUOTE_DB",
+			"database_name": "genfix-db",
+			"database_id": "a977b631-526d-4cc2-b5d0-f0a17a93a9fa",
+			"migrations_dir": "drizzle/migrations"
+		}
+	],
+	"images": {
+		"binding": "IMAGES"
+	}
+}

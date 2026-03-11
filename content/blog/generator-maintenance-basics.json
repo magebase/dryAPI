@@ -1,0 +1,31 @@
+{
+  "slug": "generator-maintenance-basics",
+  "title": "Generator Maintenance Basics For High-Uptime Sites",
+  "excerpt": "A practical field checklist for maintaining diesel generator reliability across shutdowns, remote operations, and critical process loads.",
+  "seoTitle": "Generator Maintenance Basics | GenFix Blog",
+  "seoDescription": "Learn practical generator maintenance routines to improve reliability, reduce unplanned outages, and support safe site operations.",
+  "publishedAt": "2026-02-18",
+  "author": {
+    "name": "Liam Porter",
+    "role": "Field Service Lead"
+  },
+  "coverImage": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+  "tags": ["Maintenance", "Reliability", "Operations"],
+  "sections": [
+    {
+      "id": "inspection-rhythm",
+      "heading": "Set A Clear Inspection Rhythm",
+      "body": "Daily visual checks and weekly functional checks create early warning signals before performance drops. Focus on coolant levels, fuel quality, leaks, battery condition, and control panel alarms. Keep records in one place so trends are visible to both operations and maintenance teams."
+    },
+    {
+      "id": "load-testing",
+      "heading": "Treat Load Testing As A Risk Control",
+      "body": "Run scheduled load tests that reflect real operating conditions, not just no-load starts. Confirm response under staged demand changes and verify transfer behavior where ATS systems are in use. Document voltage and frequency stability so handover and compliance reviews are straightforward."
+    },
+    {
+      "id": "planned-parts",
+      "heading": "Plan Parts Before You Need Them",
+      "body": "Build a small, site-specific critical spares list based on known failure points and lead times. Filters, belts, sensors, and starter components are often inexpensive compared with outage cost. Align the spare strategy with service intervals and expected operating hours for each asset."
+    }
+  ]
+}

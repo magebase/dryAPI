@@ -1,0 +1,174 @@
+{
+  "brand": {
+    "name": "LOAD READY",
+    "mark": "GENFIX"
+  },
+  "contact": {
+    "contactEmail": "sales@genfix.com",
+    "quoteEmail": "quotes@genfix.com"
+  },
+  "announcement": "Brisbane-based diesel generator specialists for 5-20 kVA rental, sales, and on-site support.",
+  "header": {
+    "primaryLinks": [
+      {
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "label": "Products",
+        "href": "/products"
+      },
+      {
+        "label": "Services",
+        "href": "/services"
+      },
+      {
+        "label": "Rental",
+        "href": "/rental"
+      },
+      {
+        "label": "Resources",
+        "href": "/resources"
+      },
+      {
+        "label": "Blog",
+        "href": "/blog"
+      },
+      {
+        "label": "Contact",
+        "href": "/contact"
+      }
+    ],
+    "phone": {
+      "label": "1300 365 333",
+      "href": "tel:1300365721"
+    },
+    "quoteCta": {
+      "label": "Get A Quote",
+      "href": "/contact",
+      "style": "outline"
+    }
+  },
+  "footer": {
+    "companyText": "GenFix, based in Brisbane, delivers 5-20 kVA diesel generator sales, rental, and support for critical operations.",
+    "contactLinks": [
+      {
+        "label": "1300 365 721",
+        "href": "tel:1300365721"
+      },
+      {
+        "label": "sales@genfix.com",
+        "href": "mailto:sales@genfix.com"
+      },
+      {
+        "label": "11 Sudbury Street, Darra QLD 4076",
+        "href": "/contact"
+      }
+    ],
+    "socialLinks": [
+      {
+        "label": "Facebook",
+        "href": "https://facebook.com",
+        "icon": "facebook"
+      },
+      {
+        "label": "Instagram",
+        "href": "https://instagram.com",
+        "icon": "instagram"
+      },
+      {
+        "label": "LinkedIn",
+        "href": "https://linkedin.com",
+        "icon": "linkedin"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com",
+        "icon": "youtube"
+      }
+    ],
+    "columns": [
+      {
+        "title": "Locations",
+        "links": [
+          {
+            "label": "Brisbane",
+            "href": "/about"
+          }
+        ]
+      },
+      {
+        "title": "Products",
+        "links": [
+          {
+            "label": "Diesel Generators (5-20 kVA)",
+            "href": "/products/generators"
+          }
+        ]
+      },
+      {
+        "title": "Links",
+        "links": [
+          {
+            "label": "About",
+            "href": "/about"
+          },
+          {
+            "label": "Sales",
+            "href": "/sales"
+          },
+          {
+            "label": "Rental",
+            "href": "/rental"
+          },
+          {
+            "label": "Services",
+            "href": "/services"
+          },
+          {
+            "label": "On-Site Analysis",
+            "href": "/on-site-analysis"
+          },
+          {
+            "label": "Turnkey Solutions",
+            "href": "/turnkey-solutions"
+          },
+          {
+            "label": "Case Studies",
+            "href": "/case-studies"
+          },
+          {
+            "label": "Opportunities",
+            "href": "/opportunities"
+          },
+          {
+            "label": "Sponsorship",
+            "href": "/sponsorship"
+          },
+          {
+            "label": "Resources",
+            "href": "/resources"
+          },
+          {
+            "label": "Blog",
+            "href": "/blog"
+          },
+          {
+            "label": "Privacy Policy",
+            "href": "/privacy-policy"
+          }
+        ]
+      }
+    ],
+    "legalLinks": [
+      {
+        "label": "Terms",
+        "href": "/terms"
+      },
+      {
+        "label": "Privacy Policy",
+        "href": "/privacy-policy"
+      }
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "siteSettings": [
+    {
+      "id": "site",
+      "companyName": "Vanguard Industrial Services",
+      "tagline": "Industrial shutdown support, fabrication, and maintenance",
+      "phone": "+61 3 9000 1234",
+      "email": "hello@vanguardindustrial.com.au",
+      "address": "18 Steelworks Drive, Dandenong South VIC"
+    }
+  ],
+  "navigation": [
+    {
+      "id": "nav-1",
+      "label": "Services",
+      "href": "services",
+      "order": 1
+    },
+    {
+      "id": "nav-2",
+      "label": "Projects",
+      "href": "projects",
+      "order": 2
+    },
+    {
+      "id": "nav-3",
+      "label": "Testimonials",
+      "href": "testimonials",
+      "order": 3
+    },
+    {
+      "id": "nav-4",
+      "label": "Contact",
+      "href": "contact",
+      "order": 4
+    }
+  ],
+  "hero": [
+    {
+      "id": "hero",
+      "eyebrow": "Heavy Industry Specialists",
+      "heading": "Reliable teams for plant maintenance and shutdown delivery",
+      "subheading": "We support manufacturing, mining, and process facilities with experienced crews, practical planning, and safe execution.",
+      "primaryCtaLabel": "Request a Quote",
+      "primaryCtaHref": "contact",
+      "secondaryCtaLabel": "View Projects",
+      "secondaryCtaHref": "projects",
+      "heroImage": "/next.svg"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-1",
+      "title": "Mechanical Maintenance",
+      "description": "Planned and reactive mechanical works delivered by qualified technicians.",
+      "icon": "wrench"
+    },
+    {
+      "id": "svc-2",
+      "title": "Shutdown Labour",
+      "description": "Scalable crews for shutdown windows, including supervision and QA reporting.",
+      "icon": "hard-hat"
+    },
+    {
+      "id": "svc-3",
+      "title": "Fabrication & Install",
+      "description": "Workshop and onsite fabrication, fit-out, and installation support.",
+      "icon": "factory"
+    }
+  ],
+  "projects": [
+    {
+      "id": "prj-1",
+      "name": "Kiln Rebuild Program",
+      "sector": "Cement Manufacturing",
+      "summary": "Executed a staged kiln rebuild across two outage windows with zero LTIs."
+    },
+    {
+      "id": "prj-2",
+      "name": "Conveyor Upgrade",
+      "sector": "Bulk Materials",
+      "summary": "Delivered conveyor structure modifications and commissioning support."
+    },
+    {
+      "id": "prj-3",
+      "name": "Tank Farm Maintenance",
+      "sector": "Process Plant",
+      "summary": "Performed preventive maintenance and compliance rectifications across the tank farm."
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "tst-1",
+      "quote": "The crew integrated quickly and delivered exactly to the outage plan.",
+      "author": "Maintenance Superintendent",
+      "role": "Mining Client"
+    },
+    {
+      "id": "tst-2",
+      "quote": "Strong site leadership, excellent communication, and safe execution under pressure.",
+      "author": "Project Manager",
+      "role": "Manufacturing Client"
+    }
+  ],
+  "contact": [
+    {
+      "id": "contact",
+      "heading": "Speak with our operations team",
+      "description": "Tell us about your next shutdown, turnaround, or maintenance scope.",
+      "responseTime": "Typical response within one business day"
+    }
+  ]
+}

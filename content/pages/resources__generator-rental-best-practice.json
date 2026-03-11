@@ -1,0 +1,74 @@
+{
+  "slug": "/resources/generator-rental-best-practice",
+  "navLabel": "Generator Rental Best Practice",
+  "seoTitle": "Generator Rental Best Practice | GenFix",
+  "seoDescription": "A practical field checklist for selecting, deploying, and managing rental generator packages on active industrial sites.",
+  "hero": {
+    "kicker": "Resource Guide",
+    "heading": "Generator Rental Best Practice",
+    "body": "A practical field checklist for selecting, deploying, and managing rental generator packages on active industrial sites.",
+    "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+    "actions": [
+      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
+      { "label": "Back To Resources", "href": "/resources", "style": "ghost" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "planning-checklist",
+      "title": "Rental Planning Checklist",
+      "body": "Start with load accuracy, site access, duty profile, and operating window to avoid oversizing, fuel waste, and avoidable callouts.",
+      "cards": [
+        {
+          "id": "planning-checklist-1",
+          "title": "Load Profile Definition",
+          "description": "Capture starting currents, critical circuits, and future capacity margin before selecting package size.",
+          "href": "/on-site-analysis",
+          "ctaLabel": "Request Analysis"
+        },
+        {
+          "id": "planning-checklist-2",
+          "title": "Site Logistics",
+          "description": "Confirm crane access, cable runs, noise constraints, and refueling pathways before mobilisation.",
+          "href": "/rental",
+          "ctaLabel": "Review Fleet Options"
+        },
+        {
+          "id": "planning-checklist-3",
+          "title": "Risk Controls",
+          "description": "Plan transfer testing, backup pathways, and escalation protocols for critical operating windows.",
+          "href": "/services",
+          "ctaLabel": "Plan Support Coverage"
+        }
+      ]
+    },
+    {
+      "id": "operating-standards",
+      "title": "Operating Standards In The Field",
+      "body": "Strong outcomes come from clear handover documentation, regular inspection routines, and measured performance reviews.",
+      "cards": [
+        {
+          "id": "operating-standards-1",
+          "title": "Commissioning Handover",
+          "description": "Use a documented handover process with test records, contact pathways, and practical operating instructions.",
+          "href": "/resources/commissioning-handover",
+          "ctaLabel": "Read Handover Guide"
+        },
+        {
+          "id": "operating-standards-2",
+          "title": "Performance Tracking",
+          "description": "Track runtime, fuel consumption, and alarm history to identify optimization opportunities early.",
+          "href": "/resources/performance-optimization",
+          "ctaLabel": "View Optimization Notes"
+        },
+        {
+          "id": "operating-standards-3",
+          "title": "Procurement Review",
+          "description": "Compare short-term hire against ownership horizon at project milestones, not only at project start.",
+          "href": "/resources/equipment-rental-vs-ownership",
+          "ctaLabel": "Compare Models"
+        }
+      ]
+    }
+  ]
+}

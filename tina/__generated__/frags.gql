@@ -1,0 +1,279 @@
+fragment SiteConfigParts on SiteConfig {
+  __typename
+  brand {
+    __typename
+    name
+    mark
+  }
+  contact {
+    __typename
+    contactEmail
+    quoteEmail
+  }
+  announcement
+  header {
+    __typename
+    primaryLinks {
+      __typename
+      label
+      href
+    }
+    phone {
+      __typename
+      label
+      href
+    }
+    quoteCta {
+      __typename
+      label
+      href
+      style
+    }
+  }
+  footer {
+    __typename
+    companyText
+    contactLinks {
+      __typename
+      label
+      href
+    }
+    socialLinks {
+      __typename
+      label
+      href
+      icon
+    }
+    columns {
+      __typename
+      title
+      links {
+        __typename
+        label
+        href
+      }
+    }
+    legalLinks {
+      __typename
+      label
+      href
+    }
+  }
+}
+
+fragment HomeParts on Home {
+  __typename
+  seoTitle
+  seoDescription
+  hero {
+    __typename
+    visible
+    kicker
+    heading
+    subheading
+    backgroundImage
+    primaryAction {
+      __typename
+      label
+      href
+      style
+    }
+    secondaryAction {
+      __typename
+      label
+      href
+      style
+    }
+    tertiaryAction {
+      __typename
+      label
+      href
+      style
+    }
+  }
+  spotlightSection {
+    __typename
+    visible
+    kicker
+    title
+  }
+  spotlightCards {
+    __typename
+    id
+    visible
+    title
+    description
+    icon
+  }
+  capabilitySection {
+    __typename
+    visible
+    kicker
+    title
+  }
+  capabilityCards {
+    __typename
+    id
+    visible
+    title
+    description
+    icon
+  }
+  projectShowcase {
+    __typename
+    visible
+    title
+    ctaLabel
+    ctaHref
+    items {
+      __typename
+      id
+      visible
+      title
+      summary
+      image
+      galleryImages {
+        __typename
+        id
+        src
+        alt
+        caption
+      }
+      href
+      tag
+    }
+  }
+  resourceShowcase {
+    __typename
+    visible
+    title
+    ctaLabel
+    ctaHref
+    items {
+      __typename
+      id
+      visible
+      title
+      summary
+      image
+      galleryImages {
+        __typename
+        id
+        src
+        alt
+        caption
+      }
+      href
+      tag
+    }
+  }
+  contactPanel {
+    __typename
+    visible
+    kicker
+    heading
+    body
+    primaryAction {
+      __typename
+      label
+      href
+      style
+    }
+    secondaryAction {
+      __typename
+      label
+      href
+      style
+    }
+  }
+}
+
+fragment BlogPostsParts on BlogPosts {
+  __typename
+  slug
+  title
+  excerpt
+  seoTitle
+  seoDescription
+  publishedAt
+  author {
+    __typename
+    name
+    role
+  }
+  coverImage
+  tags
+  sections {
+    __typename
+    id
+    heading
+    body
+  }
+}
+
+fragment RoutePagesParts on RoutePages {
+  __typename
+  slug
+  navLabel
+  seoTitle
+  seoDescription
+  pageContent {
+    __typename
+    elements {
+      __typename
+      id
+      type
+      text
+      href
+      src
+    }
+  }
+  hero {
+    __typename
+    kicker
+    heading
+    body
+    image
+    galleryImages {
+      __typename
+      id
+      src
+      alt
+      caption
+    }
+    actions {
+      __typename
+      label
+      href
+      style
+    }
+  }
+  sections {
+    __typename
+    id
+    title
+    body
+    galleryImages {
+      __typename
+      id
+      src
+      alt
+      caption
+    }
+    cards {
+      __typename
+      id
+      title
+      description
+      image
+      href
+      ctaLabel
+    }
+  }
+  contactPanel {
+    __typename
+    heading
+    body
+    responseTime
+  }
+}

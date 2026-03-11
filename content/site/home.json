@@ -1,0 +1,374 @@
+{
+  "seoTitle": "GenFix | 5-20 kVA Diesel Generators, Rental and Service",
+  "seoDescription": "Brisbane-based 5-20 kVA diesel generator sales, rental fleets, and 24/7 support delivered across Australia.",
+  "hero": {
+    "visible": true,
+    "kicker": "Australia's Independent Industrial Power Team",
+    "heading": "Reliable 5-20 kVA Diesel Generator Sales, Rental and Support",
+    "subheading": "GenFix is based in Brisbane and supports critical projects with responsive diesel generator hire, right-sized 5-20 kVA packages, and rapid breakdown assistance.",
+    "backgroundImage": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+    "primaryAction": {
+      "label": "Sales",
+      "href": "/sales",
+      "style": "solid"
+    },
+    "secondaryAction": {
+      "label": "Rental",
+      "href": "/rental",
+      "style": "outline"
+    },
+    "tertiaryAction": {
+      "label": "Free Quote",
+      "href": "/contact",
+      "style": "ghost"
+    }
+  },
+  "spotlightSection": {
+    "visible": true,
+    "kicker": "Core Offerings",
+    "title": "How We Deliver Temporary Power"
+  },
+  "spotlightCards": [
+    {
+      "id": "spotlight-sales",
+      "visible": true,
+      "title": "Sales",
+      "description": "Practical advice to choose the right 5-20 kVA unit for your load, compliance, and budget.",
+      "icon": "settings"
+    },
+    {
+      "id": "spotlight-rental",
+      "visible": true,
+      "title": "Rental",
+      "description": "Fast, flexible rental for shutdowns, temporary works, and staged projects.",
+      "icon": "truck"
+    },
+    {
+      "id": "spotlight-support",
+      "visible": true,
+      "title": "Support",
+      "description": "24/7 support with diagnostics, field response, and clear escalation when production is at risk.",
+      "icon": "shield"
+    }
+  ],
+  "capabilitySection": {
+    "visible": true,
+    "kicker": "Capabilities",
+    "title": "What We Handle End To End"
+  },
+  "capabilityCards": [
+    {
+      "id": "cap-sales",
+      "visible": true,
+      "title": "Load Study And Scope",
+      "description": "We size packages around real runtime targets, compliance requirements, and site conditions.",
+      "icon": "settings"
+    },
+    {
+      "id": "cap-rental",
+      "visible": true,
+      "title": "Fleet Hire Or Buy",
+      "description": "Short-term hire, project-duration rental, or purchase pathways based on your program.",
+      "icon": "truck"
+    },
+    {
+      "id": "cap-field",
+      "visible": true,
+      "title": "Field Commissioning",
+      "description": "Our field teams commission, service, and maintain active installations nationally.",
+      "icon": "hard-hat"
+    },
+    {
+      "id": "cap-breakdown",
+      "visible": true,
+      "title": "24/7 Recovery",
+      "description": "After-hours triage and rapid recovery support when critical equipment goes down.",
+      "icon": "radio"
+    },
+    {
+      "id": "cap-range",
+      "visible": true,
+      "title": "Configured 5-20 kVA Fleet",
+      "description": "Quiet, efficient sets configured for compounds, temporary boards, and backup circuits.",
+      "icon": "bolt"
+    },
+    {
+      "id": "cap-runtime",
+      "visible": true,
+      "title": "Fuel And Runtime Planning",
+      "description": "Fuel burn estimates and refuel planning matched to shift cycles and expected demand.",
+      "icon": "plug"
+    },
+    {
+      "id": "cap-engineering",
+      "visible": true,
+      "title": "Electrical Integration",
+      "description": "Support for temporary boards, changeovers, and staged energisation in live environments.",
+      "icon": "factory"
+    }
+  ],
+  "projectShowcase": {
+    "title": "Featured Projects",
+    "visible": true,
+    "ctaLabel": "View Case Studies",
+    "ctaHref": "/case-studies",
+    "items": [
+      {
+        "id": "project-1",
+        "visible": true,
+        "title": "31 Duncan Street",
+        "summary": "Commissioned backup generation and controls for a high-load commercial site.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/case-studies",
+        "tag": "Case Study",
+        "galleryImages": [
+          {
+            "id": "project-1-01",
+            "src": "https://images.unsplash.com/photo-1581092918484-8313f03f26f8",
+            "alt": "31 Duncan Street image 1",
+            "caption": "31 Duncan Street image 1"
+          },
+          {
+            "id": "project-1-02",
+            "src": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e",
+            "alt": "31 Duncan Street image 2",
+            "caption": "31 Duncan Street image 2"
+          },
+          {
+            "id": "project-1-03",
+            "src": "https://images.unsplash.com/photo-1565008447742-97f6f38c985c",
+            "alt": "31 Duncan Street image 3",
+            "caption": "31 Duncan Street image 3"
+          }
+        ]
+      },
+      {
+        "id": "project-2",
+        "visible": true,
+        "title": "895 Ann Street",
+        "summary": "Installed and supported a critical standby package during staged construction.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/case-studies",
+        "tag": "Case Study",
+        "galleryImages": [
+          {
+            "id": "project-2-01",
+            "src": "https://images.unsplash.com/photo-1565008447742-97f6f38c985c",
+            "alt": "895 Ann Street image 1",
+            "caption": "895 Ann Street image 1"
+          },
+          {
+            "id": "project-2-02",
+            "src": "https://images.unsplash.com/photo-1518770660439-4636190af475",
+            "alt": "895 Ann Street image 2",
+            "caption": "895 Ann Street image 2"
+          },
+          {
+            "id": "project-2-03",
+            "src": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+            "alt": "895 Ann Street image 3",
+            "caption": "895 Ann Street image 3"
+          }
+        ]
+      },
+      {
+        "id": "project-3",
+        "visible": true,
+        "title": "LP Plant Grow Facility",
+        "summary": "Delivered redundant generation for uninterrupted research and production load.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/case-studies",
+        "tag": "Case Study",
+        "galleryImages": [
+          {
+            "id": "project-3-01",
+            "src": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+            "alt": "LP Plant Grow Facility image 1",
+            "caption": "LP Plant Grow Facility image 1"
+          },
+          {
+            "id": "project-3-02",
+            "src": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+            "alt": "LP Plant Grow Facility image 2",
+            "caption": "LP Plant Grow Facility image 2"
+          },
+          {
+            "id": "project-3-03",
+            "src": "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1",
+            "alt": "LP Plant Grow Facility image 3",
+            "caption": "LP Plant Grow Facility image 3"
+          }
+        ]
+      },
+      {
+        "id": "project-4",
+        "visible": true,
+        "title": "Ampol Refinery Upgrade",
+        "summary": "Turnkey temporary power package with monitoring and staged commissioning.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/case-studies",
+        "tag": "Case Study",
+        "galleryImages": [
+          {
+            "id": "project-4-01",
+            "src": "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1",
+            "alt": "Ampol Refinery Upgrade image 1",
+            "caption": "Ampol Refinery Upgrade image 1"
+          },
+          {
+            "id": "project-4-02",
+            "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
+            "alt": "Ampol Refinery Upgrade image 2",
+            "caption": "Ampol Refinery Upgrade image 2"
+          },
+          {
+            "id": "project-4-03",
+            "src": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6",
+            "alt": "Ampol Refinery Upgrade image 3",
+            "caption": "Ampol Refinery Upgrade image 3"
+          }
+        ]
+      }
+    ]
+  },
+  "resourceShowcase": {
+    "title": "Latest Resources",
+    "visible": true,
+    "ctaLabel": "Browse Resources",
+    "ctaHref": "/resources",
+    "items": [
+      {
+        "id": "resource-1",
+        "visible": true,
+        "title": "Generator Rental Best Practice",
+        "summary": "A practical checklist for selecting temporary power equipment for active sites.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/resources/generator-rental-best-practice",
+        "tag": "Guide",
+        "galleryImages": [
+          {
+            "id": "resource-1-01",
+            "src": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+            "alt": "Generator Rental Best Practice image 1",
+            "caption": "Generator Rental Best Practice image 1"
+          },
+          {
+            "id": "resource-1-02",
+            "src": "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1",
+            "alt": "Generator Rental Best Practice image 2",
+            "caption": "Generator Rental Best Practice image 2"
+          },
+          {
+            "id": "resource-1-03",
+            "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
+            "alt": "Generator Rental Best Practice image 3",
+            "caption": "Generator Rental Best Practice image 3"
+          }
+        ]
+      },
+      {
+        "id": "resource-2",
+        "visible": true,
+        "title": "Commissioning Handover Guide",
+        "summary": "Structured commissioning and handover checkpoints for reliable diesel generator operation.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/resources/commissioning-handover",
+        "tag": "Guide",
+        "galleryImages": [
+          {
+            "id": "resource-2-01",
+            "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
+            "alt": "Commissioning Handover Guide image 1",
+            "caption": "Commissioning Handover Guide image 1"
+          },
+          {
+            "id": "resource-2-02",
+            "src": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6",
+            "alt": "Commissioning Handover Guide image 2",
+            "caption": "Commissioning Handover Guide image 2"
+          },
+          {
+            "id": "resource-2-03",
+            "src": "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0",
+            "alt": "Commissioning Handover Guide image 3",
+            "caption": "Commissioning Handover Guide image 3"
+          }
+        ]
+      },
+      {
+        "id": "resource-3",
+        "visible": true,
+        "title": "Equipment Rental vs Ownership",
+        "summary": "Decision framework for uptime, cash flow, and maintenance obligations.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/resources/equipment-rental-vs-ownership",
+        "tag": "Guide",
+        "galleryImages": [
+          {
+            "id": "resource-3-01",
+            "src": "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0",
+            "alt": "Equipment Rental vs Ownership image 1",
+            "caption": "Equipment Rental vs Ownership image 1"
+          },
+          {
+            "id": "resource-3-02",
+            "src": "https://images.unsplash.com/photo-1513828583688-c52646db42da",
+            "alt": "Equipment Rental vs Ownership image 2",
+            "caption": "Equipment Rental vs Ownership image 2"
+          },
+          {
+            "id": "resource-3-03",
+            "src": "https://images.unsplash.com/photo-1581091012184-5c2f2f4b1f3f",
+            "alt": "Equipment Rental vs Ownership image 3",
+            "caption": "Equipment Rental vs Ownership image 3"
+          }
+        ]
+      },
+      {
+        "id": "resource-4",
+        "visible": true,
+        "title": "Website Safety Alert",
+        "summary": "How to verify approved GenFix channels and avoid fraudulent suppliers.",
+        "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+        "href": "/resources/website-safety-alert",
+        "tag": "Notice",
+        "galleryImages": [
+          {
+            "id": "resource-4-01",
+            "src": "https://images.unsplash.com/photo-1581091012184-5c2f2f4b1f3f",
+            "alt": "Website Safety Alert image 1",
+            "caption": "Website Safety Alert image 1"
+          },
+          {
+            "id": "resource-4-02",
+            "src": "https://images.unsplash.com/photo-1581092918484-8313f03f26f8",
+            "alt": "Website Safety Alert image 2",
+            "caption": "Website Safety Alert image 2"
+          },
+          {
+            "id": "resource-4-03",
+            "src": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e",
+            "alt": "Website Safety Alert image 3",
+            "caption": "Website Safety Alert image 3"
+          }
+        ]
+      }
+    ]
+  },
+  "contactPanel": {
+    "visible": true,
+    "kicker": "Ready To Plan?",
+    "heading": "Get A Site-Specific Power Recommendation",
+    "body": "Tell us your operating window and load profile. We will propose practical equipment and deployment options.",
+    "primaryAction": {
+      "label": "Request A Quote",
+      "href": "/contact",
+      "style": "solid"
+    },
+    "secondaryAction": {
+      "label": "Explore Products",
+      "href": "/products",
+      "style": "ghost"
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "slug": "/sales",
+  "navLabel": "Sales",
+  "seoTitle": "Generator & Equipment Sales | GenFix",
+  "seoDescription": "Get fit-for-purpose equipment backed by expert sizing, commissioning, and lifecycle support.",
+  "hero": {
+    "kicker": "Sales",
+    "heading": "Generator & Equipment Sales",
+    "body": "Get fit-for-purpose equipment backed by expert sizing, commissioning, and lifecycle support.",
+    "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+    "actions": [
+      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
+      { "label": "View Resources", "href": "/resources", "style": "ghost" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Generator & Equipment Sales Overview",
+      "body": "GenFix delivers practical equipment and support programs aligned to industrial uptime, safety, and project outcomes.",
+      "cards": [
+        {
+          "id": "overview-card-1",
+          "title": "Scope Planning",
+          "description": "Define requirements, load profiles, and site constraints before mobilisation.",
+          "href": "/contact",
+          "ctaLabel": "Start Planning"
+        },
+        {
+          "id": "overview-card-2",
+          "title": "Delivery Model",
+          "description": "Flexible purchase and diesel generator rental options for 5-20 kVA site needs.",
+          "href": "/rental",
+          "ctaLabel": "Explore Rental"
+        },
+        {
+          "id": "overview-card-3",
+          "title": "Operational Support",
+          "description": "Monitoring, maintenance, and response services to keep critical loads online.",
+          "href": "/services",
+          "ctaLabel": "See Services"
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "title": "How We Deliver",
+      "body": "Our teams combine engineering, field service, and nationwide logistics to deploy rapidly and reliably.",
+      "cards": [
+        {
+          "id": "delivery-card-1",
+          "title": "Engineering",
+          "description": "In-house experts shape dependable system architecture for each project phase.",
+          "href": "/on-site-analysis",
+          "ctaLabel": "Technical Analysis"
+        },
+        {
+          "id": "delivery-card-2",
+          "title": "Commissioning",
+          "description": "Structured testing and handover with clear operational documentation.",
+          "href": "/turnkey-solutions",
+          "ctaLabel": "Turnkey Delivery"
+        },
+        {
+          "id": "delivery-card-3",
+          "title": "Continuous Improvement",
+          "description": "Performance reviews and optimization backed by real operating data.",
+          "href": "/case-studies",
+          "ctaLabel": "View Case Studies"
+        }
+      ]
+    }
+  ]
+}

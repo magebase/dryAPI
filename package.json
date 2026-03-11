@@ -3,24 +3,71 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "tinacms dev -c \"next dev\"",
+    "dev:next": "next dev",
+    "dev:tina": "tinacms dev -c \"next dev\"",
     "build": "next build",
+    "tina:build": "tinacms build --local --skip-cloud-checks",
+    "build:tina": "tinacms build --local --skip-cloud-checks && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply $CF_D1_DATABASE_NAME --local --config wrangler.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply $CF_D1_DATABASE_NAME --remote --config wrangler.jsonc",
+    "cf:build": "tinacms build --local --skip-cloud-checks && opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1005.0",
+    "@opennextjs/cloudflare": "^1.17.1",
+    "@react-email/components": "^1.0.8",
+    "@react-email/render": "^2.0.4",
+    "@tinacms/cli": "^2.1.9",
+    "@upstash/redis": "^1.36.3",
+    "aos": "^2.3.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.1",
+    "jose": "^6.2.1",
+    "lenis": "^1.3.17",
+    "lucide-react": "^0.575.0",
     "next": "16.1.6",
+    "radix-ui": "^1.4.3",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "resend": "^6.9.3",
+    "shadcn": "^3.8.5",
+    "tailwind-merge": "^3.5.0",
+    "tinacms": "^3.6.1",
+    "tw-animate-css": "^1.4.0",
+    "wrangler": "^4.71.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/testing-library__jest-dom": "^5.14.9",
+    "@vitest/coverage-v8": "^4.0.18",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jsdom": "^28.1.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "tinacms@3.6.1": "patches/tinacms@3.6.1.patch"
+    }
   }
 }

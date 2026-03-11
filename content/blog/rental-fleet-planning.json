@@ -1,0 +1,31 @@
+{
+  "slug": "rental-fleet-planning",
+  "title": "How To Plan Rental Power Fleets For Staged Projects",
+  "excerpt": "Use a phased planning model to match temporary power equipment with real load growth, delivery windows, and commissioning risk.",
+  "seoTitle": "Rental Fleet Planning Guide | GenFix Blog",
+  "seoDescription": "Discover how to plan rental power fleets for staged projects using phased load planning, logistics controls, and commissioning discipline.",
+  "publishedAt": "2026-01-30",
+  "author": {
+    "name": "Ava Middleton",
+    "role": "Project Delivery Manager"
+  },
+  "coverImage": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+  "tags": ["Rental", "Project Planning", "Commissioning"],
+  "sections": [
+    {
+      "id": "phase-load-model",
+      "heading": "Map Load To Each Project Phase",
+      "body": "Break the project into mobilization, peak works, and demobilization phases. Assign expected load ranges, redundancy targets, and runtime assumptions per phase. This avoids over-sizing for long periods while preserving resilience during critical milestones."
+    },
+    {
+      "id": "logistics-controls",
+      "heading": "Control Delivery And Site Logistics",
+      "body": "Delivery windows, cranage access, and cable routing constraints can drive schedule risk more than generator lead time. Validate physical access, isolation requirements, and laydown plans early. A pre-delivery checklist with site stakeholders removes most avoidable delays."
+    },
+    {
+      "id": "commissioning-standard",
+      "heading": "Use A Repeatable Commissioning Standard",
+      "body": "Apply a consistent commissioning script for every unit and every handover. Include test results, alarms, fuel baseline, and escalation contacts. Standardized handover content helps both site operators and service teams respond quickly when conditions change."
+    }
+  ]
+}

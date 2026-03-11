@@ -1,0 +1,74 @@
+{
+  "slug": "/resources/commissioning-handover",
+  "navLabel": "Commissioning Handover",
+  "seoTitle": "Commissioning Handover Guide | GenFix",
+  "seoDescription": "Structured handover checklist for diesel generator commissioning, documentation, and operational readiness.",
+  "hero": {
+    "kicker": "Resource Guide",
+    "heading": "Commissioning Handover Guide",
+    "body": "Structured handover checklist for diesel generator commissioning, documentation, and operational readiness.",
+    "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+    "actions": [
+      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
+      { "label": "Back To Resources", "href": "/resources", "style": "ghost" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "handover-foundations",
+      "title": "Handover Foundations",
+      "body": "Reliable operations start with clear commissioning evidence, known alarm behavior, and signed acceptance criteria.",
+      "cards": [
+        {
+          "id": "handover-foundations-1",
+          "title": "Functional Testing",
+          "description": "Verify protection settings, transfer logic, and run-state behavior under representative operating conditions.",
+          "href": "/turnkey-solutions",
+          "ctaLabel": "Review Delivery Model"
+        },
+        {
+          "id": "handover-foundations-2",
+          "title": "Operational Documentation",
+          "description": "Capture as-built references, service intervals, and escalation pathways for site teams.",
+          "href": "/resources/website-safety-alert",
+          "ctaLabel": "Apply Communication Controls"
+        },
+        {
+          "id": "handover-foundations-3",
+          "title": "Operator Readiness",
+          "description": "Provide practical handover training for startup, shutdown, alarm response, and reporting routines.",
+          "href": "/services",
+          "ctaLabel": "Plan Ongoing Support"
+        }
+      ]
+    },
+    {
+      "id": "post-handover",
+      "title": "Post-Handover Performance",
+      "body": "The first weeks after commissioning are critical for confirming reliability assumptions and tuning operation.",
+      "cards": [
+        {
+          "id": "post-handover-1",
+          "title": "Stabilization Reviews",
+          "description": "Run planned review checkpoints to identify early warnings, repeated alarms, or runtime anomalies.",
+          "href": "/resources/performance-optimization",
+          "ctaLabel": "Use Optimization Checklist"
+        },
+        {
+          "id": "post-handover-2",
+          "title": "Service Coordination",
+          "description": "Align warranty obligations, maintenance intervals, and field support contact pathways.",
+          "href": "/contact",
+          "ctaLabel": "Set Service Contacts"
+        },
+        {
+          "id": "post-handover-3",
+          "title": "Future Expansion Planning",
+          "description": "Document design assumptions so later load growth can be assessed without disrupting critical supply.",
+          "href": "/on-site-analysis",
+          "ctaLabel": "Plan Future Capacity"
+        }
+      ]
+    }
+  ]
+}

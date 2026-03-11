@@ -1,0 +1,74 @@
+{
+  "slug": "/resources/website-safety-alert",
+  "navLabel": "Website Safety Alert",
+  "seoTitle": "Website Safety Alert | GenFix",
+  "seoDescription": "Guidance for verifying official GenFix communication channels and reducing fraud risk during procurement and support requests.",
+  "hero": {
+    "kicker": "Security Notice",
+    "heading": "Website Safety Alert",
+    "body": "Guidance for verifying official GenFix communication channels and reducing fraud risk during procurement and support requests.",
+    "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+    "actions": [
+      { "label": "Report A Concern", "href": "/contact", "style": "outline" },
+      { "label": "Back To Resources", "href": "/resources", "style": "ghost" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "verification-steps",
+      "title": "Verification Steps",
+      "body": "Use these checks before sharing project details, issuing purchase orders, or actioning payment instructions.",
+      "cards": [
+        {
+          "id": "verification-steps-1",
+          "title": "Confirm Contact Channels",
+          "description": "Use phone numbers and email addresses published on GenFix official pages when verifying requests.",
+          "href": "/contact",
+          "ctaLabel": "Use Official Contact"
+        },
+        {
+          "id": "verification-steps-2",
+          "title": "Validate Scope Documentation",
+          "description": "Cross-check quotation details, ABN records, and scope descriptions with your known account contacts.",
+          "href": "/sales",
+          "ctaLabel": "Confirm Sales Details"
+        },
+        {
+          "id": "verification-steps-3",
+          "title": "Escalate Unusual Requests",
+          "description": "Urgent payment changes, altered bank details, or non-standard communication channels should be escalated immediately.",
+          "href": "/contact",
+          "ctaLabel": "Escalate A Request"
+        }
+      ]
+    },
+    {
+      "id": "risk-reduction",
+      "title": "Risk Reduction Practices",
+      "body": "Consistent procurement controls and communication protocols reduce fraud exposure across distributed project teams.",
+      "cards": [
+        {
+          "id": "risk-reduction-1",
+          "title": "Approved Vendor Workflow",
+          "description": "Keep a controlled supplier register and verify any account changes through known internal escalation pathways.",
+          "href": "/terms",
+          "ctaLabel": "Review Terms"
+        },
+        {
+          "id": "risk-reduction-2",
+          "title": "Information Security Hygiene",
+          "description": "Use role-based access, shared mailbox controls, and internal approval checks for critical procurement actions.",
+          "href": "/privacy-policy",
+          "ctaLabel": "Read Privacy Policy"
+        },
+        {
+          "id": "risk-reduction-3",
+          "title": "Training And Awareness",
+          "description": "Run periodic awareness updates so field and office teams recognize common impersonation and phishing patterns.",
+          "href": "/opportunities",
+          "ctaLabel": "Explore Team Programs"
+        }
+      ]
+    }
+  ]
+}

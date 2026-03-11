@@ -1,0 +1,41 @@
+diff --git a/dist/index.js b/dist/index.js
+index 8513efb2e68f7a3495f1adf14b0843f947f0ecba..4f4ad6a3496251a5d6f4ceb8b4e7ebe68367de72 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -123945,15 +123945,28 @@ const PreviewInner = ({ preview: preview2, config }) => {
+   React__default.useEffect(() => {
+-    setInterval(() => {
+-      var _a2;
+-      if (ref.current) {
+-        const url2 = new URL(((_a2 = ref.current.contentWindow) == null ? void 0 : _a2.location.href) || "");
+-        if (url2.origin === "null") {
+-          return;
++    const interval = setInterval(() => {
++      if (!ref.current) {
++        return;
++      }
++      try {
++        var _a2;
++        const href = (_a2 = ref.current.contentWindow) == null ? void 0 : _a2.location.href;
++        if (!href) {
++          return;
+         }
+-        const href = url2.href.replace(url2.origin, "");
+-        setReportedURL(href);
++        const url2 = new URL(href);
++        if (url2.origin === "null") {
++          return;
++        }
++        setReportedURL(url2.href.replace(url2.origin, ""));
++      } catch (e3) {
++        if (!(e3 instanceof DOMException)) {
++          throw e3;
++        }
+       }
+     }, 100);
++    return () => {
++      clearInterval(interval);
++    };
+   }, [ref.current]);
+   const Preview = preview2;
+   return /* @__PURE__ */ React__default.createElement(Preview, { url, iframeRef: ref, ...config });

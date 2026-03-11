@@ -1,0 +1,74 @@
+{
+  "slug": "/resources/performance-optimization",
+  "navLabel": "Performance Optimization",
+  "seoTitle": "Performance Optimization Guide | GenFix",
+  "seoDescription": "Practical optimization methods for runtime efficiency, fuel reduction, and lifecycle reliability in industrial power systems.",
+  "hero": {
+    "kicker": "Resource Guide",
+    "heading": "Performance Optimization Guide",
+    "body": "Practical optimization methods for runtime efficiency, fuel reduction, and lifecycle reliability in industrial power systems.",
+    "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
+    "actions": [
+      { "label": "Talk To Sales", "href": "/contact", "style": "outline" },
+      { "label": "Back To Resources", "href": "/resources", "style": "ghost" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "optimization-pillars",
+      "title": "Optimization Pillars",
+      "body": "Sustainable gains come from data quality, disciplined maintenance, and control settings aligned to real load behavior.",
+      "cards": [
+        {
+          "id": "optimization-pillars-1",
+          "title": "Data Baseline",
+          "description": "Track runtime, loading, and fuel data consistently before introducing new optimization measures.",
+          "href": "/on-site-analysis",
+          "ctaLabel": "Build Data Baseline"
+        },
+        {
+          "id": "optimization-pillars-2",
+          "title": "Preventive Maintenance",
+          "description": "Use preventive maintenance to reduce efficiency drift caused by component wear and unresolved alarms.",
+          "href": "/services",
+          "ctaLabel": "Plan Service Cycle"
+        },
+        {
+          "id": "optimization-pillars-3",
+          "title": "Control Tuning",
+          "description": "Tune governor and AVR settings to improve diesel generator response and efficiency under variable demand.",
+          "href": "/resources/commissioning-handover",
+          "ctaLabel": "Review Control Checklist"
+        }
+      ]
+    },
+    {
+      "id": "commercial-impact",
+      "title": "Commercial Impact Tracking",
+      "body": "Optimization should be tied to measurable operating outcomes including fuel spend, downtime incidents, and support costs.",
+      "cards": [
+        {
+          "id": "commercial-impact-1",
+          "title": "Fuel And Runtime Reporting",
+          "description": "Measure period-over-period changes using normalized site activity to avoid misleading comparisons.",
+          "href": "/resources/generator-rental-best-practice",
+          "ctaLabel": "Use Rental Checklist"
+        },
+        {
+          "id": "commercial-impact-2",
+          "title": "Downtime Risk Reduction",
+          "description": "Link optimization actions to alarm reduction, faster recovery times, and fewer unplanned stoppages.",
+          "href": "/case-studies",
+          "ctaLabel": "See Outcome Examples"
+        },
+        {
+          "id": "commercial-impact-3",
+          "title": "Budget Confidence",
+          "description": "Use tracked performance metrics to improve procurement timing and ownership-versus-rental decisions.",
+          "href": "/resources/equipment-rental-vs-ownership",
+          "ctaLabel": "Compare Procurement Models"
+        }
+      ]
+    }
+  ]
+}
