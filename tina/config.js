@@ -1,4 +1,4 @@
-import { AbstractAuthProvider, defineConfig } from "tinacms"
+import { defineConfig } from "tinacms"
 
 const branch =
   process.env.GITHUB_BRANCH ||
@@ -57,75 +57,12 @@ const pageElementFields = [
 ]
 
 const contentApiUrlOverride = process.env.NEXT_PUBLIC_TINA_CONTENT_API_URL || "/api/tina/gql"
-const isSelfHostedApi = contentApiUrlOverride.startsWith("/api/tina/")
-
-class TinaBetterAuthProvider extends AbstractAuthProvider {
-  async authenticate() {
-    if (typeof window !== "undefined") {
-      const callbackUrl = encodeURIComponent(window.location.href)
-      window.location.assign(`/api/tina/auth/signin?callbackUrl=${callbackUrl}`)
-    }
-
-    return null
-  }
-
-  async getUser() {
-    let response
-    try {
-      response = await fetch("/api/tina/auth/user", {
-        credentials: "include",
-        cache: "no-store",
-      })
-    } catch {
-      return null
-    }
-
-    if (!response.ok) {
-      return null
-    }
-
-    const payload = await response.json().catch(() => null)
-    return payload?.user || null
-  }
-
-  async getToken() {
-    let response
-    try {
-      response = await fetch("/api/tina/auth/token", {
-        credentials: "include",
-        cache: "no-store",
-      })
-    } catch {
-      return { id_token: null }
-    }
-
-    if (!response.ok) {
-      return { id_token: null }
-    }
-
-    const payload = await response.json().catch(() => null)
-    return { id_token: payload?.id_token || null }
-  }
-
-  async logout() {
-    try {
-      await fetch("/api/tina/auth/logout", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      })
-    } catch {
-      // Ignore logout transport errors so admin can continue rendering.
-    }
-  }
-}
 
 export default defineConfig({
   branch,
   clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID || null,
   token: process.env.TINA_TOKEN || null,
   contentApiUrlOverride,
-  authProvider: isSelfHostedApi ? new TinaBetterAuthProvider() : undefined,
   build: {
     outputFolder: "admin",
     publicFolder: "public",

@@ -202,19 +202,6 @@ Optional Tina endpoint override:
 
 - `NEXT_PUBLIC_TINA_CONTENT_API_URL` (defaults to `/api/tina/gql`)
 
-Optional: Better Auth as Tina auth provider (`bring-your-own` auth mode):
-
-- `TINA_AUTH_PROVIDER=better-auth`
-- `BETTER_AUTH_SECRET` (required in production)
-- `BETTER_AUTH_URL` (recommended, e.g. `https://your-domain.com`)
-- `TINA_AUTH_TOKEN_SECRET` (recommended separate secret for Tina editor JWTs)
-- `TINA_BETTER_AUTH_PROVIDER` (optional preferred provider; falls back to first configured provider)
-- `TINA_ALLOWED_GOOGLE_EMAILS` and/or `TINA_ALLOWED_GOOGLE_DOMAINS` (editor allowlist)
-- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (or `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET`, if using Google social login)
-- `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` (if using GitHub social login)
-
-When `TINA_AUTH_PROVIDER=better-auth`, the middleware bypasses Cloudflare checks for Tina paths and uses Better Auth + signed Tina editor tokens for `/api/tina/gql` authorization.
-
 Required for Cloudflare Zero Trust protection of TinaCMS routes:
 
 - `CLOUDFLARE_ACCESS_TEAM_DOMAIN` (example: `your-team.cloudflareaccess.com`)
@@ -329,23 +316,17 @@ wrangler secret put BREVO_API_KEY
 wrangler secret put BREVO_FROM_EMAIL_CONTACT
 wrangler secret put BREVO_FROM_EMAIL_QUOTE
 wrangler secret put BREVO_FROM_EMAIL_CHAT
-wrangler secret put BETTER_AUTH_SECRET
-wrangler secret put TINA_AUTH_TOKEN_SECRET
 ```
 
 ## Cloudflare Zero Trust for TinaCMS
-
-Use this section when `TINA_AUTH_PROVIDER` is not set to `better-auth`.
 
 Protected paths:
 
 - `/admin/*`
 - `/api/cms/*`
 - `/api/media/*`
-- `/api/tina/gql`
+- `/api/tina/*`
 - `/api/verify-zjwt`
-
-If you previously provisioned `/api/tina/*`, re-run `pnpm cf:access:admin:provision` to remove that legacy app and prevent `/api/tina/auth/*` requests from being redirected to Cloudflare Access login.
 
 How it works:
 

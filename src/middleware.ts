@@ -7,7 +7,6 @@ import {
 } from "@/lib/cloudflare-access"
 
 const PROTECTED_PREFIXES = ["/admin", "/crm", "/api/cms", "/api/crm", "/api/media"]
-const USE_BETTER_AUTH_FOR_TINA = process.env.TINA_AUTH_PROVIDER === "better-auth"
 const CRM_HOSTNAMES = new Set(["crm.genfix.com.au", "www.crm.genfix.com.au"])
 
 function normalizeHostname(value: string | null): string {
@@ -42,21 +41,12 @@ function isProtectedPath(pathname: string) {
     return true
   }
 
-  if (pathname === "/api/tina/gql" || pathname.startsWith("/api/tina/gql/")) {
+  if (pathname === "/api/tina" || pathname.startsWith("/api/tina/")) {
     return true
   }
 
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  )
-}
-
-function isBetterAuthManagedPath(pathname: string) {
-  return (
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/") ||
-    pathname === "/api/tina" ||
-    pathname.startsWith("/api/tina/")
   )
 }
 
@@ -84,10 +74,6 @@ export async function middleware(request: NextRequest) {
     }
 
     return NextResponse.rewrite(crmUrl)
-  }
-
-  if (USE_BETTER_AUTH_FOR_TINA && isBetterAuthManagedPath(request.nextUrl.pathname)) {
-    return NextResponse.next()
   }
 
   if (!isProtectedPath(request.nextUrl.pathname)) {

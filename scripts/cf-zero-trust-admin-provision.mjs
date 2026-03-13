@@ -349,9 +349,9 @@ function buildRouteDefinitions(siteHost, calHost, crmHost) {
       includeInOriginAud: true,
     },
     {
-      key: "tina-api-tina-gql",
-      domain: `${siteHost}/api/tina/gql`,
-      name: "GenFix Tina API (/api/tina/gql)",
+      key: "tina-api-tina-prefix",
+      domain: `${siteHost}/api/tina/*`,
+      name: "GenFix Tina API (/api/tina/*)",
       includeInOriginAud: true,
     },
     {
@@ -467,7 +467,7 @@ async function main() {
 
   const includeRules = buildIncludeRules({ emails: allowEmails, domains: allowDomains })
   const routes = buildRouteDefinitions(siteHost, calHost, crmHost)
-  const legacyRouteDomains = [`${siteHost}/api/tina/*`]
+  const legacyRouteDomains = [`${siteHost}/api/tina/gql`]
 
   console.log(`Using account_id=${accountId}`)
   console.log(`Site host=${siteHost}`)
