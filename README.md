@@ -1,5 +1,7 @@
 # GenFix Next.js + TinaCMS + OpenNext (Cloudflare)
 
+GenFix.
+
 Original industrial website implementation inspired by the provided reference structure, with all major content editable via TinaCMS and media stored on Cloudflare R2.
 
 ## Stack
