@@ -193,9 +193,5 @@ jobs:
 
       - name: Apply D1 migrations (remote)
         run: pnpm db:migrate:remote
-
-      - name: Build OpenNext bundle
-        run: pnpm cf:build
-
       - name: Deploy to Cloudflare Workers
         run: pnpm cf:deploy

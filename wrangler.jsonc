@@ -13,6 +13,14 @@
 	},
 	"routes": [
 		{
+			"pattern": "genfix.com.au/*",
+			"zone_name": "genfix.com.au"
+		},
+		{
+			"pattern": "www.genfix.com.au/*",
+			"zone_name": "genfix.com.au"
+		},
+		{
 			"pattern": "crm.genfix.com.au/*",
 			"zone_name": "genfix.com.au"
 		}
