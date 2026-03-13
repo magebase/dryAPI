@@ -27,6 +27,7 @@
     "cf:build": "rm -rf .open-next .next && tinacms build --local --skip-cloud-checks && opennextjs-cloudflare build && pnpm sitemap",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "npm run -s cf:build && opennextjs-cloudflare deploy",
+    "cf:secrets:sync:all": "bash ./scripts/sync-worker-secrets-from-env.sh --env-file .env",
     "cf:client:init": "bash ./scripts/cf-client-init.sh",
     "cf:access:admin:provision": "node ./scripts/cf-zero-trust-admin-provision.mjs",
     "cf:calcom:install": "pnpm --dir cloudflare/container install",
