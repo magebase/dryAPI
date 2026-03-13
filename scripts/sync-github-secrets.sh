@@ -11,17 +11,17 @@ if [[ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
   exit 1
 fi
 
-sync_concurrency="${SECRET_SYNC_CONCURRENCY:-${SYNC_SECRET_CONCURRENCY:-8}}"
-sync_retries="${SECRET_SYNC_RETRIES:-4}"
+sync_concurrency="${SECRET_SYNC_CONCURRENCY:-${SYNC_SECRET_CONCURRENCY:-4}}"
+sync_retries="${SECRET_SYNC_RETRIES:-6}"
 
 if ! [[ "${sync_retries}" =~ ^[0-9]+$ ]] || (( sync_retries < 1 )); then
   echo "SECRET_SYNC_RETRIES must be a positive integer (received: ${sync_retries}). Falling back to 4."
   sync_retries="4"
 fi
 
-if [[ "${sync_concurrency}" != "8" && "${sync_concurrency}" != "16" ]]; then
-  echo "SYNC_SECRET_CONCURRENCY must be 8 or 16 (received: ${sync_concurrency}). Falling back to 8."
-  sync_concurrency="8"
+if ! [[ "${sync_concurrency}" =~ ^[0-9]+$ ]] || (( sync_concurrency < 1 || sync_concurrency > 16 )); then
+  echo "SYNC_SECRET_CONCURRENCY must be an integer between 1 and 16 (received: ${sync_concurrency}). Falling back to 4."
+  sync_concurrency="4"
 fi
 
 mapfile -t sync_vars < <(
@@ -98,7 +98,7 @@ done
 is_transient_versions_error() {
   local output="$1"
 
-  grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit|An unknown error has occurred|code:[[:space:]]*10013' <<<"${output}"
+  grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|service unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit|An unknown error has occurred|request to the Cloudflare API|code:[[:space:]]*10013|code:[[:space:]]*7010' <<<"${output}"
 }
 
 supports_versions_secret_put() {
@@ -119,35 +119,49 @@ put_secret_versions() {
 
   local attempt=1
   local backoff_seconds=2
+  local last_output=""
+  local versions_supported=1
 
   while :; do
     local output
     if output=$(printf "%s" "${secret_value}" | pnpm wrangler versions secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" 2>&1); then
       return 0
     fi
+    last_output="${output}"
 
     if ! supports_versions_secret_put "${output}"; then
-      # For older wrangler versions that do not support versions secret APIs.
-      if printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" > /dev/null; then
-        return 0
-      fi
-
-      echo "Failed to sync ${secret_name} to ${target_worker_name}: versions API unsupported and legacy secret put failed."
-      echo "${output}" >&2
-      return 1
+      versions_supported=0
+      break
     fi
 
     if (( attempt >= sync_retries )) || ! is_transient_versions_error "${output}"; then
-      echo "Failed to sync ${secret_name} to ${target_worker_name} after ${attempt} attempt(s)."
-      echo "${output}" >&2
-      return 1
+      break
     fi
 
     echo "Retrying ${secret_name} for ${target_worker_name} after transient error (attempt ${attempt}/${sync_retries})..."
     sleep "${backoff_seconds}"
     attempt=$((attempt + 1))
     backoff_seconds=$((backoff_seconds * 2))
+    if (( backoff_seconds > 30 )); then
+      backoff_seconds=30
+    fi
   done
+
+  # Last resort: try legacy secret put once.
+  if printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" > /dev/null 2>&1; then
+    return 0
+  fi
+
+  if (( versions_supported == 0 )); then
+    echo "Failed to sync ${secret_name} to ${target_worker_name}: versions API unsupported and legacy secret put failed."
+    echo "${last_output}" >&2
+    return 1
+  fi
+
+  echo "Failed to sync ${secret_name} to ${target_worker_name} after ${attempt} attempt(s)."
+  echo "${last_output}" >&2
+
+  return 1
 }
 
 sync_secret_var() {
