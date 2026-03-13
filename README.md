@@ -208,9 +208,9 @@ Optional: Better Auth as Tina auth provider (`bring-your-own` auth mode):
 - `BETTER_AUTH_SECRET` (required in production)
 - `BETTER_AUTH_URL` (recommended, e.g. `https://your-domain.com`)
 - `TINA_AUTH_TOKEN_SECRET` (recommended separate secret for Tina editor JWTs)
-- `TINA_BETTER_AUTH_PROVIDER` (optional, defaults to `google`)
+- `TINA_BETTER_AUTH_PROVIDER` (optional preferred provider; falls back to first configured provider)
 - `TINA_ALLOWED_GOOGLE_EMAILS` and/or `TINA_ALLOWED_GOOGLE_DOMAINS` (editor allowlist)
-- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (if using Google social login)
+- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (or `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET`, if using Google social login)
 - `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` (if using GitHub social login)
 
 When `TINA_AUTH_PROVIDER=better-auth`, the middleware bypasses Cloudflare checks for Tina paths and uses Better Auth + signed Tina editor tokens for `/api/tina/gql` authorization.

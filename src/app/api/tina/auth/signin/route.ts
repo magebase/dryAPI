@@ -1,12 +1,77 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { getConfiguredSocialProviders } from "@/lib/auth"
+
 export const runtime = "nodejs"
 
 const DEFAULT_PROVIDER = "google"
+const DEFAULT_CALLBACK_PATH = "/admin/index.html"
+
+function resolveSignInProvider(): {
+  provider: string | null
+  configuredProviders: string[]
+  requestedProvider: string | null
+} {
+  const configuredProviders = getConfiguredSocialProviders()
+  const requestedProvider = process.env.TINA_BETTER_AUTH_PROVIDER?.trim().toLowerCase() || null
+
+  if (requestedProvider && configuredProviders.includes(requestedProvider as "google" | "github")) {
+    return {
+      provider: requestedProvider,
+      configuredProviders,
+      requestedProvider,
+    }
+  }
+
+  if (configuredProviders.includes(DEFAULT_PROVIDER as "google" | "github")) {
+    return {
+      provider: DEFAULT_PROVIDER,
+      configuredProviders,
+      requestedProvider,
+    }
+  }
+
+  return {
+    provider: configuredProviders[0] || null,
+    configuredProviders,
+    requestedProvider,
+  }
+}
+
+function resolveCallbackPath(request: NextRequest, rawValue: string | null): string {
+  if (!rawValue) {
+    return DEFAULT_CALLBACK_PATH
+  }
+
+  try {
+    const parsed = new URL(rawValue, request.nextUrl.origin)
+    if (parsed.origin !== request.nextUrl.origin) {
+      return DEFAULT_CALLBACK_PATH
+    }
+
+    return `${parsed.pathname}${parsed.search}${parsed.hash}` || DEFAULT_CALLBACK_PATH
+  } catch {
+    return DEFAULT_CALLBACK_PATH
+  }
+}
 
 export async function GET(request: NextRequest) {
-  const callbackUrl = request.nextUrl.searchParams.get("callbackUrl") || "/admin/index.html"
-  const provider = process.env.TINA_BETTER_AUTH_PROVIDER || DEFAULT_PROVIDER
+  const callbackUrl = resolveCallbackPath(request, request.nextUrl.searchParams.get("callbackUrl"))
+  const providerResolution = resolveSignInProvider()
+
+  if (!providerResolution.provider) {
+    return NextResponse.json(
+      {
+        error:
+          "Unable to start Better Auth sign-in. No social providers are configured. Set GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET or GITHUB_CLIENT_ID/GITHUB_CLIENT_SECRET.",
+        configuredProviders: providerResolution.configuredProviders,
+        requestedProvider: providerResolution.requestedProvider,
+      },
+      { status: 503 }
+    )
+  }
+
+  const provider = providerResolution.provider
 
   const signInResponse = await fetch(new URL("/api/auth/sign-in/social", request.url), {
     method: "POST",
@@ -25,15 +90,22 @@ export async function GET(request: NextRequest) {
   })
 
   const payload = (await signInResponse.json().catch(() => null)) as
-    | { url?: string; error?: string }
+    | { url?: string; error?: string; message?: string; code?: string }
     | null
+
+  const errorMessage =
+    payload?.error ||
+    payload?.message ||
+    `Unable to start Better Auth sign-in. Ensure provider "${provider}" is configured.`
 
   if (!signInResponse.ok || !payload?.url) {
     return NextResponse.json(
       {
-        error:
-          payload?.error ||
-          `Unable to start Better Auth sign-in. Ensure provider \"${provider}\" is configured.`,
+        error: errorMessage,
+        code: payload?.code,
+        configuredProviders: providerResolution.configuredProviders,
+        requestedProvider: providerResolution.requestedProvider,
+        resolvedProvider: provider,
       },
       { status: signInResponse.status || 500 }
     )
