@@ -95,10 +95,10 @@ for ((index = 0; index < ${#target_worker_names[@]}; index += 1)); do
   echo "  - ${target_worker_names[$index]} (${target_worker_configs[$index]})"
 done
 
-is_transient_versions_error() {
+is_transient_api_error() {
   local output="$1"
 
-  grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|service unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit|An unknown error has occurred|request to the Cloudflare API|code:[[:space:]]*10013|code:[[:space:]]*7010' <<<"${output}"
+  grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|service unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit|An unknown error has occurred|request to the Cloudflare API|conflict|in[ -]?progress|try again|please retry|code:[[:space:]]*10013|code:[[:space:]]*7010' <<<"${output}"
 }
 
 supports_versions_secret_put() {
@@ -111,6 +111,51 @@ supports_versions_secret_put() {
   return 0
 }
 
+put_secret_legacy() {
+  local secret_name="$1"
+  local secret_value="$2"
+  local target_worker_name="$3"
+  local target_worker_config="$4"
+  local -n output_ref=$5
+  local -n attempts_ref=$6
+
+  local attempt=1
+  local backoff_seconds=2
+  local last_output=""
+
+  while :; do
+    local output
+    if output=$(printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" 2>&1); then
+      output_ref=""
+      attempts_ref="${attempt}"
+      return 0
+    fi
+
+    last_output="${output}"
+
+    if (( attempt >= sync_retries )); then
+      break
+    fi
+
+    if is_transient_api_error "${output}"; then
+      echo "Retrying ${secret_name} for ${target_worker_name} using legacy secret put after transient error (attempt ${attempt}/${sync_retries})..."
+    else
+      echo "Retrying ${secret_name} for ${target_worker_name} using legacy secret put after error (attempt ${attempt}/${sync_retries})..."
+    fi
+
+    sleep "${backoff_seconds}"
+    attempt=$((attempt + 1))
+    backoff_seconds=$((backoff_seconds * 2))
+    if (( backoff_seconds > 30 )); then
+      backoff_seconds=30
+    fi
+  done
+
+  output_ref="${last_output}"
+  attempts_ref="${attempt}"
+  return 1
+}
+
 put_secret_versions() {
   local secret_name="$1"
   local secret_value="$2"
@@ -121,6 +166,7 @@ put_secret_versions() {
   local backoff_seconds=2
   local last_output=""
   local versions_supported=1
+  local failure_reason=""
 
   while :; do
     local output
@@ -131,14 +177,21 @@ put_secret_versions() {
 
     if ! supports_versions_secret_put "${output}"; then
       versions_supported=0
+      failure_reason="versions command unsupported"
       break
     fi
 
-    if (( attempt >= sync_retries )) || ! is_transient_versions_error "${output}"; then
+    if (( attempt >= sync_retries )); then
+      failure_reason="versions retries exhausted"
       break
     fi
 
-    echo "Retrying ${secret_name} for ${target_worker_name} after transient error (attempt ${attempt}/${sync_retries})..."
+    if is_transient_api_error "${output}"; then
+      echo "Retrying ${secret_name} for ${target_worker_name} after transient error (attempt ${attempt}/${sync_retries})..."
+    else
+      echo "Retrying ${secret_name} for ${target_worker_name} after error (attempt ${attempt}/${sync_retries})..."
+    fi
+
     sleep "${backoff_seconds}"
     attempt=$((attempt + 1))
     backoff_seconds=$((backoff_seconds * 2))
@@ -147,19 +200,30 @@ put_secret_versions() {
     fi
   done
 
-  # Last resort: try legacy secret put once.
-  if printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" > /dev/null 2>&1; then
+  local legacy_output=""
+  local legacy_attempts=0
+  if put_secret_legacy "${secret_name}" "${secret_value}" "${target_worker_name}" "${target_worker_config}" legacy_output legacy_attempts; then
     return 0
   fi
 
   if (( versions_supported == 0 )); then
-    echo "Failed to sync ${secret_name} to ${target_worker_name}: versions API unsupported and legacy secret put failed."
+    echo "Failed to sync ${secret_name} to ${target_worker_name}: versions API unsupported and legacy secret put failed after ${legacy_attempts} attempt(s)."
     echo "${last_output}" >&2
+    if [[ -n "${legacy_output}" ]]; then
+      echo "${legacy_output}" >&2
+    fi
     return 1
   fi
 
-  echo "Failed to sync ${secret_name} to ${target_worker_name} after ${attempt} attempt(s)."
+  if [[ -z "${failure_reason}" ]]; then
+    failure_reason="versions attempt failed"
+  fi
+
+  echo "Failed to sync ${secret_name} to ${target_worker_name} after versions=${attempt} and legacy=${legacy_attempts} attempt(s): ${failure_reason}."
   echo "${last_output}" >&2
+  if [[ -n "${legacy_output}" ]]; then
+    echo "${legacy_output}" >&2
+  fi
 
   return 1
 }
