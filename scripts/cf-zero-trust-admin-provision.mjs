@@ -247,6 +247,34 @@ async function upsertAccessApp({ token, accountId, routeDomain, appName, dryRun 
   return { id: appId, aud }
 }
 
+async function deleteAccessAppByDomain({ token, accountId, routeDomain, dryRun }) {
+  const apps = await cfApi({
+    token,
+    method: "GET",
+    path: `/accounts/${accountId}/access/apps?per_page=1000`,
+  })
+
+  const matches = (apps.result || []).filter((app) => app?.domain === routeDomain)
+  if (matches.length === 0) {
+    return false
+  }
+
+  if (dryRun) {
+    console.log(`[dry-run] delete legacy app ${routeDomain}`)
+    return true
+  }
+
+  for (const app of matches) {
+    await cfApi({
+      token,
+      method: "DELETE",
+      path: `/accounts/${accountId}/access/apps/${app.id}`,
+    })
+  }
+
+  return true
+}
+
 async function replacePolicy({
   token,
   accountId,
@@ -321,9 +349,9 @@ function buildRouteDefinitions(siteHost, calHost, crmHost) {
       includeInOriginAud: true,
     },
     {
-      key: "tina-api-tina",
-      domain: `${siteHost}/api/tina/*`,
-      name: "GenFix Tina API (/api/tina/*)",
+      key: "tina-api-tina-gql",
+      domain: `${siteHost}/api/tina/gql`,
+      name: "GenFix Tina API (/api/tina/gql)",
       includeInOriginAud: true,
     },
     {
@@ -439,6 +467,7 @@ async function main() {
 
   const includeRules = buildIncludeRules({ emails: allowEmails, domains: allowDomains })
   const routes = buildRouteDefinitions(siteHost, calHost, crmHost)
+  const legacyRouteDomains = [`${siteHost}/api/tina/*`]
 
   console.log(`Using account_id=${accountId}`)
   console.log(`Site host=${siteHost}`)
@@ -446,6 +475,20 @@ async function main() {
   console.log(`CRM host=${crmHost}`)
 
   const results = []
+
+  for (const legacyDomain of legacyRouteDomains) {
+    const deleted = await deleteAccessAppByDomain({
+      token,
+      accountId,
+      routeDomain: legacyDomain,
+      dryRun: args.dryRun,
+    })
+
+    if (deleted) {
+      console.log(`Removed legacy Access app: ${legacyDomain}`)
+    }
+  }
+
   for (const route of routes) {
     const app = await upsertAccessApp({
       token,

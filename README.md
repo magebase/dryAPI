@@ -342,8 +342,10 @@ Protected paths:
 - `/admin/*`
 - `/api/cms/*`
 - `/api/media/*`
-- `/api/tina/*`
+- `/api/tina/gql`
 - `/api/verify-zjwt`
+
+If you previously provisioned `/api/tina/*`, re-run `pnpm cf:access:admin:provision` to remove that legacy app and prevent `/api/tina/auth/*` requests from being redirected to Cloudflare Access login.
 
 How it works:
 

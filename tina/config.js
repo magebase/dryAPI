@@ -70,10 +70,15 @@ class TinaBetterAuthProvider extends AbstractAuthProvider {
   }
 
   async getUser() {
-    const response = await fetch("/api/tina/auth/user", {
-      credentials: "include",
-      cache: "no-store",
-    })
+    let response
+    try {
+      response = await fetch("/api/tina/auth/user", {
+        credentials: "include",
+        cache: "no-store",
+      })
+    } catch {
+      return null
+    }
 
     if (!response.ok) {
       return null
@@ -84,10 +89,15 @@ class TinaBetterAuthProvider extends AbstractAuthProvider {
   }
 
   async getToken() {
-    const response = await fetch("/api/tina/auth/token", {
-      credentials: "include",
-      cache: "no-store",
-    })
+    let response
+    try {
+      response = await fetch("/api/tina/auth/token", {
+        credentials: "include",
+        cache: "no-store",
+      })
+    } catch {
+      return { id_token: null }
+    }
 
     if (!response.ok) {
       return { id_token: null }
@@ -98,11 +108,15 @@ class TinaBetterAuthProvider extends AbstractAuthProvider {
   }
 
   async logout() {
-    await fetch("/api/tina/auth/logout", {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store",
-    })
+    try {
+      await fetch("/api/tina/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      })
+    } catch {
+      // Ignore logout transport errors so admin can continue rendering.
+    }
   }
 }
 
