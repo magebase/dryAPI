@@ -1,9 +1,10 @@
-import { TinaNodeBackend } from "@tinacms/datalayer"
+import { LocalBackendAuthProvider, TinaNodeBackend } from "@tinacms/datalayer"
 import type { NextApiRequest, NextApiResponse } from "next"
 
 import databaseClient from "@/lib/tina-database-client"
 
 const handler = TinaNodeBackend({
+  authProvider: LocalBackendAuthProvider(),
   databaseClient,
 })
 

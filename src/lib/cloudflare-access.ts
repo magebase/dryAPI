@@ -1,4 +1,6 @@
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose"
+import type { JWTPayload } from "jose"
+import { createRemoteJWKSet } from "jose/jwks/remote"
+import { jwtVerify } from "jose/jwt/verify"
 
 type CloudflareAccessConfig = {
   teamDomain: string
