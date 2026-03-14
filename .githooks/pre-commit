@@ -5,4 +5,4 @@ repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
 echo "[pre-commit] Syncing .env values to GitHub repository secrets"
-bash ./scripts/sync-github-env.sh --env-file .env
+bash ./scripts/sync-github-en.sh --env-file .env

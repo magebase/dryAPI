@@ -6,7 +6,7 @@
     "prepare": "lefthook install",
     "hooks:install": "lefthook install",
     "admin:repair": "node scripts/repair-admin-index.mjs",
-    "sync:github-env": "bash ./scripts/sync-github-env.sh --env-file .env",
+    "sync:github-en": "bash ./scripts/sync-github-en.sh --env-file .env",
     "dev": "tinacms dev -c \"next dev --webpack\"",
     "dev:auto": "bash ./scripts/dev-autorestart.sh",
     "predev:next": "npm run -s admin:repair",

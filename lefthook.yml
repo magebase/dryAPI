@@ -1,4 +1,5 @@
 pre-commit:
+  parallel: true
   commands:
-    sync-github-env:
-      run: bash ./scripts/sync-github-env.sh --env-file .env --best-effort --prune
+    sync-github-en:
+      run: bash ./scripts/sync-github-en.sh --env-file .env --best-effort --prune
