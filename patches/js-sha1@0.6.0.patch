@@ -1,0 +1,23 @@
+diff --git a/src/sha1.js b/src/sha1.js
+index 9ff58f2f6f31ebca10d745f7f61da754f1d17f24..3f0084f8c7111f4c4f23f8fed2f7397d0e1f7b09 100644
+--- a/src/sha1.js
++++ b/src/sha1.js
+@@ -12,7 +12,8 @@
+ 
+   var root = typeof window === 'object' ? window : {};
+   var NODE_JS = !root.JS_SHA1_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
+-  if (NODE_JS) {
++  var WORKER_RUNTIME = typeof WebSocketPair === 'function' || typeof ServiceWorkerGlobalScope !== 'undefined';
++  if (NODE_JS && !WORKER_RUNTIME) {
+     root = global;
+   }
+   var COMMON_JS = !root.JS_SHA1_NO_COMMON_JS && typeof module === 'object' && module.exports;
+@@ -32,7 +33,7 @@
+ 
+   var createMethod = function () {
+     var method = createOutputMethod('hex');
+-    if (NODE_JS) {
++    if (NODE_JS && !WORKER_RUNTIME) {
+       method = nodeWrap(method);
+     }
+     method.create = function () {

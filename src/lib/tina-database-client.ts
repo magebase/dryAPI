@@ -1,5 +1,3 @@
-import "server-only";
-
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -11,6 +9,9 @@ import type { Schema } from "@tinacms/schema-tools";
 import { drizzle } from "drizzle-orm/d1";
 
 import { DrizzleD1Level } from "@/lib/tina/drizzle-d1-level";
+import graphQLSchemaArtifact from "../../tina/__generated__/_graphql.json";
+import tinaSchemaArtifact from "../../tina/__generated__/_schema.json";
+import lookupArtifact from "../../tina/__generated__/_lookup.json";
 
 const branch =
   process.env.GITHUB_BRANCH ||
@@ -141,18 +142,10 @@ function isMissingGraphQLSchemaError(error: unknown): boolean {
 }
 
 async function readGeneratedArtifacts(): Promise<TinaGeneratedArtifacts> {
-  const generatedDir = path.join(process.cwd(), "tina", "__generated__");
-
-  const [graphQLSchemaRaw, tinaSchemaRaw, lookupRaw] = await Promise.all([
-    readFile(path.join(generatedDir, "_graphql.json"), "utf8"),
-    readFile(path.join(generatedDir, "_schema.json"), "utf8"),
-    readFile(path.join(generatedDir, "_lookup.json"), "utf8"),
-  ]);
-
   return {
-    graphQLSchema: JSON.parse(graphQLSchemaRaw) as Record<string, unknown>,
-    tinaSchemaDocument: JSON.parse(tinaSchemaRaw) as Schema<false>,
-    lookup: JSON.parse(lookupRaw) as Record<string, unknown>,
+    graphQLSchema: graphQLSchemaArtifact as Record<string, unknown>,
+    tinaSchemaDocument: tinaSchemaArtifact as unknown as Schema<false>,
+    lookup: lookupArtifact as Record<string, unknown>,
   };
 }
 

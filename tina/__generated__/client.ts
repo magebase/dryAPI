@@ -1,5 +1,5 @@
 import { createClient } from "tinacms/dist/client";
 import { queries } from "./types";
-export const client = createClient({ cacheDir: '/home/aqua/Projects/genfix/tina/__generated__/.cache/1773467561655', url: '/api/tina/gql', token: 'null', queries,  });
+export const client = createClient({ cacheDir: '/home/aqua/Projects/genfix/tina/__generated__/.cache/1773472357565', url: '/api/tina/gql', token: 'null', queries,  });
 export default client;
   

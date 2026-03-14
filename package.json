@@ -125,6 +125,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
+      "js-sha1@0.6.0": "patches/js-sha1@0.6.0.patch",
       "tinacms@3.6.1": "patches/tinacms@3.6.1.patch"
     }
   },
