@@ -6,7 +6,7 @@ import {
   verifyCloudflareAccess,
 } from "@/lib/cloudflare-access"
 
-const PROTECTED_PREFIXES = ["/admin", "/crm", "/api/cms", "/api/crm", "/api/media"]
+const PROTECTED_PREFIXES = ["/crm", "/api/cms", "/api/crm", "/api/media"]
 const CRM_HOSTNAMES = new Set(["crm.genfix.com.au", "www.crm.genfix.com.au"])
 
 function normalizeHostname(value: string | null): string {
@@ -38,10 +38,6 @@ function resolveCrmPath(pathname: string): string {
 
 function isProtectedPath(pathname: string) {
   if (pathname === "/api/verify-zjwt") {
-    return true
-  }
-
-  if (pathname === "/api/tina" || pathname.startsWith("/api/tina/")) {
     return true
   }
 

@@ -42,7 +42,8 @@ const siteSharedCsp = [
 
 const siteProductionCsp = [
   ...siteSharedCsp,
-  "frame-ancestors 'none';",
+  // Tina visual editing embeds site pages from /admin on the same origin.
+  "frame-ancestors 'self';",
   "frame-src 'self';",
   "script-src 'self' 'unsafe-eval';",
   "script-src-elem 'self' 'unsafe-inline';",
@@ -63,7 +64,8 @@ const siteDevelopmentCsp = [
 
 const adminProductionCsp = [
   ...siteSharedCsp,
-  "frame-ancestors 'none';",
+  // Keep admin embeddable by same-origin Tina preview panes only.
+  "frame-ancestors 'self';",
   "frame-src 'self';",
   "script-src 'self' 'unsafe-eval';",
   "connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io;",
@@ -98,6 +100,17 @@ const pwaEnabled = parseBooleanEnv(
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
+  // Avoid stale Tina admin bundles being precached across deploys.
+  globPublicPatterns: ["**/*", "!admin/**/*"],
+  exclude: [/^(?:\/)?admin(?:\/.*)?$/],
+  manifestTransforms: [
+    async (entries) => ({
+      manifest: entries.filter(
+        (entry) => !entry.url.startsWith("/admin/") && !entry.url.startsWith("admin/")
+      ),
+      warnings: [],
+    }),
+  ],
   disable: process.env.NODE_ENV === "development" || !pwaEnabled,
 });
 

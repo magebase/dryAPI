@@ -9,5 +9,16 @@ const handler = TinaNodeBackend({
 })
 
 export default async function tinaBackend(req: NextApiRequest, res: NextApiResponse) {
-  return handler(req, res)
+  try {
+    return await handler(req, res)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown Tina API error"
+
+    if (!res.headersSent) {
+      res.status(500).json({ error: message })
+      return
+    }
+
+    throw error
+  }
 }
