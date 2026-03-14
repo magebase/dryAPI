@@ -1,6 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-
 import { createDatabase, FilesystemBridge } from "@tinacms/datalayer";
 import { resolve as resolveTinaQuery } from "@tinacms/graphql";
 import type { Level } from "@tinacms/graphql";
@@ -9,6 +6,8 @@ import type { Schema } from "@tinacms/schema-tools";
 import { drizzle } from "drizzle-orm/d1";
 
 import { DrizzleD1Level } from "@/lib/tina/drizzle-d1-level";
+import homeContentArtifact from "../../content/site/home.json";
+import siteConfigContentArtifact from "../../content/site/site-config.json";
 import graphQLSchemaArtifact from "../../tina/__generated__/_graphql.json";
 import tinaSchemaArtifact from "../../tina/__generated__/_schema.json";
 import lookupArtifact from "../../tina/__generated__/_lookup.json";
@@ -53,8 +52,16 @@ function hasGraphQLSchemaDrift(
 }
 
 const CORE_SITE_RECORDS = [
-  { key: "content/site/home.json", collectionName: "home" },
-  { key: "content/site/site-config.json", collectionName: "siteConfig" },
+  {
+    key: "content/site/home.json",
+    collectionName: "home",
+    payload: homeContentArtifact as Record<string, unknown>,
+  },
+  {
+    key: "content/site/site-config.json",
+    collectionName: "siteConfig",
+    payload: siteConfigContentArtifact as Record<string, unknown>,
+  },
 ] as const;
 
 const CORE_SITE_RECORD_KEYS = CORE_SITE_RECORDS.map((record) => record.key);
@@ -95,13 +102,57 @@ async function resolveTinaD1Binding(): Promise<D1Binding | null> {
 
 function createFilesystemGitProvider(bridge: FilesystemBridge) {
   return {
-    onPut: (key: string, value: string) => bridge.put(key, value),
-    onDelete: (key: string) => bridge.delete(key),
+    // Database.put already writes through `bridge`; keep hooks as no-ops.
+    onPut: async (_key: string, _value: string) => {},
+    onDelete: async (_key: string) => {},
   };
 }
 
+function normalizeBridgePath(filepath: string): string {
+  return filepath.replace(/^\.\//, "").replace(/^\/+/, "");
+}
+
+function createWorkerSafeBridge(): FilesystemBridge {
+  const filesystemBridge = new FilesystemBridge(process.cwd());
+  const originalGet = filesystemBridge.get.bind(filesystemBridge);
+  const originalPut = filesystemBridge.put.bind(filesystemBridge);
+  const originalDelete = filesystemBridge.delete.bind(filesystemBridge);
+  const isReadonlyBridge = process.env.NODE_ENV === "production";
+
+  filesystemBridge.get = async (filepath: string) => {
+    const normalizedPath = normalizeBridgePath(filepath);
+    const coreRecord = CORE_SITE_RECORDS.find(
+      (record) => record.key === normalizedPath,
+    );
+
+    if (coreRecord) {
+      return JSON.stringify(coreRecord.payload);
+    }
+
+    return originalGet(filepath);
+  };
+
+  filesystemBridge.put = async (filepath: string, data: string) => {
+    if (isReadonlyBridge) {
+      return;
+    }
+
+    return originalPut(filepath, data);
+  };
+
+  filesystemBridge.delete = async (filepath: string) => {
+    if (isReadonlyBridge) {
+      return;
+    }
+
+    return originalDelete(filepath);
+  };
+
+  return filesystemBridge;
+}
+
 const tinaDatabase = (() => {
-  const bridge = new FilesystemBridge(process.cwd());
+  const bridge = createWorkerSafeBridge();
   const d1Level = new DrizzleD1Level<string, Record<string, unknown>>({
     namespace: branch,
     resolveBinding: resolveTinaD1Binding,
@@ -223,9 +274,9 @@ async function seedCoreSiteRecords(): Promise<void> {
           return;
         }
 
-        const filePath = path.join(process.cwd(), record.key);
-        const payloadRaw = await readFile(filePath, "utf8");
-        const payload = JSON.parse(payloadRaw) as Record<string, unknown>;
+        const payload = JSON.parse(
+          JSON.stringify(record.payload),
+        ) as Record<string, unknown>;
 
         await tinaDatabase.put(record.key, payload, record.collectionName);
       }),
