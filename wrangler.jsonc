@@ -8,6 +8,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  "observability": {
+    "logs": {
+      "enabled": false,
+      "invocation_logs": true,
+    },
+  },
   "routes": [
     {
       "pattern": "genfix.com.au/*",
