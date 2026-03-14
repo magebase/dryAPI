@@ -23,10 +23,6 @@ function isAuthApiPath(pathname: string): boolean {
   return pathname.startsWith("/api/tina/auth/") || pathname.startsWith("/api/auth/")
 }
 
-function isTinaApiPath(pathname: string): boolean {
-  return pathname === "/api/tina" || pathname.startsWith("/api/tina/")
-}
-
 function isAdminPath(pathname: string): boolean {
   return pathname === "/admin" || pathname.startsWith("/admin/")
 }
@@ -61,16 +57,6 @@ const serwist = new Serwist({
       matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isAdminPath(pathname),
       handler: new NetworkOnly(),
     },
-    {
-      matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isTinaApiPath(pathname),
-      method: "GET",
-      handler: new NetworkOnly(),
-    },
-    {
-      matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isTinaApiPath(pathname),
-      method: "POST",
-      handler: new NetworkOnly(),
-    },
     ...defaultCache,
   ],
 })
@@ -78,19 +64,6 @@ const serwist = new Serwist({
 serwist.setCatchHandler(async ({ request, url }) => {
   if (request.mode !== "navigate" && isAuthApiPath(url.pathname)) {
     return buildAuthFallbackResponse(url, request.method)
-  }
-
-  if (request.mode !== "navigate" && isTinaApiPath(url.pathname)) {
-    return new Response(
-      JSON.stringify({ data: null, errors: [{ message: "Tina API unavailable." }] }),
-      {
-        status: 503,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "no-store",
-        },
-      }
-    )
   }
 
   return Response.error()
