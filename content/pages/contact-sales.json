@@ -1,0 +1,107 @@
+{
+  "slug": "/contact-sales",
+  "navLabel": "Contact Sales",
+  "seoTitle": "Contact Sales | deAPI",
+  "seoDescription": "Speak with our team about deployment design, pricing fit, and enterprise readiness.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "A Fast Path To Production"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "Our team helps you map product goals to architecture, model selection, and billing controls before implementation risk grows."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Read Architecture",
+        "href": "/docs/architecture-and-security"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Sales Advisory",
+    "heading": "Talk To Sales",
+    "body": "Share your goals, traffic expectations, and compliance requirements. We will help design the right launch path.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Request Consultation",
+        "href": "/contact",
+        "style": "solid"
+      },
+      {
+        "label": "Review Pricing",
+        "href": "/pricing",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "engagement",
+      "title": "How Engagement Works",
+      "body": "We keep discovery short and practical so your team can move from scoping to implementation quickly.",
+      "cards": [
+        {
+          "id": "engagement-card-1",
+          "title": "Discovery Session",
+          "description": "Review use cases, expected throughput, and constraints.",
+          "href": "/contact",
+          "ctaLabel": "Book Discovery"
+        },
+        {
+          "id": "engagement-card-2",
+          "title": "Solution Design",
+          "description": "Propose model mix, routing controls, and rollout milestones.",
+          "href": "/models",
+          "ctaLabel": "View Model Coverage"
+        },
+        {
+          "id": "engagement-card-3",
+          "title": "Commercial Alignment",
+          "description": "Align packaging and support with launch timelines and growth plans.",
+          "href": "/pricing",
+          "ctaLabel": "See Commercials"
+        }
+      ]
+    },
+    {
+      "id": "readiness",
+      "title": "Enterprise Readiness Support",
+      "body": "Prepare stakeholders with clear documentation for security, operations, and procurement review.",
+      "cards": [
+        {
+          "id": "readiness-card-1",
+          "title": "Security Review",
+          "description": "Understand auth, gateway controls, and auditability options.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Review Security"
+        },
+        {
+          "id": "readiness-card-2",
+          "title": "Operational Planning",
+          "description": "Define ownership across engineering, ops, and support teams.",
+          "href": "/docs",
+          "ctaLabel": "Open Documentation"
+        },
+        {
+          "id": "readiness-card-3",
+          "title": "Launch Governance",
+          "description": "Set up monitoring and incident pathways before public traffic.",
+          "href": "/contact",
+          "ctaLabel": "Discuss Launch Plan"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Ready to discuss your rollout?",
+    "body": "Tell us your use case and timeline, and we will recommend a practical plan with the right level of support.",
+    "responseTime": "Sales reply typically within one business day"
+  }
+}

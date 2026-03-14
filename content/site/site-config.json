@@ -1,13 +1,13 @@
 {
   "brand": {
-    "name": "LOAD READY",
-    "mark": "GENFIX"
+    "name": "Unified Inference Platform",
+    "mark": "deAPI"
   },
   "contact": {
-    "contactEmail": "sales@genfix.com",
-    "quoteEmail": "quotes@genfix.com"
+    "contactEmail": "support@deapi.ai",
+    "quoteEmail": "sales@deapi.ai"
   },
-  "announcement": "Brisbane-based diesel generator specialists for 5-20 kVA rental, sales, and on-site support.",
+  "announcement": "One API for chat, images, speech, and embeddings with usage controls built in.",
   "header": {
     "primaryLinks": [
       {
@@ -15,20 +15,20 @@
         "href": "/"
       },
       {
-        "label": "Products",
-        "href": "/products"
+        "label": "Models",
+        "href": "/models"
       },
       {
-        "label": "Services",
-        "href": "/services"
+        "label": "Pricing",
+        "href": "/pricing"
       },
       {
-        "label": "Rental",
-        "href": "/rental"
+        "label": "Playground",
+        "href": "/playground"
       },
       {
-        "label": "Resources",
-        "href": "/resources"
+        "label": "Docs",
+        "href": "/docs"
       },
       {
         "label": "Blog",
@@ -36,33 +36,33 @@
       },
       {
         "label": "Contact",
-        "href": "/contact"
+        "href": "/contact-sales"
       }
     ],
     "phone": {
-      "label": "1300 365 333",
-      "href": "tel:1300365721"
+      "label": "Sign In",
+      "href": "/login"
     },
     "quoteCta": {
-      "label": "Get A Quote",
-      "href": "/contact",
+      "label": "Get Started",
+      "href": "/login",
       "style": "outline"
     }
   },
   "footer": {
-    "companyText": "GenFix, based in Brisbane, delivers 5-20 kVA diesel generator sales, rental, and support for critical operations.",
+    "companyText": "deAPI is a unified inference gateway that helps product teams ship multi-model AI workloads with stable APIs, billing controls, and production guardrails.",
     "contactLinks": [
       {
-        "label": "1300 365 721",
-        "href": "tel:1300365721"
+        "label": "Talk to Sales",
+        "href": "/contact-sales"
       },
       {
-        "label": "sales@genfix.com",
-        "href": "mailto:sales@genfix.com"
+        "label": "support@deapi.ai",
+        "href": "mailto:support@deapi.ai"
       },
       {
-        "label": "11 Sudbury Street, Darra QLD 4076",
-        "href": "/contact"
+        "label": "Remote-first team, global coverage",
+        "href": "/about"
       }
     ],
     "socialLinks": [
@@ -78,7 +78,7 @@
       },
       {
         "label": "LinkedIn",
-        "href": "https://linkedin.com",
+        "href": "https://linkedin.com/company/deapi",
         "icon": "linkedin"
       },
       {
@@ -89,81 +89,73 @@
     ],
     "columns": [
       {
-        "title": "Locations",
+        "title": "Platform",
         "links": [
           {
-            "label": "Brisbane",
-            "href": "/about"
+            "label": "Models",
+            "href": "/models"
+          },
+          {
+            "label": "Pricing",
+            "href": "/pricing"
+          },
+          {
+            "label": "Playground",
+            "href": "/playground"
+          },
+          {
+            "label": "Changelog",
+            "href": "/changelog"
           }
         ]
       },
       {
-        "title": "Products",
+        "title": "Developers",
         "links": [
           {
-            "label": "Diesel Generators (5-20 kVA)",
-            "href": "/products/generators"
+            "label": "Blog",
+            "href": "/blog"
+          },
+          {
+            "label": "Text to Image",
+            "href": "/playground/text-to-image"
+          },
+          {
+            "label": "Text to Speech",
+            "href": "/playground/text-to-speech"
+          },
+          {
+            "label": "Video to Text",
+            "href": "/playground/video-to-text"
           }
         ]
       },
       {
-        "title": "Links",
+        "title": "Company",
         "links": [
           {
             "label": "About",
             "href": "/about"
           },
           {
-            "label": "Sales",
-            "href": "/sales"
-          },
-          {
-            "label": "Rental",
-            "href": "/rental"
-          },
-          {
-            "label": "Services",
-            "href": "/services"
-          },
-          {
-            "label": "On-Site Analysis",
-            "href": "/on-site-analysis"
-          },
-          {
-            "label": "Turnkey Solutions",
-            "href": "/turnkey-solutions"
-          },
-          {
-            "label": "Case Studies",
-            "href": "/case-studies"
-          },
-          {
-            "label": "Opportunities",
-            "href": "/opportunities"
-          },
-          {
-            "label": "Sponsorship",
-            "href": "/sponsorship"
-          },
-          {
-            "label": "Resources",
-            "href": "/resources"
-          },
-          {
-            "label": "Blog",
-            "href": "/blog"
+            "label": "Contact Sales",
+            "href": "/contact-sales"
           },
           {
             "label": "Privacy Policy",
             "href": "/privacy-policy"
+          },
+          {
+            "label": "Terms of Service",
+            "href": "/terms-of-service"
           }
         ]
       }
     ],
     "legalLinks": [
       {
-        "label": "Terms",
-        "href": "/terms"
+        "label": "Terms of Service",
+        "href": "/terms-of-service"
       },
       {
         "label": "Privacy Policy",
@@ -178,15 +170,15 @@
     },
     {
       "key": "blogList.ctaBody",
-      "value": "Get practical recommendations for equipment, timing, and site rollout."
+      "value": "Get practical guidance for architecture, model routing, and billing controls."
     },
     {
       "key": "blogList.ctaHeading",
-      "value": "Talk To A Power Specialist"
+      "value": "Talk To A Platform Specialist"
     },
     {
       "key": "blogList.ctaKicker",
-      "value": "Need Project Guidance?"
+      "value": "Need Implementation Help?"
     },
     {
       "key": "blogList.explorePrefix",
@@ -210,11 +202,11 @@
     },
     {
       "key": "blogPost.nextStepBody",
-      "value": "Talk to the GENFIX team for practical guidance on temporary power strategy, deployment, and support."
+      "value": "Talk to the deAPI team about rollout planning, guardrails, and pricing strategy."
     },
     {
       "key": "blogPost.nextStepHeading",
-      "value": "Need Help On Your Site?"
+      "value": "Want A Production Review?"
     },
     {
       "key": "blogPost.nextStepKicker",
@@ -246,7 +238,7 @@
     },
     {
       "key": "contactForm.messagePlaceholder",
-      "value": "Tell us about your timeline, scope, and site requirements"
+      "value": "Tell us about your traffic, model mix, and launch timeline"
     },
     {
       "key": "contactForm.nameLabel",
@@ -258,7 +250,7 @@
     },
     {
       "key": "contactForm.projectEnquiryLabel",
-      "value": "Project Enquiry"
+      "value": "Project enquiry"
     },
     {
       "key": "contactForm.submitBusyLabel",
@@ -274,27 +266,27 @@
     },
     {
       "key": "contactPage.locationFallbackLabel",
-      "value": "Get A Quote"
+      "value": "Contact Sales"
     },
     {
       "key": "contactPage.locationsHeading",
-      "value": "Our Locations"
+      "value": "Coverage"
     },
     {
       "key": "contactPage.locationsSubheading",
-      "value": "Nation-wide support"
+      "value": "Global support windows"
     },
     {
       "key": "contactPage.urgentBody",
-      "value": "For critical jobs and shutdown timelines, direct phone contact is the fastest path."
+      "value": "For urgent production issues, direct contact is the fastest path."
     },
     {
       "key": "contactPage.urgentHeading",
-      "value": "Call Our Team Directly"
+      "value": "Reach The Team Directly"
     },
     {
       "key": "contactPage.urgentKicker",
-      "value": "Need An Urgent Response?"
+      "value": "Need A Fast Response?"
     },
     {
       "key": "contactPageForm.bestContactLabel",
@@ -330,11 +322,11 @@
     },
     {
       "key": "contactPageForm.enquiryType.parts",
-      "value": "Parts"
+      "value": "Integrations"
     },
     {
       "key": "contactPageForm.enquiryType.rental",
-      "value": "Rental"
+      "value": "Usage Plan"
     },
     {
       "key": "contactPageForm.enquiryType.sales",
@@ -342,7 +334,7 @@
     },
     {
       "key": "contactPageForm.enquiryType.service",
-      "value": "Service"
+      "value": "Support"
     },
     {
       "key": "contactPageForm.enquiryTypeLabel",
@@ -374,7 +366,7 @@
     },
     {
       "key": "contactPageForm.messagePlaceholder",
-      "value": "Tell us about your project requirements"
+      "value": "Tell us about your product and integration requirements"
     },
     {
       "key": "contactPageForm.phoneLabel",
@@ -382,11 +374,11 @@
     },
     {
       "key": "contactPageForm.phonePlaceholder",
-      "value": "0412 345 678"
+      "value": "+1 415 555 0199"
     },
     {
       "key": "contactPageForm.stateLabel",
-      "value": "State"
+      "value": "Region"
     },
     {
       "key": "contactPageForm.statePlaceholder",
@@ -406,35 +398,35 @@
     },
     {
       "key": "footer.quickContactFallback",
-      "value": "Talk To Team"
+      "value": "Talk To Sales"
     },
     {
       "key": "footer.supportPrompt",
-      "value": "Need Fast Project Pricing Or Deployment Support?"
+      "value": "Need Help With API Rollout, Pricing, Or Reliability?"
     },
     {
       "key": "home.capabilityBottomCard.body.1",
-      "value": "Clear recommendations based on load profile, compliance risk, and practical site access."
+      "value": "Deployment recommendations based on traffic shape, latency targets, and margin constraints."
     },
     {
       "key": "home.capabilityBottomCard.body.2",
-      "value": "Structured mobilisation and commissioning workflows that reduce rework and surprise downtime."
+      "value": "Operational runbooks for fallback, incident handling, and provider-level instability."
     },
     {
       "key": "home.capabilityBottomCard.body.3",
-      "value": "Escalation paths that stay active after hours, so your project is never left waiting."
+      "value": "Ongoing support for request tuning, endpoint policy updates, and launch readiness."
     },
     {
       "key": "home.capabilityBottomCard.title.1",
-      "value": "Design Confidence"
+      "value": "Routing Confidence"
     },
     {
       "key": "home.capabilityBottomCard.title.2",
-      "value": "Delivery Discipline"
+      "value": "Operational Discipline"
     },
     {
       "key": "home.capabilityBottomCard.title.3",
-      "value": "Support Readiness"
+      "value": "Scale Readiness"
     },
     {
       "key": "home.capabilityCardPrefix",
@@ -442,11 +434,11 @@
     },
     {
       "key": "home.capabilityIntroBody",
-      "value": "One partner from specification through support. Every capability below is designed to reduce delay, protect output, and keep decisions simple."
+      "value": "Design, launch, and scale AI workloads with one gateway that keeps contracts stable and economics measurable."
     },
     {
       "key": "home.capabilitySignal.label.1",
-      "value": "Generator Range"
+      "value": "Model Classes"
     },
     {
       "key": "home.capabilitySignal.label.2",
@@ -454,11 +446,11 @@
     },
     {
       "key": "home.capabilitySignal.label.3",
-      "value": "Service Footprint"
+      "value": "Deployment Scope"
     },
     {
       "key": "home.capabilitySignal.value.1",
-      "value": "5-20 kVA"
+      "value": "Chat / Image / Audio / Embeddings"
     },
     {
       "key": "home.capabilitySignal.value.2",
@@ -466,7 +458,7 @@
     },
     {
       "key": "home.capabilitySignal.value.3",
-      "value": "National"
+      "value": "Global"
     },
     {
       "key": "home.capabilityWhatYouGet",
@@ -474,23 +466,23 @@
     },
     {
       "key": "home.capabilityWhatYouGetItem.1",
-      "value": "Clear scope"
+      "value": "Stable contracts"
     },
     {
       "key": "home.capabilityWhatYouGetItem.2",
-      "value": "Predictable delivery"
+      "value": "Predictable spend"
     },
     {
       "key": "home.capabilityWhatYouGetItem.3",
-      "value": "Real support"
+      "value": "Fast iterations"
     },
     {
       "key": "home.commandCta.bodySuffix",
-      "value": "Talk to a specialist and get a practical recommendation for sizing, timeline, and on-site support options."
+      "value": "Talk to our team for implementation guidance, endpoint planning, and pricing fit for your workload."
     },
     {
       "key": "home.commandCta.heading",
-      "value": "Start With A Fast Scope Call, Leave With A Clear Power Plan"
+      "value": "Start Fast With A Gateway Built For Production AI"
     },
     {
       "key": "home.commandCta.kicker",
@@ -498,31 +490,31 @@
     },
     {
       "key": "home.commandCta.trustSnippet.body.1",
-      "value": "Clear options around duty cycle, runtime, and compliance so project teams can decide quickly."
+      "value": "Request contracts stay consistent while we normalize provider behavior underneath."
     },
     {
       "key": "home.commandCta.trustSnippet.body.2",
-      "value": "Sales, rental, and support teams stay coordinated from quote through commissioning and handover."
+      "value": "Cost estimation and guardrails prevent unprofitable dispatch decisions by default."
     },
     {
       "key": "home.commandCta.trustSnippet.body.3",
-      "value": "When conditions shift on site, your team has a direct route to practical support and backup actions."
+      "value": "Fallback policies keep requests flowing during queue spikes and endpoint incidents."
     },
     {
       "key": "home.commandCta.trustSnippet.title.1",
-      "value": "Transparent Technical Advice"
+      "value": "API Stability"
     },
     {
       "key": "home.commandCta.trustSnippet.title.2",
-      "value": "Field-Tested Delivery Workflow"
+      "value": "Margin Protection"
     },
     {
       "key": "home.commandCta.trustSnippet.title.3",
-      "value": "Fast Escalation Path"
+      "value": "Resilient Routing"
     },
     {
       "key": "home.operationalProof.body",
-      "value": "High-trust power projects are won with proof, not promises. These project snapshots and field guides show how GenFix teams plan, deliver, and support critical power outcomes."
+      "value": "High-performing AI products are built on measurable routing, predictable billing, and reliable response contracts."
     },
     {
       "key": "home.operationalProof.exploreStoryLabel",
@@ -530,7 +522,7 @@
     },
     {
       "key": "home.operationalProof.heading",
-      "value": "Real Deployments, Practical Guidance, Faster Decisions"
+      "value": "Production Patterns That Hold Up Under Load"
     },
     {
       "key": "home.operationalProof.kicker",
@@ -538,23 +530,23 @@
     },
     {
       "key": "home.operationalProof.trustedDeliverySuffix",
-      "value": "Trusted Delivery"
+      "value": "Production Ready"
     },
     {
       "key": "home.planning.bodySuffix",
-      "value": "We combine product guidance, hire flexibility, and support planning so your team can lock in power decisions with confidence."
+      "value": "Combine model flexibility with governance controls so product and platform teams can ship confidently."
     },
     {
       "key": "home.planning.heading",
-      "value": "One Team Across Sales, Hire, Service, and Support"
+      "value": "One Team Across Routing, Billing, And Reliability"
     },
     {
       "key": "home.planning.kicker",
-      "value": "High Trust Planning"
+      "value": "High-Trust Planning"
     },
     {
       "key": "home.planning.responseDisciplineBody",
-      "value": "From first call to handover, your plan is shaped around uptime, straightforward communication, and fast site-readiness."
+      "value": "From onboarding to scale, we focus on observability, guardrails, and clear operating practices."
     },
     {
       "key": "home.planning.responseDisciplineLabel",
@@ -566,19 +558,19 @@
     },
     {
       "key": "home.showcase.secondaryCtaLabel",
-      "value": "Request A Quote /"
+      "value": "Contact Sales /"
     },
     {
       "key": "home.spotlightAction.1",
-      "value": "Talk Sales"
+      "value": "Review API"
     },
     {
       "key": "home.spotlightAction.2",
-      "value": "Check Fleet"
+      "value": "Check Models"
     },
     {
       "key": "home.spotlightAction.3",
-      "value": "Request Support"
+      "value": "Configure Guardrails"
     },
     {
       "key": "home.spotlightAtAGlance",
@@ -586,71 +578,35 @@
     },
     {
       "key": "home.spotlightFieldNoteLabel",
-      "value": "Field Note"
+      "value": "Platform Note"
     },
     {
       "key": "home.spotlightIntroBody",
-      "value": "Straightforward service lines for teams that need clear answers quickly. No inflated claims, just practical power planning and delivery."
+      "value": "Launch multiple AI capabilities behind one gateway with practical controls for reliability, cost, and speed."
     },
     {
       "key": "home.spotlightMicroProof.1",
-      "value": "Typical scope response: same business day"
+      "value": "OpenAI-style request contracts"
     },
     {
       "key": "home.spotlightMicroProof.2",
-      "value": "Short and long hire terms available"
+      "value": "Usage and credit tracking built in"
     },
     {
       "key": "home.spotlightMicroProof.3",
-      "value": "After-hours escalation available"
+      "value": "Provider fallback and retry controls"
     },
     {
       "key": "home.trustedBy.partnerBandLabel",
-      "value": "Infinite partner band"
-    },
-    {
-      "key": "productsPage.expertsBody",
-      "value": "GENFIX supplies robust 5-20 kVA diesel generator systems for site services, shutdowns, and critical backup. Our team combines planning, deployment, and continuous service support to keep power online in demanding environments."
-    },
-    {
-      "key": "productsPage.expertsHeading",
-      "value": "Engineered Systems For Tough Australian Operating Conditions"
-    },
-    {
-      "key": "productsPage.expertsKicker",
-      "value": "5-20 kVA Diesel Generation Experts"
-    },
-    {
-      "key": "productsPage.faqHeading",
-      "value": "Frequently Asked Questions"
-    },
-    {
-      "key": "productsPage.packagesBody",
-      "value": "We collaborate with your site team to configure enclosure, controls, and fuel-system requirements for 5-20 kVA diesel outcomes. Options are aligned to duty cycles, environmental constraints, and compliance targets."
-    },
-    {
-      "key": "productsPage.packagesHeading",
-      "value": "5-20 kVA Diesel Packages"
-    },
-    {
-      "key": "productsPage.packagesPanelBody",
-      "value": "GENFIX is a trusted supplier for site operations that need dependable 5-20 kVA diesel power. Our rental and sales packages are designed to maintain uptime and simplify field operations from day one."
-    },
-    {
-      "key": "productsPage.packagesPanelKicker",
-      "value": "For Site, Commercial, And Industrial Use"
-    },
-    {
-      "key": "productsPage.rangeKicker",
-      "value": "Our 5-20 kVA Diesel Generator Range"
+      "value": "Partner band"
     },
     {
       "key": "quoteDialog.description",
-      "value": "Share a few project details and our team will get back to you quickly."
+      "value": "Share your product requirements and we will help map routing, pricing, and rollout options."
     },
     {
       "key": "quoteDialog.enquiryOption.rental",
-      "value": "Rental"
+      "value": "Usage Plan"
     },
     {
       "key": "quoteDialog.enquiryOption.sales",
@@ -662,7 +618,7 @@
     },
     {
       "key": "quoteDialog.field.delivery",
-      "value": "Do you need delivery? (If yes please enter suburb/postcode, if no move to next)*"
+      "value": "Target launch window or deadline*"
     },
     {
       "key": "quoteDialog.field.email",
@@ -670,7 +626,7 @@
     },
     {
       "key": "quoteDialog.field.enquiry",
-      "value": "Are you enquiring about rental or sales?*"
+      "value": "What is your primary enquiry?*"
     },
     {
       "key": "quoteDialog.field.firstName",
@@ -686,7 +642,7 @@
     },
     {
       "key": "quoteDialog.field.notes",
-      "value": "Any other notes or comments?"
+      "value": "Any extra context or requirements?"
     },
     {
       "key": "quoteDialog.field.phone",
@@ -694,19 +650,19 @@
     },
     {
       "key": "quoteDialog.field.postcode",
-      "value": "Postcode/suburb of project*"
+      "value": "Region / timezone*"
     },
     {
       "key": "quoteDialog.interestOption.airTools",
-      "value": "Air Power Tools"
+      "value": "Workflow Automation"
     },
     {
       "key": "quoteDialog.interestOption.generators",
-      "value": "Generators"
+      "value": "Chat And Agent APIs"
     },
     {
       "key": "quoteDialog.interestOption.lighting",
-      "value": "Lighting"
+      "value": "Image Generation APIs"
     },
     {
       "key": "quoteDialog.interestOption.other",
@@ -714,15 +670,15 @@
     },
     {
       "key": "quoteDialog.interestOption.service",
-      "value": "Service Support"
+      "value": "Support And Reliability"
     },
     {
       "key": "quoteDialog.interestOption.solar",
-      "value": "Solar Generators"
+      "value": "Embeddings And Search"
     },
     {
       "key": "quoteDialog.interestOption.welders",
-      "value": "Welders"
+      "value": "Speech And Transcription"
     },
     {
       "key": "quoteDialog.requiredHint",
@@ -750,15 +706,15 @@
     },
     {
       "key": "quoteDialog.submitSuccess",
-      "value": "Thanks, your quote request has been sent."
+      "value": "Thanks, your request has been sent."
     },
     {
       "key": "quoteDialog.title",
-      "value": "Get A Quote"
+      "value": "Contact Sales"
     },
     {
       "key": "quoteDialog.validation.delivery",
-      "value": "Please add your delivery details."
+      "value": "Please add your target launch window."
     },
     {
       "key": "quoteDialog.validation.email",
@@ -766,7 +722,7 @@
     },
     {
       "key": "quoteDialog.validation.enquiry",
-      "value": "Please choose rental or sales."
+      "value": "Please choose your enquiry type."
     },
     {
       "key": "quoteDialog.validation.firstName",
@@ -782,23 +738,23 @@
     },
     {
       "key": "quoteDialog.validation.postcode",
-      "value": "Postcode/suburb of project is required."
+      "value": "Region or timezone is required."
     },
     {
       "key": "routePage.contactFormDescription",
-      "value": "Share your scope and required dates."
+      "value": "Share your goals and required timelines."
     },
     {
       "key": "routePage.contactFormHeading",
-      "value": "Request Project Support"
+      "value": "Request Platform Support"
     },
     {
       "key": "routePage.ctaBody",
-      "value": "Speak with the GENFIX team about the right equipment and service model for your site timeline."
+      "value": "Speak with the deAPI team about model routing, API integration, and launch planning."
     },
     {
       "key": "routePage.ctaHeading",
-      "value": "Get Scope And Pricing Support"
+      "value": "Get Architecture And Pricing Guidance"
     },
     {
       "key": "routePage.ctaKicker",

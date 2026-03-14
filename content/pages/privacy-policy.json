@@ -1,82 +1,107 @@
 {
   "slug": "/privacy-policy",
   "navLabel": "Privacy Policy",
-  "seoTitle": "Privacy Policy | GenFix",
-  "seoDescription": "Learn how GenFix handles personal information, communications, and data security obligations.",
-  "hero": {
-    "kicker": "Privacy Policy",
-    "heading": "Privacy Policy",
-    "body": "This page explains how GenFix collects, uses, stores, and protects personal information for sales, support, and service delivery activities.",
-    "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-    "actions": [
+  "seoTitle": "Privacy Policy | deAPI",
+  "seoDescription": "Understand how deAPI handles data processing, retention, and security controls.",
+  "pageContent": {
+    "elements": [
       {
-        "label": "Contact Privacy Team",
-        "href": "/contact",
-        "style": "outline"
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Our Privacy Commitments"
       },
       {
-        "label": "View Terms Of Use",
-        "href": "/resources/website-safety-alert",
-        "style": "ghost"
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "We minimize collection, apply security controls at every layer, and maintain clear policy language so teams can assess risk confidently."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Security Overview",
+        "href": "/docs/architecture-and-security"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Policy",
+    "heading": "Privacy Policy",
+    "body": "This policy describes how we process account, billing, and request metadata while preserving user trust and legal compliance.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "View Terms",
+        "href": "/terms-of-service",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
       }
     ]
   },
   "sections": [
     {
-      "id": "overview",
-      "title": "How GenFix Handles Personal Information",
-      "body": "We collect and process personal information only where required to provide quotes, deliver services, and support customer communication.",
+      "id": "collection",
+      "title": "Data Collection Principles",
+      "body": "We collect only what is necessary to operate, secure, and improve the service.",
       "cards": [
         {
-          "id": "overview-card-1",
-          "title": "Information We Collect",
-          "description": "Typical data includes contact details, business information, project scope, and communication records.",
-          "href": "/contact",
-          "ctaLabel": "Ask About Data Types"
+          "id": "collection-card-1",
+          "title": "Account Data",
+          "description": "Contact and identity details needed to administer accounts and support.",
+          "href": "/register",
+          "ctaLabel": "Create Account"
         },
         {
-          "id": "overview-card-2",
-          "title": "Why We Collect It",
-          "description": "Data is used to prepare proposals, coordinate service delivery, and provide ongoing client support.",
-          "href": "/sales",
-          "ctaLabel": "See Service Context"
+          "id": "collection-card-2",
+          "title": "Usage Metadata",
+          "description": "Operational metadata required for billing integrity and abuse prevention.",
+          "href": "/pricing",
+          "ctaLabel": "Review Billing Model"
         },
         {
-          "id": "overview-card-3",
-          "title": "How Data Is Protected",
-          "description": "Access controls and internal process safeguards are applied to reduce unauthorized use or disclosure.",
-          "href": "/contact",
-          "ctaLabel": "Request Security Details"
+          "id": "collection-card-3",
+          "title": "Support Records",
+          "description": "Limited support context used to resolve issues and improve reliability.",
+          "href": "/contact-sales",
+          "ctaLabel": "Contact Support"
         }
       ]
     },
     {
-      "id": "delivery",
-      "title": "Your Privacy Choices",
-      "body": "You can contact GenFix to request access, correction, communication preference updates, or privacy complaint handling.",
+      "id": "controls",
+      "title": "Security And Retention Controls",
+      "body": "We apply layered controls and explicit retention boundaries to sensitive operational data.",
       "cards": [
         {
-          "id": "delivery-card-1",
-          "title": "Access And Correction Requests",
-          "description": "Request a copy of personal information we hold and ask for corrections where needed.",
-          "href": "/contact",
-          "ctaLabel": "Submit A Privacy Request"
+          "id": "controls-card-1",
+          "title": "Access Restrictions",
+          "description": "Limit data access through role-based controls and internal policies.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Read Security Details"
         },
         {
-          "id": "delivery-card-2",
-          "title": "Marketing Preferences",
-          "description": "Opt out of promotional communications or update preferred contact channels at any time.",
-          "href": "/contact",
-          "ctaLabel": "Update Preferences"
+          "id": "controls-card-2",
+          "title": "Retention Windows",
+          "description": "Use bounded retention and archival workflows for non-hot path records.",
+          "href": "/docs",
+          "ctaLabel": "Explore Documentation"
         },
         {
-          "id": "delivery-card-3",
-          "title": "Complaints And Escalation",
-          "description": "Raise concerns directly with GenFix and we will follow a documented complaint handling process.",
-          "href": "/contact",
-          "ctaLabel": "Lodge A Complaint"
+          "id": "controls-card-3",
+          "title": "Request Inquiries",
+          "description": "Contact us for policy clarifications and compliance review support.",
+          "href": "/contact-sales",
+          "ctaLabel": "Submit Inquiry"
         }
       ]
     }
-  ]
+  ],
+  "contactPanel": {
+    "heading": "Need privacy policy clarification?",
+    "body": "Our team can help your legal and security stakeholders review data handling details.",
+    "responseTime": "Policy inquiries answered in one business day"
+  }
 }

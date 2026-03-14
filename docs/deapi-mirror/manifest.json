@@ -1,0 +1,1118 @@
+{
+  "source": {
+    "indexUrl": "https://docs.deapi.ai/llms.txt",
+    "docsOrigin": "https://docs.deapi.ai",
+    "syncedAt": "2026-03-14T12:00:31.989Z"
+  },
+  "totalEntries": 63,
+  "entries": [
+    {
+      "id": "api/analysis/audio-to-text-spaces.md",
+      "title": "Audio-to-Text (X Spaces Transcription)",
+      "url": "https://docs.deapi.ai/api/analysis/audio-to-text-spaces.md",
+      "sourcePath": "api/analysis/audio-to-text-spaces.md",
+      "routePath": "/docs/v1/api/analysis/audio-to-text-spaces",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "audio-to-text-spaces"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 0
+    },
+    {
+      "id": "api/analysis/audio-to-text-spaces-price.md",
+      "title": "Audio-to-Text (X Spaces) Price Calculation",
+      "url": "https://docs.deapi.ai/api/analysis/audio-to-text-spaces-price.md",
+      "sourcePath": "api/analysis/audio-to-text-spaces-price.md",
+      "routePath": "/docs/v1/api/analysis/audio-to-text-spaces-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "audio-to-text-spaces-price"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 1
+    },
+    {
+      "id": "api/analysis/image-to-text.md",
+      "title": "Image-to-Text (OCR)",
+      "url": "https://docs.deapi.ai/api/analysis/image-to-text.md",
+      "sourcePath": "api/analysis/image-to-text.md",
+      "routePath": "/docs/v1/api/analysis/image-to-text",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "image-to-text"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 2
+    },
+    {
+      "id": "api/analysis/image-to-text-price.md",
+      "title": "Image-to-Text Price Calculation",
+      "url": "https://docs.deapi.ai/api/analysis/image-to-text-price.md",
+      "sourcePath": "api/analysis/image-to-text-price.md",
+      "routePath": "/docs/v1/api/analysis/image-to-text-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "image-to-text-price"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 3
+    },
+    {
+      "id": "api/analysis/upload-audio-file.md",
+      "title": "Upload Audio File (Audio-to-Text)",
+      "url": "https://docs.deapi.ai/api/analysis/upload-audio-file.md",
+      "sourcePath": "api/analysis/upload-audio-file.md",
+      "routePath": "/docs/v1/api/analysis/upload-audio-file",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "upload-audio-file"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 4
+    },
+    {
+      "id": "api/analysis/upload-audio-file-price.md",
+      "title": "Upload Audio File Price Calculation",
+      "url": "https://docs.deapi.ai/api/analysis/upload-audio-file-price.md",
+      "sourcePath": "api/analysis/upload-audio-file-price.md",
+      "routePath": "/docs/v1/api/analysis/upload-audio-file-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "upload-audio-file-price"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 5
+    },
+    {
+      "id": "api/analysis/upload-video-file.md",
+      "title": "Upload Video File (Video-to-Text)",
+      "url": "https://docs.deapi.ai/api/analysis/upload-video-file.md",
+      "sourcePath": "api/analysis/upload-video-file.md",
+      "routePath": "/docs/v1/api/analysis/upload-video-file",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "upload-video-file"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 6
+    },
+    {
+      "id": "api/analysis/upload-video-file-price.md",
+      "title": "Upload Video File Price Calculation",
+      "url": "https://docs.deapi.ai/api/analysis/upload-video-file-price.md",
+      "sourcePath": "api/analysis/upload-video-file-price.md",
+      "routePath": "/docs/v1/api/analysis/upload-video-file-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "upload-video-file-price"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 7
+    },
+    {
+      "id": "api/analysis/video-to-text.md",
+      "title": "Video-to-Text (Transcription)",
+      "url": "https://docs.deapi.ai/api/analysis/video-to-text.md",
+      "sourcePath": "api/analysis/video-to-text.md",
+      "routePath": "/docs/v1/api/analysis/video-to-text",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "video-to-text"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 8
+    },
+    {
+      "id": "api/analysis/video-to-text-price.md",
+      "title": "Video-to-Text Price Calculation",
+      "url": "https://docs.deapi.ai/api/analysis/video-to-text-price.md",
+      "sourcePath": "api/analysis/video-to-text-price.md",
+      "routePath": "/docs/v1/api/analysis/video-to-text-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "analysis",
+        "video-to-text-price"
+      ],
+      "sectionKey": "api-analysis",
+      "sectionTitle": "API / Analysis",
+      "kind": "markdown",
+      "order": 9
+    },
+    {
+      "id": "api/errors.md",
+      "title": "Errors",
+      "url": "https://docs.deapi.ai/api/errors.md",
+      "sourcePath": "api/errors.md",
+      "routePath": "/docs/v1/api/errors",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "errors"
+      ],
+      "sectionKey": "api",
+      "sectionTitle": "API",
+      "kind": "markdown",
+      "order": 10
+    },
+    {
+      "id": "api/generation/audio-to-video.md",
+      "title": "Audio-to-Video",
+      "url": "https://docs.deapi.ai/api/generation/audio-to-video.md",
+      "sourcePath": "api/generation/audio-to-video.md",
+      "routePath": "/docs/v1/api/generation/audio-to-video",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "audio-to-video"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 11
+    },
+    {
+      "id": "api/generation/audio-to-video-price.md",
+      "title": "Audio-to-Video Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/audio-to-video-price.md",
+      "sourcePath": "api/generation/audio-to-video-price.md",
+      "routePath": "/docs/v1/api/generation/audio-to-video-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "audio-to-video-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 12
+    },
+    {
+      "id": "api/generation/image-to-video.md",
+      "title": "Image-to-Video",
+      "url": "https://docs.deapi.ai/api/generation/image-to-video.md",
+      "sourcePath": "api/generation/image-to-video.md",
+      "routePath": "/docs/v1/api/generation/image-to-video",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "image-to-video"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 13
+    },
+    {
+      "id": "api/generation/image-to-video-price.md",
+      "title": "Image-to-Video Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/image-to-video-price.md",
+      "sourcePath": "api/generation/image-to-video-price.md",
+      "routePath": "/docs/v1/api/generation/image-to-video-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "image-to-video-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 14
+    },
+    {
+      "id": "api/generation/text-to-embedding.md",
+      "title": "Text-to-Embedding",
+      "url": "https://docs.deapi.ai/api/generation/text-to-embedding.md",
+      "sourcePath": "api/generation/text-to-embedding.md",
+      "routePath": "/docs/v1/api/generation/text-to-embedding",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-embedding"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 15
+    },
+    {
+      "id": "api/generation/text-to-embedding-price.md",
+      "title": "Text-to-Embedding Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/text-to-embedding-price.md",
+      "sourcePath": "api/generation/text-to-embedding-price.md",
+      "routePath": "/docs/v1/api/generation/text-to-embedding-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-embedding-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 16
+    },
+    {
+      "id": "api/generation/text-to-image.md",
+      "title": "Text-to-Image",
+      "url": "https://docs.deapi.ai/api/generation/text-to-image.md",
+      "sourcePath": "api/generation/text-to-image.md",
+      "routePath": "/docs/v1/api/generation/text-to-image",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-image"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 17
+    },
+    {
+      "id": "api/generation/text-to-image-price.md",
+      "title": "Text-to-Image Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/text-to-image-price.md",
+      "sourcePath": "api/generation/text-to-image-price.md",
+      "routePath": "/docs/v1/api/generation/text-to-image-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-image-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 18
+    },
+    {
+      "id": "api/generation/text-to-music.md",
+      "title": "Text-to-Music",
+      "url": "https://docs.deapi.ai/api/generation/text-to-music.md",
+      "sourcePath": "api/generation/text-to-music.md",
+      "routePath": "/docs/v1/api/generation/text-to-music",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-music"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 19
+    },
+    {
+      "id": "api/generation/text-to-music-price.md",
+      "title": "Text-to-Music Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/text-to-music-price.md",
+      "sourcePath": "api/generation/text-to-music-price.md",
+      "routePath": "/docs/v1/api/generation/text-to-music-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-music-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 20
+    },
+    {
+      "id": "api/generation/text-to-speech.md",
+      "title": "Text-to-Speech (TTS)",
+      "url": "https://docs.deapi.ai/api/generation/text-to-speech.md",
+      "sourcePath": "api/generation/text-to-speech.md",
+      "routePath": "/docs/v1/api/generation/text-to-speech",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-speech"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 21
+    },
+    {
+      "id": "api/generation/text-to-speech-price.md",
+      "title": "Text-to-Speech Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/text-to-speech-price.md",
+      "sourcePath": "api/generation/text-to-speech-price.md",
+      "routePath": "/docs/v1/api/generation/text-to-speech-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-speech-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 22
+    },
+    {
+      "id": "api/generation/text-to-video.md",
+      "title": "Text-to-Video",
+      "url": "https://docs.deapi.ai/api/generation/text-to-video.md",
+      "sourcePath": "api/generation/text-to-video.md",
+      "routePath": "/docs/v1/api/generation/text-to-video",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-video"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 23
+    },
+    {
+      "id": "api/generation/text-to-video-price.md",
+      "title": "Text-to-Video Price Calculation",
+      "url": "https://docs.deapi.ai/api/generation/text-to-video-price.md",
+      "sourcePath": "api/generation/text-to-video-price.md",
+      "routePath": "/docs/v1/api/generation/text-to-video-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "generation",
+        "text-to-video-price"
+      ],
+      "sectionKey": "api-generation",
+      "sectionTitle": "API / Generation",
+      "kind": "markdown",
+      "order": 24
+    },
+    {
+      "id": "api/overview.md",
+      "title": "API Overview",
+      "url": "https://docs.deapi.ai/api/overview.md",
+      "sourcePath": "api/overview.md",
+      "routePath": "/docs/v1/api/overview",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "overview"
+      ],
+      "sectionKey": "api",
+      "sectionTitle": "API",
+      "kind": "markdown",
+      "order": 25
+    },
+    {
+      "id": "api/prompt-enhancement/image-prompt-booster.md",
+      "title": "Image Prompt Booster",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/image-prompt-booster.md",
+      "sourcePath": "api/prompt-enhancement/image-prompt-booster.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/image-prompt-booster",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "image-prompt-booster"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 26
+    },
+    {
+      "id": "api/prompt-enhancement/image-prompt-booster-price.md",
+      "title": "Image Prompt Booster Price",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/image-prompt-booster-price.md",
+      "sourcePath": "api/prompt-enhancement/image-prompt-booster-price.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/image-prompt-booster-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "image-prompt-booster-price"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 27
+    },
+    {
+      "id": "api/prompt-enhancement/image-to-image-prompt-booster.md",
+      "title": "Image-to-Image Prompt Booster",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/image-to-image-prompt-booster.md",
+      "sourcePath": "api/prompt-enhancement/image-to-image-prompt-booster.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/image-to-image-prompt-booster",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "image-to-image-prompt-booster"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 28
+    },
+    {
+      "id": "api/prompt-enhancement/image-to-image-prompt-booster-price.md",
+      "title": "Image-to-Image Prompt Booster Price",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/image-to-image-prompt-booster-price.md",
+      "sourcePath": "api/prompt-enhancement/image-to-image-prompt-booster-price.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/image-to-image-prompt-booster-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "image-to-image-prompt-booster-price"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 29
+    },
+    {
+      "id": "api/prompt-enhancement/overview.md",
+      "title": "Prompt Enhancement",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/overview.md",
+      "sourcePath": "api/prompt-enhancement/overview.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/overview",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "overview"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 30
+    },
+    {
+      "id": "api/prompt-enhancement/sample-prompts.md",
+      "title": "Sample Prompts Generator",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/sample-prompts.md",
+      "sourcePath": "api/prompt-enhancement/sample-prompts.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/sample-prompts",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "sample-prompts"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 31
+    },
+    {
+      "id": "api/prompt-enhancement/sample-prompts-price.md",
+      "title": "Sample Prompts Price",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/sample-prompts-price.md",
+      "sourcePath": "api/prompt-enhancement/sample-prompts-price.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/sample-prompts-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "sample-prompts-price"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 32
+    },
+    {
+      "id": "api/prompt-enhancement/speech-prompt-booster.md",
+      "title": "Speech Prompt Booster",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/speech-prompt-booster.md",
+      "sourcePath": "api/prompt-enhancement/speech-prompt-booster.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/speech-prompt-booster",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "speech-prompt-booster"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 33
+    },
+    {
+      "id": "api/prompt-enhancement/speech-prompt-booster-price.md",
+      "title": "Speech Prompt Booster Price",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/speech-prompt-booster-price.md",
+      "sourcePath": "api/prompt-enhancement/speech-prompt-booster-price.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/speech-prompt-booster-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "speech-prompt-booster-price"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 34
+    },
+    {
+      "id": "api/prompt-enhancement/video-prompt-booster.md",
+      "title": "Video Prompt Booster",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/video-prompt-booster.md",
+      "sourcePath": "api/prompt-enhancement/video-prompt-booster.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/video-prompt-booster",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "video-prompt-booster"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 35
+    },
+    {
+      "id": "api/prompt-enhancement/video-prompt-booster-price.md",
+      "title": "Video Prompt Booster Price",
+      "url": "https://docs.deapi.ai/api/prompt-enhancement/video-prompt-booster-price.md",
+      "sourcePath": "api/prompt-enhancement/video-prompt-booster-price.md",
+      "routePath": "/docs/v1/api/prompt-enhancement/video-prompt-booster-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "prompt-enhancement",
+        "video-prompt-booster-price"
+      ],
+      "sectionKey": "api-prompt-enhancement",
+      "sectionTitle": "API / Prompt Enhancement",
+      "kind": "markdown",
+      "order": 36
+    },
+    {
+      "id": "api/transformation/background-removal.md",
+      "title": "Image Background Removal",
+      "url": "https://docs.deapi.ai/api/transformation/background-removal.md",
+      "sourcePath": "api/transformation/background-removal.md",
+      "routePath": "/docs/v1/api/transformation/background-removal",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "transformation",
+        "background-removal"
+      ],
+      "sectionKey": "api-transformation",
+      "sectionTitle": "API / Transformation",
+      "kind": "markdown",
+      "order": 37
+    },
+    {
+      "id": "api/transformation/background-removal-price.md",
+      "title": "Image Background Removal Price Calculation",
+      "url": "https://docs.deapi.ai/api/transformation/background-removal-price.md",
+      "sourcePath": "api/transformation/background-removal-price.md",
+      "routePath": "/docs/v1/api/transformation/background-removal-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "transformation",
+        "background-removal-price"
+      ],
+      "sectionKey": "api-transformation",
+      "sectionTitle": "API / Transformation",
+      "kind": "markdown",
+      "order": 38
+    },
+    {
+      "id": "api/transformation/image-to-image.md",
+      "title": "Image-to-Image",
+      "url": "https://docs.deapi.ai/api/transformation/image-to-image.md",
+      "sourcePath": "api/transformation/image-to-image.md",
+      "routePath": "/docs/v1/api/transformation/image-to-image",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "transformation",
+        "image-to-image"
+      ],
+      "sectionKey": "api-transformation",
+      "sectionTitle": "API / Transformation",
+      "kind": "markdown",
+      "order": 39
+    },
+    {
+      "id": "api/transformation/image-to-image-price.md",
+      "title": "Image-to-Image Price Calculation",
+      "url": "https://docs.deapi.ai/api/transformation/image-to-image-price.md",
+      "sourcePath": "api/transformation/image-to-image-price.md",
+      "routePath": "/docs/v1/api/transformation/image-to-image-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "transformation",
+        "image-to-image-price"
+      ],
+      "sectionKey": "api-transformation",
+      "sectionTitle": "API / Transformation",
+      "kind": "markdown",
+      "order": 40
+    },
+    {
+      "id": "api/transformation/image-upscale.md",
+      "title": "Image Upscale",
+      "url": "https://docs.deapi.ai/api/transformation/image-upscale.md",
+      "sourcePath": "api/transformation/image-upscale.md",
+      "routePath": "/docs/v1/api/transformation/image-upscale",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "transformation",
+        "image-upscale"
+      ],
+      "sectionKey": "api-transformation",
+      "sectionTitle": "API / Transformation",
+      "kind": "markdown",
+      "order": 41
+    },
+    {
+      "id": "api/transformation/image-upscale-price.md",
+      "title": "Image Upscale Price Calculation",
+      "url": "https://docs.deapi.ai/api/transformation/image-upscale-price.md",
+      "sourcePath": "api/transformation/image-upscale-price.md",
+      "routePath": "/docs/v1/api/transformation/image-upscale-price",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "transformation",
+        "image-upscale-price"
+      ],
+      "sectionKey": "api-transformation",
+      "sectionTitle": "API / Transformation",
+      "kind": "markdown",
+      "order": 42
+    },
+    {
+      "id": "api/utilities/check-balance.md",
+      "title": "Check Balance",
+      "url": "https://docs.deapi.ai/api/utilities/check-balance.md",
+      "sourcePath": "api/utilities/check-balance.md",
+      "routePath": "/docs/v1/api/utilities/check-balance",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "utilities",
+        "check-balance"
+      ],
+      "sectionKey": "api-utilities",
+      "sectionTitle": "API / Utilities",
+      "kind": "markdown",
+      "order": 43
+    },
+    {
+      "id": "api/utilities/get-results.md",
+      "title": "Get Results",
+      "url": "https://docs.deapi.ai/api/utilities/get-results.md",
+      "sourcePath": "api/utilities/get-results.md",
+      "routePath": "/docs/v1/api/utilities/get-results",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "utilities",
+        "get-results"
+      ],
+      "sectionKey": "api-utilities",
+      "sectionTitle": "API / Utilities",
+      "kind": "markdown",
+      "order": 44
+    },
+    {
+      "id": "api/utilities/model-selection.md",
+      "title": "Model Selection",
+      "url": "https://docs.deapi.ai/api/utilities/model-selection.md",
+      "sourcePath": "api/utilities/model-selection.md",
+      "routePath": "/docs/v1/api/utilities/model-selection",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "api",
+        "utilities",
+        "model-selection"
+      ],
+      "sectionKey": "api-utilities",
+      "sectionTitle": "API / Utilities",
+      "kind": "markdown",
+      "order": 45
+    },
+    {
+      "id": "architecture-and-security.md",
+      "title": "Architecture & Security",
+      "url": "https://docs.deapi.ai/architecture-and-security.md",
+      "sourcePath": "architecture-and-security.md",
+      "routePath": "/docs/v1/architecture-and-security",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "architecture-and-security"
+      ],
+      "sectionKey": "core",
+      "sectionTitle": "Core",
+      "kind": "markdown",
+      "order": 46
+    },
+    {
+      "id": "execution-modes-and-integrations/execution-modes-and-http-queue.md",
+      "title": "Execution Modes & HTTP Queue",
+      "url": "https://docs.deapi.ai/execution-modes-and-integrations/execution-modes-and-http-queue.md",
+      "sourcePath": "execution-modes-and-integrations/execution-modes-and-http-queue.md",
+      "routePath": "/docs/v1/execution-modes-and-integrations/execution-modes-and-http-queue",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "execution-modes-and-integrations",
+        "execution-modes-and-http-queue"
+      ],
+      "sectionKey": "execution-modes-and-integrations",
+      "sectionTitle": "Execution & Integrations",
+      "kind": "markdown",
+      "order": 47
+    },
+    {
+      "id": "execution-modes-and-integrations/mcp-server.md",
+      "title": "MCP Server",
+      "url": "https://docs.deapi.ai/execution-modes-and-integrations/mcp-server.md",
+      "sourcePath": "execution-modes-and-integrations/mcp-server.md",
+      "routePath": "/docs/v1/execution-modes-and-integrations/mcp-server",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "execution-modes-and-integrations",
+        "mcp-server"
+      ],
+      "sectionKey": "execution-modes-and-integrations",
+      "sectionTitle": "Execution & Integrations",
+      "kind": "markdown",
+      "order": 48
+    },
+    {
+      "id": "execution-modes-and-integrations/n8n-deapi-node.md",
+      "title": "n8n deAPI node",
+      "url": "https://docs.deapi.ai/execution-modes-and-integrations/n8n-deapi-node.md",
+      "sourcePath": "execution-modes-and-integrations/n8n-deapi-node.md",
+      "routePath": "/docs/v1/execution-modes-and-integrations/n8n-deapi-node",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "execution-modes-and-integrations",
+        "n8n-deapi-node"
+      ],
+      "sectionKey": "execution-modes-and-integrations",
+      "sectionTitle": "Execution & Integrations",
+      "kind": "markdown",
+      "order": 49
+    },
+    {
+      "id": "execution-modes-and-integrations/n8n-integration.md",
+      "title": "n8n Integration",
+      "url": "https://docs.deapi.ai/execution-modes-and-integrations/n8n-integration.md",
+      "sourcePath": "execution-modes-and-integrations/n8n-integration.md",
+      "routePath": "/docs/v1/execution-modes-and-integrations/n8n-integration",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "execution-modes-and-integrations",
+        "n8n-integration"
+      ],
+      "sectionKey": "execution-modes-and-integrations",
+      "sectionTitle": "Execution & Integrations",
+      "kind": "markdown",
+      "order": 50
+    },
+    {
+      "id": "execution-modes-and-integrations/webhooks.md",
+      "title": "Webhooks",
+      "url": "https://docs.deapi.ai/execution-modes-and-integrations/webhooks.md",
+      "sourcePath": "execution-modes-and-integrations/webhooks.md",
+      "routePath": "/docs/v1/execution-modes-and-integrations/webhooks",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "execution-modes-and-integrations",
+        "webhooks"
+      ],
+      "sectionKey": "execution-modes-and-integrations",
+      "sectionTitle": "Execution & Integrations",
+      "kind": "markdown",
+      "order": 51
+    },
+    {
+      "id": "execution-modes-and-integrations/websockets.md",
+      "title": "WebSockets",
+      "url": "https://docs.deapi.ai/execution-modes-and-integrations/websockets.md",
+      "sourcePath": "execution-modes-and-integrations/websockets.md",
+      "routePath": "/docs/v1/execution-modes-and-integrations/websockets",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "execution-modes-and-integrations",
+        "websockets"
+      ],
+      "sectionKey": "execution-modes-and-integrations",
+      "sectionTitle": "Execution & Integrations",
+      "kind": "markdown",
+      "order": 52
+    },
+    {
+      "id": "introduction.md",
+      "title": "Introduction",
+      "url": "https://docs.deapi.ai/introduction.md",
+      "sourcePath": "introduction.md",
+      "routePath": "/docs/v1/introduction",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "introduction"
+      ],
+      "sectionKey": "core",
+      "sectionTitle": "Core",
+      "kind": "markdown",
+      "order": 53
+    },
+    {
+      "id": "limits-and-quotas.md",
+      "title": "Limits & Quotas",
+      "url": "https://docs.deapi.ai/limits-and-quotas.md",
+      "sourcePath": "limits-and-quotas.md",
+      "routePath": "/docs/v1/limits-and-quotas",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "limits-and-quotas"
+      ],
+      "sectionKey": "core",
+      "sectionTitle": "Core",
+      "kind": "markdown",
+      "order": 54
+    },
+    {
+      "id": "models.md",
+      "title": "Models",
+      "url": "https://docs.deapi.ai/models.md",
+      "sourcePath": "models.md",
+      "routePath": "/docs/v1/models",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "models"
+      ],
+      "sectionKey": "core",
+      "sectionTitle": "Core",
+      "kind": "markdown",
+      "order": 55
+    },
+    {
+      "id": "other/faq-frequently-asked-questions.md",
+      "title": "FAQ — Frequently Asked Questions",
+      "url": "https://docs.deapi.ai/other/faq-frequently-asked-questions.md",
+      "sourcePath": "other/faq-frequently-asked-questions.md",
+      "routePath": "/docs/v1/other/faq-frequently-asked-questions",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "other",
+        "faq-frequently-asked-questions"
+      ],
+      "sectionKey": "other",
+      "sectionTitle": "Other",
+      "kind": "markdown",
+      "order": 56
+    },
+    {
+      "id": "other/payment-methods.md",
+      "title": "Payment Methods",
+      "url": "https://docs.deapi.ai/other/payment-methods.md",
+      "sourcePath": "other/payment-methods.md",
+      "routePath": "/docs/v1/other/payment-methods",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "other",
+        "payment-methods"
+      ],
+      "sectionKey": "other",
+      "sectionTitle": "Other",
+      "kind": "markdown",
+      "order": 57
+    },
+    {
+      "id": "other/sdks-and-integrations.md",
+      "title": "SDKs & Integrations",
+      "url": "https://docs.deapi.ai/other/sdks-and-integrations.md",
+      "sourcePath": "other/sdks-and-integrations.md",
+      "routePath": "/docs/v1/other/sdks-and-integrations",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "other",
+        "sdks-and-integrations"
+      ],
+      "sectionKey": "other",
+      "sectionTitle": "Other",
+      "kind": "markdown",
+      "order": 58
+    },
+    {
+      "id": "other/support-and-contact.md",
+      "title": "Support & Contact",
+      "url": "https://docs.deapi.ai/other/support-and-contact.md",
+      "sourcePath": "other/support-and-contact.md",
+      "routePath": "/docs/v1/other/support-and-contact",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "other",
+        "support-and-contact"
+      ],
+      "sectionKey": "other",
+      "sectionTitle": "Other",
+      "kind": "markdown",
+      "order": 59
+    },
+    {
+      "id": "pricing.md",
+      "title": "Pricing",
+      "url": "https://docs.deapi.ai/pricing.md",
+      "sourcePath": "pricing.md",
+      "routePath": "/docs/v1/pricing",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "pricing"
+      ],
+      "sectionKey": "core",
+      "sectionTitle": "Core",
+      "kind": "markdown",
+      "order": 60
+    },
+    {
+      "id": "quickstart.md",
+      "title": "Quickstart",
+      "url": "https://docs.deapi.ai/quickstart.md",
+      "sourcePath": "quickstart.md",
+      "routePath": "/docs/v1/quickstart",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "quickstart"
+      ],
+      "sectionKey": "core",
+      "sectionTitle": "Core",
+      "kind": "markdown",
+      "order": 61
+    },
+    {
+      "id": "openapi.json",
+      "title": "openapi",
+      "url": "https://docs.deapi.ai/openapi.json",
+      "sourcePath": "openapi.json",
+      "routePath": "/docs/v1/openapi",
+      "routeSegments": [
+        "docs",
+        "v1",
+        "openapi"
+      ],
+      "sectionKey": "general",
+      "sectionTitle": "General",
+      "kind": "openapi",
+      "order": 62
+    }
+  ]
+}

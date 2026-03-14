@@ -1,0 +1,107 @@
+{
+  "slug": "/terms-of-service",
+  "navLabel": "Terms of Service",
+  "seoTitle": "Terms of Service | deAPI",
+  "seoDescription": "Review deAPI service terms, usage obligations, and platform responsibilities.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Clear Terms For Production Use"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "Our terms are written to support predictable operations for teams deploying AI features into commercial environments."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Read Technical Docs",
+        "href": "/docs"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Legal",
+    "heading": "Terms Of Service",
+    "body": "These terms define the responsibilities, acceptable use boundaries, and service conditions for deAPI customers.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "View Privacy Policy",
+        "href": "/privacy-policy",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "obligations",
+      "title": "Customer And Platform Obligations",
+      "body": "The terms outline responsibilities needed for secure, lawful, and reliable service usage.",
+      "cards": [
+        {
+          "id": "obligations-card-1",
+          "title": "Acceptable Use",
+          "description": "Use the platform for lawful workloads and maintain account security.",
+          "href": "/register",
+          "ctaLabel": "Open Account"
+        },
+        {
+          "id": "obligations-card-2",
+          "title": "Billing And Credits",
+          "description": "Understand payment timing, balances, and usage-based deductions.",
+          "href": "/pricing",
+          "ctaLabel": "Review Pricing"
+        },
+        {
+          "id": "obligations-card-3",
+          "title": "Service Changes",
+          "description": "Track updates and deprecations through changelog and notices.",
+          "href": "/changelog",
+          "ctaLabel": "Open Changelog"
+        }
+      ]
+    },
+    {
+      "id": "risk",
+      "title": "Risk, Support, And Resolution",
+      "body": "The agreement includes operational support pathways and dispute-handling mechanisms.",
+      "cards": [
+        {
+          "id": "risk-card-1",
+          "title": "Support Boundaries",
+          "description": "Understand response expectations and escalation channels.",
+          "href": "/contact-sales",
+          "ctaLabel": "Contact Team"
+        },
+        {
+          "id": "risk-card-2",
+          "title": "Service Reliability",
+          "description": "Follow deployment best practices to reduce avoidable incidents.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Review Reliability Guidance"
+        },
+        {
+          "id": "risk-card-3",
+          "title": "Legal Coordination",
+          "description": "Engage with us for enterprise procurement and compliance review.",
+          "href": "/contact-sales",
+          "ctaLabel": "Request Legal Review"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need terms review support?",
+    "body": "We can help your legal and procurement teams evaluate terms for enterprise adoption.",
+    "responseTime": "Legal review support in one business day"
+  }
+}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { TinaBlogPostPage } from "@/components/site/tina-blog-post-page"
 import { TinaRoutePage } from "@/components/site/tina-route-page"
+import { getLatestDeapiPricingSnapshot } from "@/lib/deapi-pricing-store"
 import { isManualBlogEnabled } from "@/lib/feature-flags"
 import {
   listBlogPosts,
@@ -192,6 +193,7 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
     ? (await listRoutePages()).filter((routePage) => routePage.slug.startsWith("/products/"))
     : []
   const blogPosts = isBlogIndex && manualBlogEnabled ? await listBlogPosts() : []
+  const deapiPricingSnapshot = page.slug === "/pricing" ? await getLatestDeapiPricingSnapshot({ maxPermutations: 500 }) : null
   const relativePath = routeSlugToRelativePath(page.slug)
 
   if (!relativePath) {
@@ -201,6 +203,7 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
   return (
     <TinaRoutePage
       blogPosts={blogPosts}
+      deapiPricingSnapshot={deapiPricingSnapshot}
       pageDocument={{
         query: tinaRoutePageQuery,
         variables: { relativePath },

@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  IBM_Plex_Mono,
+  Sora,
+  Manrope,
+  DM_Sans,
+  Fira_Code,
+  Geist,
+  Geist_Mono,
+} from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { isPwaEnabledServer } from "@/lib/feature-flags";
@@ -7,24 +15,73 @@ import { AosProvider } from "@/components/site/aos-provider";
 import { SerwistRegister } from "@/components/site/serwist-register";
 import "./globals.css";
 import "aos/dist/aos.css";
+import { cn } from "@/lib/utils";
+
+const firaCode = Fira_Code({
+  subsets: [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "symbols2",
+  ],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-fira-code",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: [
+    "100",
+    "1000",
+    "200",
+    "300",
+    "400",
+    "500",
+    "600",
+    "700",
+    "800",
+    "900",
+  ],
+  variable: "--font-dm-sans",
+});
+
+const manrope = Manrope({
+  subsets: [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "latin",
+    "latin-ext",
+    "vietnamese",
+  ],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
+});
 
 export const dynamic = "force-static";
 
 const FALLBACK_SITE_URL = "https://genfix.com.au";
 
 function normalizeSiteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? FALLBACK_SITE_URL).replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? FALLBACK_SITE_URL).replace(
+    /\/+$/,
+    "",
+  );
 }
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const geist = Geist({
+  subsets: ["latin-ext"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-geist",
 });
 
 const geistMono = Geist_Mono({
+  subsets: ["latin-ext"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-  preload: false,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -82,14 +139,20 @@ export default function RootLayout({
   const pwaEnabled = isPwaEnabledServer();
 
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-          <NuqsAdapter>
-            {pwaEnabled ? <SerwistRegister /> : null}
-            <AosProvider>{children}</AosProvider>
-          </NuqsAdapter>
+    <html
+      lang="en"
+      className={cn(
+        "font-geist",
+        "font-geist-mono",
+        geist.variable,
+        geistMono.variable,
+      )}
+    >
+      <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
+        <NuqsAdapter>
+          {pwaEnabled ? <SerwistRegister /> : null}
+          <AosProvider>{children}</AosProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

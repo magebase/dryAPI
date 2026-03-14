@@ -1,54 +1,59 @@
-import { recordStripeMeterUsage } from "@/lib/stripe-metering"
+import { recordStripeMeterUsage } from "@/lib/stripe-metering";
 
 export type CalcomInternalRequestInit = {
-  method?: string
-  path: string
-  headers?: HeadersInit
-  body?: BodyInit | null
-  searchParams?: Record<string, string | number | boolean | undefined>
-  signal?: AbortSignal
-  cache?: RequestCache
-}
+  method?: string;
+  path: string;
+  headers?: HeadersInit;
+  body?: BodyInit | null;
+  searchParams?: Record<string, string | number | boolean | undefined>;
+  signal?: AbortSignal;
+  cache?: RequestCache;
+};
 
 function requiredEnv(name: string): string {
-  const value = process.env[name]?.trim()
+  const value = process.env[name]?.trim();
   if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`)
+    throw new Error(`Missing required environment variable: ${name}`);
   }
-  return value
+  return value;
 }
 
-function buildUrl(path: string, searchParams?: Record<string, string | number | boolean | undefined>): URL {
-  const baseUrl = requiredEnv("CALCOM_INTERNAL_BASE_URL")
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`
-  const url = new URL(normalizedPath, baseUrl)
+function buildUrl(
+  path: string,
+  searchParams?: Record<string, string | number | boolean | undefined>,
+): URL {
+  const baseUrl = requiredEnv("CALCOM_INTERNAL_BASE_URL");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const url = new URL(normalizedPath, baseUrl);
 
   if (searchParams) {
     for (const [key, value] of Object.entries(searchParams)) {
       if (value === undefined) {
-        continue
+        continue;
       }
-      url.searchParams.set(key, String(value))
+      url.searchParams.set(key, String(value));
     }
   }
 
-  return url
+  return url;
 }
 
 function withInternalAuth(headers?: HeadersInit): Headers {
-  const token = requiredEnv("CALCOM_INTERNAL_API_TOKEN")
-  const merged = new Headers(headers)
+  const token = requiredEnv("CALCOM_INTERNAL_API_TOKEN");
+  const merged = new Headers(headers);
 
   if (!merged.has("authorization")) {
-    merged.set("authorization", `Bearer ${token}`)
+    merged.set("authorization", `Bearer ${token}`);
   }
 
-  return merged
+  return merged;
 }
 
-export async function fetchCalcomInternal(init: CalcomInternalRequestInit): Promise<Response> {
-  const url = buildUrl(init.path, init.searchParams)
-  const headers = withInternalAuth(init.headers)
+export async function fetchCalcomInternal(
+  init: CalcomInternalRequestInit,
+): Promise<Response> {
+  const url = buildUrl(init.path, init.searchParams);
+  const headers = withInternalAuth(init.headers);
 
   const response = await fetch(url, {
     method: init.method ?? "GET",
@@ -56,7 +61,7 @@ export async function fetchCalcomInternal(init: CalcomInternalRequestInit): Prom
     body: init.body,
     signal: init.signal,
     cache: init.cache,
-  })
+  });
 
   await recordStripeMeterUsage({
     eventType: "cal_request",
@@ -66,24 +71,28 @@ export async function fetchCalcomInternal(init: CalcomInternalRequestInit): Prom
       path: url.pathname,
       status: response.status,
     },
-  })
+  });
 
-  return response
+  return response;
 }
 
-export async function fetchCalcomInternalJson<T>(init: CalcomInternalRequestInit): Promise<T> {
+export async function fetchCalcomInternalJson<T>(
+  init: CalcomInternalRequestInit,
+): Promise<T> {
   const response = await fetchCalcomInternal({
     ...init,
     headers: {
       accept: "application/json",
       ...init.headers,
     },
-  })
+  });
 
   if (!response.ok) {
-    const details = await response.text().catch(() => "")
-    throw new Error(`Cal.com internal request failed (${response.status}): ${details}`)
+    const details = await response.text().catch(() => "");
+    throw new Error(
+      `Cal.com internal request failed (${response.status}): ${details}`,
+    );
   }
 
-  return (await response.json()) as T
+  return (await response.json()) as T;
 }

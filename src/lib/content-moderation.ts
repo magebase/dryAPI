@@ -1,6 +1,6 @@
-import "server-only"
+import "server-only";
 
-import { getCloudflareContext } from "@opennextjs/cloudflare"
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 import {
   extractFileSnippet,
@@ -8,37 +8,39 @@ import {
   isBlockedFileExtension,
   MAX_FORM_FILE_BYTES,
   validateFiles,
-} from "@/lib/form-file-utils"
-import { recordStripeMeterUsage } from "@/lib/stripe-metering"
+} from "@/lib/form-file-utils";
+import { recordStripeMeterUsage } from "@/lib/stripe-metering";
 
-type ModerationChannel = "contact" | "quote" | "chat"
+type ModerationChannel = "contact" | "quote" | "chat";
 
 type ModerationInput = {
-  channel: ModerationChannel
-  textParts: string[]
-  files?: File[]
-}
+  channel: ModerationChannel;
+  textParts: string[];
+  files?: File[];
+};
 
 export type ModerationDecision = {
-  allowed: boolean
-  reason: string
-  model: string
-  categories: string[]
-}
+  allowed: boolean;
+  reason: string;
+  model: string;
+  categories: string[];
+};
 
 type CloudflareAiBinding = {
-  run: (model: string, payload: Record<string, unknown>) => Promise<unknown>
-}
+  run: (model: string, payload: Record<string, unknown>) => Promise<unknown>;
+};
 
-const CLOUDFLARE_MODERATION_MODEL = process.env.CLOUDFLARE_MODERATION_MODEL?.trim() || "@cf/meta/llama-guard-3-8b"
-const MAX_TEXT_INPUT_CHARS = 12_000
-const MAX_TEXT_PART_LENGTH = 2_500
+const CLOUDFLARE_MODERATION_MODEL =
+  process.env.CLOUDFLARE_MODERATION_MODEL?.trim() ||
+  "@cf/meta/llama-guard-3-8b";
+const MAX_TEXT_INPUT_CHARS = 12_000;
+const MAX_TEXT_PART_LENGTH = 2_500;
 
 type HeuristicRule = {
-  pattern: RegExp
-  reason: string
-  category: string
-}
+  pattern: RegExp;
+  reason: string;
+  category: string;
+};
 
 const HEURISTIC_RULES: HeuristicRule[] = [
   {
@@ -52,99 +54,100 @@ const HEURISTIC_RULES: HeuristicRule[] = [
     category: "sexual_exploitation",
   },
   {
-    pattern: /\b(credit\s*card\s*dump|stolen\s*cards|cvv\s*list|wire\s*fraud)\b/i,
+    pattern:
+      /\b(credit\s*card\s*dump|stolen\s*cards|cvv\s*list|wire\s*fraud)\b/i,
     reason: "Detected financial fraud language.",
     category: "fraud",
   },
-]
+];
 
 function clampText(value: string, maxLength = MAX_TEXT_PART_LENGTH): string {
-  return value.trim().slice(0, maxLength)
+  return value.trim().slice(0, maxLength);
 }
 
 function collectCategories(raw: string): string[] {
-  const normalized = raw.toUpperCase()
-  const idMatches = normalized.match(/\bS\d+\b/g) || []
-  const uniqueIds = [...new Set(idMatches)]
+  const normalized = raw.toUpperCase();
+  const idMatches = normalized.match(/\bS\d+\b/g) || [];
+  const uniqueIds = [...new Set(idMatches)];
 
   if (uniqueIds.length > 0) {
-    return uniqueIds
+    return uniqueIds;
   }
 
-  const namedCategories: string[] = []
+  const namedCategories: string[] = [];
 
   if (/VIOLEN|WEAPON|TERROR/.test(normalized)) {
-    namedCategories.push("violence")
+    namedCategories.push("violence");
   }
 
   if (/SEXUAL|PORN|NUDE/.test(normalized)) {
-    namedCategories.push("sexual")
+    namedCategories.push("sexual");
   }
 
   if (/HATE|RACIS|SLUR/.test(normalized)) {
-    namedCategories.push("hate")
+    namedCategories.push("hate");
   }
 
   if (/SELF[-\s]?HARM|SUICID/.test(normalized)) {
-    namedCategories.push("self_harm")
+    namedCategories.push("self_harm");
   }
 
   if (/FRAUD|SCAM|ILLEGAL/.test(normalized)) {
-    namedCategories.push("fraud_or_illicit")
+    namedCategories.push("fraud_or_illicit");
   }
 
-  return [...new Set(namedCategories)]
+  return [...new Set(namedCategories)];
 }
 
 function extractModelResponseText(payload: unknown): string {
   if (typeof payload === "string") {
-    return payload
+    return payload;
   }
 
   if (!payload || typeof payload !== "object") {
-    return ""
+    return "";
   }
 
-  const record = payload as Record<string, unknown>
-  const direct = record.response
+  const record = payload as Record<string, unknown>;
+  const direct = record.response;
 
   if (typeof direct === "string") {
-    return direct
+    return direct;
   }
 
-  const nestedResult = record.result
+  const nestedResult = record.result;
   if (nestedResult && typeof nestedResult === "object") {
-    const nestedRecord = nestedResult as Record<string, unknown>
+    const nestedRecord = nestedResult as Record<string, unknown>;
     if (typeof nestedRecord.response === "string") {
-      return nestedRecord.response
+      return nestedRecord.response;
     }
 
     if (typeof nestedRecord.output_text === "string") {
-      return nestedRecord.output_text
+      return nestedRecord.output_text;
     }
 
     if (typeof nestedRecord.text === "string") {
-      return nestedRecord.text
+      return nestedRecord.text;
     }
   }
 
   if (typeof record.output_text === "string") {
-    return record.output_text
+    return record.output_text;
   }
 
   if (typeof record.text === "string") {
-    return record.text
+    return record.text;
   }
 
-  return JSON.stringify(payload)
+  return JSON.stringify(payload);
 }
 
 function parseModerationResult(rawResponse: string): ModerationDecision | null {
   if (!rawResponse.trim()) {
-    return null
+    return null;
   }
 
-  const normalized = rawResponse.trim().toLowerCase()
+  const normalized = rawResponse.trim().toLowerCase();
 
   if (normalized.startsWith("safe") || normalized.includes("\nsafe")) {
     return {
@@ -152,11 +155,11 @@ function parseModerationResult(rawResponse: string): ModerationDecision | null {
       reason: "Cloudflare AI marked content safe.",
       model: CLOUDFLARE_MODERATION_MODEL,
       categories: [],
-    }
+    };
   }
 
   if (normalized.startsWith("unsafe") || normalized.includes("unsafe")) {
-    const categories = collectCategories(rawResponse)
+    const categories = collectCategories(rawResponse);
     return {
       allowed: false,
       reason:
@@ -165,46 +168,50 @@ function parseModerationResult(rawResponse: string): ModerationDecision | null {
           : "Cloudflare AI marked content unsafe.",
       model: CLOUDFLARE_MODERATION_MODEL,
       categories,
-    }
+    };
   }
 
-  return null
+  return null;
 }
 
 async function resolveAiBinding(): Promise<CloudflareAiBinding | null> {
   try {
-    const { env } = await getCloudflareContext({ async: true })
-    const typedEnv = env as Record<string, unknown>
-    const binding = typedEnv.AI as CloudflareAiBinding | undefined
-    return binding || null
+    const { env } = await getCloudflareContext({ async: true });
+    const typedEnv = env as Record<string, unknown>;
+    const binding = typedEnv.AI as CloudflareAiBinding | undefined;
+    return binding || null;
   } catch {
-    return null
+    return null;
   }
 }
 
-async function callCloudflareAiBinding(prompt: string): Promise<ModerationDecision | null> {
-  const binding = await resolveAiBinding()
+async function callCloudflareAiBinding(
+  prompt: string,
+): Promise<ModerationDecision | null> {
+  const binding = await resolveAiBinding();
   if (!binding) {
-    return null
+    return null;
   }
 
-  const raw = await binding.run(CLOUDFLARE_MODERATION_MODEL, { prompt })
+  const raw = await binding.run(CLOUDFLARE_MODERATION_MODEL, { prompt });
   await recordStripeMeterUsage({
     eventType: "moderation_model_call",
     metadata: {
       provider: "cloudflare-ai-binding",
       model: CLOUDFLARE_MODERATION_MODEL,
     },
-  })
-  return parseModerationResult(extractModelResponseText(raw))
+  });
+  return parseModerationResult(extractModelResponseText(raw));
 }
 
-async function callCloudflareAiRest(prompt: string): Promise<ModerationDecision | null> {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || ""
-  const token = process.env.CLOUDFLARE_AI_API_TOKEN?.trim() || ""
+async function callCloudflareAiRest(
+  prompt: string,
+): Promise<ModerationDecision | null> {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || "";
+  const token = process.env.CLOUDFLARE_AI_API_TOKEN?.trim() || "";
 
   if (!accountId || !token) {
-    return null
+    return null;
   }
 
   const response = await fetch(
@@ -216,8 +223,8 @@ async function callCloudflareAiRest(prompt: string): Promise<ModerationDecision 
         "content-type": "application/json",
       },
       body: JSON.stringify({ prompt }),
-    }
-  )
+    },
+  );
 
   await recordStripeMeterUsage({
     eventType: "moderation_model_call",
@@ -226,20 +233,20 @@ async function callCloudflareAiRest(prompt: string): Promise<ModerationDecision 
       model: CLOUDFLARE_MODERATION_MODEL,
       status: response.status,
     },
-  })
+  });
 
   if (!response.ok) {
-    return null
+    return null;
   }
 
-  const payload = (await response.json()) as unknown
-  return parseModerationResult(extractModelResponseText(payload))
+  const payload = (await response.json()) as unknown;
+  return parseModerationResult(extractModelResponseText(payload));
 }
 
 function runHeuristicModeration(input: string): ModerationDecision | null {
   for (const rule of HEURISTIC_RULES) {
     if (!rule.pattern.test(input)) {
-      continue
+      continue;
     }
 
     return {
@@ -247,10 +254,10 @@ function runHeuristicModeration(input: string): ModerationDecision | null {
       reason: rule.reason,
       model: "heuristic-fallback",
       categories: [rule.category],
-    }
+    };
   }
 
-  return null
+  return null;
 }
 
 async function summarizeFile(file: File): Promise<string> {
@@ -258,24 +265,26 @@ async function summarizeFile(file: File): Promise<string> {
     `name=${file.name}`,
     `type=${file.type || "application/octet-stream"}`,
     `size=${formatFileSize(file.size)}`,
-  ]
+  ];
 
-  const snippet = await extractFileSnippet(file)
+  const snippet = await extractFileSnippet(file);
   if (!snippet) {
-    return fileParts.join(" | ")
+    return fileParts.join(" | ");
   }
 
-  const normalizedSnippet = snippet.replace(/\s+/g, " ").slice(0, 1_000)
-  return `${fileParts.join(" | ")} | snippet=${normalizedSnippet}`
+  const normalizedSnippet = snippet.replace(/\s+/g, " ").slice(0, 1_000);
+  return `${fileParts.join(" | ")} | snippet=${normalizedSnippet}`;
 }
 
 async function buildModerationPrompt(input: ModerationInput): Promise<string> {
   const sanitizedText = input.textParts
     .map((part) => clampText(part))
     .filter(Boolean)
-    .join("\n")
+    .join("\n");
 
-  const fileSummaries = await Promise.all((input.files || []).map((file) => summarizeFile(file)))
+  const fileSummaries = await Promise.all(
+    (input.files || []).map((file) => summarizeFile(file)),
+  );
 
   const textBlock = [
     `Channel: ${input.channel}`,
@@ -283,15 +292,19 @@ async function buildModerationPrompt(input: ModerationInput): Promise<string> {
     "Return exactly one line with 'safe' or 'unsafe'. If unsafe, add categories on a new line.",
     "Submission:",
     sanitizedText || "(empty text)",
-    fileSummaries.length > 0 ? `Attachments:\n${fileSummaries.join("\n")}` : "Attachments: (none)",
-  ].join("\n\n")
+    fileSummaries.length > 0
+      ? `Attachments:\n${fileSummaries.join("\n")}`
+      : "Attachments: (none)",
+  ].join("\n\n");
 
-  return textBlock.slice(0, MAX_TEXT_INPUT_CHARS)
+  return textBlock.slice(0, MAX_TEXT_INPUT_CHARS);
 }
 
-export async function moderateInput(input: ModerationInput): Promise<ModerationDecision> {
-  const files = input.files || []
-  const basicFileValidation = validateFiles(files)
+export async function moderateInput(
+  input: ModerationInput,
+): Promise<ModerationDecision> {
+  const files = input.files || [];
+  const basicFileValidation = validateFiles(files);
 
   if (basicFileValidation) {
     return {
@@ -299,43 +312,45 @@ export async function moderateInput(input: ModerationInput): Promise<ModerationD
       reason: basicFileValidation,
       model: "file-validation",
       categories: ["file_validation"],
-    }
+    };
   }
 
-  const blockedExtension = files.find((file) => isBlockedFileExtension(file.name))
+  const blockedExtension = files.find((file) =>
+    isBlockedFileExtension(file.name),
+  );
   if (blockedExtension) {
     return {
       allowed: false,
       reason: `${blockedExtension.name} is blocked because executable attachments are not accepted.`,
       model: "file-validation",
       categories: ["blocked_extension"],
-    }
+    };
   }
 
-  const oversized = files.find((file) => file.size > MAX_FORM_FILE_BYTES)
+  const oversized = files.find((file) => file.size > MAX_FORM_FILE_BYTES);
   if (oversized) {
     return {
       allowed: false,
       reason: `${oversized.name} is over the ${formatFileSize(MAX_FORM_FILE_BYTES)} limit.`,
       model: "file-validation",
       categories: ["file_too_large"],
-    }
+    };
   }
 
-  const moderationPrompt = await buildModerationPrompt(input)
+  const moderationPrompt = await buildModerationPrompt(input);
 
   const aiDecision = await callCloudflareAiBinding(moderationPrompt)
     .catch(() => null)
     .then((result) => result || callCloudflareAiRest(moderationPrompt))
-    .catch(() => null)
+    .catch(() => null);
 
   if (aiDecision) {
-    return aiDecision
+    return aiDecision;
   }
 
-  const heuristicDecision = runHeuristicModeration(moderationPrompt)
+  const heuristicDecision = runHeuristicModeration(moderationPrompt);
   if (heuristicDecision) {
-    return heuristicDecision
+    return heuristicDecision;
   }
 
   return {
@@ -343,5 +358,5 @@ export async function moderateInput(input: ModerationInput): Promise<ModerationD
     reason: "Moderation passed.",
     model: "heuristic-fallback",
     categories: [],
-  }
+  };
 }

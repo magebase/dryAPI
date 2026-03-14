@@ -1,0 +1,37 @@
+name = "dryapi-api"
+main = "src/worker.ts"
+compatibility_date = "2026-03-14"
+workers_dev = true
+
+[vars]
+# Public API key required by clients (set in your deploy secrets)
+# Example: API_KEY = "sk-prod-..."
+API_KEY = ""
+# The origin URL where the Next.js internal API is reachable (OpenNext worker hostname)
+ORIGIN_URL = ""
+# A service/internal API key used when proxying to the origin Next API (optional)
+INTERNAL_API_KEY = ""
+
+# RunPod direct dispatch settings (optional)
+# If these are unset, the gateway falls back to proxying requests to ORIGIN_URL.
+RUNPOD_API_KEY = ""
+RUNPOD_API_BASE_URL = "https://api.runpod.ai/v2"
+
+# Optional global or per-surface job mode override: run | runsync
+# RUNPOD_DEFAULT_MODE = "runsync"
+# RUNPOD_CHAT_MODE = "runsync"
+# RUNPOD_IMAGES_MODE = "runsync"
+# RUNPOD_EMBEDDINGS_MODE = "runsync"
+# RUNPOD_TRANSCRIBE_MODE = "runsync"
+
+# Route-specific endpoint IDs.
+RUNPOD_ENDPOINT_ID_CHAT = ""
+RUNPOD_ENDPOINT_ID_IMAGES = ""
+RUNPOD_ENDPOINT_ID_EMBEDDINGS = ""
+RUNPOD_ENDPOINT_ID_TRANSCRIBE = ""
+
+# Optional model/surface map for dynamic endpoint resolution.
+# Examples:
+# RUNPOD_ENDPOINT_MAP_JSON = '{"surfaces":{"images":"abc123"},"models":{"Flux1schnell":"def456"}}'
+# RUNPOD_ENDPOINT_MAP_JSON = '{"images":"abc123","Flux1schnell":"def456"}'
+RUNPOD_ENDPOINT_MAP_JSON = ""

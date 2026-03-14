@@ -70,12 +70,12 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
   const readTimeSuffix = resolveSiteUiText(site, "blogList.readTimeSuffix", "min read")
   const featuredCtaLabel = resolveSiteUiText(site, "blogList.featuredCtaLabel", "Read Featured Article")
   const cardCtaLabel = resolveSiteUiText(site, "blogList.cardCtaLabel", "Read Article >")
-  const ctaKicker = resolveSiteUiText(site, "blogList.ctaKicker", "Need Project Guidance?")
-  const ctaHeading = resolveSiteUiText(site, "blogList.ctaHeading", "Talk To A Power Specialist")
+  const ctaKicker = resolveSiteUiText(site, "blogList.ctaKicker", "Need Cost And Scale Guidance?")
+  const ctaHeading = resolveSiteUiText(site, "blogList.ctaHeading", "Talk To An AI API Architect")
   const ctaBody = resolveSiteUiText(
     site,
     "blogList.ctaBody",
-    "Get practical recommendations for equipment, timing, and site rollout."
+    "Get practical recommendations for routing, caching, pricing, and production rollout."
   )
   const explorePrefix = resolveSiteUiText(site, "blogList.explorePrefix", "Explore")
 

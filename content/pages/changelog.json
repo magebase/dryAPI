@@ -1,0 +1,107 @@
+{
+  "slug": "/changelog",
+  "navLabel": "Changelog",
+  "seoTitle": "Changelog | deAPI",
+  "seoDescription": "Track platform updates, model catalog changes, and reliability improvements.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "What We Publish"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "The changelog documents product-facing improvements so teams can plan upgrades, update integrations, and communicate impact internally."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Check API Reference",
+        "href": "/docs/openapi"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Release Notes",
+    "heading": "Platform Changelog",
+    "body": "Stay current on API updates, model availability, infrastructure improvements, and product roadmap milestones.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "View Docs",
+        "href": "/docs",
+        "style": "solid"
+      },
+      {
+        "label": "Create Account",
+        "href": "/register",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "categories",
+      "title": "Release Categories",
+      "body": "Updates are grouped by integration impact so teams can assess urgency quickly.",
+      "cards": [
+        {
+          "id": "categories-card-1",
+          "title": "API Changes",
+          "description": "Endpoint, payload, and compatibility updates for integrators.",
+          "href": "/docs/openapi",
+          "ctaLabel": "Review Endpoints"
+        },
+        {
+          "id": "categories-card-2",
+          "title": "Model Catalog",
+          "description": "New models, deprecations, and performance profile updates.",
+          "href": "/models",
+          "ctaLabel": "Browse Models"
+        },
+        {
+          "id": "categories-card-3",
+          "title": "Platform Reliability",
+          "description": "Operational improvements for uptime, latency, and scaling.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Read Reliability Notes"
+        }
+      ]
+    },
+    {
+      "id": "adoption",
+      "title": "Adopting Updates Safely",
+      "body": "Use staging, monitoring, and rollout guardrails to absorb changes with minimal production risk.",
+      "cards": [
+        {
+          "id": "adoption-card-1",
+          "title": "Staging Validation",
+          "description": "Verify payload and output expectations in non-production environments.",
+          "href": "/playground",
+          "ctaLabel": "Test In Playground"
+        },
+        {
+          "id": "adoption-card-2",
+          "title": "Version Awareness",
+          "description": "Track evolving behavior and keep integration assumptions documented.",
+          "href": "/docs",
+          "ctaLabel": "View Docs"
+        },
+        {
+          "id": "adoption-card-3",
+          "title": "Support Escalation",
+          "description": "Get help quickly when release impact needs deeper investigation.",
+          "href": "/contact-sales",
+          "ctaLabel": "Contact Team"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need help evaluating a release?",
+    "body": "Our team can help you assess impact and sequence rollout for minimal operational risk.",
+    "responseTime": "Release support responses within one business day"
+  }
+}

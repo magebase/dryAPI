@@ -1,0 +1,107 @@
+{
+  "slug": "/pricing",
+  "navLabel": "Pricing",
+  "seoTitle": "Pricing | deAPI",
+  "seoDescription": "Transparent, usage-aware pricing for multimodal inference with predictable billing controls.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Simple Packaging, Predictable Costs"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "deAPI combines prepaid credits, plan-based guardrails, and usage telemetry so teams can scale AI features without billing surprises."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Read Pricing Guide",
+        "href": "/docs/pricing"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Commercials",
+    "heading": "Pricing That Scales With Usage",
+    "body": "Choose plan tiers that map to your throughput, latency, and support requirements while preserving clear margin visibility.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Start Building",
+        "href": "/register",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "plans",
+      "title": "Choose The Right Plan",
+      "body": "Start with a lightweight developer plan and move to business tiers with higher throughput, governance, and support.",
+      "cards": [
+        {
+          "id": "plans-card-1",
+          "title": "Developer Launch",
+          "description": "Ideal for prototypes, internal tools, and early feature validation.",
+          "href": "/register",
+          "ctaLabel": "Create Account"
+        },
+        {
+          "id": "plans-card-2",
+          "title": "Growth Workloads",
+          "description": "Scale concurrent requests with more predictable latency and budget controls.",
+          "href": "/contact-sales",
+          "ctaLabel": "Talk To Sales"
+        },
+        {
+          "id": "plans-card-3",
+          "title": "Enterprise Controls",
+          "description": "Get advanced SLAs, routing policy support, and procurement-ready billing.",
+          "href": "/contact-sales",
+          "ctaLabel": "Book Consultation"
+        }
+      ]
+    },
+    {
+      "id": "economics",
+      "title": "Margin-Aware Operations",
+      "body": "Align product pricing with provider costs using guardrails, caching opportunities, and traffic shaping.",
+      "cards": [
+        {
+          "id": "economics-card-1",
+          "title": "Usage Forecasting",
+          "description": "Estimate spend before launches using request and token projections.",
+          "href": "/docs",
+          "ctaLabel": "View Documentation"
+        },
+        {
+          "id": "economics-card-2",
+          "title": "Billing Integrity",
+          "description": "Track credits and balance changes with auditable event flows.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "See Security Model"
+        },
+        {
+          "id": "economics-card-3",
+          "title": "Optimization Loops",
+          "description": "Reduce cost per request with batching, routing, and response caching.",
+          "href": "/models",
+          "ctaLabel": "Inspect Model Catalog"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need custom pricing guidance?",
+    "body": "Share expected traffic and model mix, and we will recommend a plan and rollout strategy aligned to margin targets.",
+    "responseTime": "Pricing advisory response in under one business day"
+  }
+}

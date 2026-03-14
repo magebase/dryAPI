@@ -72,11 +72,11 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
 
   const backToBlog = resolveSiteUiText(site, "blogPost.backToBlog", blogLink?.label ?? "Back To Blog")
   const nextStepKicker = resolveSiteUiText(site, "blogPost.nextStepKicker", "Next Step")
-  const nextStepHeading = resolveSiteUiText(site, "blogPost.nextStepHeading", "Need Help On Your Site?")
+  const nextStepHeading = resolveSiteUiText(site, "blogPost.nextStepHeading", "Need A Cheaper, Scalable API Stack?")
   const nextStepBody = resolveSiteUiText(
     site,
     "blogPost.nextStepBody",
-    `Talk to the ${site.brand.mark} team for practical guidance on temporary power strategy, deployment, and support.`
+    `Talk to the ${site.brand.mark} team for practical guidance on model routing, cost control, and production rollout.`
   )
   const resourcesPrefix = resolveSiteUiText(site, "blogPost.resourcesPrefix", "View")
 

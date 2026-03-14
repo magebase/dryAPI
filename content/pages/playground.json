@@ -1,0 +1,107 @@
+{
+  "slug": "/playground",
+  "navLabel": "Playground",
+  "seoTitle": "Playground | deAPI",
+  "seoDescription": "Test multimodal requests, inspect outputs, and accelerate API integration from one interactive workspace.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Validate Before You Ship"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "The playground is designed for engineering and product teams that need faster iteration without sacrificing reliability or governance."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Quickstart Integration",
+        "href": "/docs/quickstart"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Interactive Sandbox",
+    "heading": "Playground For Real Workloads",
+    "body": "Experiment with prompts, model settings, and payloads before rollout, then carry proven requests directly into production integrations.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Try Text To Image",
+        "href": "/playground/text-to-image",
+        "style": "solid"
+      },
+      {
+        "label": "Explore All Models",
+        "href": "/models",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "capabilities",
+      "title": "What You Can Test",
+      "body": "Run practical multimodal scenarios and capture request templates ready for deployment.",
+      "cards": [
+        {
+          "id": "capabilities-card-1",
+          "title": "Image Generation",
+          "description": "Evaluate visual output quality, style consistency, and prompt reliability.",
+          "href": "/playground/text-to-image",
+          "ctaLabel": "Open Text To Image"
+        },
+        {
+          "id": "capabilities-card-2",
+          "title": "Speech And Audio",
+          "description": "Generate speech and music outputs with controllable parameters.",
+          "href": "/playground/text-to-speech",
+          "ctaLabel": "Open Speech Playground"
+        },
+        {
+          "id": "capabilities-card-3",
+          "title": "Transcription",
+          "description": "Benchmark transcription quality and timestamp fidelity on real media.",
+          "href": "/playground/video-to-text",
+          "ctaLabel": "Open Video To Text"
+        }
+      ]
+    },
+    {
+      "id": "handoff",
+      "title": "Production Handoff Path",
+      "body": "Every successful experiment can become a governed API workflow with monitoring and spend controls.",
+      "cards": [
+        {
+          "id": "handoff-card-1",
+          "title": "Reusable Requests",
+          "description": "Promote stable payloads from testing into client integrations.",
+          "href": "/docs/openapi",
+          "ctaLabel": "Open API Spec"
+        },
+        {
+          "id": "handoff-card-2",
+          "title": "Budget Guardrails",
+          "description": "Apply credit and rate controls before public release.",
+          "href": "/pricing",
+          "ctaLabel": "Review Pricing"
+        },
+        {
+          "id": "handoff-card-3",
+          "title": "Team Rollout",
+          "description": "Coordinate engineering and operations around shared evaluation baselines.",
+          "href": "/contact-sales",
+          "ctaLabel": "Get Launch Support"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need support moving from test to production?",
+    "body": "We help teams operationalize successful experiments with guardrails, observability, and launch planning.",
+    "responseTime": "Implementation support response within one business day"
+  }
+}

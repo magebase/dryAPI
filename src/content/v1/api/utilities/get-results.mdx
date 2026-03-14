@@ -1,0 +1,223 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Get Results
+
+> Check job status and retrieve results via polling
+
+> **INFO**
+>
+> **Consider using webhooks or WebSockets instead of polling.**
+> 
+> Polling requires repeated API calls and adds latency. For production applications, we recommend:
+> 
+> * **[Webhooks](/docs/v1/execution-modes-and-integrations/webhooks)** — Results pushed to your server automatically (best for backends)
+> * **[WebSockets](/docs/v1/execution-modes-and-integrations/websockets)** — Real-time updates with live previews (best for interactive UIs)
+> 
+> See [Execution Modes](/docs/v1/execution-modes-and-integrations/execution-modes-and-http-queue) for a full comparison.
+
+## OpenAPI
+
+````yaml openapi.json get /api/v1/client/request-status/{request_id}
+openapi: 3.0.0
+info:
+  title: deAPI REST API
+  description: >-
+    Decentralized AI inference API for image generation, video processing, audio
+    transcription, and more.
+  contact:
+    name: deAPI Support
+    url: https://deapi.ai
+    email: support@deapi.ai
+  version: 0.0.1
+servers:
+  - url: https://api.deapi.ai
+    description: Production API Server base URL
+security:
+  - bearerAuth: []
+tags:
+  - name: Client API
+    description: Endpoints for client operations
+paths:
+  /api/v1/client/request-status/{request_id}:
+    get:
+      tags:
+        - Client API
+      description: Endpoint for requesting requested inference status.
+      operationId: requestStatus
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: c08a339c-73e5-4d67-a4d5-231302fbff9a
+      responses:
+        '200':
+          description: Current status of requested inference.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRequestStatusResource'
+        '401':
+          description: Unauthorized user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_error_default'
+        '404':
+          description: Request not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_error_default'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+      security:
+        - bearerAuth: []
+components:
+  parameters:
+    AcceptHeader:
+      name: Accept
+      in: header
+      required: true
+      schema:
+        type: string
+        default: application/json
+        enum:
+          - application/json
+  schemas:
+    JobRequestStatusResource:
+      properties:
+        data:
+          description: Status response data
+          properties:
+            status:
+              description: Current status of the job request
+              type: string
+              enum:
+                - pending
+                - processing
+                - done
+                - error
+            preview:
+              description: Preview URL if available
+              type: string
+              example: https://example.com/preview.jpg
+              nullable: true
+            result_url:
+              description: >-
+                URL to the result file (e.g. generate image or audio). Only
+                available when status is done
+              type: string
+              example: https://example.com/results/image.jpg
+              nullable: true
+            results_alt_formats:
+              description: >-
+                Alternative format URLs for the result (jpg, webp). Only
+                available for image-producing job types when status is done
+              properties:
+                jpg:
+                  type: string
+                  example: https://example.com/results/image.jpg
+                  nullable: true
+                webp:
+                  type: string
+                  example: https://example.com/results/image.webp
+                  nullable: true
+              type: object
+              nullable: true
+            result:
+              description: >-
+                Generate text (e.g. transcription) Only available when status is
+                done
+              type: string
+              example: https://example.com/results/image.jpg
+              nullable: true
+            progress:
+              description: Current progress of the job (0.0 to 100.0)
+              type: number
+              format: float
+              maximum: 100
+              minimum: 0
+              example: 45.5
+          type: object
+      type: object
+    response_error_default:
+      properties:
+        data:
+          description: Information from success endpoint
+          type: object
+        message:
+          description: Error general message
+          type: string
+        errors:
+          description: Information about errors
+          type: array
+          items: {}
+        statusCode:
+          description: Status code
+          type: integer
+      type: object
+    response_error_rate_limit:
+      description: Rate limit exceeded response
+      properties:
+        message:
+          description: Error message
+          type: string
+          example: Too Many Attempts.
+      type: object
+  responses:
+    RateLimitExceeded:
+      description: >-
+        Rate limit exceeded. Check X-RateLimit-Type header to determine if
+        minute (RPM) or daily (RPD) limit was hit.
+      headers:
+        X-RateLimit-Limit:
+          description: Maximum requests allowed per minute (RPM)
+          schema:
+            type: integer
+            example: 3
+        X-RateLimit-Remaining:
+          description: Remaining requests in current minute window
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Daily-Limit:
+          description: Maximum requests allowed per day (RPD)
+          schema:
+            type: integer
+            example: 100
+        X-RateLimit-Daily-Remaining:
+          description: Remaining requests in current day window
+          schema:
+            type: integer
+            example: 95
+        X-RateLimit-Type:
+          description: 'Type of rate limit exceeded: "minute" for RPM, "daily" for RPD'
+          schema:
+            type: string
+            enum:
+              - minute
+              - daily
+            example: minute
+        Retry-After:
+          description: >-
+            Seconds until rate limit resets (60 for minute, up to 86400 for
+            daily)
+          schema:
+            type: integer
+            example: 60
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/response_error_rate_limit'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      bearerFormat: JWT
+      scheme: bearer
+
+````

@@ -1,47 +1,49 @@
-import { render } from "@react-email/render"
-import type { ReactElement } from "react"
+import { render } from "@react-email/render";
+import type { ReactElement } from "react";
 
-import { recordStripeMeterUsage } from "@/lib/stripe-metering"
+import { recordStripeMeterUsage } from "@/lib/stripe-metering";
 
 type BrevoRecipient = {
-  email: string
-  name?: string
-}
+  email: string;
+  name?: string;
+};
 
 type BrevoReplyTo = {
-  email: string
-  name?: string
-}
+  email: string;
+  name?: string;
+};
 
 type BrevoAttachment = {
-  name: string
-  content: string
-  contentType?: string
-}
+  name: string;
+  content: string;
+  contentType?: string;
+};
 
 type SendBrevoReactEmailOptions = {
-  apiKey: string
-  from: BrevoRecipient
-  to: BrevoRecipient[]
-  subject: string
-  react: ReactElement
-  replyTo?: BrevoReplyTo
-  tags?: string[]
-  attachments?: BrevoAttachment[]
-}
+  apiKey: string;
+  from: BrevoRecipient;
+  to: BrevoRecipient[];
+  subject: string;
+  react: ReactElement;
+  replyTo?: BrevoReplyTo;
+  tags?: string[];
+  attachments?: BrevoAttachment[];
+};
 
 type BrevoSendResult = {
-  messageId: string | null
-}
+  messageId: string | null;
+};
 
 type BrevoSendResponse = {
-  messageId?: string
-  code?: string
-  message?: string
-}
+  messageId?: string;
+  code?: string;
+  message?: string;
+};
 
-export async function sendBrevoReactEmail(options: SendBrevoReactEmailOptions): Promise<BrevoSendResult> {
-  const htmlContent = await render(options.react)
+export async function sendBrevoReactEmail(
+  options: SendBrevoReactEmailOptions,
+): Promise<BrevoSendResult> {
+  const htmlContent = await render(options.react);
 
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -59,20 +61,24 @@ export async function sendBrevoReactEmail(options: SendBrevoReactEmailOptions): 
       tags: options.tags,
       attachment: options.attachments,
     }),
-  })
+  });
 
-  let payload: BrevoSendResponse | null = null
+  let payload: BrevoSendResponse | null = null;
   try {
-    payload = (await response.json()) as BrevoSendResponse
+    payload = (await response.json()) as BrevoSendResponse;
   } catch {
-    payload = null
+    payload = null;
   }
 
   if (!response.ok) {
     const details = payload
-      ? [payload.code, payload.message, payload.messageId].filter(Boolean).join(" | ")
-      : "no response body"
-    throw new Error(`Brevo transactional email failed (${response.status}): ${details}`)
+      ? [payload.code, payload.message, payload.messageId]
+          .filter(Boolean)
+          .join(" | ")
+      : "no response body";
+    throw new Error(
+      `Brevo transactional email failed (${response.status}): ${details}`,
+    );
   }
 
   await recordStripeMeterUsage({
@@ -83,9 +89,10 @@ export async function sendBrevoReactEmail(options: SendBrevoReactEmailOptions): 
       tag: options.tags?.[1] || options.tags?.[0] || "unlabeled",
       attachments: options.attachments?.length || 0,
     },
-  })
+  });
 
   return {
-    messageId: typeof payload?.messageId === "string" ? payload.messageId : null,
-  }
+    messageId:
+      typeof payload?.messageId === "string" ? payload.messageId : null,
+  };
 }

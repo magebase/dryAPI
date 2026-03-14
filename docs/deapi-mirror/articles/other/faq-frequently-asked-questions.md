@@ -1,0 +1,125 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# FAQ — Frequently Asked Questions
+
+#### 1. **How do I get access to the deAPI panel?**
+
+Register or log in (also via Google OAuth) and after authentication you will automatically gain access to the Control Panel, where you can directly create an API key and get access the full capabilities of the platform.
+
+***
+
+#### 2. **How can I get my API key?**
+
+Simply sign up or log in, then navigate to your Dashboard → Settings → API Keys and click "Create new secret key" to instantly generate your API key.
+
+***
+
+#### 3. **Do I need to fund my account before using the API?**
+
+**No.** Upon registration, you receive a **\$5 bonus** to get started immediately with Basic rate limits. You do not need to make a payment to start testing. Once you make **any payment** (top-up), your account automatically upgrades to **Premium**, unlocking the 300 RPM limit and unlimited daily requests.
+
+***
+
+#### 4. **How is authentication handled?**
+
+Every API request requires an `Authorization` header with your personal token:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+***
+
+#### 5. **How do I retrieve the results of my tasks?**
+
+After submitting a task, you'll receive a `request_id`. Use this ID with the **Get Results** endpoint (`GET /api/v1/client/request-status/{request_id}`) to fetch your generated image, video, audio, or transcription.
+
+***
+
+#### 6. **Are there any rate limits?**
+
+**Yes.** The limits depend on your account type:
+
+* **Basic (Free):** Designed for testing. Limits are restrictive, ranging from **1 to 10 RPM** (Requests Per Minute) depending on the endpoint, with daily caps.
+* **Premium:** Activated by any available payment. Offers a unified high limit of **300 RPM** across all endpoints with **unlimited daily requests**.
+
+  If you exceed these limits, you'll receive a `429 Too Many Requests` response. For High Volume Production requirements beyond Premium limits, please contact support.
+
+***
+
+#### 7. **Can I choose between different AI models?**
+
+Yes. Visit the **Model Selection** endpoint to browse available models, or check the **Models** page for a complete list. You can specify the desired model using the `model` parameter when making API requests.
+
+***
+
+#### 8. **What file types are supported?**
+
+**Video** (Video-to-Text, Image-to-Video):
+
+* Max size: 100 MB
+* Supported formats: mp4, avi, mov, mkv, webm
+
+**Audio** (Audio-to-Text):
+
+* Max size: 50 MB (recommended), up to 100 MB
+* Supported formats: mp3, wav, m4a, flac, ogg
+
+**Images** (Image-to-Image, OCR, Background Removal):
+
+* Max size: 10 MB
+* Supported formats: jpg, png, webp
+
+***
+
+#### 9. **What services does deAPI offer?**
+
+deAPI provides the following AI-powered services:
+
+* **Text-to-Image** — Generate images from text prompts (Flux, Z-Image-Turbo)
+* **Image-to-Image** — Transform and edit existing images
+* **Image Background Removal** — Remove backgrounds for transparent PNGs
+* **Text-to-Video** — Generate videos from text descriptions
+* **Image-to-Video** — Animate static images into videos
+* **Text-to-Speech (TTS)** — Convert text to natural-sounding audio with preset voices, voice cloning, or voice design
+* **Text-to-Music** — Generate music tracks from text descriptions with lyrics, tempo, key, and style control
+* **Video-to-Text** — Transcribe videos from YouTube, Twitch, Kick, TikTok, X, and file uploads
+* **Audio-to-Text** — Transcribe audio files and X/Twitter Spaces
+* **Image-to-Text (OCR)** — Extract text from images
+* **Text-to-Embedding** — Generate vector embeddings for semantic search
+
+***
+
+#### 10. **Can I use deAPI with AI assistants like Claude or Cursor?**
+
+Yes! deAPI offers an **MCP (Model Context Protocol) server** that allows AI assistants and IDE extensions to call deAPI capabilities as structured tools. You can connect Claude, Cursor, and other MCP-compatible clients to generate images, transcribe videos, and more directly within conversations. See the **MCP Server** documentation for setup instructions.
+
+***
+
+#### 11. **Can I use deAPI with n8n or other automation tools?**
+
+Yes! deAPI works seamlessly with **n8n** and other workflow automation platforms. You can build automated workflows that generate images, transcribe videos, create speech, and more using deAPI's HTTP API. The integration uses standard HTTP Request nodes with Bearer token authentication. See the **n8n Integration** documentation for a complete step-by-step guide with example workflows.
+
+***
+
+#### 12. **Is deAPI ready for production use?**
+
+Yes. deAPI is built to support production-grade workloads. All models and services are optimized for speed, reliability, and scalability. The platform offers 300 RPM immediately after the first account top-up.
+
+***
+
+#### 13. **What should I do if I get an error?**
+
+Check the error code and make sure:
+
+* `401` — Your API key is valid
+* `403` — Your account has sufficient permissions
+* `429` — You haven't exceeded rate limits
+* `500` — Server error (check [status.deapi.ai](https://status.deapi.ai/))
+
+Also verify your request parameters are correct. If the issue persists, contact our support team at [**support@deapi.ai**](mailto:support@deapi.ai) or join our [Discord](https://discord.com/invite/UFfK5YRBsr) for help.
+
+
+Built with [Mintlify](https://mintlify.com).

@@ -1,0 +1,236 @@
+{
+  "generatedAt": "2026-03-14T00:00:00.000Z",
+  "subject": "deAPI image-capable models mapped to open-source sources",
+  "models": [
+    {
+      "slug": "Flux_2_Klein_4B_BF16",
+      "displayName": "FLUX.2 Klein 4B BF16",
+      "tasks": ["txt2img", "img2img"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "black-forest-labs/FLUX.2-klein-4B",
+        "revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+        "artifact": "flux-2-klein-4b.safetensors",
+        "imageTag": "hf://black-forest-labs/FLUX.2-klein-4B@e7b7dc27f91deacad38e78976d1f2b499d76a294#flux-2-klein-4b.safetensors",
+        "confidence": "high",
+        "sources": [
+          "https://huggingface.co/api/models/black-forest-labs/FLUX.2-klein-4B",
+          "https://huggingface.co/api/models/black-forest-labs/FLUX.2-klein-4B/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "diffusers-image",
+        "recommendedGpu": "NVIDIA RTX 4090",
+        "executionTimeoutMs": 120000
+      }
+    },
+    {
+      "slug": "ZImageTurbo_INT8",
+      "displayName": "Z-Image-Turbo INT8",
+      "tasks": ["txt2img"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "Tongyi-MAI/Z-Image-Turbo",
+        "revision": "f332072aa78be7aecdf3ee76d5c247082da564a6",
+        "artifact": "model_index.json",
+        "imageTag": "hf://Tongyi-MAI/Z-Image-Turbo@f332072aa78be7aecdf3ee76d5c247082da564a6#model_index.json",
+        "confidence": "medium",
+        "notes": [
+          "The deAPI slug includes INT8 but the upstream repository does not expose an INT8-specific artifact filename.",
+          "Treat INT8 as a runtime quantization mode in the worker/container, pinned to this repo revision."
+        ],
+        "sources": [
+          "https://huggingface.co/api/models/Tongyi-MAI/Z-Image-Turbo",
+          "https://huggingface.co/api/models/Tongyi-MAI/Z-Image-Turbo/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "diffusers-image",
+        "recommendedGpu": "NVIDIA RTX 4090",
+        "executionTimeoutMs": 120000
+      }
+    },
+    {
+      "slug": "Flux1schnell",
+      "displayName": "FLUX.1 schnell",
+      "tasks": ["txt2img"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "black-forest-labs/FLUX.1-schnell",
+        "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+        "artifact": "model_index.json",
+        "imageTag": "hf://black-forest-labs/FLUX.1-schnell@741f7c3ce8b383c54771c7003378a50191e9efe9#model_index.json",
+        "confidence": "high",
+        "sources": [
+          "https://huggingface.co/api/models/black-forest-labs/FLUX.1-schnell"
+        ]
+      },
+      "runpod": {
+        "workerClass": "diffusers-image",
+        "recommendedGpu": "NVIDIA RTX 4090",
+        "executionTimeoutMs": 120000
+      }
+    },
+    {
+      "slug": "QwenImageEdit_Plus_NF4",
+      "displayName": "Qwen Image Edit Plus",
+      "tasks": ["img2img"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "Qwen/Qwen-Image-Edit-2511",
+        "revision": "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9",
+        "artifact": "model_index.json",
+        "imageTag": "hf://Qwen/Qwen-Image-Edit-2511@6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9#model_index.json",
+        "confidence": "medium",
+        "notes": [
+          "The deAPI slug includes NF4 but the upstream official repository ships full-precision diffusers weights.",
+          "Treat NF4 as a runtime quantization mode in the worker/container, pinned to this repo revision."
+        ],
+        "sources": [
+          "https://huggingface.co/api/models/Qwen/Qwen-Image-Edit-2511",
+          "https://huggingface.co/api/models/Qwen/Qwen-Image-Edit-2511/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "diffusers-image",
+        "recommendedGpu": "NVIDIA RTX 4090",
+        "executionTimeoutMs": 180000
+      }
+    },
+    {
+      "slug": "Nanonets_Ocr_S_F16",
+      "displayName": "Nanonets OCR S",
+      "tasks": ["img2txt"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "nanonets/Nanonets-OCR-s",
+        "revision": "3baad182cc87c65a1861f0c30357d3467e978172",
+        "artifact": "model.safetensors.index.json",
+        "imageTag": "hf://nanonets/Nanonets-OCR-s@3baad182cc87c65a1861f0c30357d3467e978172#model.safetensors.index.json",
+        "confidence": "high",
+        "sources": [
+          "https://huggingface.co/api/models/nanonets/Nanonets-OCR-s",
+          "https://huggingface.co/api/models/nanonets/Nanonets-OCR-s/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "vlm-ocr",
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 180000
+      }
+    },
+    {
+      "slug": "Ltx2_3_22B_Dist_INT8",
+      "displayName": "LTX-2.3 22B Distilled INT8",
+      "tasks": ["txt2video", "img2video", "aud2video"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "Lightricks/LTX-2.3",
+        "revision": "5a9c1c680bc66c159f708143bf274739961ecd08",
+        "artifact": "ltx-2.3-22b-distilled.safetensors",
+        "imageTag": "hf://Lightricks/LTX-2.3@5a9c1c680bc66c159f708143bf274739961ecd08#ltx-2.3-22b-distilled.safetensors",
+        "confidence": "medium",
+        "notes": [
+          "The deAPI slug includes INT8 but the official repository currently exposes distilled 22B artifacts without an INT8 suffix.",
+          "Treat INT8 as a runtime quantization mode in the worker/container, pinned to this repo revision."
+        ],
+        "sources": [
+          "https://huggingface.co/api/models/Lightricks/LTX-2.3",
+          "https://huggingface.co/api/models/Lightricks/LTX-2.3/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "ltx-video",
+        "recommendedGpu": "NVIDIA H100",
+        "executionTimeoutMs": 600000
+      }
+    },
+    {
+      "slug": "Ltx2_19B_Dist_FP8",
+      "displayName": "LTX-2 19B Distilled FP8",
+      "tasks": ["txt2video", "img2video", "aud2video"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "Lightricks/LTX-2",
+        "revision": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a",
+        "artifact": "ltx-2-19b-distilled-fp8.safetensors",
+        "imageTag": "hf://Lightricks/LTX-2@47da56e2ad66ce4125a9922b4a8826bf407f9d0a#ltx-2-19b-distilled-fp8.safetensors",
+        "confidence": "high",
+        "sources": [
+          "https://huggingface.co/api/models/Lightricks/LTX-2",
+          "https://huggingface.co/api/models/Lightricks/LTX-2/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "ltx-video",
+        "recommendedGpu": "NVIDIA H100",
+        "executionTimeoutMs": 600000
+      }
+    },
+    {
+      "slug": "Ltxv_13B_0_9_8_Distilled_FP8",
+      "displayName": "LTX-Video 13B 0.9.8 Distilled FP8",
+      "tasks": ["txt2video", "img2video"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "Lightricks/LTX-Video",
+        "revision": "8984fa25007f376c1a299016d0957a37a2f797bb",
+        "artifact": "ltxv-13b-0.9.8-distilled-fp8.safetensors",
+        "imageTag": "hf://Lightricks/LTX-Video@8984fa25007f376c1a299016d0957a37a2f797bb#ltxv-13b-0.9.8-distilled-fp8.safetensors",
+        "confidence": "high",
+        "sources": [
+          "https://huggingface.co/api/models/Lightricks/LTX-Video",
+          "https://huggingface.co/api/models/Lightricks/LTX-Video/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "ltx-video",
+        "recommendedGpu": "NVIDIA A100",
+        "executionTimeoutMs": 480000
+      }
+    },
+    {
+      "slug": "RealESRGAN_x4",
+      "displayName": "RealESRGAN x4",
+      "tasks": ["img-upscale"],
+      "openSource": {
+        "kind": "github-release",
+        "repo": "xinntao/Real-ESRGAN",
+        "revision": "v0.1.0",
+        "artifact": "RealESRGAN_x4plus.pth",
+        "imageTag": "gh://xinntao/Real-ESRGAN@v0.1.0#RealESRGAN_x4plus.pth",
+        "confidence": "high",
+        "sources": [
+          "https://raw.githubusercontent.com/xinntao/Real-ESRGAN/master/README.md"
+        ]
+      },
+      "runpod": {
+        "workerClass": "image-upscale",
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 120000
+      }
+    },
+    {
+      "slug": "Ben2",
+      "displayName": "BEN2",
+      "tasks": ["img-rmbg"],
+      "openSource": {
+        "kind": "huggingface",
+        "repo": "PramaLLC/BEN2",
+        "revision": "e48a20765fb421d19dcdb0bf3cc61e802ca5ec8f",
+        "artifact": "model.safetensors",
+        "imageTag": "hf://PramaLLC/BEN2@e48a20765fb421d19dcdb0bf3cc61e802ca5ec8f#model.safetensors",
+        "confidence": "high",
+        "sources": [
+          "https://huggingface.co/api/models/PramaLLC/BEN2",
+          "https://huggingface.co/api/models/PramaLLC/BEN2/refs"
+        ]
+      },
+      "runpod": {
+        "workerClass": "background-removal",
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 120000
+      }
+    }
+  ]
+}

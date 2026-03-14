@@ -1,0 +1,107 @@
+{
+  "slug": "/login",
+  "navLabel": "Login",
+  "seoTitle": "Login | deAPI",
+  "seoDescription": "Access your deAPI dashboard to manage keys, usage, and billing.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Manage Production AI Operations"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "Use your workspace to monitor request activity, manage billing, and coordinate model usage across teams."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Explore Docs",
+        "href": "/docs"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Account Access",
+    "heading": "Sign In To Your Workspace",
+    "body": "Access dashboards, API key management, usage insights, and team-level controls from one secure account experience.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Sign In",
+        "href": "/login",
+        "style": "solid"
+      },
+      {
+        "label": "Create Account",
+        "href": "/register",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "access",
+      "title": "Why Sign In",
+      "body": "Account access enables full operational visibility and governance for AI workloads.",
+      "cards": [
+        {
+          "id": "access-card-1",
+          "title": "API Key Control",
+          "description": "Issue and rotate keys with ownership clarity and environment separation.",
+          "href": "/docs/quickstart",
+          "ctaLabel": "Set Up Keys"
+        },
+        {
+          "id": "access-card-2",
+          "title": "Usage Monitoring",
+          "description": "Track request activity and costs by product area or team.",
+          "href": "/pricing",
+          "ctaLabel": "View Pricing"
+        },
+        {
+          "id": "access-card-3",
+          "title": "Team Coordination",
+          "description": "Align engineering and operations on one shared control plane.",
+          "href": "/contact-sales",
+          "ctaLabel": "Talk To Sales"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security Best Practices",
+      "body": "Treat account and key operations as production-critical workflows.",
+      "cards": [
+        {
+          "id": "security-card-1",
+          "title": "Credential Hygiene",
+          "description": "Rotate credentials and isolate environments to reduce blast radius.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Read Security Guide"
+        },
+        {
+          "id": "security-card-2",
+          "title": "Auditability",
+          "description": "Maintain an auditable change trail for billing and access operations.",
+          "href": "/docs",
+          "ctaLabel": "Review Documentation"
+        },
+        {
+          "id": "security-card-3",
+          "title": "Incident Readiness",
+          "description": "Prepare response paths for access anomalies and key leakage events.",
+          "href": "/contact-sales",
+          "ctaLabel": "Get Operational Support"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need account onboarding support?",
+    "body": "We can help your team configure secure account and key workflows for production usage.",
+    "responseTime": "Onboarding support in under one business day"
+  }
+}

@@ -7,7 +7,7 @@ type KeywordGradientTextProps = {
 }
 export function KeywordGradientText({ text, dataTinaField, forceFullGradient = false }: KeywordGradientTextProps) {
   return (
-    <span className={forceFullGradient ? "text-[#ffbf8a]" : undefined} data-tina-field={dataTinaField}>
+    <span className={forceFullGradient ? "text-[#7ae8d9]" : undefined} data-tina-field={dataTinaField}>
       {text}
     </span>
   )

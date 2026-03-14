@@ -1,12 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { Menu, Phone, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { tinaField } from "tinacms/dist/react"
 
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
-import { QuoteDialog } from "@/components/site/quote-dialog"
 import type { SiteConfig } from "@/lib/site-content-schema"
 
 function isCurrentPath(target: string, currentPath: string) {
@@ -20,13 +19,19 @@ function isCurrentPath(target: string, currentPath: string) {
 export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: string }) {
   const headerRef = useRef<HTMLElement | null>(null)
   const [hasScrolled, setHasScrolled] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
   const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null)
   const isMobileMenuOpen = mobileMenuPath === pathname
-  const phoneLabel = site.header.phone.label.replace(/\s+/g, " ").trim()
+  const utilityCtaLabel = site.header.phone.label.replace(/\s+/g, " ").trim()
 
   useEffect(() => {
     const handleScroll = () => {
-      setHasScrolled(window.scrollY > 18)
+      const y = window.scrollY
+      setHasScrolled(y > 18)
+      setScrollProgress((current) => {
+        const next = Math.min(1, Math.max(0, y / 260))
+        return Math.abs(next - current) > 0.01 ? next : current
+      })
     }
 
     const syncHeaderHeight = () => {
@@ -76,33 +81,51 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
     }
   }, [isMobileMenuOpen])
 
+  const headerMotionStyle = {
+    transform: `translateY(${(-8 * scrollProgress).toFixed(2)}px)`,
+  }
+  const announcementStyle = {
+    opacity: 1 - scrollProgress * 0.3,
+    transform: `translateY(${(-4 * scrollProgress).toFixed(2)}px)`,
+  }
+  const navMotionStyle = {
+    transform: `scale(${(1 - scrollProgress * 0.025).toFixed(3)})`,
+  }
+
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow] duration-500 ease-out ${
+      className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow,transform] duration-500 ease-out ${
         hasScrolled
           ? "border-b border-white/10 bg-[#09111b]/94 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
           : "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
       }`}
+      style={headerMotionStyle}
     >
       <div
-        className={`hidden md:block text-center text-[12px] text-slate-200 transition-[background-color,border-color] duration-500 ease-out ${
+        className={`hidden md:block text-center text-[12px] text-slate-200 transition-[background-color,border-color,opacity,transform] duration-500 ease-out ${
           hasScrolled ? "border-b border-white/10 bg-[#0d1929]" : "border-b border-transparent bg-transparent"
         }`}
+        style={announcementStyle}
       >
         <p
-            className="mx-auto max-w-7xl px-4 py-2 font-medium uppercase tracking-[0.1em]"
+          className="mx-auto max-w-7xl px-4 py-2 font-medium uppercase tracking-[0.1em]"
           data-tina-field={tinaField(site, "announcement")}
         >
           {site.announcement}
         </p>
       </div>
 
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:py-4">
+      <div
+        className={`mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-[padding] duration-300 ease-out ${
+          hasScrolled ? "py-2.5 md:py-3" : "py-3 md:py-4"
+        }`}
+      >
         <Link className="flex items-center gap-2 text-white" href="/">
           <span
             className="font-display text-2xl font-semibold tracking-[0.24em] md:text-3xl"
             data-tina-field={tinaField(site.brand, "mark")}
+            style={navMotionStyle}
           >
             {site.brand.mark}
           </span>
@@ -114,7 +137,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-4 xl:flex">
+        <nav className="hidden items-center gap-4 xl:flex" style={navMotionStyle}>
           {site.header.primaryLinks.map((link) => (
             <Link
               key={`${link.href}-${link.label}`}
@@ -137,25 +160,26 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             data-tina-field={tinaField(site.header, "phone")}
             href={site.header.phone.href}
           >
-            <Phone className="size-3.5" />
-            {phoneLabel}
+            {utilityCtaLabel}
           </Link>
-          <QuoteDialog
-            site={site}
-            triggerClassName="rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
-            triggerLabel={site.header.quoteCta.label}
-            triggerTinaField={tinaField(site.header, "quoteCta")}
-          />
+          <QuoteAwareLink
+            className="rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
+            data-tina-field={tinaField(site.header, "quoteCta")}
+            href={site.header.quoteCta.href}
+            quoteLabel={site.header.quoteCta.label}
+          >
+            {site.header.quoteCta.label}
+          </QuoteAwareLink>
         </div>
 
         <div className="flex items-center gap-2 xl:hidden">
           <Link
-            aria-label={phoneLabel}
-            className="inline-flex items-center justify-center rounded-sm border border-white/15 p-2 text-slate-200 transition hover:border-white hover:text-white"
+            aria-label={utilityCtaLabel}
+            className="inline-flex items-center justify-center rounded-sm border border-white/15 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-200 transition hover:border-white hover:text-white"
             data-tina-field={tinaField(site.header, "phone")}
             href={site.header.phone.href}
           >
-            <Phone className="size-4" />
+            {utilityCtaLabel}
           </Link>
           <button
             type="button"
@@ -204,14 +228,12 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
               href={site.header.phone.href}
               onClick={() => setMobileMenuPath(null)}
             >
-              <Phone className="size-3.5" />
-              {phoneLabel}
+              {utilityCtaLabel}
             </Link>
 
             <QuoteAwareLink
               className="inline-flex items-center justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
               data-tina-field={tinaField(site.header, "quoteCta")}
-              forceQuoteModal
               href={site.header.quoteCta.href}
               onClick={() => setMobileMenuPath(null)}
               quoteLabel={site.header.quoteCta.label}

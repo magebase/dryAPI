@@ -1,0 +1,107 @@
+{
+  "slug": "/use-cases/n8n-ai-workflows",
+  "navLabel": "N8n Ai Workflows Use Case",
+  "seoTitle": "n8n AI Workflows Use Case | deAPI",
+  "seoDescription": "Implementation blueprint for n8n ai workflows use case with model selection, routing, and observability guidance.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Use Case Outcomes"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "This page outlines practical implementation paths, expected operational gains, and deployment guardrails for teams shipping AI-backed features."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Review Architecture",
+        "href": "/docs/architecture-and-security"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Use Case Blueprint",
+    "heading": "n8n AI Workflows Use Case",
+    "body": "Automate repeatable operations with AI-enriched workflows orchestrated through n8n and webhooks. Ship faster with a reusable architecture that keeps security, cost, and quality in balance.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Explore Models",
+        "href": "/models",
+        "style": "solid"
+      },
+      {
+        "label": "Open Playground",
+        "href": "/playground/video-to-text",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "implementation",
+      "title": "Reference Implementation Path",
+      "body": "Start with narrow scope, validate quality thresholds, and expand only after observability and budget controls are established.",
+      "cards": [
+        {
+          "id": "implementation-card-1",
+          "title": "Scope Definition",
+          "description": "Define objective metrics, acceptable output quality, and throughput targets before launch.",
+          "href": "/docs/quickstart",
+          "ctaLabel": "Read Quickstart"
+        },
+        {
+          "id": "implementation-card-2",
+          "title": "Model Selection",
+          "description": "Choose model tiers based on quality needs, latency targets, and margin constraints.",
+          "href": "/models",
+          "ctaLabel": "Compare Models"
+        },
+        {
+          "id": "implementation-card-3",
+          "title": "Production Rollout",
+          "description": "Roll out with staged traffic and monitoring to reduce regression risk.",
+          "href": "/contact-sales",
+          "ctaLabel": "Plan Rollout"
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "title": "Operations And Governance",
+      "body": "Maintain consistent behavior with policy enforcement, auditability, and cost-aware routing.",
+      "cards": [
+        {
+          "id": "operations-card-1",
+          "title": "Rate Limiting",
+          "description": "Protect reliability with endpoint and key-level controls tied to workload profiles.",
+          "href": "/pricing",
+          "ctaLabel": "See Plan Limits"
+        },
+        {
+          "id": "operations-card-2",
+          "title": "Cost Visibility",
+          "description": "Track usage and align team behavior with per-feature margin and budget goals.",
+          "href": "/docs/pricing",
+          "ctaLabel": "Understand Pricing"
+        },
+        {
+          "id": "operations-card-3",
+          "title": "Incident Readiness",
+          "description": "Document fallback paths and escalation playbooks before high-volume launches.",
+          "href": "/contact-sales",
+          "ctaLabel": "Request Solution Design"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need a tailored use-case architecture?",
+    "body": "We help teams map model choices, fallback strategy, and billing controls to real production constraints.",
+    "responseTime": "Solution advisory responses in one business day"
+  }
+}

@@ -1,6 +1,11 @@
 import { z } from "zod"
 
-export const MAX_DEPOSIT_AMOUNT_CENTS = 5_000_000
+export const MIN_DEPOSIT_AMOUNT_CENTS = 100
+export const MAX_DEPOSIT_AMOUNT_CENTS = 99_999
+export const CREDIT_TOP_UP_PRESET_AMOUNTS_CENTS = [1_000, 2_500, 5_000, 10_000] as const
+export const DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS = 500
+export const TOP_UP_DISCOUNT_TARGET_CENTS = 10_000
+export const TOP_UP_DISCOUNT_CENTS = 500
 const STRIPE_METADATA_KEY_PATTERN = /^[a-zA-Z0-9_]{1,40}$/
 
 const majorAmountStringSchema = z
@@ -14,15 +19,45 @@ const centsStringSchema = z
   .regex(/^\d+$/, "Amount cents must be a positive integer")
 
 function assertPositiveAmount(value: number): number {
-  if (!Number.isFinite(value) || value <= 0) {
-    throw new Error("Deposit amount must be greater than zero")
+  if (!Number.isFinite(value) || value < MIN_DEPOSIT_AMOUNT_CENTS) {
+    throw new Error(`Deposit amount must be at least ${MIN_DEPOSIT_AMOUNT_CENTS / 100} credits`)
   }
 
   if (value > MAX_DEPOSIT_AMOUNT_CENTS) {
-    throw new Error(`Deposit amount cannot exceed ${MAX_DEPOSIT_AMOUNT_CENTS} cents`)
+    throw new Error(`Deposit amount cannot exceed ${MAX_DEPOSIT_AMOUNT_CENTS / 100} credits`)
   }
 
   return value
+}
+
+export function isPresetCreditTopUpAmountCents(value: number): boolean {
+  return CREDIT_TOP_UP_PRESET_AMOUNTS_CENTS.includes(value as (typeof CREDIT_TOP_UP_PRESET_AMOUNTS_CENTS)[number])
+}
+
+export function parseAutoTopUpThresholdToCents(input: number | string | undefined): number {
+  if (input === undefined) {
+    return DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS
+  }
+
+  return parseDepositAmountToCents(input)
+}
+
+export function resolveTopUpCharge(inputAmountCents: number): {
+  requestedAmountCents: number
+  chargeAmountCents: number
+  discountCents: number
+  creditsGranted: number
+} {
+  const requestedAmountCents = assertPositiveAmount(inputAmountCents)
+  const discountCents = requestedAmountCents === TOP_UP_DISCOUNT_TARGET_CENTS ? TOP_UP_DISCOUNT_CENTS : 0
+  const chargeAmountCents = requestedAmountCents - discountCents
+
+  return {
+    requestedAmountCents,
+    chargeAmountCents,
+    discountCents,
+    creditsGranted: Number((requestedAmountCents / 100).toFixed(2)),
+  }
 }
 
 export function parseDepositAmountToCents(input: number | string): number {

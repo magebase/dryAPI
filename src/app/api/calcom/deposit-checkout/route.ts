@@ -3,9 +3,13 @@ import { ZodError, z } from "zod"
 
 import {
   buildStripeDepositCheckoutParams,
+  DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS,
+  isPresetCreditTopUpAmountCents,
   normalizeCurrencyCode,
+  parseAutoTopUpThresholdToCents,
   parseDepositAmountToCents,
   parseDepositCents,
+  resolveTopUpCharge,
   sanitizeDepositMetadata,
 } from "@/lib/stripe-deposit-checkout"
 import { isStripeDepositsEnabledServer } from "@/lib/feature-flags"
@@ -23,6 +27,8 @@ const checkoutRequestSchema = z
     cancelUrl: z.string().url().optional(),
     customerEmail: z.string().email().optional(),
     description: z.string().trim().max(120).optional(),
+    autoTopUpEnabled: z.boolean().optional(),
+    autoTopUpThreshold: z.union([z.number(), z.string()]).optional(),
     turnstileToken: z.string().optional(),
     metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
   })
@@ -144,21 +150,34 @@ export async function POST(request: NextRequest) {
     }
 
     const amountCents = parseAmount(payload)
+    const topUp = resolveTopUpCharge(amountCents)
+    const autoTopUpEnabled = payload.autoTopUpEnabled ?? true
+    const autoTopUpThresholdCents = autoTopUpEnabled
+      ? parseAutoTopUpThresholdToCents(payload.autoTopUpThreshold)
+      : DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS
     const currency = normalizeCurrencyCode(payload.currency || process.env.STRIPE_DEPOSIT_DEFAULT_CURRENCY || "aud")
     const metadata = sanitizeDepositMetadata({
       source: "genfix-calcom-deposit",
       ...(payload.metadata || {}),
-      amountCents,
+      requestedAmountCents: topUp.requestedAmountCents,
+      chargeAmountCents: topUp.chargeAmountCents,
+      discountCents: topUp.discountCents,
+      creditsGranted: topUp.creditsGranted,
+      autoTopUpEnabled,
+      autoTopUpThresholdCents,
+      isPresetAmount: isPresetCreditTopUpAmountCents(topUp.requestedAmountCents),
       calcomBookingUrl: payload.calcomBookingUrl || "",
     })
     const { successUrl, cancelUrl } = resolveRedirectUrls(payload)
 
     const sessionParams = buildStripeDepositCheckoutParams({
-      amountCents,
+      amountCents: topUp.chargeAmountCents,
       currency,
       successUrl,
       cancelUrl,
-      description: payload.description,
+      description:
+        payload.description ||
+        `${topUp.creditsGranted.toFixed(2)} credits top-up${topUp.discountCents > 0 ? " (5% off applied)" : ""}`,
       customerEmail: payload.customerEmail,
       metadata,
     })
@@ -198,7 +217,12 @@ export async function POST(request: NextRequest) {
       ok: true,
       checkoutUrl: body.url,
       sessionId: body.id,
-      amountCents,
+      amountCents: topUp.chargeAmountCents,
+      requestedAmountCents: topUp.requestedAmountCents,
+      discountCents: topUp.discountCents,
+      creditsGranted: topUp.creditsGranted,
+      autoTopUpEnabled,
+      autoTopUpThresholdCents,
       currency,
     })
   } catch (error) {

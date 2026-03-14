@@ -47,6 +47,13 @@ function isProtectedPath(pathname: string) {
 }
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/docs/") && !request.nextUrl.pathname.startsWith("/docs/v1/")) {
+    const redirectUrl = request.nextUrl.clone()
+    const suffix = request.nextUrl.pathname.replace(/^\/docs\/?/, "")
+    redirectUrl.pathname = suffix ? `/docs/v1/${suffix}` : "/docs"
+    return NextResponse.redirect(redirectUrl, 307)
+  }
+
   if (request.nextUrl.pathname === "/ADMIN/INDEX.HTML") {
     const url = request.nextUrl.clone()
     url.pathname = "/admin/index.html"

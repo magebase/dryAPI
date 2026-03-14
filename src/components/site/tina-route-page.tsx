@@ -8,6 +8,7 @@ import { ProductsPageTemplate } from "@/components/site/products-page-template"
 import { RoutePageTemplate } from "@/components/site/route-page-template"
 import { SiteFrame } from "@/components/site/site-frame"
 import type { BlogPost, RoutePage, SiteConfig } from "@/lib/site-content-schema"
+import type { DeapiPricingSnapshot } from "@/types/deapi-pricing"
 
 type TinaDocument<TData> = {
   query: string
@@ -22,6 +23,7 @@ type TinaRoutePageProps = {
   pageDocument: TinaDocument<{ routePages: RoutePage }>
   productPages: RoutePage[]
   blogPosts: BlogPost[]
+  deapiPricingSnapshot?: DeapiPricingSnapshot | null
 }
 
 export function TinaRoutePage({
@@ -29,6 +31,7 @@ export function TinaRoutePage({
   pageDocument,
   productPages,
   blogPosts,
+  deapiPricingSnapshot,
 }: TinaRoutePageProps) {
   const { data: siteData } = useTina({
     query: siteDocument.query,
@@ -59,7 +62,7 @@ export function TinaRoutePage({
       ) : isContactPage ? (
         <ContactPageTemplate page={page} site={siteData.siteConfig} />
       ) : (
-        <RoutePageTemplate page={page} site={siteData.siteConfig} />
+        <RoutePageTemplate deapiPricingSnapshot={deapiPricingSnapshot} page={page} site={siteData.siteConfig} />
       )}
     </SiteFrame>
   )

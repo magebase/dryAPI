@@ -1,0 +1,118 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Pricing
+
+Example pricing is shown below for reference; exact, up-to-date rates are always available from the API.
+
+**deAPI** uses a **pay-as-you-go pricing model**, where costs are calculated dynamically per task based on the resource usage, such as resolution, steps, duration, or number of output characters. The pricing examples shown on the public site ([https://deapi.ai/#pricing](https://deapi.ai/#pricing)) serve as reference points; final cost is determined by the API at runtime depending on the selected model and parameters.
+
+### Pricing Overview
+
+<Info>
+  Up to date prices are always available via endpoint /price-calculation for the selected model
+</Info>
+
+| Task Type                                         | Pricing Metric                      | Example Rate                                              | Notes                                                                                                           |
+| ------------------------------------------------- | ----------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Text-to-Image (Flux.1 schnell)                    | resolution × steps                  | 0.00136 USD for 512x512, 4 steps                          | Uses Flux Schnell as baseline in sample calculator                                                              |
+| Text-to-Image (Z-Image-Turbo INT8)                | resolution × steps                  | 0.00405 USD for 512x512, 4 steps                          | Generates very realistic images                                                                                 |
+| Text-to-Image (Flux.2 Klein 4B BF16)              | resolution × steps                  | 0.00186 USD for<br />512x512, 4 steps                     | Unified generation & editing                                                                                    |
+| Image-to-Image                                    | steps (style transfer)              | \~0.0132 USD for 512x512, 20 steps                        | Cost scales with steps and GPU time                                                                             |
+| Text-to-Speech (TTS)                              | number of characters                | 0.77 USD per 1 M characters                               | Adjustable speed multipliers (fast = 0.5× cost, slow = 2× cost). Supports voice cloning and voice design modes. |
+| Text-to-Music                                     | duration + inference steps          | Use `/price-calculation` endpoint                         | 10–600 second tracks; cost scales with duration and inference steps                                             |
+| Text-to-Video                                     | video duration + resolution         | 0.001737 USD for 2s, 256×256                              | 2–5 second clips; higher res or steps increase cost                                                             |
+| Image-to-Video                                    | source image + motion interpolation | 0.001737 USD for 2s, 256×256                              | 2–5 second output, smooth motion                                                                                |
+| Video-to-Text (X, Twitch, Kick, YT Transcription) | video length                        | from 0.021 USD per hour                                   | Supports timestamps, multilingual                                                                               |
+| Image-to-Text (OCR)                               | output characters                   | 0.00928 USD per 1,000 output chars (for 1024×1024 images) | Also includes object detection, scene understanding                                                             |
+| Text-to-Embedding                                 | number of tokens processed          | 0.000068 USD per 1,000 tokens                             | Supports large-scale semantic search and RAG; cost scales linearly with token count                             |
+
+***
+
+### Pricing by Task
+
+**Text-to-Image (Image Generation)**
+
+* Users define width, height, steps via the API or UI.
+* Public example: Flux Schnell model is used to estimate cost in the UI; for example, 512x512 at 4 steps gives **0.00136 USD**. For the Z-Image-Turbo INT8 model with the same parameters, the price is **0.00405 USD**, but the advantage is very realistic images.
+* Higher resolutions and more steps yield better quality but incur higher cost.
+* Important: For models other than Flux Schnell, pricing is model-specific and calculated on the server side.
+
+**Text-to-Speech (TTS / Speech Generation)**
+
+* Charged per character in your input (e.g. 1M characters → **0.77 USD**).
+* Playback speed modifiers:
+  * Standard (1.0×): base cost
+  * Fast (2.0×): 0.5× the base cost
+  * Slow (0.5×): 2.0× the base cost
+* Useful tip: using faster playback (2×) for drafts can reduce cost by \~50%.
+* All three TTS modes (custom\_voice, voice\_clone, voice\_design) use the same per-character pricing model.
+
+**Text-to-Music (Music Generation)**
+
+* Price depends on track duration (10–600 seconds) and the number of inference steps.
+* Turbo models use fewer steps (e.g. 8) and are cheaper; base models use more steps (e.g. 32+) for higher quality.
+* Use the `/price-calculation` endpoint with your `model`, `duration`, and `inference_steps` to get exact pricing before generation.
+
+**Text-to-Video**
+
+* Price depends on clip duration (2–5 seconds) and resolution.
+* Example public rate: **0.001737 USD** for a 2-second clip at 256x256.
+* You can scale resolution or duration, but cost increases accordingly.
+
+**Image-to-Image (Image Transformation)**
+
+* Transforms an existing image based on a new prompt or style.
+* Pricing scales with the number of inference steps and GPU time required — similar to Text-to-Image tasks.
+* Example: a 20-step transformation costs roughly the same as generating a 512×512 image.
+* Fewer steps → faster & cheaper transfers; more steps → better fidelity.
+
+**Image-to-Video**
+
+* Transform a static image into a motion clip (2–5 seconds) with interpolation.
+* Example: 256x256 for 2 seconds costs **0.001737 USD**.
+* Use lower resolution or shorter duration to reduce cost.
+* Use motion parameters in prompts to guide movement.
+
+**Video-to-Text (Transcription)**
+
+* Billed per hour of video processed.
+* Sample public rate: **0.021 USD per hour**.
+* For 5 minutes, cost is estimated at **0.003613 USD**.
+* Supports timestamps, multilingual transcription, and batching for better throughput.
+
+**Image-to-Text (OCR / VLM)**
+
+* Charged based on number of characters recognized in output.
+* Baseline rate: **0.00928 USD** per 1,000 output characters (for 1024×1024 images).
+* Example outputs:
+  * Single photo (≈20 chars) → **0.000186 USD**
+  * Math expression (\~350 chars) → **0.0032 USD**
+  * Book page (\~1,500 chars) → **0.0139 USD**
+* Volume discounts available for bulk processing (100k+ images)—contact sales.
+
+**Text-to-Embedding (Vector Representations)**
+
+* Pricing is based on the number of tokens processed.
+* Sample public rate: **0.000093 USD** per 1,000 tokens (client-side pricing).
+* Embeddings are typically used for semantic search, retrieval-augmented generation (RAG), clustering, and similarity matching.
+* Costs scale linearly with token count, making it efficient even at large volumes.
+* Important: Different embedding models may have varying dimensionality (e.g. 768 vs. 1024), but pricing is standardized per token for simplicity.
+
+***
+
+### Best Practices & Guidance
+
+* Use the public calculator as a guide, but always rely on the API's final cost calculation (model + parameters).
+* Avoid hardcoding prices or cost assumptions—always fetch or compute cost based on actual model usage.
+* For reproducibility (e.g. in production or experiments), pin model versions and seeds so results are consistent across runs.
+* Prepare fallback options in your integration: if a model is deprecated or disabled, switch to a sensible alternative automatically.
+* Monitor usage and budget: higher resolution, longer clips, or more steps increase costs proportionally.
+
+***
+
+**Link to live pricing page for reference:** [https://deapi.ai/#pricing](https://deapi.ai/#pricing)
+
+
+Built with [Mintlify](https://mintlify.com).

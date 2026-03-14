@@ -1,355 +1,355 @@
 {
-  "seoTitle": "GenFix | 5-20 kVA Diesel Generators, Rental and Service",
-  "seoDescription": "Brisbane-based 5-20 kVA diesel generator sales, rental fleets, and 24/7 support delivered across Australia.",
+  "seoTitle": "deAPI | Unified AI Inference API",
+  "seoDescription": "Ship chat, image, speech, and embeddings through one OpenAI-compatible API with routing, billing, and margin-aware controls.",
   "hero": {
     "visible": true,
-    "kicker": "Australia's Independent Industrial Power Team",
-    "heading": "Reliable 5-20 kVA Diesel Generator Sales, Rental and Support",
-    "subheading": "GenFix is based in Brisbane and supports critical projects with responsive diesel generator hire, right-sized 5-20 kVA packages, and rapid breakdown assistance.",
+    "kicker": "Unified AI Inference Platform",
+    "heading": "One API For Chat, Images, Speech, And Embeddings",
+    "subheading": "deAPI gives your team one OpenAI-compatible surface with runtime routing, usage billing, and production guardrails across model providers.",
     "backgroundImage": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
     "primaryAction": {
-      "label": "Sales",
-      "href": "/sales",
+      "label": "Open Playground",
+      "href": "/playground",
       "style": "solid"
     },
     "secondaryAction": {
-      "label": "Rental",
-      "href": "/rental",
+      "label": "View Pricing",
+      "href": "/pricing",
       "style": "outline"
     },
     "tertiaryAction": {
-      "label": "Free Quote",
-      "href": "/contact",
+      "label": "Browse Models",
+      "href": "/models",
       "style": "ghost"
     }
   },
   "spotlightSection": {
     "visible": true,
-    "kicker": "Core Offerings",
-    "title": "How We Deliver Temporary Power"
+    "kicker": "Core Platform",
+    "title": "How deAPI Simplifies Production AI"
   },
   "spotlightCards": [
     {
       "id": "spotlight-sales",
       "visible": true,
-      "title": "Sales",
-      "description": "Practical advice to choose the right 5-20 kVA unit for your load, compliance, and budget.",
+      "title": "OpenAI-Compatible Endpoints",
+      "description": "Use one familiar request format while we normalize provider-specific behavior behind the gateway.",
       "icon": "settings"
     },
     {
       "id": "spotlight-rental",
       "visible": true,
-      "title": "Rental",
-      "description": "Fast, flexible rental for shutdowns, temporary works, and staged projects.",
+      "title": "RunPod-Aware Routing",
+      "description": "Route requests by latency, queue depth, and cost signals so performance stays predictable under load.",
       "icon": "truck"
     },
     {
       "id": "spotlight-support",
       "visible": true,
-      "title": "Support",
-      "description": "24/7 support with diagnostics, field response, and clear escalation when production is at risk.",
+      "title": "Billing And Guardrails",
+      "description": "Apply credit checks, margin floors, and rate limits before dispatch so spend and reliability stay under control.",
       "icon": "shield"
     }
   ],
   "capabilitySection": {
     "visible": true,
     "kicker": "Capabilities",
-    "title": "What We Handle End To End"
+    "title": "Everything Needed To Run AI Workloads Reliably"
   },
   "capabilityCards": [
     {
       "id": "cap-sales",
       "visible": true,
-      "title": "Load Study And Scope",
-      "description": "We size packages around real runtime targets, compliance requirements, and site conditions.",
+      "title": "Unified Model Catalog",
+      "description": "Expose chat, image, speech, and embedding models through one endpoint family and consistent metadata.",
       "icon": "settings"
     },
     {
       "id": "cap-rental",
       "visible": true,
-      "title": "Fleet Hire Or Buy",
-      "description": "Short-term hire, project-duration rental, or purchase pathways based on your program.",
-      "icon": "truck"
+      "title": "Request Cost Estimation",
+      "description": "Estimate provider cost before dispatch and enforce profitability guardrails when requests are underpriced.",
+      "icon": "bolt"
     },
     {
       "id": "cap-field",
       "visible": true,
-      "title": "Field Commissioning",
-      "description": "Our field teams commission, service, and maintain active installations nationally.",
-      "icon": "hard-hat"
+      "title": "Rate Limits Per Key",
+      "description": "Protect your infrastructure with per-key and per-model throttles that return consistent error contracts.",
+      "icon": "shield"
     },
     {
       "id": "cap-breakdown",
       "visible": true,
-      "title": "24/7 Recovery",
-      "description": "After-hours triage and rapid recovery support when critical equipment goes down.",
+      "title": "Fallback Routing",
+      "description": "Fail over across GPU tiers and endpoints using policy-based routing for uptime during spikes or incidents.",
       "icon": "radio"
     },
     {
       "id": "cap-range",
       "visible": true,
-      "title": "Configured 5-20 kVA Fleet",
-      "description": "Quiet, efficient sets configured for compounds, temporary boards, and backup circuits.",
-      "icon": "bolt"
+      "title": "Usage And Cost Tracking",
+      "description": "Track request volume, latency, and spend with records designed for billing reconciliation and analytics.",
+      "icon": "plug"
     },
     {
       "id": "cap-runtime",
       "visible": true,
-      "title": "Fuel And Runtime Planning",
-      "description": "Fuel burn estimates and refuel planning matched to shift cycles and expected demand.",
-      "icon": "plug"
+      "title": "API Key Lifecycle",
+      "description": "Create, rotate, and revoke keys with scoped controls and audit-friendly access patterns.",
+      "icon": "factory"
     },
     {
       "id": "cap-engineering",
       "visible": true,
-      "title": "Electrical Integration",
-      "description": "Support for temporary boards, changeovers, and staged energisation in live environments.",
-      "icon": "factory"
+      "title": "OpenRouter-Style Contracts",
+      "description": "Keep response formats stable while providers evolve, reducing integration churn for client applications.",
+      "icon": "hard-hat"
     }
   ],
   "projectShowcase": {
-    "title": "Featured Projects",
+    "title": "Featured Use Cases",
     "visible": true,
-    "ctaLabel": "View Case Studies",
-    "ctaHref": "/case-studies",
+    "ctaLabel": "Explore Use Cases",
+    "ctaHref": "/blog",
     "items": [
       {
         "id": "project-1",
         "visible": true,
-        "title": "31 Duncan Street",
-        "summary": "Commissioned backup generation and controls for a high-load commercial site.",
+        "title": "Claude Code Agent Workflows",
+        "summary": "Ship coding assistants with stable gateway behavior, key management, and predictable per-request economics.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/case-studies",
-        "tag": "Case Study",
+        "href": "/use-cases/claude-code",
+        "tag": "Use Case",
         "galleryImages": [
           {
             "id": "project-1-01",
             "src": "https://images.unsplash.com/photo-1581092918484-8313f03f26f8",
-            "alt": "31 Duncan Street image 1",
-            "caption": "31 Duncan Street image 1"
+            "alt": "Claude Code Agent Workflows image 1",
+            "caption": "Claude Code Agent Workflows image 1"
           },
           {
             "id": "project-1-02",
             "src": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e",
-            "alt": "31 Duncan Street image 2",
-            "caption": "31 Duncan Street image 2"
+            "alt": "Claude Code Agent Workflows image 2",
+            "caption": "Claude Code Agent Workflows image 2"
           },
           {
             "id": "project-1-03",
             "src": "https://images.unsplash.com/photo-1565008447742-97f6f38c985c",
-            "alt": "31 Duncan Street image 3",
-            "caption": "31 Duncan Street image 3"
+            "alt": "Claude Code Agent Workflows image 3",
+            "caption": "Claude Code Agent Workflows image 3"
           }
         ]
       },
       {
         "id": "project-2",
         "visible": true,
-        "title": "895 Ann Street",
-        "summary": "Installed and supported a critical standby package during staged construction.",
+        "title": "Text To Image Apps",
+        "summary": "Run image generation workloads behind one API while managing model routing and credit consumption centrally.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/case-studies",
-        "tag": "Case Study",
+        "href": "/use-cases/text-to-image",
+        "tag": "Use Case",
         "galleryImages": [
           {
             "id": "project-2-01",
             "src": "https://images.unsplash.com/photo-1565008447742-97f6f38c985c",
-            "alt": "895 Ann Street image 1",
-            "caption": "895 Ann Street image 1"
+            "alt": "Text To Image Apps image 1",
+            "caption": "Text To Image Apps image 1"
           },
           {
             "id": "project-2-02",
             "src": "https://images.unsplash.com/photo-1518770660439-4636190af475",
-            "alt": "895 Ann Street image 2",
-            "caption": "895 Ann Street image 2"
+            "alt": "Text To Image Apps image 2",
+            "caption": "Text To Image Apps image 2"
           },
           {
             "id": "project-2-03",
             "src": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
-            "alt": "895 Ann Street image 3",
-            "caption": "895 Ann Street image 3"
+            "alt": "Text To Image Apps image 3",
+            "caption": "Text To Image Apps image 3"
           }
         ]
       },
       {
         "id": "project-3",
         "visible": true,
-        "title": "LP Plant Grow Facility",
-        "summary": "Delivered redundant generation for uninterrupted research and production load.",
+        "title": "Video To Text Pipelines",
+        "summary": "Transcribe media jobs at scale with endpoint fallbacks and consistent response shapes for downstream systems.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/case-studies",
-        "tag": "Case Study",
+        "href": "/use-cases/video-to-text",
+        "tag": "Use Case",
         "galleryImages": [
           {
             "id": "project-3-01",
             "src": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
-            "alt": "LP Plant Grow Facility image 1",
-            "caption": "LP Plant Grow Facility image 1"
+            "alt": "Video To Text Pipelines image 1",
+            "caption": "Video To Text Pipelines image 1"
           },
           {
             "id": "project-3-02",
             "src": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
-            "alt": "LP Plant Grow Facility image 2",
-            "caption": "LP Plant Grow Facility image 2"
+            "alt": "Video To Text Pipelines image 2",
+            "caption": "Video To Text Pipelines image 2"
           },
           {
             "id": "project-3-03",
             "src": "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1",
-            "alt": "LP Plant Grow Facility image 3",
-            "caption": "LP Plant Grow Facility image 3"
+            "alt": "Video To Text Pipelines image 3",
+            "caption": "Video To Text Pipelines image 3"
           }
         ]
       },
       {
         "id": "project-4",
         "visible": true,
-        "title": "Ampol Refinery Upgrade",
-        "summary": "Turnkey temporary power package with monitoring and staged commissioning.",
+        "title": "n8n Automation Integrations",
+        "summary": "Connect workflow automations to a single inference API and enforce organization-level usage controls.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/case-studies",
-        "tag": "Case Study",
+        "href": "/use-cases/n8n-ai-workflows",
+        "tag": "Use Case",
         "galleryImages": [
           {
             "id": "project-4-01",
             "src": "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1",
-            "alt": "Ampol Refinery Upgrade image 1",
-            "caption": "Ampol Refinery Upgrade image 1"
+            "alt": "n8n Automation Integrations image 1",
+            "caption": "n8n Automation Integrations image 1"
           },
           {
             "id": "project-4-02",
             "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
-            "alt": "Ampol Refinery Upgrade image 2",
-            "caption": "Ampol Refinery Upgrade image 2"
+            "alt": "n8n Automation Integrations image 2",
+            "caption": "n8n Automation Integrations image 2"
           },
           {
             "id": "project-4-03",
             "src": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6",
-            "alt": "Ampol Refinery Upgrade image 3",
-            "caption": "Ampol Refinery Upgrade image 3"
+            "alt": "n8n Automation Integrations image 3",
+            "caption": "n8n Automation Integrations image 3"
           }
         ]
       }
     ]
   },
   "resourceShowcase": {
-    "title": "Latest Resources",
+    "title": "Docs And Implementation Guides",
     "visible": true,
-    "ctaLabel": "Browse Resources",
-    "ctaHref": "/resources",
+    "ctaLabel": "Read Documentation",
+    "ctaHref": "/blog",
     "items": [
       {
         "id": "resource-1",
         "visible": true,
-        "title": "Generator Rental Best Practice",
-        "summary": "A practical checklist for selecting temporary power equipment for active sites.",
+        "title": "API Integration Starter",
+        "summary": "A practical integration path for auth, retries, and request shaping across deAPI endpoints.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/resources/generator-rental-best-practice",
+        "href": "/blog",
         "tag": "Guide",
         "galleryImages": [
           {
             "id": "resource-1-01",
             "src": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
-            "alt": "Generator Rental Best Practice image 1",
-            "caption": "Generator Rental Best Practice image 1"
+            "alt": "API Integration Starter image 1",
+            "caption": "API Integration Starter image 1"
           },
           {
             "id": "resource-1-02",
             "src": "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1",
-            "alt": "Generator Rental Best Practice image 2",
-            "caption": "Generator Rental Best Practice image 2"
+            "alt": "API Integration Starter image 2",
+            "caption": "API Integration Starter image 2"
           },
           {
             "id": "resource-1-03",
             "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
-            "alt": "Generator Rental Best Practice image 3",
-            "caption": "Generator Rental Best Practice image 3"
+            "alt": "API Integration Starter image 3",
+            "caption": "API Integration Starter image 3"
           }
         ]
       },
       {
         "id": "resource-2",
         "visible": true,
-        "title": "Commissioning Handover Guide",
-        "summary": "Structured commissioning and handover checkpoints for reliable diesel generator operation.",
+        "title": "Margin Guardrail Design",
+        "summary": "How to set floor-margin policies that protect gross profit while keeping latency and UX in bounds.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/resources/commissioning-handover",
+        "href": "/blog",
         "tag": "Guide",
         "galleryImages": [
           {
             "id": "resource-2-01",
             "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
-            "alt": "Commissioning Handover Guide image 1",
-            "caption": "Commissioning Handover Guide image 1"
+            "alt": "Margin Guardrail Design image 1",
+            "caption": "Margin Guardrail Design image 1"
           },
           {
             "id": "resource-2-02",
             "src": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6",
-            "alt": "Commissioning Handover Guide image 2",
-            "caption": "Commissioning Handover Guide image 2"
+            "alt": "Margin Guardrail Design image 2",
+            "caption": "Margin Guardrail Design image 2"
           },
           {
             "id": "resource-2-03",
             "src": "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0",
-            "alt": "Commissioning Handover Guide image 3",
-            "caption": "Commissioning Handover Guide image 3"
+            "alt": "Margin Guardrail Design image 3",
+            "caption": "Margin Guardrail Design image 3"
           }
         ]
       },
       {
         "id": "resource-3",
         "visible": true,
-        "title": "Equipment Rental vs Ownership",
-        "summary": "Decision framework for uptime, cash flow, and maintenance obligations.",
+        "title": "RunPod Routing Patterns",
+        "summary": "Routing strategies for queue depth, GPU fallback, and cold-start mitigation in production traffic.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/resources/equipment-rental-vs-ownership",
+        "href": "/blog",
         "tag": "Guide",
         "galleryImages": [
           {
             "id": "resource-3-01",
             "src": "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0",
-            "alt": "Equipment Rental vs Ownership image 1",
-            "caption": "Equipment Rental vs Ownership image 1"
+            "alt": "RunPod Routing Patterns image 1",
+            "caption": "RunPod Routing Patterns image 1"
           },
           {
             "id": "resource-3-02",
             "src": "https://images.unsplash.com/photo-1513828583688-c52646db42da",
-            "alt": "Equipment Rental vs Ownership image 2",
-            "caption": "Equipment Rental vs Ownership image 2"
+            "alt": "RunPod Routing Patterns image 2",
+            "caption": "RunPod Routing Patterns image 2"
           },
           {
             "id": "resource-3-03",
             "src": "https://images.unsplash.com/photo-1581091012184-5c2f2f4b1f3f",
-            "alt": "Equipment Rental vs Ownership image 3",
-            "caption": "Equipment Rental vs Ownership image 3"
+            "alt": "RunPod Routing Patterns image 3",
+            "caption": "RunPod Routing Patterns image 3"
           }
         ]
       },
       {
         "id": "resource-4",
         "visible": true,
-        "title": "Website Safety Alert",
-        "summary": "How to verify approved GenFix channels and avoid fraudulent suppliers.",
+        "title": "Billing And Usage Reconciliation",
+        "summary": "Build auditable credit and usage pipelines from request metadata to finalized customer balances.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
-        "href": "/resources/website-safety-alert",
-        "tag": "Notice",
+        "href": "/blog",
+        "tag": "Guide",
         "galleryImages": [
           {
             "id": "resource-4-01",
             "src": "https://images.unsplash.com/photo-1581091012184-5c2f2f4b1f3f",
-            "alt": "Website Safety Alert image 1",
-            "caption": "Website Safety Alert image 1"
+            "alt": "Billing And Usage Reconciliation image 1",
+            "caption": "Billing And Usage Reconciliation image 1"
           },
           {
             "id": "resource-4-02",
             "src": "https://images.unsplash.com/photo-1581092918484-8313f03f26f8",
-            "alt": "Website Safety Alert image 2",
-            "caption": "Website Safety Alert image 2"
+            "alt": "Billing And Usage Reconciliation image 2",
+            "caption": "Billing And Usage Reconciliation image 2"
           },
           {
             "id": "resource-4-03",
             "src": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e",
-            "alt": "Website Safety Alert image 3",
-            "caption": "Website Safety Alert image 3"
+            "alt": "Billing And Usage Reconciliation image 3",
+            "caption": "Billing And Usage Reconciliation image 3"
           }
         ]
       }
@@ -357,55 +357,55 @@
   },
   "testimonialsSection": {
     "visible": true,
-    "kicker": "Client Testimonials",
-    "title": "What Site Teams Say After Delivery",
+    "kicker": "Customer Outcomes",
+    "title": "What Teams Say After Moving To deAPI",
     "items": [
       {
         "id": "testimonial-1",
         "company": "Northline Infrastructure",
-        "quote": "GenFix stabilized our temporary works package in under 24 hours and gave us a clear staged handover plan.",
+        "quote": "We replaced multiple provider integrations with deAPI and cut onboarding time for new AI features dramatically.",
         "person": "Riley M.",
-        "role": "Project Manager",
-        "metric": "18 day shutdown delivered"
+        "role": "Platform Lead",
+        "metric": "3 integrations unified"
       },
       {
         "id": "testimonial-2",
         "company": "HarborWorks Civil",
-        "quote": "The response team was practical, direct, and available after hours. We stayed online during a critical commissioning window.",
+        "quote": "Guardrail checks stopped underpriced requests before dispatch, which gave us confidence to scale traffic.",
         "person": "Asha T.",
-        "role": "Commissioning Lead",
-        "metric": "0 unplanned outages"
+        "role": "Operations Engineer",
+        "metric": "Margin floor enforced"
       },
       {
         "id": "testimonial-3",
-        "company": "MetroBuild Queensland",
-        "quote": "Sizing guidance was spot on. Fuel planning and runtime forecasting removed guesswork for our night shifts.",
+        "company": "MetroBuild Systems",
+        "quote": "The OpenAI-compatible surface meant our clients switched endpoints without rewriting application logic.",
         "person": "Cameron L.",
-        "role": "Site Superintendent",
-        "metric": "3 sites supported"
+        "role": "Product Manager",
+        "metric": "Migration in 2 days"
       },
       {
         "id": "testimonial-4",
-        "company": "SunCoast Processing",
-        "quote": "From quote to commissioning, communication was tight and decisions were fast. Exactly what we needed for uptime risk.",
+        "company": "SunCoast Analytics",
+        "quote": "Usage records and billing export made reconciliation straightforward at the end of each cycle.",
         "person": "Jordan P.",
-        "role": "Operations Manager",
-        "metric": "2 week mobilisation"
+        "role": "Finance Systems Manager",
+        "metric": "0 manual adjustments"
       },
       {
         "id": "testimonial-5",
-        "company": "Atlas Mining Services",
-        "quote": "The team adapted quickly when scope changed and still hit our delivery window without compromising safety checks.",
+        "company": "Atlas Automation",
+        "quote": "Fallback routing kept our workflow throughput stable during peak loads and upstream congestion.",
         "person": "Mia R.",
-        "role": "Maintenance Coordinator",
-        "metric": "24/7 support coverage"
+        "role": "Workflow Architect",
+        "metric": "99.9% completion rate"
       }
     ]
   },
   "trustedBySection": {
     "visible": true,
     "kicker": "Trusted By",
-    "title": "Teams Across Construction, Utilities, and Industry",
+    "title": "Teams Shipping AI Products In Production",
     "logos": [
       {
         "id": "logo-1",
@@ -419,18 +419,18 @@
       },
       {
         "id": "logo-3",
-        "name": "MetroBuild Queensland",
-        "abbreviation": "MB"
+        "name": "MetroBuild Systems",
+        "abbreviation": "MS"
       },
       {
         "id": "logo-4",
-        "name": "Atlas Mining Services",
-        "abbreviation": "AM"
+        "name": "Atlas Automation",
+        "abbreviation": "AA"
       },
       {
         "id": "logo-5",
-        "name": "SunCoast Processing",
-        "abbreviation": "SP"
+        "name": "SunCoast Analytics",
+        "abbreviation": "SA"
       },
       {
         "id": "logo-6",
@@ -439,29 +439,29 @@
       },
       {
         "id": "logo-7",
-        "name": "EastGate Logistics",
+        "name": "EastGate Labs",
         "abbreviation": "EL"
       },
       {
         "id": "logo-8",
-        "name": "IronRidge Resources",
-        "abbreviation": "IR"
+        "name": "IronRidge Data",
+        "abbreviation": "ID"
       }
     ]
   },
   "contactPanel": {
     "visible": true,
-    "kicker": "Ready To Plan?",
-    "heading": "Get A Site-Specific Power Recommendation",
-    "body": "Tell us your operating window and load profile. We will propose practical equipment and deployment options.",
+    "kicker": "Ready To Deploy?",
+    "heading": "Talk To The Team Building deAPI",
+    "body": "Share your traffic profile, target models, and launch timeline. We can help map architecture, pricing, and rollout steps.",
     "primaryAction": {
-      "label": "Request A Quote",
-      "href": "/contact",
+      "label": "Contact Sales",
+      "href": "/contact-sales",
       "style": "solid"
     },
     "secondaryAction": {
-      "label": "Explore Products",
-      "href": "/products",
+      "label": "Try Playground",
+      "href": "/playground",
       "style": "ghost"
     }
   }

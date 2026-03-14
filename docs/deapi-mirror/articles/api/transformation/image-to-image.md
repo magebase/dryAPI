@@ -1,0 +1,301 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Image-to-Image
+
+> Endpoint for requesting img2img inference. Accepts either a single image via "image" or multiple images via "images[]" (mutually exclusive).
+
+<Note>
+  **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability. Please **omit** the LoRA parameter by default during initial testing.
+</Note>
+
+
+## OpenAPI
+
+````yaml openapi.json post /api/v1/client/img2img
+openapi: 3.0.0
+info:
+  title: deAPI REST API
+  description: >-
+    Decentralized AI inference API for image generation, video processing, audio
+    transcription, and more.
+  contact:
+    name: deAPI Support
+    url: https://deapi.ai
+    email: support@deapi.ai
+  version: 0.0.1
+servers:
+  - url: https://api.deapi.ai
+    description: Production API Server base URL
+security:
+  - bearerAuth: []
+tags:
+  - name: Client API
+    description: Endpoints for client operations
+paths:
+  /api/v1/client/img2img:
+    post:
+      tags:
+        - Client API
+      description: >-
+        Endpoint for requesting img2img inference. Accepts either a single image
+        via "image" or multiple images via "images[]" (mutually exclusive).
+      operationId: requestImage2Image
+      parameters:
+        - $ref: '#/components/parameters/AcceptHeader'
+      requestBody:
+        description: >-
+          Image generation parameters. Either "image" or "images[]" must be
+          provided (not both).
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - prompt
+                - model
+                - steps
+                - seed
+              properties:
+                prompt:
+                  description: The main prompt for image generation
+                  type: string
+                  example: A beautiful sunset over mountains
+                negative_prompt:
+                  description: Elements to avoid in the generated image
+                  type: string
+                  example: blur, darkness, noise
+                  nullable: true
+                image:
+                  description: >-
+                    Single source image to edit. Required if "images[]" is not
+                    provided. Mutually exclusive with "images[]". Supported
+                    formats: JPG, JPEG, PNG, GIF, BMP, WebP. Maximum file size:
+                    10 MB.
+                  type: string
+                  format: binary
+                images[]:
+                  description: >-
+                    Multiple source images for editing. Maximum count is
+                    model-dependent (see model specs max_input_images, defaults
+                    to 1). Required if "image" is not provided. Mutually
+                    exclusive with "image". Supported formats: JPG, JPEG, PNG,
+                    GIF, BMP, WebP. Maximum file size per image: 10 MB.
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                width:
+                  description: >-
+                    Output image width in pixels. Optional - defaults to first
+                    input image width if not specified. Subject to
+                    model-specific min/max limits.
+                  type: integer
+                  example: 512
+                  nullable: true
+                height:
+                  description: >-
+                    Output image height in pixels. Optional - defaults to first
+                    input image height if not specified. Subject to
+                    model-specific min/max limits.
+                  type: integer
+                  example: 512
+                  nullable: true
+                model:
+                  description: >-
+                    The model to use for image editing. Available models can be
+                    retrieved via the GET /api/v1/client/models endpoint.
+                  type: string
+                  example: QwenImageEdit_Plus_NF4
+                loras:
+                  description: Array of LoRA models to apply
+                  type: array
+                  items:
+                    required:
+                      - name
+                      - weight
+                    properties:
+                      name:
+                        description: Name of the LoRA model
+                        type: string
+                        example: style_lora
+                      weight:
+                        description: Weight of the LoRA model (must be non-negative)
+                        type: number
+                        minimum: 0
+                        example: 0.75
+                    type: object
+                guidance:
+                  description: Guidance scale for the generation
+                  type: number
+                  example: 7.5
+                steps:
+                  description: Number of inference steps
+                  type: integer
+                  example: 20
+                seed:
+                  description: Random seed for generation
+                  type: integer
+                  example: 42
+                webhook_url:
+                  description: >-
+                    Optional HTTPS URL to receive webhook notifications for job
+                    status changes (processing, completed, failed). Must be
+                    HTTPS. Max 2048 characters. See [Webhook
+                    Documentation](/execution-modes-and-integrations/webhooks)
+                    for payload structure and authentication details.
+                  type: string
+                  format: uri
+                  maxLength: 2048
+                  example: https://your-server.com/webhooks/deapi
+                  nullable: true
+              type: object
+      responses:
+        '200':
+          description: ID of the inference request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRequestResponseResource'
+        '401':
+          description: Unauthorized user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_error_default'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_error_default'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+      security:
+        - bearerAuth: []
+components:
+  parameters:
+    AcceptHeader:
+      name: Accept
+      in: header
+      required: true
+      schema:
+        type: string
+        default: application/json
+        enum:
+          - application/json
+  schemas:
+    JobRequestResponseResource:
+      properties:
+        data:
+          description: Information from success endpoint
+          properties:
+            request_id:
+              description: Request Id
+              required:
+                - request_id
+              type: string
+              example: c08a339c-73e5-4d67-a4d5-231302fbff9a
+          type: object
+      type: object
+    response_error_default:
+      properties:
+        data:
+          description: Information from success endpoint
+          type: object
+        message:
+          description: Error general message
+          type: string
+        errors:
+          description: Information about errors
+          type: array
+          items: {}
+        statusCode:
+          description: Status code
+          type: integer
+      type: object
+    response_error_rate_limit:
+      description: Rate limit exceeded response
+      properties:
+        message:
+          description: Error message
+          type: string
+          example: Too Many Attempts.
+      type: object
+  responses:
+    ValidationError:
+      description: >-
+        Validation failed. Common errors include: model does not exist, model
+        does not support the inference type for this endpoint, or invalid
+        request parameters.
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                description: General error message
+                type: string
+                example: The selected model does not support Text To Image.
+              errors:
+                description: Detailed validation errors by field
+                type: object
+                example:
+                  model:
+                    - The selected model does not support Text To Image.
+            type: object
+    RateLimitExceeded:
+      description: >-
+        Rate limit exceeded. Check X-RateLimit-Type header to determine if
+        minute (RPM) or daily (RPD) limit was hit.
+      headers:
+        X-RateLimit-Limit:
+          description: Maximum requests allowed per minute (RPM)
+          schema:
+            type: integer
+            example: 3
+        X-RateLimit-Remaining:
+          description: Remaining requests in current minute window
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Daily-Limit:
+          description: Maximum requests allowed per day (RPD)
+          schema:
+            type: integer
+            example: 100
+        X-RateLimit-Daily-Remaining:
+          description: Remaining requests in current day window
+          schema:
+            type: integer
+            example: 95
+        X-RateLimit-Type:
+          description: 'Type of rate limit exceeded: "minute" for RPM, "daily" for RPD'
+          schema:
+            type: string
+            enum:
+              - minute
+              - daily
+            example: minute
+        Retry-After:
+          description: >-
+            Seconds until rate limit resets (60 for minute, up to 86400 for
+            daily)
+          schema:
+            type: integer
+            example: 60
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/response_error_rate_limit'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      bearerFormat: JWT
+      scheme: bearer
+
+````
+
+Built with [Mintlify](https://mintlify.com).

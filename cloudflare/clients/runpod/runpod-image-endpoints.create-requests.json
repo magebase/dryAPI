@@ -1,0 +1,651 @@
+{
+  "generatedAt": "2026-03-14T12:10:24.460Z",
+  "requestCount": 10,
+  "requests": [
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "flux-2-klein-4b-bf16",
+      "endpointName": "deapi-flux-2-klein-4b-bf16",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
+      "payloadTemplate": {
+        "name": "deapi-flux-2-klein-4b-bf16",
+        "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
+        "gpuType": "NVIDIA RTX 4090",
+        "workersMin": 0,
+        "workersMax": 5,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 120000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Flux_2_Klein_4B_BF16"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "FLUX.2 Klein 4B BF16"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "txt2img,img2img"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "black-forest-labs/FLUX.2-klein-4B"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "e7b7dc27f91deacad38e78976d1f2b499d76a294"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "flux-2-klein-4b.safetensors"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://black-forest-labs/FLUX.2-klein-4B@e7b7dc27f91deacad38e78976d1f2b499d76a294#flux-2-klein-4b.safetensors"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "diffusers-image"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Flux_2_Klein_4B_BF16",
+        "displayName": "FLUX.2 Klein 4B BF16",
+        "tasks": [
+          "txt2img",
+          "img2img"
+        ]
+      },
+      "openSourceImageTag": "hf://black-forest-labs/FLUX.2-klein-4B@e7b7dc27f91deacad38e78976d1f2b499d76a294#flux-2-klein-4b.safetensors",
+      "confidence": "high",
+      "notes": []
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "zimageturbo-int8",
+      "endpointName": "deapi-zimageturbo-int8",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
+      "payloadTemplate": {
+        "name": "deapi-zimageturbo-int8",
+        "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
+        "gpuType": "NVIDIA RTX 4090",
+        "workersMin": 0,
+        "workersMax": 5,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 120000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "ZImageTurbo_INT8"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "Z-Image-Turbo INT8"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "txt2img"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "Tongyi-MAI/Z-Image-Turbo"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "f332072aa78be7aecdf3ee76d5c247082da564a6"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "model_index.json"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://Tongyi-MAI/Z-Image-Turbo@f332072aa78be7aecdf3ee76d5c247082da564a6#model_index.json"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "diffusers-image"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "ZImageTurbo_INT8",
+        "displayName": "Z-Image-Turbo INT8",
+        "tasks": [
+          "txt2img"
+        ]
+      },
+      "openSourceImageTag": "hf://Tongyi-MAI/Z-Image-Turbo@f332072aa78be7aecdf3ee76d5c247082da564a6#model_index.json",
+      "confidence": "medium",
+      "notes": [
+        "The deAPI slug includes INT8 but the upstream repository does not expose an INT8-specific artifact filename.",
+        "Treat INT8 as a runtime quantization mode in the worker/container, pinned to this repo revision."
+      ]
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "flux1schnell",
+      "endpointName": "deapi-flux1schnell",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
+      "payloadTemplate": {
+        "name": "deapi-flux1schnell",
+        "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
+        "gpuType": "NVIDIA RTX 4090",
+        "workersMin": 0,
+        "workersMax": 5,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 120000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Flux1schnell"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "FLUX.1 schnell"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "txt2img"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "black-forest-labs/FLUX.1-schnell"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "741f7c3ce8b383c54771c7003378a50191e9efe9"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "model_index.json"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://black-forest-labs/FLUX.1-schnell@741f7c3ce8b383c54771c7003378a50191e9efe9#model_index.json"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "diffusers-image"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Flux1schnell",
+        "displayName": "FLUX.1 schnell",
+        "tasks": [
+          "txt2img"
+        ]
+      },
+      "openSourceImageTag": "hf://black-forest-labs/FLUX.1-schnell@741f7c3ce8b383c54771c7003378a50191e9efe9#model_index.json",
+      "confidence": "high",
+      "notes": []
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "qwenimageedit-plus-nf4",
+      "endpointName": "deapi-qwenimageedit-plus-nf4",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
+      "payloadTemplate": {
+        "name": "deapi-qwenimageedit-plus-nf4",
+        "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
+        "gpuType": "NVIDIA RTX 4090",
+        "workersMin": 0,
+        "workersMax": 5,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 180000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "QwenImageEdit_Plus_NF4"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "Qwen Image Edit Plus"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "img2img"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "Qwen/Qwen-Image-Edit-2511"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "model_index.json"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://Qwen/Qwen-Image-Edit-2511@6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9#model_index.json"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "diffusers-image"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "QwenImageEdit_Plus_NF4",
+        "displayName": "Qwen Image Edit Plus",
+        "tasks": [
+          "img2img"
+        ]
+      },
+      "openSourceImageTag": "hf://Qwen/Qwen-Image-Edit-2511@6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9#model_index.json",
+      "confidence": "medium",
+      "notes": [
+        "The deAPI slug includes NF4 but the upstream official repository ships full-precision diffusers weights.",
+        "Treat NF4 as a runtime quantization mode in the worker/container, pinned to this repo revision."
+      ]
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "nanonets-ocr-s-f16",
+      "endpointName": "deapi-nanonets-ocr-s-f16",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_VLM_OCR",
+      "payloadTemplate": {
+        "name": "deapi-nanonets-ocr-s-f16",
+        "templateId": "${RUNPOD_TEMPLATE_ID_VLM_OCR}",
+        "gpuType": "NVIDIA L4",
+        "workersMin": 0,
+        "workersMax": 4,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 180000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Nanonets_Ocr_S_F16"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "Nanonets OCR S"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "img2txt"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "nanonets/Nanonets-OCR-s"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "3baad182cc87c65a1861f0c30357d3467e978172"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "model.safetensors.index.json"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://nanonets/Nanonets-OCR-s@3baad182cc87c65a1861f0c30357d3467e978172#model.safetensors.index.json"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "vlm-ocr"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Nanonets_Ocr_S_F16",
+        "displayName": "Nanonets OCR S",
+        "tasks": [
+          "img2txt"
+        ]
+      },
+      "openSourceImageTag": "hf://nanonets/Nanonets-OCR-s@3baad182cc87c65a1861f0c30357d3467e978172#model.safetensors.index.json",
+      "confidence": "high",
+      "notes": []
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "ltx2-3-22b-dist-int8",
+      "endpointName": "deapi-ltx2-3-22b-dist-int8",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_LTX_VIDEO",
+      "payloadTemplate": {
+        "name": "deapi-ltx2-3-22b-dist-int8",
+        "templateId": "${RUNPOD_TEMPLATE_ID_LTX_VIDEO}",
+        "gpuType": "NVIDIA H100",
+        "workersMin": 0,
+        "workersMax": 3,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 600000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Ltx2_3_22B_Dist_INT8"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "LTX-2.3 22B Distilled INT8"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "txt2video,img2video,aud2video"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "Lightricks/LTX-2.3"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "5a9c1c680bc66c159f708143bf274739961ecd08"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "ltx-2.3-22b-distilled.safetensors"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://Lightricks/LTX-2.3@5a9c1c680bc66c159f708143bf274739961ecd08#ltx-2.3-22b-distilled.safetensors"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "ltx-video"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Ltx2_3_22B_Dist_INT8",
+        "displayName": "LTX-2.3 22B Distilled INT8",
+        "tasks": [
+          "txt2video",
+          "img2video",
+          "aud2video"
+        ]
+      },
+      "openSourceImageTag": "hf://Lightricks/LTX-2.3@5a9c1c680bc66c159f708143bf274739961ecd08#ltx-2.3-22b-distilled.safetensors",
+      "confidence": "medium",
+      "notes": [
+        "The deAPI slug includes INT8 but the official repository currently exposes distilled 22B artifacts without an INT8 suffix.",
+        "Treat INT8 as a runtime quantization mode in the worker/container, pinned to this repo revision."
+      ]
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "ltx2-19b-dist-fp8",
+      "endpointName": "deapi-ltx2-19b-dist-fp8",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_LTX_VIDEO",
+      "payloadTemplate": {
+        "name": "deapi-ltx2-19b-dist-fp8",
+        "templateId": "${RUNPOD_TEMPLATE_ID_LTX_VIDEO}",
+        "gpuType": "NVIDIA H100",
+        "workersMin": 0,
+        "workersMax": 3,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 600000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Ltx2_19B_Dist_FP8"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "LTX-2 19B Distilled FP8"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "txt2video,img2video,aud2video"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "Lightricks/LTX-2"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "ltx-2-19b-distilled-fp8.safetensors"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://Lightricks/LTX-2@47da56e2ad66ce4125a9922b4a8826bf407f9d0a#ltx-2-19b-distilled-fp8.safetensors"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "ltx-video"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Ltx2_19B_Dist_FP8",
+        "displayName": "LTX-2 19B Distilled FP8",
+        "tasks": [
+          "txt2video",
+          "img2video",
+          "aud2video"
+        ]
+      },
+      "openSourceImageTag": "hf://Lightricks/LTX-2@47da56e2ad66ce4125a9922b4a8826bf407f9d0a#ltx-2-19b-distilled-fp8.safetensors",
+      "confidence": "high",
+      "notes": []
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "ltxv-13b-0-9-8-distilled-fp8",
+      "endpointName": "deapi-ltxv-13b-0-9-8-distilled-fp8",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_LTX_VIDEO",
+      "payloadTemplate": {
+        "name": "deapi-ltxv-13b-0-9-8-distilled-fp8",
+        "templateId": "${RUNPOD_TEMPLATE_ID_LTX_VIDEO}",
+        "gpuType": "NVIDIA A100",
+        "workersMin": 0,
+        "workersMax": 3,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 480000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Ltxv_13B_0_9_8_Distilled_FP8"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "LTX-Video 13B 0.9.8 Distilled FP8"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "txt2video,img2video"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "Lightricks/LTX-Video"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "8984fa25007f376c1a299016d0957a37a2f797bb"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "ltxv-13b-0.9.8-distilled-fp8.safetensors"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://Lightricks/LTX-Video@8984fa25007f376c1a299016d0957a37a2f797bb#ltxv-13b-0.9.8-distilled-fp8.safetensors"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "ltx-video"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Ltxv_13B_0_9_8_Distilled_FP8",
+        "displayName": "LTX-Video 13B 0.9.8 Distilled FP8",
+        "tasks": [
+          "txt2video",
+          "img2video"
+        ]
+      },
+      "openSourceImageTag": "hf://Lightricks/LTX-Video@8984fa25007f376c1a299016d0957a37a2f797bb#ltxv-13b-0.9.8-distilled-fp8.safetensors",
+      "confidence": "high",
+      "notes": []
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "realesrgan-x4",
+      "endpointName": "deapi-realesrgan-x4",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_IMAGE_UPSCALE",
+      "payloadTemplate": {
+        "name": "deapi-realesrgan-x4",
+        "templateId": "${RUNPOD_TEMPLATE_ID_IMAGE_UPSCALE}",
+        "gpuType": "NVIDIA L4",
+        "workersMin": 0,
+        "workersMax": 5,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 120000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "RealESRGAN_x4"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "RealESRGAN x4"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "img-upscale"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "github-release"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "xinntao/Real-ESRGAN"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "v0.1.0"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "RealESRGAN_x4plus.pth"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "gh://xinntao/Real-ESRGAN@v0.1.0#RealESRGAN_x4plus.pth"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "image-upscale"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "RealESRGAN_x4",
+        "displayName": "RealESRGAN x4",
+        "tasks": [
+          "img-upscale"
+        ]
+      },
+      "openSourceImageTag": "gh://xinntao/Real-ESRGAN@v0.1.0#RealESRGAN_x4plus.pth",
+      "confidence": "high",
+      "notes": []
+    },
+    {
+      "kind": "runpod.serverless.endpoint.create",
+      "endpointId": "ben2",
+      "endpointName": "deapi-ben2",
+      "templateIdEnv": "RUNPOD_TEMPLATE_ID_BACKGROUND_REMOVAL",
+      "payloadTemplate": {
+        "name": "deapi-ben2",
+        "templateId": "${RUNPOD_TEMPLATE_ID_BACKGROUND_REMOVAL}",
+        "gpuType": "NVIDIA L4",
+        "workersMin": 0,
+        "workersMax": 5,
+        "idleTimeoutSeconds": 60,
+        "executionTimeoutMs": 120000,
+        "env": [
+          {
+            "key": "MODEL_SLUG",
+            "value": "Ben2"
+          },
+          {
+            "key": "MODEL_DISPLAY_NAME",
+            "value": "BEN2"
+          },
+          {
+            "key": "MODEL_TASKS",
+            "value": "img-rmbg"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_KIND",
+            "value": "huggingface"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REPO",
+            "value": "PramaLLC/BEN2"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_REVISION",
+            "value": "e48a20765fb421d19dcdb0bf3cc61e802ca5ec8f"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_ARTIFACT",
+            "value": "model.safetensors"
+          },
+          {
+            "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
+            "value": "hf://PramaLLC/BEN2@e48a20765fb421d19dcdb0bf3cc61e802ca5ec8f#model.safetensors"
+          },
+          {
+            "key": "MODEL_WORKER_CLASS",
+            "value": "background-removal"
+          }
+        ]
+      },
+      "sourceModel": {
+        "slug": "Ben2",
+        "displayName": "BEN2",
+        "tasks": [
+          "img-rmbg"
+        ]
+      },
+      "openSourceImageTag": "hf://PramaLLC/BEN2@e48a20765fb421d19dcdb0bf3cc61e802ca5ec8f#model.safetensors",
+      "confidence": "high",
+      "notes": []
+    }
+  ]
+}

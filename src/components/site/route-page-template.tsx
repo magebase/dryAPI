@@ -2,6 +2,7 @@ import Image from "next/image"
 import { tinaField } from "tinacms/dist/react"
 
 import { ContactForm } from "@/components/site/contact-form"
+import { DeapiPricingTable } from "@/components/site/deapi-pricing-table"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { RoutePageElements } from "@/components/site/route-page-elements"
@@ -9,8 +10,17 @@ import { Reveal } from "@/components/site/reveal"
 import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema"
+import type { DeapiPricingSnapshot } from "@/types/deapi-pricing"
 
-export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteConfig }) {
+export function RoutePageTemplate({
+  page,
+  site,
+  deapiPricingSnapshot,
+}: {
+  page: RoutePage
+  site: SiteConfig
+  deapiPricingSnapshot?: DeapiPricingSnapshot | null
+}) {
   const quoteHref = site.header.quoteCta.href
   const quoteLabel = site.header.quoteCta.label
   const productsLink = site.header.primaryLinks.find((link) => link.href === "/products")
@@ -92,6 +102,8 @@ export function RoutePageTemplate({ page, site }: { page: RoutePage; site: SiteC
           ) : null}
         </Reveal>
       </section>
+
+      {page.slug === "/pricing" ? <DeapiPricingTable snapshot={deapiPricingSnapshot} /> : null}
 
       {page.pageContent?.elements?.length ? <RoutePageElements elements={page.pageContent.elements} /> : null}
 

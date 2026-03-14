@@ -1,0 +1,107 @@
+{
+  "slug": "/models",
+  "navLabel": "Models",
+  "seoTitle": "Models | deAPI",
+  "seoDescription": "Browse chat, image, speech, and embedding models available through one unified API contract.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Model Choice Without Integration Chaos"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "Use one authentication model, one billing surface, and one observability layer while selecting the best model for each workload."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Read Model Docs",
+        "href": "/docs/models"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Model Catalog",
+    "heading": "One API, Many Models",
+    "body": "Route across curated model families for chat, image, speech, and embeddings with stable request and response contracts.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Browse API Docs",
+        "href": "/docs/openapi",
+        "style": "solid"
+      },
+      {
+        "label": "Compare Pricing",
+        "href": "/pricing",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "modalities",
+      "title": "Coverage Across Core Modalities",
+      "body": "Support production workloads with model options optimized for quality, speed, and economics.",
+      "cards": [
+        {
+          "id": "modalities-card-1",
+          "title": "Chat And Reasoning",
+          "description": "Power assistants, coding copilots, and internal automation agents.",
+          "href": "/use-cases/claude-code",
+          "ctaLabel": "View Chat Use Case"
+        },
+        {
+          "id": "modalities-card-2",
+          "title": "Image And Video",
+          "description": "Generate or transform media assets with predictable throughput.",
+          "href": "/use-cases/text-to-image",
+          "ctaLabel": "See Media Use Cases"
+        },
+        {
+          "id": "modalities-card-3",
+          "title": "Speech And Transcription",
+          "description": "Deliver voice interfaces and searchable media transcripts at scale.",
+          "href": "/use-cases/text-to-speech",
+          "ctaLabel": "Explore Speech Use Cases"
+        }
+      ]
+    },
+    {
+      "id": "selection",
+      "title": "How To Select Models",
+      "body": "Balance quality, latency, and cost using measurable criteria and staged rollout practices.",
+      "cards": [
+        {
+          "id": "selection-card-1",
+          "title": "Latency Targets",
+          "description": "Map user-facing response requirements to realistic model throughput.",
+          "href": "/pricing",
+          "ctaLabel": "Review Plan Limits"
+        },
+        {
+          "id": "selection-card-2",
+          "title": "Quality Benchmarks",
+          "description": "Define task-specific scorecards for acceptance before production release.",
+          "href": "/docs",
+          "ctaLabel": "Read Evaluation Tips"
+        },
+        {
+          "id": "selection-card-3",
+          "title": "Fallback Strategy",
+          "description": "Prevent outages with policy-based fallback routes and observability.",
+          "href": "/contact-sales",
+          "ctaLabel": "Design Routing Plan"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need help choosing your model mix?",
+    "body": "We can map your workloads to a practical model portfolio with clear tradeoffs and rollout steps.",
+    "responseTime": "Model advisory responses within one business day"
+  }
+}

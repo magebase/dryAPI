@@ -1,0 +1,107 @@
+{
+  "slug": "/case-studies/humain",
+  "navLabel": "Humain Case Study",
+  "seoTitle": "Humain Case Study | deAPI",
+  "seoDescription": "How Humain accelerated AI feature delivery with unified model routing and predictable operations.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Executive Summary"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "By consolidating integrations and adding governance at the gateway layer, Humain improved release velocity while keeping costs and reliability in view."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "See Supported Models",
+        "href": "/models"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Case Study",
+    "heading": "Humain: Faster AI Delivery With Better Control",
+    "body": "Humain reduced integration overhead and improved launch confidence by standardizing on one API surface across multiple model families.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Explore Use Cases",
+        "href": "/use-cases/claude-code",
+        "style": "solid"
+      },
+      {
+        "label": "Talk To Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "results",
+      "title": "Measured Outcomes",
+      "body": "Humain used staged rollout and traffic controls to reduce risk while expanding feature coverage.",
+      "cards": [
+        {
+          "id": "results-card-1",
+          "title": "Integration Simplification",
+          "description": "Reduced bespoke provider wiring by using one compatible API contract.",
+          "href": "/docs/openapi",
+          "ctaLabel": "Review API Contract"
+        },
+        {
+          "id": "results-card-2",
+          "title": "Faster Iteration",
+          "description": "Teams validated new model options without reworking core product logic.",
+          "href": "/playground",
+          "ctaLabel": "Open Playground"
+        },
+        {
+          "id": "results-card-3",
+          "title": "Operational Clarity",
+          "description": "Usage and cost telemetry improved decision-making for product and finance.",
+          "href": "/pricing",
+          "ctaLabel": "View Pricing Controls"
+        }
+      ]
+    },
+    {
+      "id": "lessons",
+      "title": "Implementation Lessons",
+      "body": "Teams gained the most value by pairing model flexibility with explicit guardrails and rollout discipline.",
+      "cards": [
+        {
+          "id": "lessons-card-1",
+          "title": "Start Narrow",
+          "description": "Launch high-value workflows first, then expand based on observed behavior.",
+          "href": "/use-cases/n8n-ai-workflows",
+          "ctaLabel": "See Workflow Use Case"
+        },
+        {
+          "id": "lessons-card-2",
+          "title": "Instrument Early",
+          "description": "Set baseline quality and latency metrics before scaling usage.",
+          "href": "/docs",
+          "ctaLabel": "Read Documentation"
+        },
+        {
+          "id": "lessons-card-3",
+          "title": "Align Stakeholders",
+          "description": "Keep engineering, operations, and finance aligned through shared dashboards.",
+          "href": "/contact-sales",
+          "ctaLabel": "Request Advisory"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Want results like this for your team?",
+    "body": "We can help you design a low-risk migration path and deployment plan based on your product constraints.",
+    "responseTime": "Case-study follow-up in one business day"
+  }
+}

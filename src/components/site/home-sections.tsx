@@ -1,931 +1,547 @@
 import Image from "next/image"
-import { ArrowRight, BadgeCheck, CheckCircle2, PhoneCall, Quote, ShieldCheck } from "lucide-react"
+import { ArrowRight, Mail, MessageSquare, ShieldCheck, TerminalSquare } from "lucide-react"
 import { tinaField } from "tinacms/dist/react"
 
-import { Lightning } from "@/components/site/lightning"
-import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { Reveal } from "@/components/site/reveal"
 import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
 import { SiteIcon } from "@/components/site/site-icon"
-import { getGradientVariant } from "@/components/site/gradient-variants"
 import type { HomeContent, SiteConfig } from "@/lib/site-content-schema"
+import { Lightning } from "./lightning"
+
+type HomeAction = HomeContent["hero"]["primaryAction"]
 
 export function HomeSections({ home, site }: { home: HomeContent; site: SiteConfig }) {
-  const visibleSpotlightCards = home.spotlightCards.filter((card) => card.visible)
-  const visibleCapabilityCards = home.capabilityCards.filter((card) => card.visible)
-  const visibleProjectItems = home.projectShowcase.items.filter((item) => item.visible)
-  const visibleResourceItems = home.resourceShowcase.items.filter((item) => item.visible)
-  const trustStripCards = visibleSpotlightCards.slice(0, 3)
-  const spotlightMicroProofs = [
-    resolveSiteUiText(site, "home.spotlightMicroProof.1", "Typical scope response: same business day"),
-    resolveSiteUiText(site, "home.spotlightMicroProof.2", "Short and long hire terms available"),
-    resolveSiteUiText(site, "home.spotlightMicroProof.3", "After-hours escalation available"),
-  ]
-  const spotlightActions = [
-    resolveSiteUiText(site, "home.spotlightAction.1", "Talk Sales"),
-    resolveSiteUiText(site, "home.spotlightAction.2", "Check Fleet"),
-    resolveSiteUiText(site, "home.spotlightAction.3", "Request Support"),
-  ]
+  const spotlightCards = home.spotlightCards.filter((card) => card.visible).slice(0, 3)
+  const capabilityCards = home.capabilityCards.filter((card) => card.visible)
+  const valueCards = capabilityCards.slice(0, 3)
+  const stories = home.projectShowcase.items.filter((item) => item.visible).slice(0, 3)
+  const workflowStory = stories[0]
+  const resourcePreview = home.resourceShowcase.items.find((item) => item.visible)
+  const trustedLogos = home.trustedBySection.logos.slice(0, 8)
+  const trustedMarqueeLogos = [...trustedLogos, ...trustedLogos, ...trustedLogos]
+  const testimonial = home.testimonialsSection.items[0]
+
   const capabilitySignals = [
     {
-      label: resolveSiteUiText(site, "home.capabilitySignal.label.1", "Generator Range"),
-      value: resolveSiteUiText(site, "home.capabilitySignal.value.1", "5-20 kVA"),
+      label: resolveSiteUiText(site, "home.capabilitySignal.label.1", "Model Classes"),
+      value: resolveSiteUiText(site, "home.capabilitySignal.value.1", "Chat / Image / Audio / Embeddings"),
     },
     {
       label: resolveSiteUiText(site, "home.capabilitySignal.label.2", "Support Window"),
       value: resolveSiteUiText(site, "home.capabilitySignal.value.2", "24/7"),
     },
     {
-      label: resolveSiteUiText(site, "home.capabilitySignal.label.3", "Service Footprint"),
-      value: resolveSiteUiText(site, "home.capabilitySignal.value.3", "National"),
+      label: resolveSiteUiText(site, "home.capabilitySignal.label.3", "Deployment Scope"),
+      value: resolveSiteUiText(site, "home.capabilitySignal.value.3", "Global"),
     },
   ]
-  const spotlightIntroBody = resolveSiteUiText(
+
+  const spotlightAction1 = resolveSiteUiText(site, "home.spotlightAction.1", "Review API")
+  const spotlightAction2 = resolveSiteUiText(site, "home.spotlightAction.2", "Check Models")
+  const spotlightAction3 = resolveSiteUiText(site, "home.spotlightAction.3", "Configure Guardrails")
+
+  const operationalHeading = resolveSiteUiText(
     site,
-    "home.spotlightIntroBody",
-    "Straightforward service lines for teams that need clear answers quickly. No inflated claims, just practical power planning and delivery."
+    "home.operationalProof.heading",
+    "Production Patterns That Hold Up Under Load"
   )
-  const spotlightAtAGlance = resolveSiteUiText(site, "home.spotlightAtAGlance", "At A Glance")
-  const spotlightFieldNoteLabel = resolveSiteUiText(site, "home.spotlightFieldNoteLabel", "Field Note")
-  const capabilityIntroBody = resolveSiteUiText(
+  const operationalBody = resolveSiteUiText(
     site,
-    "home.capabilityIntroBody",
-    "One partner from specification through support. Every capability below is designed to reduce delay, protect output, and keep decisions simple."
+    "home.operationalProof.body",
+    "High-performing AI products are built on measurable routing, predictable billing, and reliable response contracts."
   )
-  const capabilityWhatYouGet = resolveSiteUiText(site, "home.capabilityWhatYouGet", "What You Get")
-  const capabilityWhatYouGetItems = [
-    resolveSiteUiText(site, "home.capabilityWhatYouGetItem.1", "Clear scope"),
-    resolveSiteUiText(site, "home.capabilityWhatYouGetItem.2", "Predictable delivery"),
-    resolveSiteUiText(site, "home.capabilityWhatYouGetItem.3", "Real support"),
+
+  const planningHeading = resolveSiteUiText(
+    site,
+    "home.planning.heading",
+    "One Team Across Routing, Billing, And Reliability"
+  )
+  const planningBody = resolveSiteUiText(
+    site,
+    "home.planning.bodySuffix",
+    "Combine model flexibility with governance controls so product and platform teams can ship confidently."
+  )
+
+  const commandHeading = resolveSiteUiText(
+    site,
+    "home.commandCta.heading",
+    "Start Fast With A Gateway Built For Production AI"
+  )
+  const commandBody = resolveSiteUiText(
+    site,
+    "home.commandCta.bodySuffix",
+    "Talk to our team for implementation guidance, endpoint planning, and pricing fit for your workload."
+  )
+
+  const supportPrompt = resolveSiteUiText(
+    site,
+    "footer.supportPrompt",
+    "Need Help With API Rollout, Pricing, Or Reliability?"
+  )
+
+  const requestSample = `POST /api/v1/inference\n{\n  "model": "openai/gpt-4.1-mini",\n  "input": "Summarize this incident timeline",\n  "type": "text"\n}`
+  const responseSample = `HTTP 200\n{\n  "id": "inf_82dk1",\n  "status": "ok",\n  "provider": "runpod",\n  "usage_cost": 0.0021,\n  "latency_ms": 412\n}`
+
+  const heroMediaImage = workflowStory?.image ?? home.hero.backgroundImage
+
+  const omnichannelTiles = [
+    {
+      title: "Chat",
+      body: "Support assistants and agent workflows with unified auth and request limits.",
+      icon: MessageSquare,
+    },
+    {
+      title: "Email",
+      body: "Run summarization and classification reliably for inbound and outbound flows.",
+      icon: Mail,
+    },
+    {
+      title: "Documents",
+      body: "Apply embeddings and extraction pipelines with deterministic contracts.",
+      icon: ShieldCheck,
+    },
+    {
+      title: "Automation",
+      body: "Connect n8n and orchestration tools to one API instead of many provider SDKs.",
+      icon: TerminalSquare,
+    },
   ]
-  const capabilityCardPrefix = resolveSiteUiText(site, "home.capabilityCardPrefix", "Capability")
-  const capabilityBottomCards = [
-    {
-      title: resolveSiteUiText(site, "home.capabilityBottomCard.title.1", "Design Confidence"),
-      body: resolveSiteUiText(
-        site,
-        "home.capabilityBottomCard.body.1",
-        "Clear recommendations based on load profile, compliance risk, and practical site access."
-      ),
-    },
-    {
-      title: resolveSiteUiText(site, "home.capabilityBottomCard.title.2", "Delivery Discipline"),
-      body: resolveSiteUiText(
-        site,
-        "home.capabilityBottomCard.body.2",
-        "Structured mobilisation and commissioning workflows that reduce rework and surprise downtime."
-      ),
-    },
-    {
-      title: resolveSiteUiText(site, "home.capabilityBottomCard.title.3", "Support Readiness"),
-      body: resolveSiteUiText(
-        site,
-        "home.capabilityBottomCard.body.3",
-        "Escalation paths that stay active after hours, so your project is never left waiting."
-      ),
-    },
+
+  const frameworkCells = [
+    { label: "Compose", body: "Define your request once" },
+    { label: "Guard", body: "Enforce auth and cost" },
+    { label: "Command", body: "Control all routing" },
   ]
 
   return (
     <>
-      {home.hero.visible && (
+      {home.hero.visible ? (
         <section
-          className="relative isolate -mt-[var(--site-header-height)] overflow-hidden border-b border-white/10 bg-[linear-gradient(180deg,var(--site-surface-0)_0%,var(--site-surface-1)_100%)] pt-[var(--site-header-height)]"
+          className="-mt-[var(--site-header-height)] bg-[color:var(--site-surface-0)] pb-10 pt-[var(--site-header-height)] md:pb-14"
           data-tina-field={tinaField(home, "hero")}
         >
-          <div className="absolute inset-0" data-tina-field={tinaField(home.hero, "backgroundImage")}>
-            <Lightning className="opacity-100" hue={260} intensity={3.6} size={1} speed={1} xOffset={0} />
-          </div>
-          <div className="absolute inset-0 bg-[linear-gradient(95deg,rgba(7,14,23,0.82)_12%,rgba(8,18,28,0.42)_56%,rgba(7,15,25,0.84)_100%)]" />
-          <div className="absolute inset-0 opacity-18 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:72px_72px]" />
-          <div className="absolute -left-28 bottom-0 h-60 w-60 rounded-full bg-[#ff8b2b]/18 blur-3xl" />
-          <div className="absolute -right-24 top-20 hidden h-72 w-72 rounded-full bg-[#2f4f79]/30 blur-3xl lg:block" />
-          <div className="absolute right-0 top-1/2 hidden h-72 w-52 -translate-y-1/2 bg-[linear-gradient(180deg,rgba(255,139,43,0.95),rgba(255,139,43,0.18))] [clip-path:polygon(32%_0,100%_0,68%_50%,100%_100%,32%_100%,0_50%)] lg:block" />
-
-          <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 md:pb-24 md:pt-24 lg:pb-32 lg:pt-32">
-            <Reveal as="div" className="text-sm uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={tinaField(home.hero, "kicker")}>
-              {home.hero.kicker}
-            </Reveal>
-            <Reveal as="div" className="mt-5 max-w-3xl" delay={0.05} y={0}>
-              <h1 className="text-balance font-display text-3xl uppercase leading-[1.02] tracking-[0.01em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.35)] sm:text-4xl md:text-6xl">
-                <KeywordGradientText dataTinaField={tinaField(home.hero, "heading")} text={home.hero.heading} />
-              </h1>
-            </Reveal>
+          <div className="mx-auto max-w-7xl px-4 pt-6 md:pt-8">
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+              <Lightning className="opacity-100" hue={260} />
+            </div>
             <Reveal
               as="div"
-              className="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-[color:var(--site-text-muted)] md:text-lg"
-              delay={0.1}
-              data-tina-field={tinaField(home.hero, "subheading")}
+              className="relative overflow-hidden rounded-[28px] border border-[#f3b08d] bg-[linear-gradient(125deg,#f45f35_0%,#ef6a38_22%,#f68d58_50%,#f6ba97_74%,#f7d2b9_100%)] px-6 pb-8 pt-7 md:px-12 md:pb-12 md:pt-11"
             >
-              {home.hero.subheading}
-            </Reveal>
-            <Reveal as="div" className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4" delay={0.15}>
-              <HeroAction action={home.hero.primaryAction} context="hero" field={tinaField(home.hero, "primaryAction")} />
-              <div className="flex flex-wrap gap-2.5">
-                <HeroAction action={home.hero.secondaryAction} context="hero" field={tinaField(home.hero, "secondaryAction")} />
-                <HeroAction action={home.hero.tertiaryAction} context="hero" field={tinaField(home.hero, "tertiaryAction")} />
+              <div className="pointer-events-none absolute -left-10 top-[-72px] h-56 w-56 rounded-full bg-white/24 blur-3xl" />
+              <div className="pointer-events-none absolute right-[-96px] top-[22%] h-72 w-72 rounded-full bg-[#ffd9c7]/40 blur-3xl" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_68%,rgba(255,255,255,0.26),transparent_44%)]" />
+
+              <div className="relative grid gap-8 lg:grid-cols-[1.18fr_0.82fr] lg:items-end">
+                <div>
+                  <p
+                    className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f1d11]"
+                    data-tina-field={tinaField(home.hero, "kicker")}
+                  >
+                    {home.hero.kicker}
+                  </p>
+                  <h1
+                    className="mt-3 max-w-3xl font-display text-4xl leading-[0.95] tracking-[-0.02em] text-[#fff8f4] sm:text-5xl md:text-6xl"
+                    data-tina-field={tinaField(home.hero, "heading")}
+                  >
+                    {home.hero.heading}
+                  </h1>
+                  <p
+                    className="mt-5 max-w-2xl text-sm leading-relaxed text-[#ffe6da] md:text-base"
+                    data-tina-field={tinaField(home.hero, "subheading")}
+                  >
+                    {home.hero.subheading}
+                  </p>
+
+                  <div className="mt-7 flex flex-wrap gap-2.5">
+                    <ActionLink action={home.hero.primaryAction} field={tinaField(home.hero, "primaryAction")} tone="dark" />
+                    <ActionLink action={home.hero.secondaryAction} field={tinaField(home.hero, "secondaryAction")} tone="light" />
+                    <ActionLink action={home.hero.tertiaryAction} field={tinaField(home.hero, "tertiaryAction")} tone="ghost" />
+                  </div>
+
+                  <div className="mt-7 flex flex-wrap gap-2">
+                    {capabilitySignals.map((signal) => (
+                      <div
+                        className="rounded-full border border-white/40 bg-white/12 px-3 py-1.5 text-[11px] text-[#fff7f1]"
+                        key={signal.label.value}
+                      >
+                        <span className="font-medium" data-tina-field={signal.label.field}>{signal.label.value}:</span>{" "}
+                        <span className="font-semibold" data-tina-field={signal.value.field}>{signal.value.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -inset-4 rounded-[24px] bg-white/14 blur-2xl" />
+                  <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-3 shadow-[0_24px_38px_rgba(88,20,7,0.22)] backdrop-blur-sm">
+                    <Image
+                      alt={workflowStory?.title ?? "deAPI product preview"}
+                      className="h-[260px] w-full rounded-xl object-cover md:h-[292px]"
+                      data-tina-field={tinaField(home.hero, "backgroundImage")}
+                      height={780}
+                      src={heroMediaImage}
+                      width={980}
+                    />
+                    <div className="mt-3 rounded-xl border border-white/45 bg-white/86 p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5d2c14]">Gateway Status</p>
+                      <p className="mt-1 text-xs text-[#6b3e29]">OpenAPI-compatible surface, margin checks enabled, provider fallback active.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Reveal>
+          </div>
+        </section>
+      ) : null}
 
-            <Reveal as="div" className="mt-20 border-t border-white/12 pt-8 lg:mt-24 lg:pt-10" delay={0.2}>
-              <div className="grid gap-3 md:grid-cols-3">
-                {trustStripCards.map((card, index) => (
-                  <Reveal
-                    as="article"
-                    className={`${getGradientVariant(index)} rounded-md border border-white/14 p-4 backdrop-blur md:p-5`}
-                    delay={index * 0.08}
-                    key={card.id}
-                    revealKey={`home-trust-${card.id}`}
-                    data-tina-field={tinaField(card)}
-                  >
-                    <SiteIcon className="size-4 text-[#ff9d4a]" icon={card.icon} />
-                    <h2 className="mt-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
-                      <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
-                    </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
-                      {card.description}
-                    </p>
-                  </Reveal>
+      {trustedLogos.length > 0 ? (
+        <section className="border-y border-[#dddddd] bg-[#efefef] py-7" data-tina-field={tinaField(home, "trustedBySection")}>
+          <div className="mx-auto max-w-7xl px-4">
+            <Reveal as="div" className="text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d6d6d]">
+                Backed by teams building production AI
+              </p>
+            </Reveal>
+
+            <Reveal as="div" className="relative mt-5 overflow-hidden" y={14}>
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-14 bg-gradient-to-r from-[#efefef] to-transparent" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-14 bg-gradient-to-l from-[#efefef] to-transparent" />
+
+              <div className="marquee-track flex w-max gap-2 [--marquee-duration:26s]">
+                {trustedMarqueeLogos.map((logo, index) => (
+                  <TrustedLogoPill key={`${logo.id}-${index}`} logo={logo} />
                 ))}
               </div>
             </Reveal>
           </div>
         </section>
-      )}
+      ) : null}
 
-      <TrustedByMarqueeSection section={home.trustedBySection} site={site} />
-
-      {home.spotlightSection.visible && (
-        <section
-          className="relative border-y border-white/8 bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-20"
-          data-tina-field={tinaField(home, "spotlightSection")}
-        >
-          <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:100%_40px]" />
-          <div className="relative mx-auto max-w-7xl px-4">
-            <div className="mb-8 grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
-              <Reveal as="div" className="max-w-3xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={tinaField(home.spotlightSection, "kicker")}>
-                  {home.spotlightSection.kicker}
-                </p>
-                <h2 className="mt-2 font-display text-3xl leading-[1.08] text-white md:text-4xl">
-                  <KeywordGradientText dataTinaField={tinaField(home.spotlightSection, "title")} text={home.spotlightSection.title} />
-                </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base" data-tina-field={spotlightIntroBody.field}>{spotlightIntroBody.value}</p>
-              </Reveal>
-
-              <Reveal as="div" className={`${getGradientVariant(0)} border border-white/12 p-4`} delay={0.08}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={spotlightAtAGlance.field}>{spotlightAtAGlance.value}</p>
-                <div className="mt-3 grid gap-2">
-                  {capabilitySignals.map((signal) => (
-                    <div className="grid grid-cols-[1fr_auto] items-center border-b border-white/10 pb-2 last:border-b-0 last:pb-0" key={signal.label.value}>
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400" data-tina-field={signal.label.field}>{signal.label.value}</p>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white" data-tina-field={signal.value.field}>{signal.value.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-3">
-              {visibleSpotlightCards.map((card, index) => (
-                <Reveal
-                  as="article"
-                  className={`${getGradientVariant(index + 1)} group border border-white/14 px-6 py-7 transition duration-300 hover:border-[#ff8b2b]/55`}
-                  delay={index * 0.08}
-                  key={card.id}
-                  data-tina-field={tinaField(card)}
-                >
-                  <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
-                    <div className="inline-flex size-10 items-center justify-center border border-white/12 bg-[#172434]">
-                      <SiteIcon className="size-5 text-slate-100 transition group-hover:text-[#ff9d4a]" icon={card.icon} />
-                    </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-300">{String(index + 1).padStart(2, "0")}</span>
-                  </div>
-                  <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-white">
-                    <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
-                    {card.description}
-                  </p>
-                  <div className={`${getGradientVariant(index + 2)} mt-5 border border-white/12 px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.17em] text-[#ffb67f]" data-tina-field={spotlightFieldNoteLabel.field}>{spotlightFieldNoteLabel.value}</p>
-                    <p className="mt-1 text-xs text-slate-100" data-tina-field={(spotlightMicroProofs[index] ?? spotlightMicroProofs[0]).field}>{(spotlightMicroProofs[index] ?? spotlightMicroProofs[0]).value}</p>
-                  </div>
-                  <QuoteAwareLink
-                    className="mt-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#ff9d4a] transition hover:text-white"
-                    href={card.title.toLowerCase().includes("support") ? home.contactPanel.primaryAction.href : card.title.toLowerCase().includes("rental") ? home.hero.secondaryAction.href : home.hero.primaryAction.href}
-                    quoteLabel={(spotlightActions[index] ?? spotlightActions[0]).value}
-                  >
-                    <span data-tina-field={(spotlightActions[index] ?? spotlightActions[0]).field}>{(spotlightActions[index] ?? spotlightActions[0]).value}</span>
-                    <ArrowRight aria-hidden className="size-3" />
-                  </QuoteAwareLink>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {home.capabilitySection.visible && (
-        <section
-          className="relative border-b border-white/8 bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)] py-20"
-          data-tina-field={tinaField(home, "capabilitySection")}
-        >
-          <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:36px_100%]" />
-          <div className="mx-auto max-w-7xl px-4">
-            <div className="mb-9 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-              <Reveal as="div">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={tinaField(home.capabilitySection, "kicker")}>
-                  {home.capabilitySection.kicker}
-                </p>
-                <h2 className="mt-2 font-display text-3xl leading-[1.08] text-white md:text-4xl">
-                  <KeywordGradientText dataTinaField={tinaField(home.capabilitySection, "title")} text={home.capabilitySection.title} />
-                </h2>
-                <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[color:var(--site-text-muted)] md:text-base" data-tina-field={capabilityIntroBody.field}>{capabilityIntroBody.value}</p>
-              </Reveal>
-
-              <Reveal as="div" className={`${getGradientVariant(2)} border border-white/12 p-4`} delay={0.08}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffb67f]" data-tina-field={capabilityWhatYouGet.field}>{capabilityWhatYouGet.value}</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  {capabilityWhatYouGetItems.map((signal, index) => (
-                    <Reveal as="div" className={`${getGradientVariant(index)} border border-white/10 px-2.5 py-2`} delay={0.12 + index * 0.05} key={signal.value} y={0}>
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-200" data-tina-field={signal.field}>{signal.value}</p>
-                    </Reveal>
-                  ))}
-                </div>
-              </Reveal>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleCapabilityCards.map((card, index) => (
-                <Reveal
-                  as="article"
-                  className={`${getGradientVariant(index + 2)} group relative overflow-hidden border border-white/10 px-5 py-6 transition duration-300 hover:border-[#ff8b2b]/55`}
-                  delay={index * 0.08}
-                  key={card.id}
-                  data-tina-field={tinaField(card)}
-                >
-                  <div className="absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,rgba(255,157,74,0.95)_0%,rgba(255,157,74,0.25)_100%)]" />
-                  <div className="flex items-start gap-3 pl-1">
-                    <div className="inline-flex size-9 shrink-0 items-center justify-center border border-white/12 bg-[#172434]">
-                      <SiteIcon className="size-4 text-[#ff8b2b]" icon={card.icon} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300" data-tina-field={capabilityCardPrefix.field}>{capabilityCardPrefix.value} {String(index + 1).padStart(2, "0")}</p>
-                      <h3 className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-white">
-                        <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
-                    {card.description}
-                  </p>
-                </Reveal>
-              ))}
-            </div>
-
-            <div className="mt-8 grid gap-3 md:grid-cols-3">
-              {capabilityBottomCards.map((item, index) => (
-                <Reveal as="div" className={`${getGradientVariant(index + 1)} border border-white/10 px-4 py-3`} delay={index * 0.08} key={item.title.value} y={0}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={item.title.field}>{item.title.value}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={item.body.field}>{item.body.value}</p>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <OperationalProofSection
-        capabilityCards={visibleCapabilityCards}
-        home={home}
-        site={site}
-        stories={[...visibleProjectItems.slice(0, 2), ...visibleResourceItems.slice(0, 2)]}
-      />
-
-      <PlanningSplitSection home={home} site={site} trustCards={trustStripCards} />
-
-      <TestimonialsMarqueeSection section={home.testimonialsSection} />
-
-      <ShowcaseSection section={home.projectShowcase} site={site} />
-      <ShowcaseSection section={home.resourceShowcase} site={site} />
-
-      <CommandCtaSection home={home} site={site} />
-
-      {home.contactPanel.visible && (
-        <Reveal className="mx-auto max-w-7xl px-4 py-10 md:py-14" data-tina-field={tinaField(home, "contactPanel")}>
-          <div className={`${getGradientVariant(1)} rounded-md border border-white/10 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={tinaField(home.contactPanel, "kicker")}>
-                {home.contactPanel.kicker}
+      <section className="bg-[#ececec] py-8 md:py-12" data-tina-field={tinaField(home, "spotlightSection")}>
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="rounded-xl border border-[#dedede] bg-[#f2f2f2] p-5 md:p-8">
+            <Reveal as="div" className="max-w-4xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#7b7b7b]" data-tina-field={tinaField(home.spotlightSection, "kicker")}>
+                {home.spotlightSection.kicker}
               </p>
-              <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.04em] text-white">
-                <KeywordGradientText dataTinaField={tinaField(home.contactPanel, "heading")} text={home.contactPanel.heading} />
+              <h2 className="mt-2 text-3xl leading-tight text-[#1a1a1a] md:text-4xl" data-tina-field={tinaField(home.spotlightSection, "title")}>
+                {home.spotlightSection.title}
               </h2>
-              <p className="mt-2 text-sm text-slate-300 md:text-base" data-tina-field={tinaField(home.contactPanel, "body")}>
-                {home.contactPanel.body}
-              </p>
+            </Reveal>
+
+            <div className="mt-6 grid gap-4 border-y border-[#dedede] py-4 sm:grid-cols-3">
+              {frameworkCells.map((cell, index) => (
+                <Reveal as="div" delay={index * 0.06} key={cell.label} y={12}>
+                  <FrameworkCell body={cell.body} label={cell.label} />
+                </Reveal>
+              ))}
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
-              <HeroAction action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} />
-              <HeroAction action={home.contactPanel.secondaryAction} field={tinaField(home.contactPanel, "secondaryAction")} />
+            <div className="mt-7 grid gap-5">
+              <FeatureStory
+                actionLabel={spotlightAction1.value}
+                actionLabelField={spotlightAction1.field}
+                card={spotlightCards[0]}
+                image={stories[0]?.image ?? home.hero.backgroundImage}
+                imageField={stories[0] ? tinaField(stories[0], "image") : tinaField(home.hero, "backgroundImage")}
+                linkHref={home.hero.primaryAction.href}
+                reverse={false}
+              />
+              <FeatureStory
+                actionLabel={spotlightAction2.value}
+                actionLabelField={spotlightAction2.field}
+                card={spotlightCards[1] ?? spotlightCards[0]}
+                image={resourcePreview?.image ?? home.hero.backgroundImage}
+                imageField={resourcePreview ? tinaField(resourcePreview, "image") : tinaField(home.hero, "backgroundImage")}
+                linkHref={home.hero.secondaryAction.href}
+                reverse
+              />
+              <FeatureStory
+                actionLabel={spotlightAction3.value}
+                actionLabelField={spotlightAction3.field}
+                card={spotlightCards[2] ?? spotlightCards[0]}
+                image={stories[1]?.image ?? home.hero.backgroundImage}
+                imageField={stories[1] ? tinaField(stories[1], "image") : tinaField(home.hero, "backgroundImage")}
+                linkHref={home.contactPanel.primaryAction.href}
+                reverse={false}
+              />
             </div>
           </div>
-        </Reveal>
-      )}
+        </div>
+      </section>
+
+      <section className="bg-[#ececec] py-3 pb-10 md:pb-12" data-tina-field={tinaField(home, "capabilitySection")}>
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="rounded-xl border border-[#dedede] bg-[#f5f5f5] p-5 md:p-8">
+            <Reveal as="div" className="mx-auto max-w-2xl text-center">
+              <h2 className="text-2xl leading-tight text-[#1b1b1b] md:text-3xl" data-tina-field={tinaField(home.capabilitySection, "title")}>
+                {home.capabilitySection.title}
+              </h2>
+            </Reveal>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {valueCards.map((card, index) => (
+                <Reveal as="article" className="rounded-lg border border-[#dddddd] bg-white p-4" delay={index * 0.08} key={card.id}>
+                  <div className="h-36 rounded-md border border-[#ececec] bg-[radial-gradient(circle_at_20%_20%,#f8e8dd_0%,#efeef3_52%,#e9eff1_100%)]" />
+                  <h3 className="mt-3 text-sm font-semibold text-[#1f1f1f]" data-tina-field={tinaField(card, "title")}>
+                    {card.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#5f5f5f]" data-tina-field={tinaField(card, "description")}>
+                    {card.description}
+                  </p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#dfdfdf] bg-[#f2f2f2] py-12" data-tina-field={operationalHeading.field}>
+        <div className="mx-auto max-w-7xl px-4">
+          <Reveal as="div" className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl leading-tight text-[#1a1a1a] md:text-4xl">{operationalHeading.value}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#676767]" data-tina-field={operationalBody.field}>{operationalBody.value}</p>
+          </Reveal>
+
+          <Reveal as="div" className="mx-auto mt-7 max-w-3xl rounded-lg border border-[#d7d7d7] bg-white p-4 shadow-[0_18px_28px_rgba(0,0,0,0.08)]">
+            <Image
+              alt={workflowStory?.title ?? "Workflow preview"}
+              className="h-[260px] w-full rounded-md border border-[#ececec] object-cover"
+              data-tina-field={workflowStory ? tinaField(workflowStory, "image") : tinaField(home.hero, "backgroundImage")}
+              height={860}
+              src={workflowStory?.image ?? home.hero.backgroundImage}
+              width={1320}
+            />
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="border-y border-[#dddddd] bg-[#efefef] py-12">
+        <div className="mx-auto grid max-w-7xl gap-7 px-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <Reveal as="div">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7b7b7b]">Coverage</p>
+            <h2 className="mt-2 text-3xl leading-tight text-[#191919] md:text-4xl">Every Channel. Every Team. One Enforcement Layer.</h2>
+            <p className="mt-4 text-sm leading-relaxed text-[#646464]" data-tina-field={planningBody.field}>{planningBody.value}</p>
+          </Reveal>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {omnichannelTiles.map((tile, index) => (
+              <Reveal as="article" className="rounded-lg border border-[#dcdcdc] bg-[#f8f8f8] p-4" delay={index * 0.08} key={tile.title}>
+                <div className="flex items-center gap-2">
+                  <tile.icon className="size-4 text-[#2b2b2b]" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#2a2a2a]">{tile.title}</p>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-[#616161]">{tile.body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#ececec] py-12" data-tina-field={planningHeading.field}>
+        <div className="mx-auto grid max-w-7xl gap-7 px-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <Reveal as="div">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7b7b7b]">Developers</p>
+            <h2 className="mt-2 text-3xl leading-tight text-[#181818] md:text-4xl">{planningHeading.value}</h2>
+            <p className="mt-4 text-sm leading-relaxed text-[#5e5e5e]">
+              Deploy with familiar API contracts, then layer in gateway controls for auth, billing, and fallback routing without rewriting clients.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              {home.contactPanel.visible ? (
+                <ActionLink action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} tone="ink" />
+              ) : null}
+              <ActionLink action={home.hero.secondaryAction} field={tinaField(home.hero, "secondaryAction")} tone="outline" />
+            </div>
+          </Reveal>
+
+          <div className="grid gap-3">
+            <Reveal as="div" className="rounded-lg border border-[#2d2d2d] bg-[#131313] p-4 text-[#f0f0f0]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b6b6b6]">Request</p>
+              <pre className="mt-2 overflow-x-auto text-xs leading-relaxed"><code>{requestSample}</code></pre>
+            </Reveal>
+            <Reveal as="div" className="rounded-lg border border-[#2d2d2d] bg-[#0f0f0f] p-4 text-[#f6f6f6]" delay={0.08}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b6b6b6]">Response</p>
+              <pre className="mt-2 overflow-x-auto text-xs leading-relaxed"><code>{responseSample}</code></pre>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#dddddd] bg-[#f0f0f0] py-16">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <Reveal as="div">
+            <h2 className="text-3xl leading-tight text-[#1f1f1f] md:text-4xl">Engineered For Regulated Institutions</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#666666]">
+              Built for teams that require auditability, predictable billing records, and explicit routing guardrails before requests reach model providers.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {home.contactPanel.visible ? (
+        <section className="bg-[#ececec] py-10 md:py-14" data-tina-field={tinaField(home, "contactPanel")}>
+          <div className="mx-auto max-w-7xl px-4">
+            <Reveal
+              as="div"
+              className="overflow-hidden rounded-[20px] border border-[#9caee8] bg-[linear-gradient(120deg,#2f58d8_0%,#5b7ee1_36%,#8a88e5_68%,#c78ce8_100%)] p-6 text-white md:p-10"
+            >
+              <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e2e9ff]" data-tina-field={tinaField(home.contactPanel, "kicker")}>
+                    {home.contactPanel.kicker}
+                  </p>
+                  <h2 className="mt-2 text-3xl leading-tight md:text-4xl" data-tina-field={tinaField(home.contactPanel, "heading")}>
+                    {commandHeading.value}
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#f2f4ff]" data-tina-field={tinaField(home.contactPanel, "body")}>
+                    {commandBody.value}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-2.5">
+                    <ActionLink action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} tone="dark" />
+                    <ActionLink action={home.contactPanel.secondaryAction} field={tinaField(home.contactPanel, "secondaryAction")} tone="light" />
+                  </div>
+                  <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-[#d9e2ff]" data-tina-field={supportPrompt.field}>{supportPrompt.value}</p>
+                </div>
+
+                <div className="rounded-xl border border-white/35 bg-white/16 p-4 backdrop-blur-sm">
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#e8edff]">Customer Note</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#f8f9ff]">
+                    {testimonial ? (
+                      <>
+                        &ldquo;{testimonial.quote}&rdquo;
+                        <span className="mt-2 block text-[11px] uppercase tracking-[0.14em] text-[#dce2ff]">
+                          {testimonial.company} / {testimonial.role}
+                        </span>
+                      </>
+                    ) : (
+                      "\u201cUnified contracts and built-in guardrails gave our team confidence to launch quickly without losing control.\u201d"
+                    )}
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      ) : null}
     </>
   )
 }
 
-type ShowcaseItem = HomeContent["projectShowcase"]["items"][number]
-type IconCard = HomeContent["capabilityCards"][number]
-type TestimonialItem = HomeContent["testimonialsSection"]["items"][number]
-type TrustedLogoItem = HomeContent["trustedBySection"]["logos"][number]
-
-function OperationalProofSection({
-  capabilityCards,
-  home,
-  site,
-  stories,
-}: {
-  capabilityCards: IconCard[]
-  home: HomeContent
-  site: SiteConfig
-  stories: ShowcaseItem[]
-}) {
-  if (!stories.length || !capabilityCards.length) {
-    return null
-  }
-
-  const sectionKicker = resolveSiteUiText(site, "home.operationalProof.kicker", "Operational Proof")
-  const sectionHeading = resolveSiteUiText(
-    site,
-    "home.operationalProof.heading",
-    "Real Deployments, Practical Guidance, Faster Decisions"
-  )
-  const sectionBody = resolveSiteUiText(
-    site,
-    "home.operationalProof.body",
-    "High-trust power projects are won with proof, not promises. These project snapshots and field guides show how GenFix teams plan, deliver, and support critical power outcomes."
-  )
-  const trustedDeliverySuffix = resolveSiteUiText(site, "home.operationalProof.trustedDeliverySuffix", "Trusted Delivery")
-  const exploreStoryLabel = resolveSiteUiText(site, "home.operationalProof.exploreStoryLabel", "Explore Story")
-
+function FrameworkCell({ body, label }: { body: string; label: string }) {
   return (
-    <section className="bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-20" data-tina-field={tinaField(home, "projectShowcase")}>
-      <div className="mx-auto max-w-7xl px-4">
-        <Reveal as="div" className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={sectionKicker.field}>{sectionKicker.value}</p>
-          <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-            <KeywordGradientText dataTinaField={sectionHeading.field} text={sectionHeading.value} />
-          </h2>
-          <p className="mt-5 text-base leading-relaxed text-[color:var(--site-text-muted)] md:text-lg" data-tina-field={sectionBody.field}>{sectionBody.value}</p>
-        </Reveal>
-
-        <div className="mt-12 space-y-8">
-          {stories.map((item, index) => {
-            const storyHighlights = [0, 1, 2].map((offset) => capabilityCards[(index + offset) % capabilityCards.length])
-
-            return (
-              <Reveal
-                as="article"
-                className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_20px_38px_rgba(0,0,0,0.28)]`}
-                delay={index * 0.08}
-                key={item.id}
-                data-tina-field={tinaField(item)}
-              >
-                <div className="grid lg:grid-cols-2">
-                  <div className={`relative ${index % 2 === 1 ? "lg:order-2" : ""}`}>
-                    <Image
-                      alt={item.title}
-                      className="h-full min-h-[280px] w-full object-cover"
-                      data-tina-field={tinaField(item, "image")}
-                      height={720}
-                      src={item.image}
-                      width={1080}
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_34%,rgba(7,13,22,0.55)_100%)]" />
-                  </div>
-
-                  <div className="p-7 md:p-9">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={tinaField(item, "tag")}>
-                      {item.tag} / <span data-tina-field={trustedDeliverySuffix.field}>{trustedDeliverySuffix.value}</span>
-                    </p>
-                    <h3 className="mt-3 text-2xl font-semibold text-white">
-                      <KeywordGradientText dataTinaField={tinaField(item, "title")} text={item.title} />
-                    </h3>
-                    <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(item, "summary")}>
-                      {item.summary}
-                    </p>
-
-                    <div className="mt-6 grid gap-3">
-                      {storyHighlights.map((highlight, highlightIndex) => (
-                        <Reveal
-                          as="div"
-                          className={`${getGradientVariant(highlightIndex)} flex items-start gap-2.5 rounded-sm border border-white/10 px-3 py-2`}
-                          delay={0.04 * (highlightIndex + 1)}
-                          key={`${item.id}-${highlight.id}`}
-                          data-tina-field={tinaField(highlight)}
-                          y={0}
-                        >
-                          <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0 text-[#ff9d4a]" />
-                          <p className="text-sm text-slate-200">
-                            <span className="font-semibold text-white">
-                              <KeywordGradientText dataTinaField={tinaField(highlight, "title")} text={`${highlight.title}:`} />
-                            </span>{" "}
-                            <span className="text-[color:var(--site-text-muted)]" data-tina-field={tinaField(highlight, "description")}>
-                              {highlight.description}
-                            </span>
-                          </p>
-                        </Reveal>
-                      ))}
-                    </div>
-
-                    <div className="mt-7 flex flex-wrap gap-3">
-                      <QuoteAwareLink
-                        className="inline-flex items-center gap-2 rounded-sm bg-[#ff8b2b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#ff7f19]"
-                        data-tina-field={tinaField(item, "href")}
-                        href={item.href}
-                        quoteLabel={item.title}
-                      >
-                        <span data-tina-field={exploreStoryLabel.field}>{exploreStoryLabel.value}</span>
-                        <ArrowRight aria-hidden className="size-3.5" />
-                      </QuoteAwareLink>
-                      <HeroAction action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} />
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PlanningSplitSection({
-  home,
-  site,
-  trustCards,
-}: {
-  home: HomeContent
-  site: SiteConfig
-  trustCards: HomeContent["spotlightCards"]
-}) {
-  const featureImage = home.resourceShowcase.items.find((item) => item.visible)?.image ?? home.hero.backgroundImage
-  const responseDisciplineLabel = resolveSiteUiText(site, "home.planning.responseDisciplineLabel", "Response Discipline")
-  const responseDisciplineBody = resolveSiteUiText(
-    site,
-    "home.planning.responseDisciplineBody",
-    "From first call to handover, your plan is shaped around uptime, straightforward communication, and fast site-readiness."
-  )
-  const planningKicker = resolveSiteUiText(site, "home.planning.kicker", "High Trust Planning")
-  const planningHeading = resolveSiteUiText(
-    site,
-    "home.planning.heading",
-    "One Team Across Sales, Hire, Service, and Support"
-  )
-  const planningBodySuffix = resolveSiteUiText(
-    site,
-    "home.planning.bodySuffix",
-    "We combine product guidance, hire flexibility, and support planning so your team can lock in power decisions with confidence."
-  )
-
-  return (
-    <section className="bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)] py-20" data-tina-field={tinaField(home, "contactPanel")}>
-      <Reveal
-        as="div"
-        className={`${getGradientVariant(3)} mx-auto grid max-w-7xl gap-0 overflow-hidden rounded-md border border-white/10 shadow-[0_22px_44px_rgba(0,0,0,0.28)] lg:grid-cols-2`}
-      >
-        <div className="relative min-h-[320px]" data-tina-field={tinaField(home.hero, "backgroundImage")}>
-          <Image alt="GenFix field planning" className="h-full w-full object-cover" height={900} src={featureImage} width={1200} />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,10,16,0.25)_0%,rgba(8,15,24,0.76)_100%)]" />
-          <div className="absolute bottom-5 left-5 right-5 rounded-sm border border-white/14 bg-[#0f1f31]/86 p-4 backdrop-blur">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#ff9d4a]" data-tina-field={responseDisciplineLabel.field}>{responseDisciplineLabel.value}</p>
-            <p className="mt-2 text-sm text-slate-200" data-tina-field={responseDisciplineBody.field}>{responseDisciplineBody.value}</p>
-          </div>
-        </div>
-
-        <div className="p-7 md:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={planningKicker.field}>{planningKicker.value}</p>
-          <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-            <KeywordGradientText dataTinaField={planningHeading.field} text={planningHeading.value} />
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(home.contactPanel, "body")}>
-            {home.contactPanel.body} <span data-tina-field={planningBodySuffix.field}>{planningBodySuffix.value}</span>
-          </p>
-
-          <div className="mt-7 grid gap-3 sm:grid-cols-3">
-            {trustCards.map((card, index) => (
-              <Reveal
-                as="div"
-                className={`${getGradientVariant(index + 1)} rounded-sm border border-white/10 p-3`}
-                delay={index * 0.08}
-                key={card.id}
-                data-tina-field={tinaField(card)}
-                y={0}
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
-                  <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(card, "description")}>
-                  {card.description}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <HeroAction action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} />
-            <HeroAction action={home.hero.secondaryAction} field={tinaField(home.hero, "secondaryAction")} />
-          </div>
-        </div>
-      </Reveal>
-    </section>
-  )
-}
-
-function TestimonialsMarqueeSection({ section }: { section: HomeContent["testimonialsSection"] }) {
-  if (!section.visible || !section.items.length) {
-    return null
-  }
-
-  const marqueeItems: TestimonialItem[] = [...section.items, ...section.items]
-
-  return (
-    <section className="relative border-y border-white/10 bg-[#101d2e] py-16" data-tina-field={tinaField(section)}>
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(rgba(255,157,74,0.22)_1px,transparent_1px)] [background-size:22px_22px]" />
-      <div className="relative mx-auto max-w-7xl px-4">
-        <Reveal as="div" className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]" data-tina-field={tinaField(section, "kicker")}>
-            {section.kicker}
-          </p>
-          <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-            <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
-          </h2>
-        </Reveal>
-      </div>
-
-      <div className="relative left-1/2 mt-9 w-screen -translate-x-1/2 overflow-hidden">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-[linear-gradient(90deg,#101d2e_0%,rgba(16,29,46,0)_100%)]" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-[linear-gradient(270deg,#101d2e_0%,rgba(16,29,46,0)_100%)]" />
-        <ul className="marquee-track flex w-max gap-4 px-4 sm:px-6 lg:px-10 [--marquee-duration:62s]">
-          {marqueeItems.map((item, index) => (
-            <li
-              className={`${getGradientVariant(index)} w-[20rem] shrink-0 rounded-md border border-white/12 px-5 py-5 shadow-[0_14px_30px_rgba(0,0,0,0.24)] sm:w-[24rem]`}
-              data-tina-field={tinaField(item)}
-              key={`${item.id}-${index}`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffb67f]" data-tina-field={tinaField(item, "company")}>
-                  {item.company}
-                </p>
-                <Quote aria-hidden className="size-4 text-[#ff9d4a]" />
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-slate-200" data-tina-field={tinaField(item, "quote")}>
-                {item.quote}
-              </p>
-              <div className="mt-5 flex items-end justify-between gap-3 border-t border-white/10 pt-3">
-                <div>
-                  <p className="text-sm font-semibold text-white" data-tina-field={tinaField(item, "person")}>
-                    {item.person}
-                  </p>
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-300" data-tina-field={tinaField(item, "role")}>
-                    {item.role}
-                  </p>
-                </div>
-                {item.metric ? (
-                  <span className="rounded-full border border-[#ff9d4a]/45 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#ffc998]" data-tina-field={tinaField(item, "metric")}>
-                    {item.metric}
-                  </span>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-function TrustedByMarqueeSection({ section, site }: { section: HomeContent["trustedBySection"]; site: SiteConfig }) {
-  if (!section.visible || !section.logos.length) {
-    return null
-  }
-
-  const partnerBandLabel = resolveSiteUiText(site, "home.trustedBy.partnerBandLabel", "Infinite partner band")
-
-  const marqueeItems: TrustedLogoItem[] = [...section.logos, ...section.logos, ...section.logos]
-
-  return (
-    <section className="relative border-b border-white/8 bg-[#182739] py-12" data-tina-field={tinaField(section)}>
-      <div className="mx-auto max-w-7xl px-4">
-        <Reveal as="div" className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]" data-tina-field={tinaField(section, "kicker")}>
-              {section.kicker}
-            </p>
-            <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em] text-white sm:text-2xl" data-tina-field={tinaField(section, "title")}>
-              {section.title}
-            </h2>
-          </div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-300" data-tina-field={partnerBandLabel.field}>{partnerBandLabel.value}</p>
-        </Reveal>
-      </div>
-
-      <div className="relative left-1/2 mt-7 w-screen -translate-x-1/2 overflow-hidden">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-[linear-gradient(90deg,#182739_0%,rgba(24,39,57,0)_100%)]" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-[linear-gradient(270deg,#182739_0%,rgba(24,39,57,0)_100%)]" />
-        <div className="marquee-track marquee-track-reverse flex w-max items-center gap-3 px-4 sm:px-6 lg:px-10 [--marquee-duration:34s]">
-          {marqueeItems.map((logo, index) => (
-            <div
-              className="flex shrink-0 items-center gap-3 rounded-full border border-white/15 bg-white/6 px-4 py-2.5 backdrop-blur"
-              data-tina-field={tinaField(logo)}
-              key={`${logo.id}-${index}`}
-            >
-              <span className="inline-flex size-8 items-center justify-center rounded-full bg-[#ff9d4a] text-[11px] font-bold uppercase tracking-[0.08em] text-[#0f1b2b]" data-tina-field={tinaField(logo, "abbreviation")}>
-                {logo.abbreviation}
-              </span>
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-100" data-tina-field={tinaField(logo, "name")}>
-                {logo.name}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function CommandCtaSection({ home, site }: { home: HomeContent; site: SiteConfig }) {
-  const nextStepKicker = resolveSiteUiText(site, "home.commandCta.kicker", "Immediate Next Step")
-  const nextStepHeading = resolveSiteUiText(
-    site,
-    "home.commandCta.heading",
-    "Start With A Fast Scope Call, Leave With A Clear Power Plan"
-  )
-  const nextStepBodySuffix = resolveSiteUiText(
-    site,
-    "home.commandCta.bodySuffix",
-    "Talk to a specialist and get a practical recommendation for sizing, timeline, and on-site support options."
-  )
-  const trustSnippetTitle1 = resolveSiteUiText(site, "home.commandCta.trustSnippet.title.1", "Transparent Technical Advice")
-  const trustSnippetBody1 = resolveSiteUiText(
-    site,
-    "home.commandCta.trustSnippet.body.1",
-    "Clear options around duty cycle, runtime, and compliance so project teams can decide quickly."
-  )
-  const trustSnippetTitle2 = resolveSiteUiText(site, "home.commandCta.trustSnippet.title.2", "Field-Tested Delivery Workflow")
-  const trustSnippetBody2 = resolveSiteUiText(
-    site,
-    "home.commandCta.trustSnippet.body.2",
-    "Sales, rental, and support teams stay coordinated from quote through commissioning and handover."
-  )
-  const trustSnippetTitle3 = resolveSiteUiText(site, "home.commandCta.trustSnippet.title.3", "Fast Escalation Path")
-  const trustSnippetBody3 = resolveSiteUiText(
-    site,
-    "home.commandCta.trustSnippet.body.3",
-    "When conditions shift on site, your team has a direct route to practical support and backup actions."
-  )
-
-  return (
-    <section className="bg-[linear-gradient(180deg,var(--site-surface-1)_0%,var(--site-surface-2)_100%)] py-16" data-tina-field={tinaField(home, "hero")}>
-      <div className="mx-auto max-w-7xl px-4">
-        <Reveal
-          as="div"
-          className={`${getGradientVariant(4)} rounded-md border border-[#ff9d4a]/30 px-6 py-8 shadow-[0_16px_34px_rgba(0,0,0,0.26)] md:px-10 md:py-10`}
-        >
-          <div className="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
-            <Reveal as="div" y={0}>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff9d4a]" data-tina-field={nextStepKicker.field}>{nextStepKicker.value}</p>
-              <h2 className="mt-3 font-display text-3xl uppercase tracking-[0.05em] text-white md:text-4xl">
-                <KeywordGradientText dataTinaField={nextStepHeading.field} text={nextStepHeading.value} />
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={tinaField(home.hero, "subheading")}>
-                {home.hero.subheading} <span data-tina-field={nextStepBodySuffix.field}>{nextStepBodySuffix.value}</span>
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <HeroAction action={home.hero.primaryAction} field={tinaField(home.hero, "primaryAction")} />
-                <HeroAction action={home.contactPanel.primaryAction} field={tinaField(home.contactPanel, "primaryAction")} />
-              </div>
-            </Reveal>
-
-            <div className="grid gap-3">
-              <Reveal as="div" y={0}>
-                <TrustSnippet
-                  bodyField={trustSnippetBody1.field}
-                  icon={ShieldCheck}
-                  title={trustSnippetTitle1.value}
-                  titleField={trustSnippetTitle1.field}
-                  body={trustSnippetBody1.value}
-                />
-              </Reveal>
-              <Reveal as="div" delay={0.08} y={0}>
-                <TrustSnippet
-                  bodyField={trustSnippetBody2.field}
-                  icon={BadgeCheck}
-                  title={trustSnippetTitle2.value}
-                  titleField={trustSnippetTitle2.field}
-                  body={trustSnippetBody2.value}
-                />
-              </Reveal>
-              <Reveal as="div" delay={0.16} y={0}>
-                <TrustSnippet
-                  bodyField={trustSnippetBody3.field}
-                  icon={PhoneCall}
-                  title={trustSnippetTitle3.value}
-                  titleField={trustSnippetTitle3.field}
-                  body={trustSnippetBody3.value}
-                />
-              </Reveal>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
-function TrustSnippet({
-  body,
-  bodyField,
-  icon: Icon,
-  title,
-  titleField,
-}: {
-  body: string
-  bodyField?: string
-  icon: typeof ShieldCheck
-  title: string
-  titleField?: string
-}) {
-  return (
-    <div className={`${getGradientVariant(2)} rounded-sm border border-white/12 px-4 py-3`}>
-      <div className="flex items-start gap-2.5">
-        <Icon aria-hidden className="mt-0.5 size-4 shrink-0 text-[#ff9d4a]" />
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white" data-tina-field={titleField}>
-            <KeywordGradientText text={title} />
-          </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-[color:var(--site-text-muted)]" data-tina-field={bodyField}>{body}</p>
-        </div>
-      </div>
+    <div className="rounded-md border border-[#e3e3e3] bg-white px-3 py-2.5">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#292929]">{label}</p>
+      <p className="mt-1 text-xs text-[#6b6b6b]">{body}</p>
     </div>
   )
 }
 
-function HeroAction({
-  action,
-  context = "default",
-  field,
+function FeatureStory({
+  actionLabel,
+  actionLabelField,
+  card,
+  image,
+  imageField,
+  linkHref,
+  reverse,
 }: {
-  action: { label: string; href: string; style: "solid" | "outline" | "ghost" }
-  context?: "hero" | "default"
-  field: string
+  actionLabel: string
+  actionLabelField?: string
+  card?: HomeContent["spotlightCards"][number]
+  image: string
+  imageField: string
+  linkHref: string
+  reverse: boolean
 }) {
-  const className =
-    context === "hero"
-      ? action.style === "solid"
-        ? "group inline-flex items-center gap-2 rounded-md bg-[linear-gradient(135deg,#ff9d4a_0%,#ff7426_100%)] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_34px_rgba(255,130,32,0.36)] ring-1 ring-[#ffd6ae]/35 transition duration-300 hover:-translate-y-0.5 hover:brightness-110"
-        : action.style === "outline"
-          ? "rounded-sm border border-[#ff9d4a]/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#ffb67f] transition hover:bg-[#ff8b2b]/18 hover:text-white"
-          : "rounded-sm border border-white/25 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-200 transition hover:border-white/70 hover:text-white"
-      : action.style === "solid"
-        ? "bg-[#ff8b2b] text-white hover:bg-[#ff7f19]"
-        : action.style === "outline"
-          ? "border border-[#ff8b2b] text-[#ff8b2b] hover:bg-[#ff8b2b] hover:text-white"
-          : "border border-white/20 text-slate-200 hover:border-white hover:text-white"
-
-  const baseClassName =
-    context === "hero"
-      ? `w-full justify-center transition sm:w-auto ${className}`
-      : `rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${className}`
-
-  return (
-    <QuoteAwareLink
-      className={baseClassName}
-      data-tina-field={field}
-      href={action.href}
-      quoteLabel={action.label}
-    >
-      {action.label}
-      {context === "hero" && action.style === "solid" ? (
-        <ArrowRight aria-hidden className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-      ) : null}
-    </QuoteAwareLink>
-  )
-}
-
-function ShowcaseSection({
-  section,
-  site,
-}: {
-  section: HomeContent["projectShowcase"] | HomeContent["resourceShowcase"]
-  site: SiteConfig
-}) {
-  if (!section.visible) {
+  if (!card) {
     return null
   }
 
-  const visibleItems = section.items.filter((item) => item.visible)
-  const leadSummary = visibleItems[0]?.summary
-  const secondaryCtaLabel = resolveSiteUiText(site, "home.showcase.secondaryCtaLabel", "Request A Quote /")
-  const readMoreLabel = resolveSiteUiText(site, "home.showcase.readMoreLabel", "Read More /")
-
   return (
-    <section
-      className="bg-[linear-gradient(180deg,var(--site-surface-3)_0%,var(--site-surface-2)_100%)] py-16 even:bg-[linear-gradient(180deg,var(--site-surface-2)_0%,var(--site-surface-3)_100%)]"
-      data-tina-field={tinaField(section)}
-    >
-      <div className="mx-auto max-w-7xl px-4">
-        <Reveal as="div" className="flex flex-wrap items-end justify-between gap-5">
-          <div className="max-w-3xl">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-100">
-              <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
-            </h2>
-              {leadSummary ? <p className="mt-3 text-sm leading-relaxed text-[color:var(--site-text-muted)]">{leadSummary}</p> : null}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <QuoteAwareLink
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.18em] text-[#ff9d4a] transition hover:text-white"
-              data-tina-field={tinaField(section, "ctaHref")}
-              href={section.ctaHref}
-              quoteLabel={section.ctaLabel}
-            >
-              <span data-tina-field={tinaField(section, "ctaLabel")}>{section.ctaLabel}</span>
-            </QuoteAwareLink>
-            <QuoteAwareLink
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition hover:text-[#ff9d4a]"
-              href="/contact"
-              quoteLabel={secondaryCtaLabel.value}
-            >
-              <span data-tina-field={secondaryCtaLabel.field}>{secondaryCtaLabel.value}</span>
-            </QuoteAwareLink>
-          </div>
-        </Reveal>
+    <Reveal as="article" className={`grid gap-5 rounded-lg border border-[#dddddd] bg-white p-4 md:p-5 ${reverse ? "lg:grid-cols-[1fr_0.95fr]" : "lg:grid-cols-[0.95fr_1fr]"}`}>
+      <div className={reverse ? "lg:order-2" : ""}>
+        <p className="inline-flex items-center gap-2 rounded-full border border-[#dfdfdf] bg-[#f7f7f7] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6a6a6a]">
+          <SiteIcon className="size-3.5 text-[#343434]" icon={card.icon} />
+          Section
+        </p>
+        <h3 className="mt-3 text-2xl leading-tight text-[#1f1f1f]" data-tina-field={tinaField(card, "title")}>{card.title}</h3>
+        <p className="mt-3 text-sm leading-relaxed text-[#636363]" data-tina-field={tinaField(card, "description")}>{card.description}</p>
+        <QuoteAwareLink
+          className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#151515] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-black"
+          href={linkHref}
+          quoteLabel={actionLabel}
+        >
+          <span data-tina-field={actionLabelField}>{actionLabel}</span>
+          <ArrowRight className="size-3.5" />
+        </QuoteAwareLink>
+      </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {visibleItems.map((item, index) => (
-            <Reveal
-              as="article"
-              className={`${getGradientVariant(index)} group overflow-hidden rounded-md border border-white/10 transition duration-300 hover:-translate-y-1 hover:border-[#ff8b2b]/55`}
-              delay={index * 0.08}
-              key={item.id}
-              data-tina-field={tinaField(item)}
-            >
-              <div className="relative overflow-hidden">
-                <Image
-                  alt={item.title}
-                  className="h-44 w-full object-cover transition duration-500 group-hover:scale-105"
-                  data-tina-field={tinaField(item, "image")}
-                  height={520}
-                  src={item.image}
-                  width={680}
-                />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_35%,rgba(8,15,24,0.55)_100%)]" />
-              </div>
-              <div className="space-y-3 px-4 py-5">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-[#ff8b2b]" data-tina-field={tinaField(item, "tag")}>
-                  {item.tag}
-                </p>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">
-                  <KeywordGradientText dataTinaField={tinaField(item, "title")} text={item.title} />
-                </h3>
-                  <p className="text-sm leading-relaxed text-[color:var(--site-text-soft)]" data-tina-field={tinaField(item, "summary")}>
-                  {item.summary}
-                </p>
-
-                {item.galleryImages?.length ? (
-                  <div className="grid grid-cols-3 gap-2" data-tina-field={tinaField(item, "galleryImages")}>
-                    {item.galleryImages.slice(0, 3).map((image) => (
-                      <Image
-                        key={`${item.id}-${image.id}`}
-                        alt={image.alt || item.title}
-                        className="h-14 w-full rounded-sm border border-white/15 object-cover"
-                        data-tina-field={tinaField(image, "src")}
-                        height={120}
-                        src={image.src}
-                        width={180}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-
-                <QuoteAwareLink
-                  className="inline-flex text-xs font-semibold uppercase tracking-[0.16em] text-slate-100 transition group-hover:text-[#ff9d4a]"
-                  data-tina-field={tinaField(item, "href")}
-                  href={item.href}
-                >
-                  <span data-tina-field={readMoreLabel.field}>{readMoreLabel.value}</span>
-                </QuoteAwareLink>
-              </div>
-            </Reveal>
-          ))}
+      <div className={reverse ? "lg:order-1" : ""}>
+        <div className="h-full rounded-lg border border-[#ececec] bg-[radial-gradient(circle_at_18%_18%,#fbe5d8_0%,#f2eff4_45%,#ebeef2_100%)] p-3">
+          <Image
+            alt={card.title}
+            className="h-[240px] w-full rounded-md border border-[#ebebeb] object-cover"
+            data-tina-field={imageField}
+            height={680}
+            src={image}
+            width={1020}
+          />
         </div>
       </div>
-    </section>
+    </Reveal>
+  )
+}
+
+function TrustedLogoPill({
+  logo,
+}: {
+  logo: HomeContent["trustedBySection"]["logos"][number]
+}) {
+  return (
+    <div
+      className="shrink-0 flex items-center justify-center gap-2 rounded-md border border-[#d9d9d9] bg-[#f7f7f7] px-3 py-2.5"
+      data-tina-field={tinaField(logo)}
+    >
+      <span
+        className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-[10px] font-semibold uppercase text-white"
+        data-tina-field={tinaField(logo, "abbreviation")}
+      >
+        {logo.abbreviation}
+      </span>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#323232]" data-tina-field={tinaField(logo, "name")}>
+        {logo.name}
+      </span>
+    </div>
+  )
+}
+
+function ActionLink({
+  action,
+  field,
+  tone,
+}: {
+  action: HomeAction
+  field: string
+  tone: "dark" | "light" | "ghost" | "ink" | "outline"
+}) {
+  const className =
+    tone === "dark"
+      ? "inline-flex items-center gap-2 rounded-md bg-[#111111] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-black"
+      : tone === "light"
+        ? "inline-flex items-center gap-2 rounded-md border border-white/55 bg-white/88 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1c1c1c] transition hover:bg-white"
+        : tone === "ghost"
+          ? "inline-flex items-center gap-2 rounded-md border border-white/42 bg-transparent px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-white/14"
+          : tone === "ink"
+            ? "inline-flex items-center gap-2 rounded-md bg-[#171717] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-black"
+            : "inline-flex items-center gap-2 rounded-md border border-[#272727] bg-white px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#222222] transition hover:bg-[#f4f4f4]"
+
+  return (
+    <QuoteAwareLink className={className} data-tina-field={field} href={action.href} quoteLabel={action.label}>
+      {action.label}
+      {tone === "dark" || tone === "ink" ? <ArrowRight className="size-3.5" /> : null}
+    </QuoteAwareLink>
   )
 }

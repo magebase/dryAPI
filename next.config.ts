@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
+import nextra from "nextra";
+
+import { remarkNextraVersioning } from "./src/lib/nextra-versioning-plugin";
 
 const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"]);
 const FALSE_VALUES = new Set(["0", "false", "no", "off", "disabled"]);
@@ -114,6 +117,16 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development" || !pwaEnabled,
 });
 
+const withNextra = nextra({
+  contentDirBasePath: "/docs",
+  search: {
+    codeblocks: false,
+  },
+  mdxOptions: {
+    remarkPlugins: [[remarkNextraVersioning, { currentVersion: "v1" }]],
+  },
+});
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -165,4 +178,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist(nextConfig);
+export default withNextra(withSerwist(nextConfig));

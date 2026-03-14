@@ -1,0 +1,2445 @@
+# OpenAPI
+
+```json
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "deAPI REST API",
+    "description": "Decentralized AI inference API for image generation, video processing, audio transcription, and more.",
+    "contact": {
+      "name": "deAPI Support",
+      "url": "https://deapi.ai",
+      "email": "support@deapi.ai"
+    },
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "https://api.deapi.ai",
+      "description": "Production API Server base URL"
+    }
+  ],
+  "paths": {
+    "/api/v1/client/aud2video": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for requesting audio2video inference",
+        "operationId": "requestAud2Video",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Audio to video generation parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              # OpenAPI
+
+              This page shows the live OpenAPI descriptor served by the Hono API gateway. The interactive preview is shown at the right.
+
+              <OpenApiViewer />
+
+              You can fetch the raw spec at `/openapi.json`.
+
+                    "description": "The model to use for music generation. Available models can be retrieved via the GET /api/v1/client/models endpoint.",
+                    "type": "string",
+                    "example": "ACE-Step-v1.5-turbo"
+                  },
+                  "lyrics": {
+                    "description": "Lyrics for the music. Use \"[Instrumental]\" for instrumental tracks without vocals.",
+                    "type": "string",
+                    "example": "[Instrumental]"
+                  },
+                  "duration": {
+                    "description": "Duration in seconds (10-600)",
+                    "type": "number",
+                    "example": 30
+                  },
+                  "bpm": {
+                    "description": "Beats per minute (30-300)",
+                    "type": "integer",
+                    "example": 120,
+                    "nullable": true
+                  },
+                  "keyscale": {
+                    "description": "Musical key/scale (e.g. \"C major\", \"F# minor\")",
+                    "type": "string",
+                    "example": "C major",
+                    "nullable": true
+                  },
+                  "timesignature": {
+                    "description": "Time signature. Must be 2, 3, 4, or 6.",
+                    "type": "integer",
+                    "example": 4,
+                    "nullable": true
+                  },
+                  "vocal_language": {
+                    "description": "Language code for vocals (e.g. \"en\", \"es\", \"fr\")",
+                    "type": "string",
+                    "example": "en",
+                    "nullable": true
+                  },
+                  "inference_steps": {
+                    "description": "Number of diffusion inference steps (1-100). Use 8 for turbo models, 32+ for base models.",
+                    "type": "integer",
+                    "example": 8
+                  },
+                  "guidance_scale": {
+                    "description": "Classifier-free guidance scale (0-20)",
+                    "type": "number",
+                    "example": 7
+                  },
+                  "seed": {
+                    "description": "Random seed. Use -1 for random.",
+                    "type": "integer",
+                    "example": -1
+                  },
+                  "format": {
+                    "description": "Audio output format",
+                    "type": "string",
+                    "example": "flac"
+                  },
+                  "reference_audio": {
+                    "description": "Optional reference audio file for style transfer. Supported formats: mp3, wav, flac, ogg, m4a. Max size configurable (default 10MB). Duration must be within model-specific limits.",
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  },
+                  "webhook_url": {
+                    "description": "Optional HTTPS URL to receive webhook notifications for job status changes (processing, completed, failed). Must be HTTPS. Max 2048 characters.",
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048,
+                    "example": "https://your-server.com/webhooks/deapi",
+                    "nullable": true
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID of the inference request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequestResponseResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/txt2music/price-calculation": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for calculating price for text2music inference. Requires duration and inference_steps parameters.",
+        "operationId": "requestPriceForTxt2Music",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Music generation parameters for price calculation.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "model",
+                  "duration",
+                  "inference_steps"
+                ],
+                "properties": {
+                  "model": {
+                    "description": "The model to use for music generation. Available models can be retrieved via the GET /api/v1/client/models endpoint.",
+                    "type": "string",
+                    "example": "ACE-Step-v1.5-turbo"
+                  },
+                  "duration": {
+                    "description": "Duration in seconds (10-600)",
+                    "type": "number",
+                    "example": 30
+                  },
+                  "inference_steps": {
+                    "description": "Number of diffusion inference steps (1-100). Use 8 for turbo models, 32+ for base models.",
+                    "type": "integer",
+                    "example": 8
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated price for text2music inference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "price": {
+                          "description": "Calculated price for the inference",
+                          "type": "number",
+                          "format": "float",
+                          "example": 0.25
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/videofile2txt": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for requesting video transcription",
+        "operationId": "requestVidFile2Txt",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video transcription parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "video",
+                  "include_ts"
+                ],
+                "properties": {
+                  "video": {
+                    "description": "Video file to transcribe. Supported formats: MP4, MPEG, QuickTime (MOV), AVI, WMV, OGG. Maximum file size: 10 MB. Video must contain an audio stream.",
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "include_ts": {
+                    "description": "Should transcription include timestamps",
+                    "type": "boolean"
+                  },
+                  "model": {
+                    "description": "The model to use for generation",
+                    "type": "string",
+                    "example": "WhisperLargeV3"
+                  },
+                  "return_result_in_response": {
+                    "description": "If true, the result will be returned directly in the response instead of only download url. Optional parameter.",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false,
+                    "nullable": true
+                  },
+                  "webhook_url": {
+                    "description": "Optional HTTPS URL to receive webhook notifications for job status changes (processing, completed, failed). Must be HTTPS. Max 2048 characters. See [Webhook Documentation](/execution-modes-and-integrations/webhooks) for payload structure and authentication details.",
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048,
+                    "example": "https://your-server.com/webhooks/deapi",
+                    "nullable": true
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID of the inference request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequestResponseResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/videofile2txt/price-calculation": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for calculating price for video to text inference",
+        "operationId": "requestPriceForVidFile2Text",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video transcription parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "required": [
+                      "video",
+                      "include_ts"
+                    ],
+                    "properties": {
+                      "video": {
+                        "description": "Video file to transcribe. Supported formats: MP4, MPEG, QuickTime (MOV), AVI, WMV, OGG. Maximum file size: 10 MB. Video must contain an audio stream.",
+                        "type": "string",
+                        "format": "binary"
+                      },
+                      "include_ts": {
+                        "description": "Should transcription include timestamps",
+                        "type": "boolean"
+                      },
+                      "model": {
+                        "description": "The model to use for generation",
+                        "type": "string",
+                        "example": "WhisperLargeV3"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "required": [
+                      "duration_seconds",
+                      "include_ts"
+                    ],
+                    "properties": {
+                      "duration_seconds": {
+                        "description": "Duration of video in seconds for price calculation",
+                        "type": "integer",
+                        "example": 120
+                      },
+                      "include_ts": {
+                        "description": "Should transcription include timestamps",
+                        "type": "boolean"
+                      },
+                      "model": {
+                        "description": "The model to use for generation",
+                        "type": "string",
+                        "example": "WhisperLargeV3"
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated price for video to text inference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "price": {
+                          "description": "Calculated price for the inference",
+                          "type": "number",
+                          "format": "float",
+                          "example": 0.25
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/vid-rmbg": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for requesting video background removal inference",
+        "operationId": "requestVidRemoveBg",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video background removal parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "video",
+                  "model"
+                ],
+                "properties": {
+                  "video": {
+                    "description": "Video file to remove background from. Supported formats: MP4, MPEG, QuickTime, AVI, WMV, OGG. Maximum file size: 10 MB.",
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "model": {
+                    "description": "The background removal model to use",
+                    "type": "string",
+                    "example": "RMBG-1.4"
+                  },
+                  "webhook_url": {
+                    "description": "Optional HTTPS URL to receive webhook notifications for job status changes (processing, completed, failed). Must be HTTPS. Max 2048 characters. See [Webhook Documentation](/execution-modes-and-integrations/webhooks) for payload structure and authentication details.",
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048,
+                    "example": "https://your-server.com/webhooks/deapi",
+                    "nullable": true
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID of the inference request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequestResponseResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/vid-rmbg/price-calculation": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for calculating price for video background removal inference",
+        "operationId": "requestPriceForVidRemoveBg",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video background removal parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "required": [
+                      "video",
+                      "model"
+                    ],
+                    "properties": {
+                      "video": {
+                        "description": "Video file to remove background from. Supported formats: MP4, MPEG, QuickTime, AVI, WMV, OGG. Maximum file size: 10 MB.",
+                        "type": "string",
+                        "format": "binary"
+                      },
+                      "model": {
+                        "description": "The background removal model to use",
+                        "type": "string",
+                        "example": "RMBG-1.4"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "required": [
+                      "width",
+                      "height",
+                      "model"
+                    ],
+                    "properties": {
+                      "width": {
+                        "description": "Width of video in pixels for price calculation",
+                        "type": "integer",
+                        "example": 1920
+                      },
+                      "height": {
+                        "description": "Height of video in pixels for price calculation",
+                        "type": "integer",
+                        "example": 1080
+                      },
+                      "model": {
+                        "description": "The background removal model to use",
+                        "type": "string",
+                        "example": "RMBG-1.4"
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated price for video background removal inference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "price": {
+                          "description": "Calculated price for the inference",
+                          "type": "number",
+                          "format": "float",
+                          "example": 0.25
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/vid2txt": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for requesting video transcription",
+        "operationId": "requestVid2Txt",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video transcription parameters",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "video_url",
+                  "include_ts"
+                ],
+                "properties": {
+                  "video_url": {
+                    "description": "Public video URL to transcribe. Supported platforms: YouTube, TikTok, Twitch, Kick, X.",
+                    "type": "string",
+                    "example": "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+                  },
+                  "include_ts": {
+                    "description": "Should transcription include timestamps",
+                    "type": "boolean"
+                  },
+                  "model": {
+                    "description": "The model to use for transcription. Available models can be retrieved via the GET /api/v1/client/models endpoint.",
+                    "type": "string",
+                    "example": "WhisperLargeV3"
+                  },
+                  "return_result_in_response": {
+                    "description": "If true, the result will be returned directly in the response instead of only download url. Optional parameter.",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false,
+                    "nullable": true
+                  },
+                  "webhook_url": {
+                    "description": "Optional HTTPS URL to receive webhook notifications for job status changes (processing, completed, failed). Must be HTTPS. Max 2048 characters. See [Webhook Documentation](/execution-modes-and-integrations/webhooks) for payload structure and authentication details.",
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048,
+                    "example": "https://your-server.com/webhooks/deapi",
+                    "nullable": true
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID of the inference request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequestResponseResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/vid2txt/price-calculation": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for calculating price for video to text inference",
+        "operationId": "requestPriceForVid2Text",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video transcription parameters",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "video_url",
+                  "include_ts"
+                ],
+                "properties": {
+                  "video_url": {
+                    "description": "URL of video to transcribe",
+                    "type": "string",
+                    "example": "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+                  },
+                  "include_ts": {
+                    "description": "Should transcription include timestamps",
+                    "type": "boolean"
+                  },
+                  "model": {
+                    "description": "The model to use for transcription. Available models can be retrieved via the GET /api/v1/client/models endpoint.",
+                    "type": "string",
+                    "example": "WhisperLargeV3"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated price for video to text inference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "price": {
+                          "description": "Calculated price for the inference",
+                          "type": "number",
+                          "format": "float",
+                          "example": 0.25
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/vid-upscale": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for requesting video upscaling inference",
+        "operationId": "requestVidUpscale",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video upscaling parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "video",
+                  "model"
+                ],
+                "properties": {
+                  "video": {
+                    "description": "Video file to upscale. Supported formats: MP4, MPEG, QuickTime, AVI, WMV, OGG. Maximum file size: 10 MB.",
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "model": {
+                    "description": "The upscaling model to use",
+                    "type": "string",
+                    "example": "RealESRGAN_x4plus"
+                  },
+                  "webhook_url": {
+                    "description": "Optional HTTPS URL to receive webhook notifications for job status changes (processing, completed, failed). Must be HTTPS. Max 2048 characters. See [Webhook Documentation](/execution-modes-and-integrations/webhooks) for payload structure and authentication details.",
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048,
+                    "example": "https://your-server.com/webhooks/deapi",
+                    "nullable": true
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ID of the inference request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequestResponseResource"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/client/vid-upscale/price-calculation": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "description": "Endpoint for calculating price for video upscaling inference",
+        "operationId": "requestPriceForVidUpscale",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AcceptHeader"
+          }
+        ],
+        "requestBody": {
+          "description": "Video upscaling parameters",
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "required": [
+                      "video",
+                      "model"
+                    ],
+                    "properties": {
+                      "video": {
+                        "description": "Video file to upscale. Supported formats: MP4, MPEG, QuickTime, AVI, WMV, OGG. Maximum file size: 10 MB.",
+                        "type": "string",
+                        "format": "binary"
+                      },
+                      "model": {
+                        "description": "The upscaling model to use",
+                        "type": "string",
+                        "example": "RealESRGAN_x4plus"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "required": [
+                      "width",
+                      "height",
+                      "model"
+                    ],
+                    "properties": {
+                      "width": {
+                        "description": "Width of video in pixels for price calculation",
+                        "type": "integer",
+                        "example": 1920
+                      },
+                      "height": {
+                        "description": "Height of video in pixels for price calculation",
+                        "type": "integer",
+                        "example": 1080
+                      },
+                      "model": {
+                        "description": "The upscaling model to use",
+                        "type": "string",
+                        "example": "RealESRGAN_x4plus"
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculated price for video upscaling inference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "price": {
+                          "description": "Calculated price for the inference",
+                          "type": "number",
+                          "format": "float",
+                          "example": 0.25
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/response_error_default"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "response_error_unprocessable_entity": {
+        "properties": {
+          "data": {
+            "description": "Information from success endpoint",
+            "type": "object"
+          },
+          "message": {
+            "description": "Error general message",
+            "type": "string"
+          },
+          "errors": {
+            "description": "Information about errors",
+            "type": "array",
+            "items": {
+              "properties": {
+                "field": {
+                  "description": "Field name",
+                  "type": "string"
+                },
+                "messages": {
+                  "description": "Array of error messages",
+                  "type": "array",
+                  "items": {}
+                }
+              },
+              "type": "object"
+            }
+          },
+          "statusCode": {
+            "description": "Status code",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "response_error_default": {
+        "properties": {
+          "data": {
+            "description": "Information from success endpoint",
+            "type": "object"
+          },
+          "message": {
+            "description": "Error general message",
+            "type": "string"
+          },
+          "errors": {
+            "description": "Information about errors",
+            "type": "array",
+            "items": {}
+          },
+          "statusCode": {
+            "description": "Status code",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "response_error_rate_limit": {
+        "description": "Rate limit exceeded response",
+        "properties": {
+          "message": {
+            "description": "Error message",
+            "type": "string",
+            "example": "Too Many Attempts."
+          }
+        },
+        "type": "object"
+      },
+      "WebhookHeaders": {
+        "title": "Webhook Request Headers",
+        "description": "Headers included in all webhook notification requests. Use these to verify authenticity and process events.",
+        "properties": {
+          "X-DeAPI-Signature": {
+            "description": "HMAC-SHA256 signature for payload verification. Format: sha256=<hex-encoded-hmac>. Calculate as: HMAC-SHA256(key: webhook_secret, message: timestamp + \".\" + raw_json_payload)",
+            "type": "string",
+            "example": "sha256=5d41402abc4b2a76b9719d911017c592ae3b1e3c8a89f5f8c9d7e6f5a4b3c2d1"
+          },
+          "X-DeAPI-Timestamp": {
+            "description": "Unix timestamp when the webhook was sent. Use for replay attack prevention - reject requests older than 5 minutes.",
+            "type": "integer",
+            "example": 1705315800
+          },
+          "X-DeAPI-Event": {
+            "description": "The type of event that triggered this webhook",
+            "type": "string",
+            "enum": [
+              "job.processing",
+              "job.completed",
+              "job.failed"
+            ],
+            "example": "job.completed"
+          },
+          "X-DeAPI-Delivery-Id": {
+            "description": "Unique identifier for this webhook delivery. Use for idempotency handling.",
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookProcessingPayload": {
+        "title": "Webhook Payload - Job Processing",
+        "description": "Payload sent when a job transitions from pending to processing state. Indicates a worker has started processing the job.",
+        "required": [
+          "event",
+          "delivery_id",
+          "timestamp",
+          "data"
+        ],
+        "properties": {
+          "event": {
+            "description": "The event type",
+            "type": "string",
+            "example": "job.processing"
+          },
+          "delivery_id": {
+            "description": "Unique identifier for this delivery",
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "timestamp": {
+            "description": "ISO 8601 timestamp when the event occurred",
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "data": {
+            "description": "Event-specific data",
+            "required": [
+              "job_request_id",
+              "status",
+              "previous_status",
+              "job_type",
+              "started_at"
+            ],
+            "properties": {
+              "job_request_id": {
+                "description": "The UUID of the job request",
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426614174000"
+              },
+              "status": {
+                "description": "Current job status",
+                "type": "string",
+                "example": "processing"
+              },
+              "previous_status": {
+                "description": "Previous job status",
+                "type": "string",
+                "example": "pending"
+              },
+              "job_type": {
+                "description": "Type of inference job",
+                "type": "string",
+                "enum": [
+                  "txt2img",
+                  "img2txt",
+                  "txt2audio",
+                  "vid2txt",
+                  "aud2txt",
+                  "txt2video",
+                  "img2video",
+                  "img2img",
+                  "img_upscale",
+                  "img_rmbg",
+                  "vid_upscale",
+                  "vid_rmbg",
+                  "txt2embedding",
+                  "videofile2txt",
+                  "audiofile2txt"
+                ],
+                "example": "txt2img"
+              },
+              "started_at": {
+                "description": "ISO 8601 timestamp when processing started",
+                "type": "string",
+                "format": "date-time",
+                "example": "2024-01-15T10:30:00.000Z"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookCompletedPayload": {
+        "title": "Webhook Payload - Job Completed",
+        "description": "Payload sent when a job completes successfully. Includes the result URL for downloading the output.",
+        "required": [
+          "event",
+          "delivery_id",
+          "timestamp",
+          "data"
+        ],
+        "properties": {
+          "event": {
+            "description": "The event type",
+            "type": "string",
+            "example": "job.completed"
+          },
+          "delivery_id": {
+            "description": "Unique identifier for this delivery",
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          },
+          "timestamp": {
+            "description": "ISO 8601 timestamp when the event occurred",
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:45.000Z"
+          },
+          "data": {
+            "description": "Event-specific data",
+            "required": [
+              "job_request_id",
+              "status",
+              "previous_status",
+              "job_type",
+              "completed_at",
+              "result_url",
+              "processing_time_ms"
+            ],
+            "properties": {
+              "job_request_id": {
+                "description": "The UUID of the job request",
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426614174000"
+              },
+              "status": {
+                "description": "Current job status",
+                "type": "string",
+                "example": "done"
+              },
+              "previous_status": {
+                "description": "Previous job status",
+                "type": "string",
+                "example": "processing"
+              },
+              "job_type": {
+                "description": "Type of inference job",
+                "type": "string",
+                "enum": [
+                  "txt2img",
+                  "img2txt",
+                  "txt2audio",
+                  "vid2txt",
+                  "aud2txt",
+                  "txt2video",
+                  "img2video",
+                  "img2img",
+                  "img_upscale",
+                  "img_rmbg",
+                  "vid_upscale",
+                  "vid_rmbg",
+                  "txt2embedding",
+                  "videofile2txt",
+                  "audiofile2txt"
+                ],
+                "example": "txt2img"
+              },
+              "completed_at": {
+                "description": "ISO 8601 timestamp when the job completed",
+                "type": "string",
+                "format": "date-time",
+                "example": "2024-01-15T10:30:45.000Z"
+              },
+              "result_url": {
+                "description": "URL to download the job result",
+                "type": "string",
+                "format": "uri",
+                "example": "https://storage.deapi.ai/results/123e4567-e89b-12d3-a456-426614174000/output.png"
+              },
+              "processing_time_ms": {
+                "description": "Total processing time in milliseconds",
+                "type": "integer",
+                "example": 45000
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookFailedPayload": {
+        "title": "Webhook Payload - Job Failed",
+        "description": "Payload sent when a job fails during processing. Includes error details for debugging.",
+        "required": [
+          "event",
+          "delivery_id",
+          "timestamp",
+          "data"
+        ],
+        "properties": {
+          "event": {
+            "description": "The event type",
+            "type": "string",
+            "example": "job.failed"
+          },
+          "delivery_id": {
+            "description": "Unique identifier for this delivery",
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440002"
+          },
+          "timestamp": {
+            "description": "ISO 8601 timestamp when the event occurred",
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:45.000Z"
+          },
+          "data": {
+            "description": "Event-specific data",
+            "required": [
+              "job_request_id",
+              "status",
+              "previous_status",
+              "job_type",
+              "failed_at",
+              "error_code",
+              "error_message"
+            ],
+            "properties": {
+              "job_request_id": {
+                "description": "The UUID of the job request",
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426614174000"
+              },
+              "status": {
+                "description": "Current job status",
+                "type": "string",
+                "example": "error"
+              },
+              "previous_status": {
+                "description": "Previous job status",
+                "type": "string",
+                "example": "processing"
+              },
+              "job_type": {
+                "description": "Type of inference job",
+                "type": "string",
+                "enum": [
+                  "txt2img",
+                  "img2txt",
+                  "txt2audio",
+                  "vid2txt",
+                  "aud2txt",
+                  "txt2video",
+                  "img2video",
+                  "img2img",
+                  "img_upscale",
+                  "img_rmbg",
+                  "vid_upscale",
+                  "vid_rmbg",
+                  "txt2embedding",
+                  "videofile2txt",
+                  "audiofile2txt"
+                ],
+                "example": "txt2img"
+              },
+              "failed_at": {
+                "description": "ISO 8601 timestamp when the job failed",
+                "type": "string",
+                "format": "date-time",
+                "example": "2024-01-15T10:30:45.000Z"
+              },
+              "error_code": {
+                "description": "Machine-readable error code",
+                "type": "string",
+                "enum": [
+                  "WORKER_TIMEOUT",
+                  "PROCESSING_ERROR",
+                  "AGE_RESTRICTED",
+                  "CONTEXT_LENGTH_EXCEEDED",
+                  "INVALID_INPUT",
+                  "UNKNOWN_ERROR"
+                ],
+                "example": "WORKER_TIMEOUT"
+              },
+              "error_message": {
+                "description": "Human-readable error description",
+                "type": "string",
+                "example": "Worker failed to respond within the allowed time"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "AudioToVideoInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for generation",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The main prompt for video generation",
+                "type": "string",
+                "example": "A beautiful sunset over mountains with dramatic music"
+              },
+              "negative_prompt": {
+                "description": "Elements to avoid in the generated video",
+                "type": "string",
+                "example": "blur, darkness, noise",
+                "nullable": true
+              },
+              "audio": {
+                "description": "Base64-encoded audio file for audio conditioning",
+                "type": "string",
+                "format": "binary"
+              },
+              "first_frame_image": {
+                "description": "Base64-encoded image for the first frame of video",
+                "type": "string",
+                "format": "binary",
+                "nullable": true
+              },
+              "last_frame_image": {
+                "description": "Base64-encoded image for the last frame of video",
+                "type": "string",
+                "format": "binary",
+                "nullable": true
+              },
+              "width": {
+                "description": "Width of the generated video in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "height": {
+                "description": "Height of the generated video in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "guidance": {
+                "description": "Guidance scale for the generation",
+                "type": "number",
+                "example": 7.5
+              },
+              "steps": {
+                "description": "Number of inference steps",
+                "type": "integer",
+                "example": 50
+              },
+              "frames": {
+                "description": "Number of video frames to generate",
+                "type": "integer",
+                "example": 97
+              },
+              "fps": {
+                "description": "FPS of generated video",
+                "type": "integer",
+                "example": 24
+              },
+              "seed": {
+                "description": "Random seed for generation",
+                "type": "integer",
+                "example": 42
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "AudioFileToTextInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for generation",
+                "type": "string"
+              },
+              "file_url": {
+                "description": "URL of audio file to transcribe",
+                "type": "string"
+              },
+              "include_ts": {
+                "description": "Should transcription include timestamps",
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "ClientDiffusionModelResource": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "inference_types": {
+            "description": "Available inference types for this model with their specific configurations",
+            "type": "object"
+          },
+          "info": {
+            "description": "Model specifications including limits, features, and defaults. Structure varies by model type.",
+            "type": "object",
+            "example": {
+              "limits": {
+                "min_width": 64,
+                "max_width": 2048,
+                "min_height": 64,
+                "max_height": 2048,
+                "min_steps": 1,
+                "max_steps": 150,
+                "min_cfg_scale": 1,
+                "max_cfg_scale": 30,
+                "min_duration": 0.5,
+                "max_duration": 10,
+                "min_fps": 8,
+                "max_fps": 30
+              },
+              "features": {
+                "supports_last_frame": true,
+                "supports_negative_prompt": true,
+                "supports_controlnet": false,
+                "supports_lora": true,
+                "supports_voice_presets": true,
+                "supports_custom_voice": false
+              },
+              "defaults": {
+                "width": 512,
+                "height": 512,
+                "steps": 20,
+                "cfg_scale": 7.5,
+                "negative_prompt": "no disfigurations",
+                "fps": 24,
+                "duration": 4,
+                "voice": "alloy"
+              }
+            },
+            "additionalProperties": true
+          },
+          "loras": {
+            "description": "Available LoRA models for this diffusion model. Only present when the model supports LoRA and has LoRA models available.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientLoraResource"
+            },
+            "nullable": true
+          },
+          "languages": {
+            "description": "Available languages and voices for this model. Only present for TTS models that support multiple languages.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientLanguageResource"
+            },
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "ClientDiffusionModelCollection": {
+        "properties": {
+          "data": {
+            "description": "List of available models",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientDiffusionModelResource"
+            }
+          }
+        },
+        "type": "object"
+      },
+      "ClientInfoResource": {
+        "properties": {
+          "balance": {
+            "description": "Current client balance",
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "type": "object"
+      },
+      "ClientLanguageResource": {
+        "properties": {
+          "name": {
+            "description": "Language display name",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Language identifier slug",
+            "type": "string"
+          },
+          "voices": {
+            "description": "Available voices for this language",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientVoiceResource"
+            }
+          }
+        },
+        "type": "object"
+      },
+      "ClientLoraResource": {
+        "properties": {
+          "display_name": {
+            "description": "Human friendly Lora name",
+            "type": "string"
+          },
+          "name": {
+            "description": "Lora name",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ClientVoiceResource": {
+        "properties": {
+          "name": {
+            "description": "Voice display name",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Voice identifier slug",
+            "type": "string"
+          },
+          "gender": {
+            "description": "Voice gender classification",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "ImageToImageInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for generation",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The main prompt for image generation",
+                "type": "string",
+                "example": "A beautiful sunset over mountains"
+              },
+              "negative_prompt": {
+                "description": "Elements to avoid in the generated image",
+                "type": "string",
+                "example": "blur, darkness, noise",
+                "nullable": true
+              },
+              "image": {
+                "description": "First source image (base64 encoded, for backward compatibility)",
+                "type": "string",
+                "format": "binary"
+              },
+              "images": {
+                "description": "Array of source images with metadata",
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "data": {
+                      "description": "Base64 encoded image data",
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "width": {
+                      "description": "Width of the source image in pixels",
+                      "type": "integer",
+                      "example": 512
+                    },
+                    "height": {
+                      "description": "Height of the source image in pixels",
+                      "type": "integer",
+                      "example": 512
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "width": {
+                "description": "Width of the output image in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "height": {
+                "description": "Height of the output image in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "guidance": {
+                "description": "Guidance scale for the generation",
+                "type": "number",
+                "example": 7.5
+              },
+              "steps": {
+                "description": "Number of inference steps",
+                "type": "integer",
+                "example": 20
+              },
+              "seed": {
+                "description": "Random seed for generation",
+                "type": "integer",
+                "example": 42
+              },
+              "loras": {
+                "description": "Array of LoRA models applied",
+                "type": "array",
+                "items": {
+                  "required": [
+                    "name",
+                    "weight"
+                  ],
+                  "properties": {
+                    "name": {
+                      "description": "Name of the LoRA model",
+                      "type": "string"
+                    },
+                    "weight": {
+                      "description": "Weight of the LoRA model (0-1)",
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1,
+                      "minimum": 0
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "ImageToVideoInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for generation",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The main prompt for video generation",
+                "type": "string",
+                "example": "A beautiful sunset over mountains"
+              },
+              "negative_prompt": {
+                "description": "Elements to avoid in the generated video",
+                "type": "string",
+                "example": "blur, darkness, noise",
+                "nullable": true
+              },
+              "first_frame_image": {
+                "description": "Image for the first frame of video",
+                "type": "string",
+                "format": "binary"
+              },
+              "last_frame_image": {
+                "description": "Image for the last frame of video",
+                "type": "string",
+                "format": "binary",
+                "nullable": true
+              },
+              "width": {
+                "description": "Width of the generated video in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "height": {
+                "description": "Height of the generated video in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "guidance": {
+                "description": "Guidance scale for the generation",
+                "type": "number",
+                "example": 7.5
+              },
+              "steps": {
+                "description": "Number of inference steps",
+                "type": "integer",
+                "example": 20
+              },
+              "frames": {
+                "description": "Number of video frames to generate",
+                "type": "integer",
+                "example": 20
+              },
+              "fps": {
+                "description": "FPS of generated video",
+                "type": "integer",
+                "example": 20
+              },
+              "seed": {
+                "description": "Random seed for generation",
+                "type": "integer",
+                "example": 42
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "JobRequestResponseResource": {
+        "properties": {
+          "data": {
+            "description": "Information from success endpoint",
+            "properties": {
+              "request_id": {
+                "description": "Request Id",
+                "required": [
+                  "request_id"
+                ],
+                "type": "string",
+                "example": "c08a339c-73e5-4d67-a4d5-231302fbff9a"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "JobRequestStatusResource": {
+        "properties": {
+          "data": {
+            "description": "Status response data",
+            "properties": {
+              "status": {
+                "description": "Current status of the job request",
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "processing",
+                  "done",
+                  "error"
+                ]
+              },
+              "preview": {
+                "description": "Preview URL if available",
+                "type": "string",
+                "example": "https://example.com/preview.jpg",
+                "nullable": true
+              },
+              "result_url": {
+                "description": "URL to the result file (e.g. generate image or audio). Only available when status is done",
+                "type": "string",
+                "example": "https://example.com/results/image.jpg",
+                "nullable": true
+              },
+              "results_alt_formats": {
+                "description": "Alternative format URLs for the result (jpg, webp). Only available for image-producing job types when status is done",
+                "properties": {
+                  "jpg": {
+                    "type": "string",
+                    "example": "https://example.com/results/image.jpg",
+                    "nullable": true
+                  },
+                  "webp": {
+                    "type": "string",
+                    "example": "https://example.com/results/image.webp",
+                    "nullable": true
+                  }
+                },
+                "type": "object",
+                "nullable": true
+              },
+              "result": {
+                "description": "Generate text (e.g. transcription) Only available when status is done",
+                "type": "string",
+                "example": "https://example.com/results/image.jpg",
+                "nullable": true
+              },
+              "progress": {
+                "description": "Current progress of the job (0.0 to 100.0)",
+                "type": "number",
+                "format": "float",
+                "maximum": 100,
+                "minimum": 0,
+                "example": 45.5
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "LoraResource": {
+        "properties": {
+          "name": {
+            "description": "Lora name",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Lora slug",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TextToVideoInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for generation",
+                "type": "string"
+              },
+              "prompt": {
+                "description": "The main prompt for video generation",
+                "type": "string",
+                "example": "A beautiful sunset over mountains"
+              },
+              "negative_prompt": {
+                "description": "Elements to avoid in the generated video",
+                "type": "string",
+                "example": "blur, darkness, noise",
+                "nullable": true
+              },
+              "width": {
+                "description": "Width of the generated video in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "height": {
+                "description": "Height of the generated video in pixels",
+                "type": "integer",
+                "example": 512
+              },
+              "guidance": {
+                "description": "Guidance scale for the generation",
+                "type": "number",
+                "example": 7.5
+              },
+              "steps": {
+                "description": "Number of inference steps",
+                "type": "integer",
+                "example": 20
+              },
+              "frames": {
+                "description": "Number of video frames to generate",
+                "type": "integer",
+                "example": 20
+              },
+              "fps": {
+                "description": "FPS of generated video",
+                "type": "integer",
+                "example": 20
+              },
+              "seed": {
+                "description": "Random seed for generation",
+                "type": "integer",
+                "example": 42
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "Txt2MusicInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for music generation",
+                "type": "string"
+              },
+              "caption": {
+                "description": "Text description of the music",
+                "type": "string"
+              },
+              "lyrics": {
+                "description": "Lyrics for the music",
+                "type": "string",
+                "nullable": true
+              },
+              "duration": {
+                "description": "Duration in seconds",
+                "type": "number"
+              },
+              "bpm": {
+                "description": "Beats per minute",
+                "type": "integer",
+                "nullable": true
+              },
+              "keyscale": {
+                "description": "Musical key/scale",
+                "type": "string",
+                "nullable": true
+              },
+              "timesignature": {
+                "description": "Time signature",
+                "type": "integer",
+                "nullable": true
+              },
+              "vocal_language": {
+                "description": "Language for vocals",
+                "type": "string",
+                "nullable": true
+              },
+              "inference_steps": {
+                "description": "Number of inference steps",
+                "type": "integer"
+              },
+              "guidance_scale": {
+                "description": "Guidance scale",
+                "type": "number"
+              },
+              "seed": {
+                "description": "Random seed",
+                "type": "integer"
+              },
+              "format": {
+                "description": "Audio output format",
+                "type": "string",
+                "example": "flac"
+              },
+              "reference_audio": {
+                "description": "Presigned URL for reference audio file (when provided)",
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "VideoFileToTextInferenceJobResource": {
+        "properties": {
+          "data": {
+            "description": "Job settings data",
+            "properties": {
+              "job_id": {
+                "description": "Unique job identifier",
+                "type": "string"
+              },
+              "model": {
+                "description": "Model name used for generation",
+                "type": "string"
+              },
+              "file_url": {
+                "description": "URL of video file to transcribe",
+                "type": "string"
+              },
+              "include_ts": {
+                "description": "Should transcription include timestamps",
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "WorkerDiffusionModelResource": {
+        "properties": {
+          "name": {
+            "description": "Model name",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Model slug",
+            "type": "string"
+          },
+          "is_basic": {
+            "description": "Is model from basic package",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "WorkerDiffusionModelCollection": {
+        "properties": {
+          "data": {
+            "description": "List of available models.",
+            "properties": {
+              "data": {
+                "description": "List of available models",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WorkerDiffusionModelResource"
+                }
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Validation failed. Common errors include: model does not exist, model does not support the inference type for this endpoint, or invalid request parameters.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "message": {
+                  "description": "General error message",
+                  "type": "string",
+                  "example": "The selected model does not support Text To Image."
+                },
+                "errors": {
+                  "description": "Detailed validation errors by field",
+                  "type": "object",
+                  "example": {
+                    "model": [
+                      "The selected model does not support Text To Image."
+                    ]
+                  }
+                }
+              },
+              "type": "object"
+            }
+          }
+        }
+      },
+      "RateLimitExceeded": {
+        "description": "Rate limit exceeded. Check X-RateLimit-Type header to determine if minute (RPM) or daily (RPD) limit was hit.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "description": "Maximum requests allowed per minute (RPM)",
+            "schema": {
+              "type": "integer",
+              "example": 3
+            }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "Remaining requests in current minute window",
+            "schema": {
+              "type": "integer",
+              "example": 0
+            }
+          },
+          "X-RateLimit-Daily-Limit": {
+            "description": "Maximum requests allowed per day (RPD)",
+            "schema": {
+              "type": "integer",
+              "example": 100
+            }
+          },
+          "X-RateLimit-Daily-Remaining": {
+            "description": "Remaining requests in current day window",
+            "schema": {
+              "type": "integer",
+              "example": 95
+            }
+          },
+          "X-RateLimit-Type": {
+            "description": "Type of rate limit exceeded: \"minute\" for RPM, \"daily\" for RPD",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "minute",
+                "daily"
+              ],
+              "example": "minute"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds until rate limit resets (60 for minute, up to 86400 for daily)",
+            "schema": {
+              "type": "integer",
+              "example": 60
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/response_error_rate_limit"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "AcceptHeader": {
+        "name": "Accept",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "default": "application/json",
+          "enum": [
+            "application/json"
+          ]
+        }
+      }
+    },
+    "headers": {
+      "X-RateLimit-Limit": {
+        "description": "Maximum requests allowed per minute (RPM)",
+        "schema": {
+          "type": "integer",
+          "example": 3
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Remaining requests in current minute window",
+        "schema": {
+          "type": "integer",
+          "example": 2
+        }
+      },
+      "X-RateLimit-Daily-Limit": {
+        "description": "Maximum requests allowed per day (RPD)",
+        "schema": {
+          "type": "integer",
+          "example": 100
+        }
+      },
+      "X-RateLimit-Daily-Remaining": {
+        "description": "Remaining requests in current day window",
+        "schema": {
+          "type": "integer",
+          "example": 95
+        }
+      },
+      "X-RateLimit-Type": {
+        "description": "Type of rate limit exceeded (only in 429 responses)",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "minute",
+            "daily"
+          ],
+          "example": "minute"
+        }
+      },
+      "Retry-After": {
+        "description": "Seconds until rate limit resets (only in 429 responses)",
+        "schema": {
+          "type": "integer",
+          "example": 60
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "bearerFormat": "JWT",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Client API",
+      "description": "Endpoints for client operations"
+    }
+  ]
+}
+```
