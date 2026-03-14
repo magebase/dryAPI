@@ -1,4 +1,4 @@
-import { defineConfig } from "tinacms"
+import { LocalAuthProvider, defineConfig } from "tinacms"
 
 const branch =
   process.env.GITHUB_BRANCH ||
@@ -60,9 +60,11 @@ const contentApiUrlOverride = process.env.NEXT_PUBLIC_TINA_CONTENT_API_URL || "/
 
 export default defineConfig({
   branch,
-  clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID || null,
-  token: process.env.TINA_TOKEN || null,
+  // Keep Tina self-hosted and rely on Cloudflare Access for editor protection.
+  clientId: null,
+  token: null,
   contentApiUrlOverride,
+  authProvider: new LocalAuthProvider(),
   build: {
     outputFolder: "admin",
     publicFolder: "public",
