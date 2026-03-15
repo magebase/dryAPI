@@ -153,7 +153,7 @@ export async function getBetterAuthSession(request: Request): Promise<{
     }
   }
 
-  const session = (await response.json()) as BetterAuthSessionResponse
+  const session = (await response.json().catch(() => null)) as BetterAuthSessionResponse
   return {
     session,
     setCookieHeader,

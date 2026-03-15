@@ -1,0 +1,16 @@
+{
+  "name": "@dryapi/runpod-pulumi",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Pulumi program for RunPod serverless image endpoints",
+  "scripts": {
+    "preview": "pulumi preview",
+    "up": "pulumi up",
+    "destroy": "pulumi destroy"
+  },
+  "dependencies": {
+    "@pulumi/pulumi": "^3.200.0",
+    "@runpod-infra/pulumi": "^1.9.99"
+  }
+}

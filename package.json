@@ -57,7 +57,14 @@
     "docs:sync:deapi": "node scripts/sync-deapi-docs.mjs && node scripts/generate-hono-openapi-pages.mjs",
     "pricing:sync:deapi": "node scripts/sync-deapi-pricing.mjs",
     "pricing:sync:deapi:daily": "node scripts/sync-deapi-pricing-daily.mjs",
-    "runpod:endpoints:image:build": "node scripts/build-runpod-image-endpoints.mjs"
+    "models:check:detail-routes": "node scripts/check-model-detail-routes.mjs",
+    "runpod:endpoints:image:optimize-gpu-revenue": "node scripts/optimize-runpod-gpu-revenue.mjs --write",
+    "runpod:endpoints:image:build": "node scripts/build-runpod-image-endpoints.mjs",
+    "runpod:endpoints:image:pulumi:install": "pnpm --dir cloudflare/clients/runpod/pulumi install",
+    "runpod:endpoints:image:pulumi:preview": "bash ./scripts/runpod-endpoints-pulumi.sh preview",
+    "runpod:endpoints:image:pulumi:up": "bash ./scripts/runpod-endpoints-pulumi.sh up",
+    "runpod:endpoints:image:pulumi:destroy": "bash ./scripts/runpod-endpoints-pulumi.sh destroy",
+    "runpod:endpoints:image:redeploy": "bash ./scripts/runpod-endpoints-pulumi-redeploy.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1005.0",

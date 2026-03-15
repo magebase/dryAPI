@@ -108,6 +108,7 @@
   --hero-a: #f04f33;
   --hero-b: #f39f6a;
   --hero-c: #f6c7a7;
+  --copy-slug-hover-fg: oklch(0.24 0.02 210);
 }
 
 .dark {
@@ -150,6 +151,14 @@
   --sidebar-accent-foreground: oklch(0.94 0.01 210);
   --sidebar-border: oklch(0.33 0.01 210);
   --sidebar-ring: var(--cta-cool-mid);
+  --copy-slug-hover-fg: oklch(0.95 0.01 210);
+}
+
+@layer components {
+  .dashboard-copy-slug-button:hover,
+  .dashboard-copy-slug-button:focus-visible {
+    color: var(--copy-slug-hover-fg) !important;
+  }
 }
 
 @layer base {

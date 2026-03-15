@@ -9,9 +9,9 @@ import {
   Bot,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
   KeyRound,
   LayoutDashboard,
+  LogOut,
   Menu,
   MessageCircle,
   Settings2,
@@ -20,8 +20,10 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { modelCategories } from "@/components/site/dashboard/model-categories";
+import { buildModelTaskSectionId } from "@/components/site/dashboard/model-section-id";
+import { cn } from "@/lib/utils";
+import { DryApiLogo } from "../dryapi-logo";
 
 type DashboardShellProps = {
   children: ReactNode;
@@ -55,10 +57,32 @@ function getDisclosureButtonClass(active: boolean) {
 }
 
 export function DashboardShell({ children }: DashboardShellProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [modelsOpen, setModelsOpen] = useState(true);
+  const [signOutPending, setSignOutPending] = useState(false);
   const modelsSectionActive = pathname.startsWith("/dashboard/models");
+
+  async function handleSignOut() {
+    if (signOutPending) {
+      return;
+    }
+
+    setSignOutPending(true);
+
+    try {
+      await fetch("/api/auth/sign-out", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+    } catch {
+      // Redirect regardless so the user can re-authenticate even if sign-out request fails.
+    } finally {
+      setMobileSidebarOpen(false);
+      window.location.replace("/login");
+    }
+  }
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -105,15 +129,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
         >
           <Link
             href="/dashboard"
+            prefetch={false}
             className="mb-1 me-5 flex items-center space-x-2 rtl:space-x-reverse"
             onClick={() => setMobileSidebarOpen(false)}
           >
-            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-zinc-900 text-xs font-semibold tracking-wide text-white dark:bg-zinc-100 dark:text-zinc-900">
-              dA
-            </span>
-            <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-              dryAPI
-            </span>
+            <DryApiLogo size="sm" tone="light" className="!gap-2" />
           </Link>
 
           <nav
@@ -122,6 +142,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           >
             <Link
               href="/dashboard"
+              prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
               className={getNavItemClass(pathname === "/dashboard")}
             >
@@ -163,6 +184,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
                 <Link
                   href="/dashboard/models"
+                  prefetch={false}
                   className={getNavItemClass(
                     pathname === "/dashboard/models",
                     true,
@@ -177,11 +199,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 {modelCategories.map((category) => (
                   <Link
                     key={category.slug}
-                    href={`/dashboard/models/${category.slug}`}
-                    className={getNavItemClass(
-                      pathname === `/dashboard/models/${category.slug}`,
-                      true,
-                    )}
+                    href={`/dashboard/models#${buildModelTaskSectionId(category.slug)}`}
+                    prefetch={false}
+                    className={getNavItemClass(false, true)}
                     onClick={() => setMobileSidebarOpen(false)}
                   >
                     <span className="flex-1 whitespace-nowrap font-medium leading-none">
@@ -194,6 +214,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             <Link
               href="/dashboard/billing"
+              prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
               className={getNavItemClass(
                 isRouteActive(pathname, "/dashboard/billing"),
@@ -207,6 +228,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             <Link
               href="/dashboard/settings/general"
+              prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
               className={getNavItemClass(
                 isRouteActive(pathname, "/dashboard/settings"),
@@ -269,6 +291,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           >
             <Link
               href="/dashboard/settings/api-keys"
+              prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
               className={getNavItemClass(
                 isRouteActive(pathname, "/dashboard/settings/api-keys"),
@@ -282,6 +305,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             <Link
               href="/pricing"
+              prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
               className={getNavItemClass(pathname === "/pricing")}
             >
@@ -293,6 +317,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             <Link
               href="/docs/v1"
+              prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
               className={getNavItemClass(pathname.startsWith("/docs"))}
             >
@@ -301,6 +326,18 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 Documentation
               </span>
             </Link>
+
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className={getNavItemClass(false)}
+              disabled={signOutPending}
+            >
+              <LogOut className="size-4" />
+              <span className="flex-1 whitespace-nowrap text-sm font-medium leading-none">
+                {signOutPending ? "Signing out..." : "Sign out"}
+              </span>
+            </button>
           </nav>
         </aside>
 

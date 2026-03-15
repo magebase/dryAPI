@@ -1,5 +1,7 @@
 pre-commit:
   parallel: true
   commands:
+    models-detail-routes:
+      run: pnpm run -s models:check:detail-routes
     sync-github-en:
       run: bash ./scripts/sync-github-en.sh --env-file .env --best-effort --prune

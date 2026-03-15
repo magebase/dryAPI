@@ -8,6 +8,7 @@ import { registerImageGenerationsRoute } from './images-generations'
 import { registerJobsDownloadRoute } from './jobs-download'
 import { registerJobsStatusRoute } from './jobs-status'
 import { registerJobsWebSocketRoute } from './jobs-websocket'
+import { registerPricingSnapshotsRoute } from './pricing-snapshots'
 import { registerRunpodCancelRoute } from './runpod-cancel'
 import { registerRunpodHealthRoute } from './runpod-health'
 import { registerRunpodPurgeQueueRoute } from './runpod-purge-queue'
@@ -26,6 +27,7 @@ export function registerV1Routes(app: Hono<WorkerEnv>) {
   registerJobsStatusRoute(app)
   registerJobsDownloadRoute(app)
   registerJobsWebSocketRoute(app)
+  registerPricingSnapshotsRoute(app)
   registerWebhookTestRoute(app)
 
   // Internal provider routes retained for operational control.

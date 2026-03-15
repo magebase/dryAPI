@@ -1,6 +1,7 @@
 import { readCachedJson, writeCachedJson } from '../../lib/cache'
-import { persistRunpodEnqueue, persistRunpodStatus, registerJobWebhook } from '../../lib/db'
+import { getCurrentPricingQuote, persistRunpodEnqueue, persistRunpodStatus, registerJobWebhook } from '../../lib/db'
 import { jsonError, jsonUpstreamError } from '../../lib/errors'
+import { applyPriceMultiplier, computePayloadPriceMultiplier } from '../../lib/pricing'
 import { deliverWebhookForJobStatus, dispatchSignedWebhook, toWebhookEvent } from '../../lib/webhooks'
 import {
   dispatchRunpodRequest,
@@ -8,7 +9,7 @@ import {
   extractRunpodStatus,
   resolveRunpodEndpointId,
 } from '../../lib/runpod'
-import { safeParseJson } from '../../lib/validation'
+import { isObjectRecord, safeParseJson } from '../../lib/validation'
 import type { AppContext, RunpodSurface } from '../../types'
 
 export function resolveEndpointIdOrError(args: {
@@ -49,12 +50,50 @@ type ForwardOptions = {
 
 export async function forwardRunpodOperation(options: ForwardOptions): Promise<Response> {
   const { c } = options
+  let pricingHeaderValue: string | null = null
+  let pricingHeaderKey: string | null = null
+  let pricingHeaderSource: string | null = null
+
+  let quotedPriceUsd: number | null = null
+  let priceKey: string | null = null
+  let pricingSource: 'snapshot' | 'fallback' | null = null
 
   if (options.cacheKey) {
     const cached = await readCachedJson<unknown>(c, options.cacheKey)
     if (cached) {
       return c.json(cached, 200, { 'x-cache': 'hit' })
     }
+  }
+
+  if (options.operationPath === 'run' || options.operationPath === 'runsync') {
+    const pricingQuote = await getCurrentPricingQuote({
+      c,
+      surface: options.surface,
+      endpointId: options.endpointId,
+      modelSlug: options.modelSlug ?? null,
+    })
+
+    const payloadForMultiplier = isObjectRecord(options.body) && isObjectRecord(options.body.input)
+      ? options.body.input
+      : isObjectRecord(options.body)
+        ? options.body
+        : {}
+    const payloadMultiplier = computePayloadPriceMultiplier({
+      surface: options.surface,
+      payload: payloadForMultiplier,
+    })
+
+    quotedPriceUsd = applyPriceMultiplier({
+      basePriceUsd: pricingQuote.recommendedPriceUsd,
+      multiplier: payloadMultiplier,
+      roundStepUsd: pricingQuote.roundStepUsd,
+    })
+
+    pricingHeaderValue = String(quotedPriceUsd)
+    pricingHeaderKey = pricingQuote.priceKey
+    pricingHeaderSource = pricingQuote.source
+    priceKey = pricingQuote.priceKey
+    pricingSource = pricingQuote.source
   }
 
   let upstream: Response
@@ -90,6 +129,9 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
         requestHash: options.requestHash ?? null,
         status,
         responsePayload: upstreamPayload,
+        quotedPriceUsd,
+        priceKey,
+        pricingSource,
       })
 
       if (c.executionCtx?.waitUntil) {
@@ -183,6 +225,22 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
     } else {
       await cachePromise
     }
+  }
+
+  if (pricingHeaderValue !== null) {
+    const headers = new Headers(upstream.headers)
+    headers.set('x-dryapi-unit-price-usd', pricingHeaderValue)
+    if (pricingHeaderKey) {
+      headers.set('x-dryapi-price-key', pricingHeaderKey)
+    }
+    if (pricingHeaderSource) {
+      headers.set('x-dryapi-price-source', pricingHeaderSource)
+    }
+
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers,
+    })
   }
 
   return upstream

@@ -1,11 +1,20 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
 
+import { selectGpuCandidates } from "./lib/runpod-gpu-revenue.mjs"
+
 const workspaceRoot = process.cwd()
 const defaultCatalogPath = path.join(workspaceRoot, "cloudflare", "clients", "runpod", "image-model-catalog.json")
 const defaultManifestPath = path.join(workspaceRoot, "cloudflare", "clients", "runpod", "runpod-image-endpoints.manifest.json")
 const defaultEnvExamplePath = path.join(workspaceRoot, "cloudflare", "clients", "runpod", "runpod-image-endpoints.env.example")
 const defaultRequestsPath = path.join(workspaceRoot, "cloudflare", "clients", "runpod", "runpod-image-endpoints.create-requests.json")
+
+const DEFAULT_QUEUE_DELAY_SECONDS = 10
+const DEFAULT_IDLE_TIMEOUT_SECONDS = 60
+const DEFAULT_WORKERS_MIN = 0
+const DEFAULT_WORKERS_MAX = 3
+const DEFAULT_FLASHBOOT = true
+const MIN_GPU_FALLBACK_COUNT = 3
 
 function parseArgs(argv) {
   const args = {
@@ -96,18 +105,31 @@ function getTemplateEnvVar(workerClass) {
   return `RUNPOD_TEMPLATE_ID_${normalizeWorkerClass(workerClass)}`
 }
 
-function inferWorkers(runpodConfig) {
-  const workerClass = runpodConfig.workerClass
-
-  if (workerClass === "ltx-video") {
-    return { min: 0, max: 3 }
+function getMinCudaVersion(runpodConfig) {
+  const configured = String(runpodConfig.minCudaVersion || "").trim()
+  if (configured) {
+    return configured
   }
 
-  if (workerClass === "vlm-ocr") {
-    return { min: 0, max: 4 }
+  return "12.2"
+}
+
+function inferGpuTypes(runpodConfig) {
+  const configured = Array.isArray(runpodConfig.recommendedGpus)
+    ? runpodConfig.recommendedGpus.map((gpuType) => String(gpuType).trim()).filter(Boolean)
+    : []
+
+  if (configured.length >= MIN_GPU_FALLBACK_COUNT) {
+    return configured
   }
 
-  return { min: 0, max: 5 }
+  const selected = selectGpuCandidates({
+    workerClass: runpodConfig.workerClass,
+    minCudaVersion: getMinCudaVersion(runpodConfig),
+    minimumCount: MIN_GPU_FALLBACK_COUNT,
+  })
+
+  return selected.map((gpu) => gpu.gpuType)
 }
 
 function validateCatalog(catalog) {
@@ -134,7 +156,7 @@ function validateCatalog(catalog) {
       }
     }
 
-    const requiredRunpod = ["workerClass", "recommendedGpu", "executionTimeoutMs"]
+    const requiredRunpod = ["workerClass", "executionTimeoutMs"]
     for (const field of requiredRunpod) {
       if (!(field in model.runpod)) {
         throw new Error(`Model ${model.slug} missing runpod.${field}`)
@@ -146,11 +168,15 @@ function validateCatalog(catalog) {
 function buildManifest(catalog) {
   const endpoints = catalog.models.map((model) => {
     const endpointId = toEndpointId(model.slug)
-    const workers = inferWorkers(model.runpod)
+    const gpuTypes = inferGpuTypes(model.runpod)
+    const minCudaVersion = getMinCudaVersion(model.runpod)
+    const huggingFaceModel = model.openSource.kind === "huggingface"
+      ? model.openSource.repo
+      : ""
 
     return {
       endpointId,
-      endpointName: `deapi-${endpointId}`,
+      endpointName: endpointId,
       sourceModel: {
         slug: model.slug,
         displayName: model.displayName,
@@ -167,22 +193,32 @@ function buildManifest(catalog) {
       },
       runpod: {
         workerClass: model.runpod.workerClass,
-        gpuType: model.runpod.recommendedGpu,
+        gpuType: gpuTypes[0],
+        gpuTypes,
+        minCudaVersion,
+        queueDelaySeconds: DEFAULT_QUEUE_DELAY_SECONDS,
+        flashboot: DEFAULT_FLASHBOOT,
         executionTimeoutMs: model.runpod.executionTimeoutMs,
-        idleTimeoutSeconds: 60,
-        workersMin: workers.min,
-        workersMax: workers.max,
+        idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
+        workersMin: DEFAULT_WORKERS_MIN,
+        workersMax: DEFAULT_WORKERS_MAX,
         templateIdEnv: getTemplateEnvVar(model.runpod.workerClass),
       },
       endpointEnvironment: {
         MODEL_SLUG: model.slug,
         MODEL_DISPLAY_NAME: model.displayName,
         MODEL_TASKS: model.tasks.join(","),
+        MODEL_HUGGINGFACE_MODEL: huggingFaceModel,
+        HUGGINGFACE_MODEL: huggingFaceModel,
         MODEL_OPEN_SOURCE_KIND: model.openSource.kind,
         MODEL_OPEN_SOURCE_REPO: model.openSource.repo,
         MODEL_OPEN_SOURCE_REVISION: model.openSource.revision,
         MODEL_OPEN_SOURCE_ARTIFACT: model.openSource.artifact,
         MODEL_OPEN_SOURCE_IMAGE_TAG: model.openSource.imageTag,
+        MODEL_MIN_CUDA_VERSION: minCudaVersion,
+        MODEL_GPU_CANDIDATES: gpuTypes.join(","),
+        MODEL_QUEUE_DELAY_SECONDS: String(DEFAULT_QUEUE_DELAY_SECONDS),
+        MODEL_FLASHBOOT: DEFAULT_FLASHBOOT ? "1" : "0",
         MODEL_WORKER_CLASS: model.runpod.workerClass,
       },
     }
@@ -233,8 +269,12 @@ function buildCreateRequests(manifest) {
         name: endpoint.endpointName,
         templateId: `\${${endpoint.runpod.templateIdEnv}}`,
         gpuType: endpoint.runpod.gpuType,
+        gpuTypes: endpoint.runpod.gpuTypes,
+        minCudaVersion: endpoint.runpod.minCudaVersion,
         workersMin: endpoint.runpod.workersMin,
         workersMax: endpoint.runpod.workersMax,
+        queueDelaySeconds: endpoint.runpod.queueDelaySeconds,
+        flashboot: endpoint.runpod.flashboot,
         idleTimeoutSeconds: endpoint.runpod.idleTimeoutSeconds,
         executionTimeoutMs: endpoint.runpod.executionTimeoutMs,
         env: envEntries,

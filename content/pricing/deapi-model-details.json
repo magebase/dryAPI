@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-03-15T12:00:00.000Z",
+  "models": {
+    "AceStep_1_5_Turbo": {
+      "displayName": "AceStep 1.5 Turbo",
+      "summary": "Fast text-to-music model for beat ideas, loops, and short soundtrack drafts.",
+      "primaryUse": "Text-to-music generation",
+      "huggingFaceUrl": "https://huggingface.co/models?search=AceStep%201.5%20Turbo",
+      "huggingFaceRepo": null,
+      "sourceNote": "Official repo naming can vary by release; use the Hugging Face search link for the current upstream entry."
+    },
+    "Ben2": {
+      "displayName": "BEN2",
+      "summary": "Background-removal model tuned for clean cutouts in commerce and creative pipelines.",
+      "primaryUse": "Background removal",
+      "huggingFaceUrl": "https://huggingface.co/PramaLLC/BEN2",
+      "huggingFaceRepo": "PramaLLC/BEN2",
+      "sourceNote": "Pinned in internal RunPod catalog for production image matting workloads."
+    },
+    "Bge_M3_FP16": {
+      "displayName": "BGE M3 FP16",
+      "summary": "Multilingual embedding model for retrieval, semantic search, and reranking flows.",
+      "primaryUse": "Text embeddings",
+      "huggingFaceUrl": "https://huggingface.co/BAAI/bge-m3",
+      "huggingFaceRepo": "BAAI/bge-m3",
+      "sourceNote": "Use for high-volume vectorization with predictable latency and strong multilingual recall."
+    },
+    "Chatterbox": {
+      "displayName": "Chatterbox",
+      "summary": "Expressive TTS profile for conversational agents, narration, and voice UX prototypes.",
+      "primaryUse": "Text-to-speech",
+      "huggingFaceUrl": "https://huggingface.co/models?search=chatterbox%20tts",
+      "huggingFaceRepo": null,
+      "sourceNote": "Repository ownership may differ across releases; search link is used as the stable upstream pointer."
+    },
+    "Flux_2_Klein_4B_BF16": {
+      "displayName": "FLUX.2 Klein 4B BF16",
+      "summary": "Compact FLUX generation profile balancing quality and speed for production image APIs.",
+      "primaryUse": "Text-to-image and image-to-image",
+      "huggingFaceUrl": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B",
+      "huggingFaceRepo": "black-forest-labs/FLUX.2-klein-4B",
+      "sourceNote": "Run with BF16 baseline and optional runtime quantization based on latency and cost targets."
+    },
+    "Flux1schnell": {
+      "displayName": "FLUX.1 schnell",
+      "summary": "Latency-focused FLUX model for rapid image iteration and high-throughput generation.",
+      "primaryUse": "Text-to-image",
+      "huggingFaceUrl": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
+      "huggingFaceRepo": "black-forest-labs/FLUX.1-schnell",
+      "sourceNote": "Used as a high-demand image path with strong speed-to-cost economics."
+    },
+    "Kokoro": {
+      "displayName": "Kokoro",
+      "summary": "Low-latency speech model suited for assistants, call tooling, and synthetic narration.",
+      "primaryUse": "Text-to-speech",
+      "huggingFaceUrl": "https://huggingface.co/hexgrad/Kokoro-82M",
+      "huggingFaceRepo": "hexgrad/Kokoro-82M",
+      "sourceNote": "Small footprint voice stack optimized for responsive streaming scenarios."
+    },
+    "Ltx2_19B_Dist_FP8": {
+      "displayName": "LTX-2 19B Distilled FP8",
+      "summary": "Video generation model optimized for FP8 deployment and lower-cost long-context synthesis.",
+      "primaryUse": "Text-to-video and image-to-video",
+      "huggingFaceUrl": "https://huggingface.co/Lightricks/LTX-2",
+      "huggingFaceRepo": "Lightricks/LTX-2",
+      "sourceNote": "Distilled FP8 variant for reduced memory footprint with high visual throughput."
+    },
+    "Ltx2_3_22B_Dist_INT8": {
+      "displayName": "LTX-2.3 22B Distilled INT8",
+      "summary": "Higher-capacity LTX profile for motion-heavy generation with INT8 runtime optimization.",
+      "primaryUse": "Text-to-video and image-to-video",
+      "huggingFaceUrl": "https://huggingface.co/Lightricks/LTX-2.3",
+      "huggingFaceRepo": "Lightricks/LTX-2.3",
+      "sourceNote": "INT8 in slug maps to runtime mode while source weights are pinned from the upstream LTX 2.3 repository."
+    },
+    "Ltxv_13B_0_9_8_Distilled_FP8": {
+      "displayName": "LTX-Video 13B 0.9.8 Distilled FP8",
+      "summary": "Production-oriented LTX-Video profile for controlled clip generation and storyboard workflows.",
+      "primaryUse": "Text-to-video and image-to-video",
+      "huggingFaceUrl": "https://huggingface.co/Lightricks/LTX-Video",
+      "huggingFaceRepo": "Lightricks/LTX-Video",
+      "sourceNote": "Pinned to distilled FP8 artifacts for stable throughput on high-memory GPU tiers."
+    },
+    "Nanonets_Ocr_S_F16": {
+      "displayName": "Nanonets OCR S F16",
+      "summary": "OCR extraction model for document parsing, searchable text output, and structured capture.",
+      "primaryUse": "Image-to-text OCR",
+      "huggingFaceUrl": "https://huggingface.co/nanonets/Nanonets-OCR-s",
+      "huggingFaceRepo": "nanonets/Nanonets-OCR-s",
+      "sourceNote": "Good default OCR profile for invoices, screenshots, and scanned forms."
+    },
+    "Qwen3_TTS_12Hz_1_7B_Base": {
+      "displayName": "Qwen3 TTS 1.7B Base",
+      "summary": "Base Qwen3 speech model for general-purpose synthesis and multilingual voice generation.",
+      "primaryUse": "Text-to-speech",
+      "huggingFaceUrl": "https://huggingface.co/Qwen/Qwen3-TTS",
+      "huggingFaceRepo": "Qwen/Qwen3-TTS",
+      "sourceNote": "Base profile for standard narration quality and broad language coverage."
+    },
+    "Qwen3_TTS_12Hz_1_7B_CustomVoice": {
+      "displayName": "Qwen3 TTS 1.7B CustomVoice",
+      "summary": "CustomVoice profile tuned for personalized voice cloning and speaker adaptation.",
+      "primaryUse": "Text-to-speech with custom voice",
+      "huggingFaceUrl": "https://huggingface.co/Qwen/Qwen3-TTS",
+      "huggingFaceRepo": "Qwen/Qwen3-TTS",
+      "sourceNote": "Recommended when voice identity control is required in assistant or brand pipelines."
+    },
+    "Qwen3_TTS_12Hz_1_7B_VoiceDesign": {
+      "displayName": "Qwen3 TTS 1.7B VoiceDesign",
+      "summary": "VoiceDesign profile focused on style transfer, prosody control, and synthetic voice direction.",
+      "primaryUse": "Text-to-speech with voice design",
+      "huggingFaceUrl": "https://huggingface.co/Qwen/Qwen3-TTS",
+      "huggingFaceRepo": "Qwen/Qwen3-TTS",
+      "sourceNote": "Use for creative voice crafting and tonal experimentation workflows."
+    },
+    "QwenImageEdit_Plus_NF4": {
+      "displayName": "Qwen Image Edit Plus NF4",
+      "summary": "Image editing profile for guided transformations, touch-ups, and prompt-driven retouching.",
+      "primaryUse": "Image-to-image editing",
+      "huggingFaceUrl": "https://huggingface.co/Qwen/Qwen-Image-Edit-2511",
+      "huggingFaceRepo": "Qwen/Qwen-Image-Edit-2511",
+      "sourceNote": "NF4 tag is treated as runtime quantization mode with upstream repository pinning."
+    },
+    "WhisperLargeV3": {
+      "displayName": "Whisper Large v3",
+      "summary": "Speech recognition model for high-accuracy transcription across audio and video content.",
+      "primaryUse": "Video-to-text transcription",
+      "huggingFaceUrl": "https://huggingface.co/openai/whisper-large-v3",
+      "huggingFaceRepo": "openai/whisper-large-v3",
+      "sourceNote": "Stable multilingual transcription baseline for media indexing and analysis pipelines."
+    },
+    "ZImageTurbo_INT8": {
+      "displayName": "Z-Image-Turbo INT8",
+      "summary": "Fast image generation profile with INT8-focused runtime mode for throughput-sensitive use cases.",
+      "primaryUse": "Text-to-image",
+      "huggingFaceUrl": "https://huggingface.co/Tongyi-MAI/Z-Image-Turbo",
+      "huggingFaceRepo": "Tongyi-MAI/Z-Image-Turbo",
+      "sourceNote": "INT8 appears in deAPI slug while upstream repository naming remains generic to the base model family."
+    }
+  }
+}

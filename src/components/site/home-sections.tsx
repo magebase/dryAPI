@@ -326,7 +326,7 @@ export function HomeSections({
                   Used by teams consolidating multi-model AI stacks
                 </p>
 
-                <div className="marquee-vignette relative left-1/2 mt-4 w-screen max-w-none -translate-x-1/2 overflow-hidden border-0 bg-transparent px-2 py-3 [--marquee-vignette-tint:rgba(1,1,1,1.0)] md:px-4">
+                <div className="marquee-vignette relative left-1/2 mt-4 w-screen max-w-none -translate-x-1/2 overflow-hidden border-0 bg-transparent px-2 py-3 [--marquee-vignette-tint:transparent] md:px-4">
                   <div className="marquee-track bg-transparent flex w-max gap-2 [--marquee-duration:26s]">
                     {trustedMarqueeLogos.map((logo, index) => (
                       <TrustedLogoPill
@@ -356,7 +356,7 @@ export function HomeSections({
 
             <Reveal
               as="div"
-              className="marquee-vignette relative left-1/2 mt-5 w-screen max-w-none -translate-x-1/2 overflow-hidden border-y border-[#dddddd] bg-transparent px-2 py-3 [--marquee-vignette-tint:rgba(239,239,239,0.88)] md:px-4"
+              className="marquee-vignette relative left-1/2 mt-5 w-screen max-w-none -translate-x-1/2 overflow-hidden border-y border-[#dddddd] bg-transparent px-2 py-3 [--marquee-vignette-tint:transparent] md:px-4"
               y={14}
             >
               <div className="marquee-track flex w-max gap-2 [--marquee-duration:26s]">

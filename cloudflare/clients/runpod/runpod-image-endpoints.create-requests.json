@@ -1,18 +1,26 @@
 {
-  "generatedAt": "2026-03-14T14:11:41.205Z",
+  "generatedAt": "2026-03-15T12:15:16.667Z",
   "requestCount": 10,
   "requests": [
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "flux-2-klein-4b-bf16",
-      "endpointName": "deapi-flux-2-klein-4b-bf16",
+      "endpointName": "flux-2-klein-4b-bf16",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
       "payloadTemplate": {
-        "name": "deapi-flux-2-klein-4b-bf16",
+        "name": "flux-2-klein-4b-bf16",
         "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
-        "gpuType": "NVIDIA RTX 4090",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 5,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 120000,
         "env": [
@@ -27,6 +35,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "txt2img,img2img"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "black-forest-labs/FLUX.2-klein-4B"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "black-forest-labs/FLUX.2-klein-4B"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -49,6 +65,22 @@
             "value": "hf://black-forest-labs/FLUX.2-klein-4B@e7b7dc27f91deacad38e78976d1f2b499d76a294#flux-2-klein-4b.safetensors"
           },
           {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
+          },
+          {
             "key": "MODEL_WORKER_CLASS",
             "value": "diffusers-image"
           }
@@ -69,14 +101,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "zimageturbo-int8",
-      "endpointName": "deapi-zimageturbo-int8",
+      "endpointName": "zimageturbo-int8",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
       "payloadTemplate": {
-        "name": "deapi-zimageturbo-int8",
+        "name": "zimageturbo-int8",
         "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
-        "gpuType": "NVIDIA RTX 4090",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 5,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 120000,
         "env": [
@@ -91,6 +131,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "txt2img"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "Tongyi-MAI/Z-Image-Turbo"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "Tongyi-MAI/Z-Image-Turbo"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -111,6 +159,22 @@
           {
             "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
             "value": "hf://Tongyi-MAI/Z-Image-Turbo@f332072aa78be7aecdf3ee76d5c247082da564a6#model_index.json"
+          },
+          {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
           },
           {
             "key": "MODEL_WORKER_CLASS",
@@ -135,14 +199,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "flux1schnell",
-      "endpointName": "deapi-flux1schnell",
+      "endpointName": "flux1schnell",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
       "payloadTemplate": {
-        "name": "deapi-flux1schnell",
+        "name": "flux1schnell",
         "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
-        "gpuType": "NVIDIA RTX 4090",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 5,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 120000,
         "env": [
@@ -157,6 +229,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "txt2img"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "black-forest-labs/FLUX.1-schnell"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "black-forest-labs/FLUX.1-schnell"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -179,6 +259,22 @@
             "value": "hf://black-forest-labs/FLUX.1-schnell@741f7c3ce8b383c54771c7003378a50191e9efe9#model_index.json"
           },
           {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
+          },
+          {
             "key": "MODEL_WORKER_CLASS",
             "value": "diffusers-image"
           }
@@ -198,14 +294,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "qwenimageedit-plus-nf4",
-      "endpointName": "deapi-qwenimageedit-plus-nf4",
+      "endpointName": "qwenimageedit-plus-nf4",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE",
       "payloadTemplate": {
-        "name": "deapi-qwenimageedit-plus-nf4",
+        "name": "qwenimageedit-plus-nf4",
         "templateId": "${RUNPOD_TEMPLATE_ID_DIFFUSERS_IMAGE}",
-        "gpuType": "NVIDIA RTX 4090",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 5,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 180000,
         "env": [
@@ -220,6 +324,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "img2img"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "Qwen/Qwen-Image-Edit-2511"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "Qwen/Qwen-Image-Edit-2511"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -240,6 +352,22 @@
           {
             "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
             "value": "hf://Qwen/Qwen-Image-Edit-2511@6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9#model_index.json"
+          },
+          {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
           },
           {
             "key": "MODEL_WORKER_CLASS",
@@ -264,14 +392,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "nanonets-ocr-s-f16",
-      "endpointName": "deapi-nanonets-ocr-s-f16",
+      "endpointName": "nanonets-ocr-s-f16",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_VLM_OCR",
       "payloadTemplate": {
-        "name": "deapi-nanonets-ocr-s-f16",
+        "name": "nanonets-ocr-s-f16",
         "templateId": "${RUNPOD_TEMPLATE_ID_VLM_OCR}",
         "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 4,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 180000,
         "env": [
@@ -286,6 +422,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "img2txt"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "nanonets/Nanonets-OCR-s"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "nanonets/Nanonets-OCR-s"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -308,6 +452,22 @@
             "value": "hf://nanonets/Nanonets-OCR-s@3baad182cc87c65a1861f0c30357d3467e978172#model.safetensors.index.json"
           },
           {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
+          },
+          {
             "key": "MODEL_WORKER_CLASS",
             "value": "vlm-ocr"
           }
@@ -327,14 +487,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "ltx2-3-22b-dist-int8",
-      "endpointName": "deapi-ltx2-3-22b-dist-int8",
+      "endpointName": "ltx2-3-22b-dist-int8",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_LTX_VIDEO",
       "payloadTemplate": {
-        "name": "deapi-ltx2-3-22b-dist-int8",
+        "name": "ltx2-3-22b-dist-int8",
         "templateId": "${RUNPOD_TEMPLATE_ID_LTX_VIDEO}",
-        "gpuType": "NVIDIA H100",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
         "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 600000,
         "env": [
@@ -349,6 +517,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "txt2video,img2video,aud2video"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "Lightricks/LTX-2.3"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "Lightricks/LTX-2.3"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -369,6 +545,22 @@
           {
             "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
             "value": "hf://Lightricks/LTX-2.3@5a9c1c680bc66c159f708143bf274739961ecd08#ltx-2.3-22b-distilled.safetensors"
+          },
+          {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
           },
           {
             "key": "MODEL_WORKER_CLASS",
@@ -395,14 +587,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "ltx2-19b-dist-fp8",
-      "endpointName": "deapi-ltx2-19b-dist-fp8",
+      "endpointName": "ltx2-19b-dist-fp8",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_LTX_VIDEO",
       "payloadTemplate": {
-        "name": "deapi-ltx2-19b-dist-fp8",
+        "name": "ltx2-19b-dist-fp8",
         "templateId": "${RUNPOD_TEMPLATE_ID_LTX_VIDEO}",
-        "gpuType": "NVIDIA H100",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
         "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 600000,
         "env": [
@@ -417,6 +617,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "txt2video,img2video,aud2video"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "Lightricks/LTX-2"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "Lightricks/LTX-2"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -437,6 +645,22 @@
           {
             "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
             "value": "hf://Lightricks/LTX-2@47da56e2ad66ce4125a9922b4a8826bf407f9d0a#ltx-2-19b-distilled-fp8.safetensors"
+          },
+          {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
           },
           {
             "key": "MODEL_WORKER_CLASS",
@@ -460,14 +684,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "ltxv-13b-0-9-8-distilled-fp8",
-      "endpointName": "deapi-ltxv-13b-0-9-8-distilled-fp8",
+      "endpointName": "ltxv-13b-0-9-8-distilled-fp8",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_LTX_VIDEO",
       "payloadTemplate": {
-        "name": "deapi-ltxv-13b-0-9-8-distilled-fp8",
+        "name": "ltxv-13b-0-9-8-distilled-fp8",
         "templateId": "${RUNPOD_TEMPLATE_ID_LTX_VIDEO}",
-        "gpuType": "NVIDIA A100",
+        "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
         "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 480000,
         "env": [
@@ -482,6 +714,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "txt2video,img2video"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "Lightricks/LTX-Video"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "Lightricks/LTX-Video"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -504,6 +744,22 @@
             "value": "hf://Lightricks/LTX-Video@8984fa25007f376c1a299016d0957a37a2f797bb#ltxv-13b-0.9.8-distilled-fp8.safetensors"
           },
           {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
+          },
+          {
             "key": "MODEL_WORKER_CLASS",
             "value": "ltx-video"
           }
@@ -524,14 +780,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "realesrgan-x4",
-      "endpointName": "deapi-realesrgan-x4",
+      "endpointName": "realesrgan-x4",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_IMAGE_UPSCALE",
       "payloadTemplate": {
-        "name": "deapi-realesrgan-x4",
+        "name": "realesrgan-x4",
         "templateId": "${RUNPOD_TEMPLATE_ID_IMAGE_UPSCALE}",
         "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 5,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 120000,
         "env": [
@@ -546,6 +810,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "img-upscale"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": ""
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": ""
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -568,6 +840,22 @@
             "value": "gh://xinntao/Real-ESRGAN@v0.1.0#RealESRGAN_x4plus.pth"
           },
           {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
+          },
+          {
             "key": "MODEL_WORKER_CLASS",
             "value": "image-upscale"
           }
@@ -587,14 +875,22 @@
     {
       "kind": "runpod.serverless.endpoint.create",
       "endpointId": "ben2",
-      "endpointName": "deapi-ben2",
+      "endpointName": "ben2",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_BACKGROUND_REMOVAL",
       "payloadTemplate": {
-        "name": "deapi-ben2",
+        "name": "ben2",
         "templateId": "${RUNPOD_TEMPLATE_ID_BACKGROUND_REMOVAL}",
         "gpuType": "NVIDIA L4",
+        "gpuTypes": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ],
+        "minCudaVersion": "12.2",
         "workersMin": 0,
-        "workersMax": 5,
+        "workersMax": 3,
+        "queueDelaySeconds": 10,
+        "flashboot": true,
         "idleTimeoutSeconds": 60,
         "executionTimeoutMs": 120000,
         "env": [
@@ -609,6 +905,14 @@
           {
             "key": "MODEL_TASKS",
             "value": "img-rmbg"
+          },
+          {
+            "key": "MODEL_HUGGINGFACE_MODEL",
+            "value": "PramaLLC/BEN2"
+          },
+          {
+            "key": "HUGGINGFACE_MODEL",
+            "value": "PramaLLC/BEN2"
           },
           {
             "key": "MODEL_OPEN_SOURCE_KIND",
@@ -629,6 +933,22 @@
           {
             "key": "MODEL_OPEN_SOURCE_IMAGE_TAG",
             "value": "hf://PramaLLC/BEN2@e48a20765fb421d19dcdb0bf3cc61e802ca5ec8f#model.safetensors"
+          },
+          {
+            "key": "MODEL_MIN_CUDA_VERSION",
+            "value": "12.2"
+          },
+          {
+            "key": "MODEL_GPU_CANDIDATES",
+            "value": "NVIDIA L4,NVIDIA RTX 4090,NVIDIA A6000"
+          },
+          {
+            "key": "MODEL_QUEUE_DELAY_SECONDS",
+            "value": "10"
+          },
+          {
+            "key": "MODEL_FLASHBOOT",
+            "value": "1"
           },
           {
             "key": "MODEL_WORKER_CLASS",

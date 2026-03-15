@@ -1,6 +1,7 @@
 import { hashJson, readCachedJson, writeCachedJson } from '../../lib/cache'
-import { persistRunpodEnqueue, registerJobWebhook } from '../../lib/db'
+import { getCurrentPricingQuote, persistRunpodEnqueue, registerJobWebhook } from '../../lib/db'
 import { jsonError, jsonUpstreamError } from '../../lib/errors'
+import { applyPriceMultiplier, computePayloadPriceMultiplier } from '../../lib/pricing'
 import { dispatchSignedWebhook, toWebhookEvent } from '../../lib/webhooks'
 import {
   dispatchRunpodRequest,
@@ -28,6 +29,16 @@ type EnqueueResponseBody = {
   surface: RunpodSurface
   model: string | null
   endpoint_id: string
+  pricing: {
+    unit_price_usd: number
+    source: 'snapshot' | 'fallback'
+    price_key: string
+    sample_size: number
+    p95_execution_seconds: number
+    min_profit_multiple: number
+    payload_multiplier: number
+    updated_at: string
+  }
   runpod: unknown
 }
 
@@ -58,6 +69,22 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       'x-cache': 'hit',
     })
   }
+
+  const pricingQuote = await getCurrentPricingQuote({
+    c,
+    surface,
+    endpointId,
+    modelSlug,
+  })
+  const payloadMultiplier = computePayloadPriceMultiplier({
+    surface,
+    payload,
+  })
+  const quotedPriceUsd = applyPriceMultiplier({
+    basePriceUsd: pricingQuote.recommendedPriceUsd,
+    multiplier: payloadMultiplier,
+    roundStepUsd: pricingQuote.roundStepUsd,
+  })
 
   let upstream: Response
   try {
@@ -92,6 +119,9 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       requestHash,
       status: runpodStatus,
       responsePayload: upstreamPayload,
+      quotedPriceUsd,
+      priceKey: pricingQuote.priceKey,
+      pricingSource: pricingQuote.source,
     })
 
     if (c.executionCtx?.waitUntil) {
@@ -140,6 +170,16 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     surface,
     model: modelSlug,
     endpoint_id: endpointId,
+    pricing: {
+      unit_price_usd: quotedPriceUsd,
+      source: pricingQuote.source,
+      price_key: pricingQuote.priceKey,
+      sample_size: pricingQuote.sampleSize,
+      p95_execution_seconds: pricingQuote.p95ExecutionSeconds,
+      min_profit_multiple: pricingQuote.minProfitMultiple,
+      payload_multiplier: payloadMultiplier,
+      updated_at: pricingQuote.updatedAt,
+    },
     runpod: upstreamPayload,
   }
 
@@ -150,5 +190,9 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     await cacheWrite
   }
 
-  return c.json(responseBody, 202)
+  return c.json(responseBody, 202, {
+    'x-dryapi-unit-price-usd': String(quotedPriceUsd),
+    'x-dryapi-price-key': pricingQuote.priceKey,
+    'x-dryapi-price-source': pricingQuote.source,
+  })
 }

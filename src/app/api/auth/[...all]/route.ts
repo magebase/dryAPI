@@ -45,6 +45,65 @@ function summarizeAuthSessionPayload(payload: unknown): Record<string, unknown> 
 	}
 }
 
+function normalizeAuthSessionPayload(payload: unknown): { user: unknown | null; session: unknown | null } {
+	if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+		return {
+			user: null,
+			session: null,
+		}
+	}
+
+	const record = payload as Record<string, unknown>
+
+	return {
+		user: "user" in record ? (record.user ?? null) : null,
+		session: "session" in record ? (record.session ?? null) : null,
+	}
+}
+
+async function parseJsonBodySafely(response: Response): Promise<unknown | null> {
+	const bodyText = await response.clone().text().catch(() => "")
+	if (!bodyText) {
+		return null
+	}
+
+	try {
+		return JSON.parse(bodyText) as unknown
+	} catch {
+		return null
+	}
+}
+
+async function buildStableGetSessionResponse(response: Response): Promise<{
+	response: Response
+	payload: { user: unknown | null; session: unknown | null }
+	sourceStatus: number
+	recovered: boolean
+}> {
+	const sourceStatus = response.status
+	const parsedPayload = await parseJsonBodySafely(response)
+	const payload = normalizeAuthSessionPayload(parsedPayload)
+
+	const headers = new Headers(response.headers)
+	headers.set("content-type", "application/json; charset=utf-8")
+	headers.set("cache-control", "no-store")
+
+	const recovered = !response.ok || parsedPayload === null
+	if (recovered) {
+		appendCookieClears(headers)
+	}
+
+	return {
+		response: new Response(JSON.stringify(payload), {
+			status: 200,
+			headers,
+		}),
+		payload,
+		sourceStatus,
+		recovered,
+	}
+}
+
 function appendCookieClears(headers: Headers): void {
 	for (const cookieName of AUTH_COOKIES_TO_CLEAR) {
 		headers.append(
@@ -102,6 +161,7 @@ export async function GET(request: Request): Promise<Response> {
 	const requestUrl = new URL(request.url)
 	const traceId = createAuthTraceId(request.headers.get("x-request-id"))
 	const shouldLog = shouldLogAuthPath(requestUrl.pathname)
+	const isGetSessionPath = requestUrl.pathname.startsWith("/api/auth/get-session")
 
 	if (shouldLog) {
 		logServerAuthEvent("log", "api.auth.request", {
@@ -113,7 +173,13 @@ export async function GET(request: Request): Promise<Response> {
 		})
 	}
 
-	const response = await runAuthHandler(request, "GET", traceId, requestUrl.pathname)
+	const authResponse = await runAuthHandler(request, "GET", traceId, requestUrl.pathname)
+
+	const stableGetSession = isGetSessionPath
+		? await buildStableGetSessionResponse(authResponse)
+		: null
+
+	const response = stableGetSession?.response ?? authResponse
 
 	if (shouldLog) {
 		logServerAuthEvent("log", "api.auth.response", {
@@ -121,14 +187,18 @@ export async function GET(request: Request): Promise<Response> {
 			method: "GET",
 			pathname: requestUrl.pathname,
 			status: response.status,
+			sourceStatus: stableGetSession?.sourceStatus ?? response.status,
+			recovered: stableGetSession?.recovered ?? false,
 			setCookieCount: countSetCookieHeaders(response.headers.get("set-cookie")),
 		})
 
-		if (requestUrl.pathname.startsWith("/api/auth/get-session")) {
-			const payload = await response.clone().json().catch(() => null)
+		if (isGetSessionPath) {
+			const payload = stableGetSession?.payload ?? normalizeAuthSessionPayload(await parseJsonBodySafely(response))
 			logServerAuthEvent("log", "api.auth.get-session.payload", {
 				traceId,
 				status: response.status,
+				sourceStatus: stableGetSession?.sourceStatus ?? response.status,
+				recovered: stableGetSession?.recovered ?? false,
 				...summarizeAuthSessionPayload(payload),
 			})
 		}

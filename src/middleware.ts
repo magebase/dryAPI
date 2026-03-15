@@ -16,6 +16,16 @@ const PROTECTED_PREFIXES = ["/crm", "/api/cms", "/api/crm", "/api/media"]
 const CRM_HOSTNAMES = new Set(["crm.genfix.com.au", "www.crm.genfix.com.au"])
 const DASHBOARD_PREFIX = "/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
+const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
+const SESSION_CHECK_CACHE_TTL_MS = 5_000
+const SESSION_CHECK_TIMEOUT_MS = 2_500
+
+type SessionAuthCacheEntry = {
+  authenticated: boolean
+  expiresAt: number
+}
+
+const sessionAuthCache = new Map<string, SessionAuthCacheEntry>()
 
 function normalizeHostname(value: string | null): string {
   return (value || "").split(":")[0]?.trim().toLowerCase() || ""
@@ -62,6 +72,59 @@ function isAuthPagePath(pathname: string): boolean {
   return AUTH_PAGE_PATHS.has(pathname)
 }
 
+function isRscRequest(request: NextRequest): boolean {
+  return request.headers.get("rsc") === "1" || request.nextUrl.searchParams.has("_rsc")
+}
+
+function isPrefetchRequest(request: NextRequest): boolean {
+  if (request.headers.has("next-router-prefetch")) {
+    return true
+  }
+
+  const purpose = request.headers.get("purpose") || request.headers.get("sec-purpose") || ""
+  return purpose.toLowerCase().includes("prefetch")
+}
+
+function readSessionToken(request: NextRequest): string | null {
+  for (const cookieName of SESSION_COOKIE_NAMES) {
+    const token = request.cookies.get(cookieName)?.value?.trim()
+    if (token) {
+      return token
+    }
+  }
+
+  return null
+}
+
+function readCachedSessionAuth(sessionToken: string): boolean | null {
+  const cacheEntry = sessionAuthCache.get(sessionToken)
+  if (!cacheEntry) {
+    return null
+  }
+
+  if (cacheEntry.expiresAt <= Date.now()) {
+    sessionAuthCache.delete(sessionToken)
+    return null
+  }
+
+  return cacheEntry.authenticated
+}
+
+function writeCachedSessionAuth(sessionToken: string, authenticated: boolean): void {
+  // Keep this bounded so dev hot paths cannot grow memory unbounded.
+  if (sessionAuthCache.size >= 1_024 && !sessionAuthCache.has(sessionToken)) {
+    const firstKey = sessionAuthCache.keys().next().value
+    if (typeof firstKey === "string") {
+      sessionAuthCache.delete(firstKey)
+    }
+  }
+
+  sessionAuthCache.set(sessionToken, {
+    authenticated,
+    expiresAt: Date.now() + SESSION_CHECK_CACHE_TTL_MS,
+  })
+}
+
 function hasBetterAuthSession(payload: unknown): boolean {
   if (!payload || typeof payload !== "object") {
     return false
@@ -71,11 +134,36 @@ function hasBetterAuthSession(payload: unknown): boolean {
   return Boolean(record.user || record.session)
 }
 
-async function isDashboardUserAuthenticated(request: NextRequest, traceId: string): Promise<boolean> {
+async function parseJsonResponseSafely(response: Response): Promise<unknown | null> {
+  const bodyText = await response.text().catch(() => "")
+  if (!bodyText) {
+    return null
+  }
+
+  try {
+    return JSON.parse(bodyText) as unknown
+  } catch {
+    return null
+  }
+}
+
+async function isDashboardUserAuthenticated(
+  request: NextRequest,
+  traceId: string,
+  sessionToken: string,
+): Promise<boolean> {
+  const cachedAuthenticated = readCachedSessionAuth(sessionToken)
+  if (cachedAuthenticated !== null) {
+    return cachedAuthenticated
+  }
+
   try {
     const sessionUrl = request.nextUrl.clone()
     sessionUrl.pathname = "/api/auth/get-session"
     sessionUrl.search = ""
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS)
 
     logServerAuthEvent("log", "middleware.dashboard.session-check.start", {
       traceId,
@@ -87,9 +175,13 @@ async function isDashboardUserAuthenticated(request: NextRequest, traceId: strin
     const response = await fetch(sessionUrl.toString(), {
       method: "GET",
       headers: {
+        accept: "application/json",
         cookie: request.headers.get("cookie") || "",
       },
       cache: "no-store",
+      signal: controller.signal,
+    }).finally(() => {
+      clearTimeout(timeout)
     })
 
     if (!response.ok) {
@@ -97,10 +189,12 @@ async function isDashboardUserAuthenticated(request: NextRequest, traceId: strin
         traceId,
         status: response.status,
       })
+
+      writeCachedSessionAuth(sessionToken, false)
       return false
     }
 
-    const payload = (await response.json().catch(() => null)) as unknown
+    const payload = await parseJsonResponseSafely(response)
     const authenticated = hasBetterAuthSession(payload)
 
     logServerAuthEvent("log", "middleware.dashboard.session-check.result", {
@@ -110,6 +204,7 @@ async function isDashboardUserAuthenticated(request: NextRequest, traceId: strin
       payloadKeys: payload && typeof payload === "object" ? Object.keys(payload as Record<string, unknown>) : [],
     })
 
+    writeCachedSessionAuth(sessionToken, authenticated)
     return authenticated
   } catch {
     logServerAuthEvent("error", "middleware.dashboard.session-check.error", {
@@ -248,7 +343,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isDashboardPath(request.nextUrl.pathname)) {
-    const authenticated = await isDashboardUserAuthenticated(request, traceId)
+    const sessionToken = readSessionToken(request)
+
+    if (!sessionToken) {
+      return createDashboardLoginRedirect(request, traceId)
+    }
+
+    const authenticated = await isDashboardUserAuthenticated(request, traceId, sessionToken)
 
     logServerAuthEvent("log", "middleware.dashboard.decision", {
       traceId,
@@ -262,7 +363,14 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthPagePath(request.nextUrl.pathname)) {
-    const authenticated = await isDashboardUserAuthenticated(request, traceId)
+    if (isPrefetchRequest(request) || isRscRequest(request)) {
+      return NextResponse.next()
+    }
+
+    const sessionToken = readSessionToken(request)
+    const authenticated = sessionToken
+      ? await isDashboardUserAuthenticated(request, traceId, sessionToken)
+      : false
 
     logServerAuthEvent("log", "middleware.auth-page.decision", {
       traceId,
@@ -276,6 +384,39 @@ export async function middleware(request: NextRequest) {
       dashboardUrl.search = ""
 
       logServerAuthEvent("log", "middleware.auth-page.redirect-dashboard", {
+        traceId,
+        fromPath: request.nextUrl.pathname,
+        toPath: dashboardUrl.pathname,
+      })
+
+      return NextResponse.redirect(dashboardUrl, 307)
+    }
+  }
+
+  if (request.nextUrl.pathname === "/") {
+    if (isPrefetchRequest(request) || isRscRequest(request)) {
+      return NextResponse.next()
+    }
+
+    const sessionToken = readSessionToken(request)
+    if (!sessionToken) {
+      return NextResponse.next()
+    }
+
+    const authenticated = await isDashboardUserAuthenticated(request, traceId, sessionToken)
+
+    logServerAuthEvent("log", "middleware.home-page.decision", {
+      traceId,
+      pathname: request.nextUrl.pathname,
+      authenticated,
+    })
+
+    if (authenticated) {
+      const dashboardUrl = request.nextUrl.clone()
+      dashboardUrl.pathname = "/dashboard"
+      dashboardUrl.search = ""
+
+      logServerAuthEvent("log", "middleware.home-page.redirect-dashboard", {
         traceId,
         fromPath: request.nextUrl.pathname,
         toPath: dashboardUrl.pathname,

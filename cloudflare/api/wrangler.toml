@@ -7,6 +7,11 @@ workers_dev = true
 name = "API_KEY_QUOTA_DO"
 class_name = "ApiQuotaDurableObject"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "dryapi-api-analytics"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 [[ratelimits]]
 name = "EDGE_IP_LIMITER"
 # Replace this with your real Cloudflare rate limit namespace id.
@@ -56,6 +61,16 @@ RUNPOD_ENDPOINT_ID_TRANSCRIBE = ""
 # RUNPOD_ENDPOINT_MAP_JSON = '{"images":"abc123","Flux1schnell":"def456"}'
 RUNPOD_ENDPOINT_MAP_JSON = ""
 
+# Dynamic pricing policy (worker-managed quotes + analytics).
+# 200% minimum profit floor is enforced as min profit multiple = 3x cost.
+RUNPOD_PRICING_MIN_PROFIT_MULTIPLE = "3"
+RUNPOD_PRICING_LOOKBACK_HOURS = "24"
+RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "60"
+RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
+# Optional full pricing policy map (defaults/surfaces/models/endpoints).
+# RUNPOD_PRICING_CONFIG_JSON = '{"defaults":{"gpuCostPerSecondUsd":0.00055,"infraCostUsd":0.00005,"paymentFeeFraction":0.04,"retrySafetyFraction":0.12}}'
+RUNPOD_PRICING_CONFIG_JSON = ""
+
 # Optional webhook signing/timing controls.
 # WEBHOOK_SIGNING_SECRET = ""
 # WEBHOOK_TIMEOUT_MS = "8000"
@@ -69,6 +84,11 @@ workers_dev = true
 [[env.test.durable_objects.bindings]]
 name = "API_KEY_QUOTA_DO"
 class_name = "ApiQuotaDurableObject"
+
+[[env.test.d1_databases]]
+binding = "DB"
+database_name = "dryapi-api-analytics-test"
+database_id = "11111111-1111-1111-1111-111111111111"
 
 [[env.test.ratelimits]]
 name = "EDGE_IP_LIMITER"
@@ -89,3 +109,8 @@ RUNPOD_ENDPOINT_ID_IMAGES = ""
 RUNPOD_ENDPOINT_ID_EMBEDDINGS = ""
 RUNPOD_ENDPOINT_ID_TRANSCRIBE = ""
 RUNPOD_ENDPOINT_MAP_JSON = ""
+RUNPOD_PRICING_MIN_PROFIT_MULTIPLE = "3"
+RUNPOD_PRICING_LOOKBACK_HOURS = "24"
+RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "1"
+RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
+RUNPOD_PRICING_CONFIG_JSON = ""

@@ -19,7 +19,51 @@ This directory contains a pinned, reproducible mapping of deAPI image-capable mo
 From repo root:
 
 ```bash
+node scripts/optimize-runpod-gpu-revenue.mjs --write
 node scripts/build-runpod-image-endpoints.mjs
+```
+
+The optimizer enforces for every model:
+
+- At least 3 GPU fallback types.
+- GPU fallback ordering by cost-efficiency (best first) for each worker class.
+- A minimum CUDA version constraint shared by catalog and generated endpoint payloads.
+
+## Apply Endpoints with Pulumi (Destroy First)
+
+RunPod endpoint provisioning is managed via Pulumi under `cloudflare/clients/runpod/pulumi`.
+
+Use the repo-level redeploy command to enforce this order:
+
+1. Destroy existing managed endpoints.
+2. Rebuild manifests from the latest catalog.
+3. Recreate endpoints with Pulumi.
+
+```bash
+bash scripts/runpod-endpoints-pulumi-redeploy.sh dev
+```
+
+Equivalent package script:
+
+```bash
+pnpm run runpod:endpoints:image:redeploy -- dev
+```
+
+Pulumi state backend requirement:
+
+- The redeploy script enforces an R2 S3 backend and logs in before any stack action.
+- Provide either:
+  - `RUNPOD_PULUMI_BACKEND_URL=s3://<bucket>?endpoint=https://<account-id>.r2.cloudflarestorage.com&region=auto&s3ForcePathStyle=true`
+  - or both `RUNPOD_PULUMI_STATE_BUCKET` and `CLOUDFLARE_ACCOUNT_ID`
+- Also export R2 credentials for backend access:
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`
+
+Pulumi config requirement:
+
+```bash
+cd cloudflare/clients/runpod/pulumi
+pulumi config set --secret runpod:token <YOUR_RUNPOD_API_KEY>
 ```
 
 Optional flags:

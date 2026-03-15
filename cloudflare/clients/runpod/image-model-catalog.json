@@ -5,7 +5,10 @@
     {
       "slug": "Flux_2_Klein_4B_BF16",
       "displayName": "FLUX.2 Klein 4B BF16",
-      "tasks": ["txt2img", "img2img"],
+      "tasks": [
+        "txt2img",
+        "img2img"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "black-forest-labs/FLUX.2-klein-4B",
@@ -20,14 +23,22 @@
       },
       "runpod": {
         "workerClass": "diffusers-image",
-        "recommendedGpu": "NVIDIA RTX 4090",
-        "executionTimeoutMs": 120000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 120000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "ZImageTurbo_INT8",
       "displayName": "Z-Image-Turbo INT8",
-      "tasks": ["txt2img"],
+      "tasks": [
+        "txt2img"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "Tongyi-MAI/Z-Image-Turbo",
@@ -46,14 +57,22 @@
       },
       "runpod": {
         "workerClass": "diffusers-image",
-        "recommendedGpu": "NVIDIA RTX 4090",
-        "executionTimeoutMs": 120000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 120000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "Flux1schnell",
       "displayName": "FLUX.1 schnell",
-      "tasks": ["txt2img"],
+      "tasks": [
+        "txt2img"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "black-forest-labs/FLUX.1-schnell",
@@ -67,14 +86,22 @@
       },
       "runpod": {
         "workerClass": "diffusers-image",
-        "recommendedGpu": "NVIDIA RTX 4090",
-        "executionTimeoutMs": 120000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 120000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "QwenImageEdit_Plus_NF4",
       "displayName": "Qwen Image Edit Plus",
-      "tasks": ["img2img"],
+      "tasks": [
+        "img2img"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "Qwen/Qwen-Image-Edit-2511",
@@ -93,14 +120,22 @@
       },
       "runpod": {
         "workerClass": "diffusers-image",
-        "recommendedGpu": "NVIDIA RTX 4090",
-        "executionTimeoutMs": 180000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 180000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "Nanonets_Ocr_S_F16",
       "displayName": "Nanonets OCR S",
-      "tasks": ["img2txt"],
+      "tasks": [
+        "img2txt"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "nanonets/Nanonets-OCR-s",
@@ -116,13 +151,23 @@
       "runpod": {
         "workerClass": "vlm-ocr",
         "recommendedGpu": "NVIDIA L4",
-        "executionTimeoutMs": 180000
+        "executionTimeoutMs": 180000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "Ltx2_3_22B_Dist_INT8",
       "displayName": "LTX-2.3 22B Distilled INT8",
-      "tasks": ["txt2video", "img2video", "aud2video"],
+      "tasks": [
+        "txt2video",
+        "img2video",
+        "aud2video"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "Lightricks/LTX-2.3",
@@ -141,14 +186,24 @@
       },
       "runpod": {
         "workerClass": "ltx-video",
-        "recommendedGpu": "NVIDIA H100",
-        "executionTimeoutMs": 600000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 600000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "Ltx2_19B_Dist_FP8",
       "displayName": "LTX-2 19B Distilled FP8",
-      "tasks": ["txt2video", "img2video", "aud2video"],
+      "tasks": [
+        "txt2video",
+        "img2video",
+        "aud2video"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "Lightricks/LTX-2",
@@ -163,14 +218,23 @@
       },
       "runpod": {
         "workerClass": "ltx-video",
-        "recommendedGpu": "NVIDIA H100",
-        "executionTimeoutMs": 600000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 600000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "Ltxv_13B_0_9_8_Distilled_FP8",
       "displayName": "LTX-Video 13B 0.9.8 Distilled FP8",
-      "tasks": ["txt2video", "img2video"],
+      "tasks": [
+        "txt2video",
+        "img2video"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "Lightricks/LTX-Video",
@@ -185,14 +249,22 @@
       },
       "runpod": {
         "workerClass": "ltx-video",
-        "recommendedGpu": "NVIDIA A100",
-        "executionTimeoutMs": 480000
+        "recommendedGpu": "NVIDIA L4",
+        "executionTimeoutMs": 480000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "RealESRGAN_x4",
       "displayName": "RealESRGAN x4",
-      "tasks": ["img-upscale"],
+      "tasks": [
+        "img-upscale"
+      ],
       "openSource": {
         "kind": "github-release",
         "repo": "xinntao/Real-ESRGAN",
@@ -207,13 +279,21 @@
       "runpod": {
         "workerClass": "image-upscale",
         "recommendedGpu": "NVIDIA L4",
-        "executionTimeoutMs": 120000
+        "executionTimeoutMs": 120000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     },
     {
       "slug": "Ben2",
       "displayName": "BEN2",
-      "tasks": ["img-rmbg"],
+      "tasks": [
+        "img-rmbg"
+      ],
       "openSource": {
         "kind": "huggingface",
         "repo": "PramaLLC/BEN2",
@@ -229,7 +309,13 @@
       "runpod": {
         "workerClass": "background-removal",
         "recommendedGpu": "NVIDIA L4",
-        "executionTimeoutMs": 120000
+        "executionTimeoutMs": 120000,
+        "minCudaVersion": "12.2",
+        "recommendedGpus": [
+          "NVIDIA L4",
+          "NVIDIA RTX 4090",
+          "NVIDIA A6000"
+        ]
       }
     }
   ]
