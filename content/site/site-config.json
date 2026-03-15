@@ -1,11 +1,11 @@
 {
   "brand": {
     "name": "Unified Inference Platform",
-    "mark": "deAPI"
+    "mark": "dryAPI"
   },
   "contact": {
-    "contactEmail": "support@deapi.ai",
-    "quoteEmail": "sales@deapi.ai"
+    "contactEmail": "support@dryapi.dev",
+    "quoteEmail": "sales@dryapi.dev"
   },
   "announcement": "One API for chat, images, speech, and embeddings with usage controls built in.",
   "header": {
@@ -50,15 +50,15 @@
     }
   },
   "footer": {
-    "companyText": "deAPI is a unified inference gateway that helps product teams ship multi-model AI workloads with stable APIs, billing controls, and production guardrails.",
+    "companyText": "dryAPI is a unified inference gateway that helps product teams ship multi-model AI workloads with stable APIs, billing controls, and production guardrails.",
     "contactLinks": [
       {
         "label": "Talk to Sales",
         "href": "/contact-sales"
       },
       {
-        "label": "support@deapi.ai",
-        "href": "mailto:support@deapi.ai"
+        "label": "support@dryapi.dev",
+        "href": "mailto:support@dryapi.dev"
       },
       {
         "label": "Remote-first team, global coverage",

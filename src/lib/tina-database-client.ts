@@ -85,12 +85,12 @@ async function resolveTinaD1Binding(): Promise<D1Binding | null> {
     const typedEnv = env as Record<string, unknown>;
 
     const binding = (typedEnv.TINA_DB ??
-      typedEnv.QUOTE_DB ??
+      typedEnv.APP_DB ??
       null) as D1Binding | null;
 
     if (!binding) {
       throw new Error(
-        "Tina D1 binding is missing. Expected TINA_DB or QUOTE_DB in Cloudflare env.",
+        "Tina D1 binding is missing. Expected TINA_DB or APP_DB in Cloudflare env.",
       );
     }
 
@@ -274,9 +274,10 @@ async function seedCoreSiteRecords(): Promise<void> {
           return;
         }
 
-        const payload = JSON.parse(
-          JSON.stringify(record.payload),
-        ) as Record<string, unknown>;
+        const payload = JSON.parse(JSON.stringify(record.payload)) as Record<
+          string,
+          unknown
+        >;
 
         await tinaDatabase.put(record.key, payload, record.collectionName);
       }),

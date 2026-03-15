@@ -1,0 +1,41 @@
+---
+title: Jobs
+description: Provider-agnostic async status, download, and websocket streaming routes.
+full: true
+_openapi:
+  toc:
+    - depth: 2
+      title: Get async job status
+      url: '#get-async-job-status'
+    - depth: 2
+      title: Download links or serialized payload for a completed job
+      url: '#download-links-or-serialized-payload-for-a-completed-job'
+    - depth: 2
+      title: Stream async job status over WebSocket
+      url: '#stream-async-job-status-over-websocket'
+  structuredData:
+    headings:
+      - content: Get async job status
+        id: get-async-job-status
+      - content: Download links or serialized payload for a completed job
+        id: download-links-or-serialized-payload-for-a-completed-job
+      - content: Stream async job status over WebSocket
+        id: stream-async-job-status-over-websocket
+    contents:
+      - content: >-
+          Returns the latest provider status for an async inference request. Use
+          this route for polling when webhook delivery is not configured.
+        heading: get-async-job-status
+      - content: >-
+          Fetches provider result links when available, or returns a serialized
+          payload as JSON/TXT attachment fallback.
+        heading: download-links-or-serialized-payload-for-a-completed-job
+      - content: >-
+          Upgrades to a WebSocket connection and emits periodic job
+          status/result frames until the provider reports a terminal state.
+        heading: stream-async-job-status-over-websocket
+---
+
+{/* Auto-generated from Hono openapi route metadata and TypeBox validators. */}
+
+<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.hono.json"} webhooks={[]} operations={[{"path":"/v1/jobs/{surface}/{jobId}","method":"get"},{"path":"/v1/jobs/{surface}/{jobId}/download","method":"get"},{"path":"/v1/jobs/{surface}/{jobId}/ws","method":"get"}]} showTitle={true} />

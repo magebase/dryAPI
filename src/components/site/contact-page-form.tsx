@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { parseAsString, useQueryStates } from "nuqs"
+import { toast } from "sonner"
 
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
@@ -237,8 +238,12 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
     setStatusMessage("")
 
     if (showTurnstile && turnstileEnabled && !turnstileToken) {
+      const verificationMessage = "Please complete the verification challenge before submitting again."
       setStatusTone("error")
-      setStatusMessage("Please complete the verification challenge before submitting again.")
+      setStatusMessage(verificationMessage)
+      toast.error("Verification required", {
+        description: verificationMessage,
+      })
       return
     }
 
@@ -246,6 +251,9 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
     if (nextFileError) {
       setFileError(nextFileError)
       setStatusTone("error")
+      toast.error("Please fix file attachments", {
+        description: nextFileError,
+      })
       return
     }
 
@@ -268,6 +276,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
         message: fieldErrors.message?.[0],
       })
       setStatusTone("error")
+      toast.error("Please correct the highlighted fields")
       return
     }
 
@@ -290,22 +299,34 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
       }
 
       if (response.status === 429 && body.requiresTurnstile) {
+        const verificationError = body.error || "Please complete verification before submitting again."
         setShowTurnstile(true)
         setTurnstileToken("")
         setTurnstileResetKey((previous) => previous + 1)
         setStatusTone("error")
-        setStatusMessage(body.error || "Please complete verification before submitting again.")
+        setStatusMessage(verificationError)
+        toast.error("Verification required", {
+          description: verificationError,
+        })
         return
       }
 
       if (!response.ok || !body.ok) {
+        const failureMessage = body.error || submitErrorMessage.value
         setStatusTone("error")
-        setStatusMessage(body.error || submitErrorMessage.value)
+        setStatusMessage(failureMessage)
+        toast.error("Message not sent", {
+          description: failureMessage,
+        })
         return
       }
 
+      const successMessage = body.message ?? "Thanks, your message has been sent."
       setStatusTone("success")
-      setStatusMessage(body.message ?? "Thanks, your message has been sent.")
+      setStatusMessage(successMessage)
+      toast.success("Message sent", {
+        description: successMessage,
+      })
       setFormValues({
         firstName: "",
         lastName: "",
@@ -326,6 +347,9 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
     } catch {
       setStatusTone("error")
       setStatusMessage(submitErrorMessage.value)
+      toast.error("Message not sent", {
+        description: submitErrorMessage.value,
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -360,7 +384,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
           />
         </div>
       </div>
-      {errors.name ? <p className="text-xs text-[#d3582a]">{errors.name}</p> : null}
+      {errors.name ? <p className="text-xs text-primary">{errors.name}</p> : null}
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-2">
@@ -374,7 +398,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
             type="email"
             value={formValues.email}
           />
-          {errors.email ? <p className="text-xs text-[#d3582a]">{errors.email}</p> : null}
+          {errors.email ? <p className="text-xs text-primary">{errors.email}</p> : null}
         </div>
 
         <div className="space-y-2">
@@ -406,7 +430,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
         <div className="space-y-2">
           <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="state" data-tina-field={stateLabel.field}>{stateLabel.value}</Label>
           <select
-            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none ring-[#ff8b2b] transition focus:ring-2"
+            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none ring-primary transition focus:ring-2"
             id="state"
             name="state"
             onChange={(event) => setFormValues((previous) => ({ ...previous, state: event.target.value }))}
@@ -430,7 +454,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
               <label key={item.option} className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
                 <input
                   checked={formValues.enquiryType === item.value}
-                  className="size-3.5 accent-[#ff8b2b]"
+                  className="size-3.5 accent-primary"
                   name="enquiryType"
                   onChange={() => setFormValues((previous) => ({ ...previous, enquiryType: item.value }))}
                   type="radio"
@@ -449,7 +473,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
               <label key={item.option} className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
                 <input
                   checked={formValues.preferredContactMethod === item.value}
-                  className="size-3.5 accent-[#ff8b2b]"
+                  className="size-3.5 accent-primary"
                   name="preferredContactMethod"
                   onChange={() => setFormValues((previous) => ({ ...previous, preferredContactMethod: item.value }))}
                   type="radio"
@@ -473,7 +497,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
           rows={5}
           value={formValues.message}
         />
-        {errors.message ? <p className="text-xs text-[#d3582a]">{errors.message}</p> : null}
+        {errors.message ? <p className="text-xs text-primary">{errors.message}</p> : null}
       </div>
 
       <FileDropzone
@@ -494,7 +518,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{responseTime}</p>
         <Button
-          className="rounded-sm bg-[#f47f2c] px-5 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-white hover:bg-[#e56f1b]"
+          className="rounded-sm bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-primary-foreground hover:bg-accent"
           disabled={isSubmitting}
           type="submit"
         >
@@ -522,7 +546,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
         <p
           className={`text-sm ${
             statusTone === "error"
-              ? "text-[#d3582a]"
+              ? "text-primary"
               : statusTone === "success"
                 ? "text-emerald-700"
                 : "text-slate-700"

@@ -114,7 +114,7 @@ export function ClarityInit({ projectId }: ClarityInitProps) {
                 text: "#f4f8ff",
               },
               button: {
-                background: "#ff8b2b",
+                background: "var(--primary)",
                 text: "#0b1420",
               },
             },

@@ -16,7 +16,14 @@ function toManifestUrl(entry: PrecacheEntry | string): string {
 
 function shouldPrecacheEntry(entry: PrecacheEntry | string): boolean {
   const url = toManifestUrl(entry)
-  return !(url === "/admin" || url.startsWith("/admin/"))
+  return !(
+    url === "/admin"
+    || url.startsWith("/admin/")
+    || url === "/login"
+    || url === "/register"
+    || url === "/dashboard"
+    || url.startsWith("/dashboard/")
+  )
 }
 
 function isAuthApiPath(pathname: string): boolean {
@@ -25,6 +32,14 @@ function isAuthApiPath(pathname: string): boolean {
 
 function isAdminPath(pathname: string): boolean {
   return pathname === "/admin" || pathname.startsWith("/admin/")
+}
+
+function isAuthPagePath(pathname: string): boolean {
+  return pathname === "/login" || pathname === "/register"
+}
+
+function isDashboardPath(pathname: string): boolean {
+  return pathname === "/dashboard" || pathname.startsWith("/dashboard/")
 }
 
 function buildAuthFallbackResponse(url: URL, method: string): Response {
@@ -53,6 +68,21 @@ const serwist = new Serwist({
   navigationPreload: true,
   // Keep Tina admin and API strictly network-only to avoid stale editor bundles.
   runtimeCaching: [
+    {
+      // Auth-sensitive pages must always come from network to avoid stale session UX.
+      matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isAuthPagePath(pathname),
+      handler: new NetworkOnly(),
+    },
+    {
+      // Dashboard pages depend on current auth state and should not be cached by SW.
+      matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isDashboardPath(pathname),
+      handler: new NetworkOnly(),
+    },
+    {
+      // Better Auth and Tina auth APIs must remain network-only.
+      matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isAuthApiPath(pathname),
+      handler: new NetworkOnly(),
+    },
     {
       matcher: ({ sameOrigin, url: { pathname } }) => sameOrigin && isAdminPath(pathname),
       handler: new NetworkOnly(),

@@ -7,8 +7,8 @@
   "observability": {
     "logs": {
       "enabled": true,
-      "invocation_logs": true
-    }
+      "invocation_logs": true,
+    },
   },
   "assets": {
     "directory": ".open-next/assets",
@@ -42,7 +42,7 @@
   ],
   "d1_databases": [
     {
-      "binding": "QUOTE_DB",
+      "binding": "APP_DB",
       "database_name": "genfix-db",
       "database_id": "a977b631-526d-4cc2-b5d0-f0a17a93a9fa",
       "migrations_dir": "drizzle/migrations",
@@ -53,5 +53,11 @@
   },
   "ai": {
     "binding": "AI",
+  },
+  "vars": {
+    "CLOUDFLARE_AI_SEARCH_TIMEOUT_MS": "2500",
+    "CLOUDFLARE_AI_SEARCH_MAX_RESULTS": "4",
+    "CLOUDFLARE_AI_SEARCH_SOURCE": "",
+    "CLOUDFLARE_AI_SEARCH_ENDPOINT": "",
   },
 }

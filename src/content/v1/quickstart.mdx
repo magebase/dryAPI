@@ -1,3 +1,6 @@
+---
+title: "Quickstart"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -46,9 +49,9 @@ To upgrade to **Premium** (300 RPM and unlimited daily requests), simply top up 
 
 To add funds, go to your [Dashboard → Billing](https://deapi.ai/billing) section.
 
-> **INFO**
->
-> For detailed rate limits per endpoint, see [Limits & Quotas](/docs/v1/limits-and-quotas).
+<Callout>
+For detailed rate limits per endpoint, see [Limits & Quotas](/docs/v1/limits-and-quotas).
+</Callout>
 
 ***
 
@@ -70,6 +73,29 @@ Once your API key is activated and your account has sufficient credits, you can 
 * **Image Background Removal** – Remove backgrounds from images for product photos, portraits, and transparent PNGs.
 * **Image Upscale** – Upscale images to higher resolution using AI-powered super-resolution models.
 * **Text-to-Embedding** – Convert text into vector embeddings for semantic search, similarity matching, and retrieval-augmented generation (RAG).
+
+***
+
+### 5. What Your `/inference` Endpoint Actually Does
+
+Example worker logic:
+
+1. Validate API key.
+2. Check balance.
+3. Deduct estimated cost.
+4. Call RunPod endpoint.
+5. Return `job_id`.
+
+Example response:
+
+```json
+{
+	"job_id": "rp-93kfj29f",
+	"status_url": "/api/v1/jobs/rp-93kfj29f"
+}
+```
+
+Your `/jobs/:id` endpoint then proxies RunPod status.
 
 ***
 

@@ -7,7 +7,6 @@ const STRIPE_API_BASE = "https://api.stripe.com"
 const EVENT_SPECS = [
   { env: "STRIPE_METER_EVENT_AI_MODEL_CALL", fallback: "genfix_ai_model_call", amountEnv: "STRIPE_METER_PRICE_AI_MODEL_CALL_UNIT_AMOUNT", defaultUnitAmount: "1" },
   { env: "STRIPE_METER_EVENT_MODERATION_MODEL_CALL", fallback: "genfix_moderation_model_call", amountEnv: "STRIPE_METER_PRICE_MODERATION_MODEL_CALL_UNIT_AMOUNT", defaultUnitAmount: "1" },
-  { env: "STRIPE_METER_EVENT_BREVO_EMAIL_SEND", fallback: "genfix_brevo_email_send", amountEnv: "STRIPE_METER_PRICE_BREVO_EMAIL_SEND_UNIT_AMOUNT", defaultUnitAmount: "1" },
   { env: "STRIPE_METER_EVENT_BREVO_SMS_SEND", fallback: "genfix_brevo_sms_send", amountEnv: "STRIPE_METER_PRICE_BREVO_SMS_SEND_UNIT_AMOUNT", defaultUnitAmount: "1" },
   { env: "STRIPE_METER_EVENT_CAL_REQUEST", fallback: "genfix_cal_request", amountEnv: "STRIPE_METER_PRICE_CAL_REQUEST_UNIT_AMOUNT", defaultUnitAmount: "1" },
   { env: "STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST", fallback: "genfix_cloudflare_worker_request", amountEnv: "STRIPE_METER_PRICE_CLOUDFLARE_WORKER_REQUEST_UNIT_AMOUNT", defaultUnitAmount: "1" },

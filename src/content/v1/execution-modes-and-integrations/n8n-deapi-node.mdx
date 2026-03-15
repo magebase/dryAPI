@@ -1,3 +1,6 @@
+---
+title: "n8n deAPI node"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -30,9 +33,9 @@ Before you begin, ensure you have:
 * A **deAPI API key** from the [deAPI Dashboard](/docs/v1/quickstart#2-obtain-your-api-key)
 * A **Webhook Secret** from [deAPI Webhook Settings](https://deapi.ai/settings/webhooks)
 
-> **WARNING**
->
-> The deAPI node uses webhooks to receive job completion notifications. Your n8n instance must be accessible via HTTPS for generation operations to work.
+<Callout title="Warning" type="warn">
+The deAPI node uses webhooks to receive job completion notifications. Your n8n instance must be accessible via HTTPS for generation operations to work.
+</Callout>
 
 ***
 
@@ -75,9 +78,9 @@ After installation, configure your deAPI credentials:
 
 4. Click **Save** to store the credentials
 
-> **NOTE**
->
-> The Webhook Secret is used to verify that incoming webhook notifications are genuinely from deAPI. Keep it secure and never share it publicly.
+<Callout>
+The Webhook Secret is used to verify that incoming webhook notifications are genuinely from deAPI. Keep it secure and never share it publicly.
+</Callout>
 
 ***
 

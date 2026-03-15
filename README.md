@@ -35,6 +35,39 @@ Tina local authoring:
 npm run dev:tina
 ```
 
+## Cloudflare API E2E (Playwright + Wrangler)
+
+The repository includes production-like API end-to-end tests for `cloudflare/api`.
+
+1. Create test env file:
+
+```bash
+cp .env.test.example .env.test
+```
+
+1. Run the parallel E2E suite:
+
+```bash
+pnpm test:cf:e2e
+```
+
+Helpful variants:
+
+```bash
+pnpm test:cf:e2e:headed
+pnpm test:cf:e2e:debug
+```
+
+If common local ports are busy, override ports at runtime:
+
+```bash
+CF_E2E_API_PORT=8877 \
+CF_E2E_BASE_URL=http://127.0.0.1:8877 \
+CF_E2E_RUNPOD_PORT=8878 \
+CF_E2E_RUNPOD_BASE_URL=http://127.0.0.1:8878/v2 \
+pnpm test:cf:e2e
+```
+
 ## Editable Content Model
 
 All visible site data lives in JSON under `content/`.
@@ -160,13 +193,13 @@ pnpm db:migrate:remote
 
 ### D1 Binding
 
-`wrangler.jsonc` includes a `QUOTE_DB` binding for quote request persistence.
+`wrangler.jsonc` includes a `APP_DB` binding for quote request persistence.
 Set the real D1 database ID before deploy:
 
 ```json
 "d1_databases": [
   {
-    "binding": "QUOTE_DB",
+    "binding": "APP_DB",
     "database_name": "genfix-db",
     "database_id": "<your-d1-database-id>",
     "migrations_dir": "drizzle/migrations"
@@ -215,6 +248,19 @@ Required for website inquiry emails:
 - `BREVO_FROM_EMAIL_CONTACT`
 - `BREVO_FROM_EMAIL_QUOTE`
 - `BREVO_FROM_EMAIL_CHAT`
+
+Required for chatbot grounding with Cloudflare AI Search:
+
+- `CLOUDFLARE_AI_SEARCH_ACCOUNT_ID`
+- `CLOUDFLARE_AI_SEARCH_API_TOKEN`
+- `CLOUDFLARE_AI_SEARCH_INDEX`
+
+Optional Cloudflare AI Search tuning:
+
+- `CLOUDFLARE_AI_SEARCH_SOURCE`
+- `CLOUDFLARE_AI_SEARCH_ENDPOINT`
+- `CLOUDFLARE_AI_SEARCH_TIMEOUT_MS`
+- `CLOUDFLARE_AI_SEARCH_MAX_RESULTS`
 
 Recommended routing vars for contact/quote/chat queues:
 
@@ -316,7 +362,23 @@ wrangler secret put BREVO_API_KEY
 wrangler secret put BREVO_FROM_EMAIL_CONTACT
 wrangler secret put BREVO_FROM_EMAIL_QUOTE
 wrangler secret put BREVO_FROM_EMAIL_CHAT
+wrangler secret put CLOUDFLARE_AI_SEARCH_ACCOUNT_ID
+wrangler secret put CLOUDFLARE_AI_SEARCH_API_TOKEN
+wrangler secret put CLOUDFLARE_AI_SEARCH_INDEX
+wrangler secret put CLOUDFLARE_AI_SEARCH_SOURCE
+wrangler secret put CLOUDFLARE_AI_SEARCH_ENDPOINT
+wrangler secret put CLOUDFLARE_AI_SEARCH_TIMEOUT_MS
+wrangler secret put CLOUDFLARE_AI_SEARCH_MAX_RESULTS
 ```
+
+Chatbot AI Search Wrangler setup helpers:
+
+```bash
+pnpm cf:chatbot:ai-search:check
+pnpm cf:chatbot:ai-search:sync
+```
+
+The `check` command validates required `CLOUDFLARE_AI_SEARCH_*` keys in `.env` and shows what will be synced. The `sync` command applies them with `wrangler secret put` to the worker defined in `wrangler.jsonc`.
 
 ## Cloudflare Zero Trust for TinaCMS
 

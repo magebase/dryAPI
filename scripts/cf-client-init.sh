@@ -107,7 +107,7 @@ cat > "${client_dir}/wrangler.site.jsonc" <<EOF
   ],
   "d1_databases": [
     {
-      "binding": "QUOTE_DB",
+      "binding": "APP_DB",
       "database_name": "${d1_name}",
       "database_id": "<replace-with-d1-database-id>",
       "migrations_dir": "../../drizzle/migrations"
@@ -630,6 +630,10 @@ GEMINI_API_KEY=
 CLOUDFLARE_AI_SEARCH_ACCOUNT_ID=
 CLOUDFLARE_AI_SEARCH_API_TOKEN=
 CLOUDFLARE_AI_SEARCH_INDEX=
+CLOUDFLARE_AI_SEARCH_SOURCE=
+CLOUDFLARE_AI_SEARCH_ENDPOINT=
+CLOUDFLARE_AI_SEARCH_TIMEOUT_MS=2500
+CLOUDFLARE_AI_SEARCH_MAX_RESULTS=4
 EOF
 
 echo "Created per-client scaffold in: ${client_dir}"

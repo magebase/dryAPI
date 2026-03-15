@@ -12,6 +12,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { isPwaEnabledServer } from "@/lib/feature-flags";
 import { AosProvider } from "@/components/site/aos-provider";
+import { AppToaster } from "@/components/site/app-toaster";
 import { SerwistRegister } from "@/components/site/serwist-register";
 import "./globals.css";
 import "aos/dist/aos.css";
@@ -142,16 +143,21 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
-        "font-geist",
-        "font-geist-mono",
-        geist.variable,
-        geistMono.variable,
+        "font-manrope",
+        "font-dm-sans",
+        "font-fira-code",
+        manrope.variable,
+        dmSans.variable,
+        firaCode.variable,
       )}
     >
-      <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${manrope.variable} ${dmSans.variable} ${firaCode.variable} antialiased`}
+      >
         <NuqsAdapter>
           {pwaEnabled ? <SerwistRegister /> : null}
           <AosProvider>{children}</AosProvider>
+          <AppToaster />
         </NuqsAdapter>
       </body>
     </html>

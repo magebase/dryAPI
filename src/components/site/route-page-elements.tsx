@@ -54,7 +54,7 @@ function PageElement({ element }: { element: RoutePageElement }) {
 
       return (
         <QuoteAwareLink
-          className="inline-block text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b]"
+          className="inline-block text-xs font-semibold uppercase tracking-[0.16em] text-primary"
           data-tina-field={tinaField(element, "href")}
           href={element.href}
           quoteLabel={element.text}

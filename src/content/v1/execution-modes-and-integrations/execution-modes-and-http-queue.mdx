@@ -1,3 +1,6 @@
+---
+title: "Execution Modes & HTTP Queue"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -20,9 +23,9 @@ All deAPI model endpoints use an **asynchronous job queue**. You submit a reques
 
 ## Webhooks (Recommended)
 
-> **INFO**
->
-> For most integrations, use webhooks. They're the most reliable way to receive results without maintaining persistent connections or implementing polling logic.
+<Callout>
+For most integrations, use webhooks. They're the most reliable way to receive results without maintaining persistent connections or implementing polling logic.
+</Callout>
 
 With webhooks, deAPI sends an HTTP POST to your server when a job completes. Configure a global webhook URL in [account settings](https://deapi.ai/settings/webhooks), or override per-request:
 
@@ -156,9 +159,9 @@ curl https://api.deapi.ai/api/v1/client/request-status/abc123 \
 | `result_url` | Download URL (when `done`)                  |
 | `error`      | Error details (when `error`)                |
 
-> **WARNING**
->
-> Polling adds latency, wastes resources with unnecessary requests, and provides no live previews. Use webhooks or WebSockets when possible.
+<Callout title="Warning" type="warn">
+Polling adds latency, wastes resources with unnecessary requests, and provides no live previews. Use webhooks or WebSockets when possible.
+</Callout>
 
 → [Get Results Endpoint Reference](/docs/v1/api/utilities/get-results)
 
@@ -174,9 +177,9 @@ curl https://api.deapi.ai/api/v1/client/request-status/abc123 \
 | Mobile app with real-time updates    | WebSockets  |
 | Batch processing pipeline            | Webhooks    |
 
-> **TIP**
->
-> Use webhooks as your primary method with WebSockets for UI updates. This gives you reliability (webhook retries) plus great UX (instant progress).
+<Callout title="Tip" type="idea">
+Use webhooks as your primary method with WebSockets for UI updates. This gives you reliability (webhook retries) plus great UX (instant progress).
+</Callout>
 
 ***
 

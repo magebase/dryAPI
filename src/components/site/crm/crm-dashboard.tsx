@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { toast } from "sonner"
 import {
   Activity,
   ArrowUpRight,
@@ -108,8 +109,13 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
       const payload = (await response.json()) as CrmDashboardData
       setData(payload)
       setWorkflowStatus("Dashboard refreshed.")
+      toast.success("Dashboard refreshed")
     } catch (error) {
-      setWorkflowStatus(error instanceof Error ? error.message : "Unable to refresh dashboard.")
+      const message = error instanceof Error ? error.message : "Unable to refresh dashboard."
+      setWorkflowStatus(message)
+      toast.error("Refresh failed", {
+        description: message,
+      })
     } finally {
       setIsRefreshing(false)
     }
@@ -118,11 +124,15 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
   function exportLeads(format: "csv" | "hubspot" | "salesforce" | "zoho") {
     const url = `/api/crm/export?format=${format}`
     window.open(url, "_blank", "noopener,noreferrer")
+    toast.success("Export started", {
+      description: `Preparing ${format.toUpperCase()} export in a new tab.`,
+    })
   }
 
   async function dispatchWorkflow(lead: CrmLead | null) {
     if (!workflowAutomationEnabled) {
       setWorkflowStatus("Workflow automation is disabled by env flag.")
+      toast("Workflow automation disabled")
       return
     }
 
@@ -159,14 +169,24 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
 
       const instanceId = body.instanceId ? ` Instance: ${body.instanceId}.` : ""
       setWorkflowStatus(`Workflow dispatched successfully.${instanceId}`)
+      toast.success("Workflow dispatched", {
+        description: body.instanceId
+          ? `Instance: ${body.instanceId}`
+          : "The workflow run has started.",
+      })
     } catch (error) {
-      setWorkflowStatus(error instanceof Error ? error.message : "Workflow dispatch failed.")
+      const message = error instanceof Error ? error.message : "Workflow dispatch failed."
+      setWorkflowStatus(message)
+      toast.error("Workflow dispatch failed", {
+        description: message,
+      })
     }
   }
 
   async function submitMailingList() {
     if (!mailingListSyncEnabled) {
       setMailingStatus("Mailing list sync is disabled by env flag.")
+      toast("Mailing list sync disabled")
       return
     }
 
@@ -191,6 +211,9 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
       }
 
       setMailingStatus("Contact synced to Brevo list.")
+      toast.success("Contact synced", {
+        description: "The contact was added to the Brevo list.",
+      })
       setMailingForm({
         email: "",
         firstName: "",
@@ -198,7 +221,11 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
         company: "",
       })
     } catch (error) {
-      setMailingStatus(error instanceof Error ? error.message : "Unable to sync mailing list contact.")
+      const message = error instanceof Error ? error.message : "Unable to sync mailing list contact."
+      setMailingStatus(message)
+      toast.error("Mailing list sync failed", {
+        description: message,
+      })
     }
   }
 

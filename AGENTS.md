@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Project: dryapi unified AI inference platform (deAPI-style)
-Stack: Next.js App Router, TypeScript, TinaCMS, Tailwind CSS, ShadCN UI, Cloudflare Workers/OpenNext, Stripe, Vitest
+Project: dryAPI unified AI inference platform
+Stack: Next.js App Router, TypeScript, TinaCMS, Fumadocs, Tailwind CSS, ShadCN UI, Cloudflare Workers/OpenNext, Stripe, Vitest
 
 Reference goals:
 
@@ -37,12 +37,20 @@ Reference goals:
 ## Repo Map
 
 - App routes: `src/app/**`
+- Docs app routes: `src/app/docs/**`, `src/app/[lang]/docs/**`
 - Site components: `src/components/site/**`
+- Docs components: `src/components/docs/**`
 - API routes (Next runtime): `src/app/api/**`
+- Docs source config: `source.config.ts`
+- Docs MDX source: `src/content/**`
+- Docs loader and i18n wiring: `src/lib/docs/source.ts`
+- MDX component registry: `mdx-components.tsx`
 - Tina config/schema: `tina/config.js`, `tina/config.ts`
 - Tina backend route: `src/pages/api/tina/[...routes].ts`
 - Content source: `content/**/*.json`
 - Content validation/loading: `src/lib/site-content-loader.ts`, `src/lib/*schema*.ts`
+- deAPI docs mirror + OpenAPI snapshot: `docs/deapi-mirror/**`
+- Docs sync script: `scripts/sync-deapi-docs.mjs`
 - Cloudflare container package: `cloudflare/container/**`
 - Cloudflare workflows package: `cloudflare/workflows/**`
 
@@ -64,6 +72,7 @@ Compatibility requirements:
 
 - Dev (Tina + Next): `pnpm dev`
 - Dev (Next only): `pnpm dev:next`
+- Docs sync: `pnpm docs:sync:deapi`
 - Lint: `pnpm lint`
 - Tests: `pnpm test`
 - Tina build: `pnpm tina:build`
@@ -92,6 +101,21 @@ Compatibility requirements:
   - CTA.
 - Use ShadCN/Tailwind primitives consistently.
 - Keep mobile-first spacing and typography; avoid desktop-only assumptions.
+- Use icons more often where they improve scanning speed and comprehension:
+  - Prioritize nav items, section headers, CTA rows, metadata chips, status blocks, and feature lists.
+  - Prefer `lucide-react` icons and keep sizing consistent (`size-4` inline, `size-5` for emphasis).
+  - Pair icons with text labels (avoid ambiguous icon-only affordances unless accessibility labels are explicit).
+
+### Public Copy Guardrails (Strict)
+
+- Never place implementation notes, author commentary, or SEO/meta explanations in user-facing UI copy.
+- Treat all visible headings, labels, helper text, and paragraph content as end-user product copy only.
+- Forbidden in public content: phrases like "for SEO", "for implementation clarity", "row context", "internal note", "LLM note", or similar process narration.
+- Example of banned copy on public pages:
+  - "Detailed Pricing Rows"
+  - "Full row context is shown here for SEO and implementation clarity. Prices are listed in USD per scraped permutation."
+- If context is only useful to developers/agents, keep it in code comments, docs, commit messages, or internal markdown, not in rendered page content.
+- Prefer concise benefit-first wording that answers user intent; remove any sentence that does not add customer value.
 
 ## Reference Theme Prompt (ZeroDrift-Inspired Compliance Landing)
 
@@ -307,14 +331,16 @@ Additional gateway and docs guidance:
 
 - Use a single, dedicated Hono-based Cloudflare Worker as the public API gateway. The worker should:
   - Enforce API-key / bearer auth on public endpoints (set via `API_KEY` worker binding).
-  - Provide essential middleware: CORS, request logging, JSON validation via `zod`, and lightweight rate-limit hooks where appropriate.
+  - Provide essential middleware: CORS, structured warning/error logging, JSON validation via `zod`, and lightweight rate-limit hooks where appropriate.
   - Expose a machine-readable OpenAPI descriptor at `/openapi.json` for docs and client tooling.
   - Proxy validated requests to the internal Next/OpenNext runtime (configurable via `ORIGIN_URL` and `INTERNAL_API_KEY`) so inference routing and billing logic can remain in server code.
 
 - Docs integration and build-time artifact:
-  - The docs site must fetch the live `/openapi.json` from the Hono gateway and surface a compact interactive preview in the right-hand (last third) column. Use an MDX component registered via `mdx-components.tsx` (example: `src/components/docs/OpenApiViewer.tsx`).
+  - The docs site uses Fumadocs with MDX content generated into `src/content/**` by `scripts/sync-deapi-docs.mjs` and loaded through `source.config.ts` plus `src/lib/docs/source.ts`.
+  - Keep `/docs` and `/[lang]/docs` in sync. Default locale docs stay unprefixed; non-default locales use the prefixed routes.
+  - Preserve the local `/openapi.json` Next route as a same-origin mirror of `docs/deapi-mirror/articles/openapi.json` so docs previews work during Next-only development.
+  - Keep the interactive OpenAPI preview available through the MDX component registered in `mdx-components.tsx` (example: `src/components/docs/OpenApiViewer.tsx`) and the generated Fumadocs OpenAPI reference under `/docs/v1/api-reference`.
   - Add a prebuild step that generates an `content/llm-text.txt` artifact containing the API base and summary (script: `scripts/generate-llm-text.mjs`). The prebuild hook runs before `pnpm build` so the site deploy bundle includes the LLM text.
-
 
 ## RunPod Unit Economics and Profitability Rules
 
@@ -469,3 +495,65 @@ Additional gateway and docs guidance:
 - Include acceptance criteria and constraints.
 - Provide literal runtime/build/test errors when debugging.
 - Ask for diff summary plus verification steps after implementation.
+
+## Logging and Diagnostics Policy (Strict)
+
+When debugging auth, routing, billing, inference failures, or webhook correctness, logs must be structured, high-signal, and safe.
+
+### Required logging behavior
+
+- Prefer structured logs over free-form strings.
+- Log only actionable events by default:
+  - Allowed baseline: `console.warn` and `console.error`.
+  - Do not add routine request/response lifecycle `console.log` noise.
+- `console.log`/`console.info`/`console.debug` are temporary diagnostics only:
+  - Must be gated behind explicit debug flags.
+  - Must include cleanup/removal before merge unless incident response explicitly requires retention.
+- Include a correlation identifier on every related log line:
+  - Use `traceId`, request ID, or equivalent propagated value.
+- Prefer failure and anomaly events over steady-state milestones.
+- For healthy-path telemetry, use metrics/traces instead of frequent console output.
+
+### Console method rules
+
+- `console.log`: disallowed in steady-state runtime paths; temporary debug only behind a flag.
+- `console.info`: disallowed in steady-state runtime paths; temporary debug only behind a flag.
+- `console.debug`/`console.trace`: disallowed unless incident-scoped and explicitly gated.
+- `console.warn`: recoverable problems, retries, non-fatal unexpected states.
+- `console.error`: hard failures, thrown exceptions, invariant violations.
+- Never use logs as a substitute for proper error handling or returned error objects.
+
+### Security and privacy rules (mandatory)
+
+- Never log secrets or sensitive values:
+  - Passwords
+  - API keys / bearer tokens
+  - Raw cookie values
+  - Session tokens / JWT payloads
+  - Webhook signing secrets
+- Redact user identifiers where possible:
+  - Prefer masked email (e.g., `ma***@domain.com`).
+- For cookies, log only metadata:
+  - Presence, count, and cookie names (not values).
+- Keep payload logging minimal and safe:
+  - Prefer top-level keys and booleans (`hasUser`, `hasSession`) over full body dumps.
+
+### Frontend logging rules
+
+- Frontend debug logs must be gated by a debug flag.
+- Prefer enabling via `NEXT_PUBLIC_AUTH_DEBUG=1` and optional localStorage toggles.
+- Default local log threshold must be `warn` (disable `console.log` and `console.info` diagnostics by default).
+- In normal UX paths, keep runtime output to warnings/errors only.
+
+### Server-side logging rules
+
+- Server diagnostics may be heavier during incident debugging, but must remain structured, redacted, and explicitly gated.
+- Include method, pathname, status, traceId, and key branch results.
+- For auth routes, include set-cookie metadata (count/presence) but not cookie values.
+- Default server log threshold must be `warn` unless an incident/debug override is explicitly enabled.
+
+### Lifecycle and cleanup
+
+- Temporary heavy logging is allowed during active debugging.
+- Before merge to stable branches, remove non-warning/non-error diagnostics.
+- Keep only high-value warning/error logs at critical boundaries for incident response.

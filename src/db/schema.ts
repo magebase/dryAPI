@@ -1,5 +1,7 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
+export { account, authSchema, session, user, verification } from "@/db/auth-schema"
+
 export const quoteRequests = sqliteTable("quote_requests", {
   id: text("id").primaryKey(),
   submissionType: text("submission_type").notNull(),

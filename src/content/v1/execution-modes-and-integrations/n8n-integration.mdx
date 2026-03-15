@@ -1,3 +1,6 @@
+---
+title: "n8n Integration"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -6,9 +9,9 @@
 
 This guide explains how to integrate deAPI with n8n to automate AI-powered workflows such as image generation, video transcription, and more.
 
-> **NOTE**
->
-> For a simpler, no-code experience, use the [deAPI Community Node](/docs/v1/execution-modes-and-integrations/n8n-deapi-node) instead. It handles webhook-based waiting, binary downloads, and error handling automatically — with just one node. The guide below covers the manual HTTP Request approach, which works with both self-hosted n8n and n8n Cloud.
+<Callout>
+For a simpler, no-code experience, use the [deAPI Community Node](/docs/v1/execution-modes-and-integrations/n8n-deapi-node) instead. It handles webhook-based waiting, binary downloads, and error handling automatically — with just one node. The guide below covers the manual HTTP Request approach, which works with both self-hosted n8n and n8n Cloud.
+</Callout>
 
 ***
 
@@ -149,9 +152,9 @@ Add a second **HTTP Request** node to check the job status:
 | **Generic Auth Type** | Bearer Auth                                                                                          |
 | **Bearer Auth**       | Select your deAPI credential                                                                         |
 
-> **NOTE**
->
-> The URL uses n8n expression syntax to reference the `request_id` from the previous node.
+<Callout>
+The URL uses n8n expression syntax to reference the `request_id` from the previous node.
+</Callout>
 
 The response includes job status:
 
@@ -194,9 +197,9 @@ Add a **Wait** node for the **False** branch:
 | **Wait Amount** | `3`                 |
 | **Wait Unit**   | Seconds             |
 
-> **WARNING**
->
-> Connect the Wait node output back to **HTTP Request1** to create the polling loop.
+<Callout title="Warning" type="warn">
+Connect the Wait node output back to **HTTP Request1** to create the polling loop.
+</Callout>
 
 ***
 

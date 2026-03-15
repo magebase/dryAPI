@@ -2,6 +2,7 @@
 
 import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { toast } from "sonner"
 
 import { submitChatContactCaptureAction } from "@/app/actions/submit-chat-contact-capture-action"
 import { openQuoteDialog } from "@/components/site/quote-dialog"
@@ -115,11 +116,11 @@ function AssistantAvatar({ className }: { className?: string }) {
   return (
     <Avatar
       className={cn(
-        "size-9 shrink-0 rounded-full border border-[#ffd1ad]/55 bg-[#152438] p-[2px] shadow-[0_10px_24px_rgba(0,0,0,0.38)]",
+        "size-9 shrink-0 rounded-full border border-primary/45 bg-black p-[2px] shadow-[0_10px_24px_rgba(0,0,0,0.38)]",
         className
       )}
     >
-      <AvatarFallback className="flex h-full w-full items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_22%,#ffe2cf_0%,#ffad6d_38%,#f07a28_68%,#b64a0f_100%)] text-[#162334]">
+      <AvatarFallback className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-secondary via-primary to-accent text-primary-foreground">
         <Bot className="size-[17px] stroke-[2.15]" />
       </AvatarFallback>
     </Avatar>
@@ -431,19 +432,31 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
     const phone = capturePhone.trim()
 
     if (!email && !phone) {
-      setCaptureStatus("Add an email or mobile number so our team can follow up.")
+      const message = "Add an email or mobile number so our team can follow up."
+      setCaptureStatus(message)
+      toast.error("Contact details required", {
+        description: message,
+      })
       return
     }
 
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setCaptureStatus("Please enter a valid email address.")
+      const message = "Please enter a valid email address."
+      setCaptureStatus(message)
+      toast.error("Invalid email", {
+        description: message,
+      })
       return
     }
 
     if (phone) {
       const digitsOnly = phone.replace(/\D/g, "")
       if (digitsOnly.length < 8 || digitsOnly.length > 15) {
-        setCaptureStatus("Please enter a valid mobile number.")
+        const message = "Please enter a valid mobile number."
+        setCaptureStatus(message)
+        toast.error("Invalid mobile number", {
+          description: message,
+        })
         return
       }
     }
@@ -467,12 +480,20 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
       })
 
       if (result?.validationErrors) {
-        setCaptureStatus("Please check the contact details and try again.")
+        const message = "Please check the contact details and try again."
+        setCaptureStatus(message)
+        toast.error("Contact details invalid", {
+          description: message,
+        })
         return
       }
 
       if (result?.serverError || !result?.data?.ok) {
-        setCaptureStatus(result?.serverError || result?.data?.error || "Unable to send contact details right now.")
+        const message = result?.serverError || result?.data?.error || "Unable to send contact details right now."
+        setCaptureStatus(message)
+        toast.error("Unable to send contact details", {
+          description: message,
+        })
         return
       }
 
@@ -490,11 +511,18 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
       setCapturePhone("")
       setNeedsContactCapture(false)
       setCaptureStatus("")
+      toast.success("Contact details sent", {
+        description: "Our team will follow up shortly.",
+      })
       if (body.escalated) {
         setEscalationSent(true)
       }
     } catch {
-      setCaptureStatus("Unable to send contact details right now.")
+      const message = "Unable to send contact details right now."
+      setCaptureStatus(message)
+      toast.error("Unable to send contact details", {
+        description: message,
+      })
     } finally {
       setIsSubmittingCapture(false)
     }
@@ -505,7 +533,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
       <button
         aria-expanded={isOpen}
         aria-label={isOpen ? "Close GenFix assistant" : "Open GenFix assistant"}
-        className="fixed bottom-4 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#ffb67f]/40 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] text-white shadow-[0_14px_28px_rgba(255,116,38,0.38)] transition hover:brightness-110"
+        className="fixed bottom-4 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] text-primary-foreground shadow-lg transition hover:brightness-110"
         onClick={() => {
           setIsOpen((current) => !current)
           ensureGreeting()
@@ -518,7 +546,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
       {isOpen ? (
         <section className="fixed bottom-20 right-2 z-40 flex h-[min(36rem,72vh)] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-xl border border-white/15 bg-[#0d1828]/96 shadow-[0_16px_45px_rgba(0,0,0,0.48)] backdrop-blur md:bottom-24 md:right-4">
           <header className="border-b border-white/10 bg-[#101a28] px-4 py-3">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-[#ff8b2b]">GenFix AI Assistant</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-primary">GenFix AI Assistant</p>
             <p className="mt-1 text-sm text-slate-200">Fast answers for generator hire, sales, and support.</p>
             <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
               <span
@@ -551,7 +579,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {bookingEnabled ? (
                     <button
-                      className="inline-flex items-center justify-center rounded-md border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white transition hover:brightness-110"
+                      className="inline-flex items-center justify-center rounded-md border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-foreground transition hover:brightness-110"
                       onClick={startBookingFlow}
                       type="button"
                     >
@@ -559,7 +587,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     </button>
                   ) : null}
                   <button
-                    className="inline-flex items-center justify-center rounded-md border border-white/20 bg-[#132238] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:border-[#ff8b2b]/50"
+                    className="inline-flex items-center justify-center rounded-md border border-white/20 bg-[#132238] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:border-primary/50"
                     onClick={() => {
                       openQuoteDialog()
                     }}
@@ -568,7 +596,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     Get Quote
                   </button>
                   <button
-                    className="inline-flex items-center justify-center rounded-md border border-white/20 bg-[#132238] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:border-[#ff8b2b]/50"
+                    className="inline-flex items-center justify-center rounded-md border border-white/20 bg-[#132238] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:border-primary/50"
                     onClick={() => {
                       sendQuickPrompt("I need emergency generator repair support right now.")
                     }}
@@ -577,7 +605,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     Emergency Repair
                   </button>
                   <button
-                    className="inline-flex items-center justify-center rounded-md border border-white/20 bg-[#132238] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:border-[#ff8b2b]/50"
+                    className="inline-flex items-center justify-center rounded-md border border-white/20 bg-[#132238] px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:border-primary/50"
                     onClick={focusComposer}
                     type="button"
                   >
@@ -602,15 +630,15 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     className={`rounded-lg px-3 py-2 text-sm leading-relaxed ${
                       message.role === "assistant"
                         ? message.isError
-                          ? "border border-[#d3582a]/55 bg-[#2a1b1b] text-[#ffd7c8]"
-                          : "border border-[#ff8b2b]/35 bg-[#132238] text-slate-100"
-                        : "bg-[#ff8b2b] text-white"
+                          ? "border border-destructive/55 bg-[#2a1b1b] text-red-200"
+                          : "border border-primary/35 bg-[#132238] text-slate-100"
+                        : "bg-primary text-primary-foreground"
                     }`}
                   >
                     <p className="whitespace-pre-line">{message.content}</p>
                     {message.showQuoteButton ? (
                       <button
-                        className="mt-3 inline-flex rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:brightness-110"
+                        className="mt-3 inline-flex rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition hover:brightness-110"
                         onClick={() => {
                           openQuoteDialog()
                         }}
@@ -647,8 +675,8 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
             {isSending ? (
               <div className="flex items-start gap-2 pr-4" role="status">
                 <AssistantAvatar className="mt-0.5" />
-                <div className="inline-flex items-center gap-2 rounded-lg border border-[#ff8b2b]/35 bg-[#132238] px-3 py-2 text-xs uppercase tracking-[0.14em] text-slate-200">
-                  <Loader2 className="size-3.5 animate-spin text-[#ff8b2b]" />
+                <div className="inline-flex items-center gap-2 rounded-lg border border-primary/35 bg-[#132238] px-3 py-2 text-xs uppercase tracking-[0.14em] text-slate-200">
+                  <Loader2 className="size-3.5 animate-spin text-primary" />
                   Typing...
                 </div>
               </div>
@@ -669,9 +697,9 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                 />
               </div>
             ) : null}
-            {chatStatusMessage ? <p className="mb-2 text-xs text-[#ffd7c8]">{chatStatusMessage}</p> : null}
+            {chatStatusMessage ? <p className="mb-2 text-xs text-red-200">{chatStatusMessage}</p> : null}
             {needsContactCapture ? (
-              <div className="mb-2 rounded-md border border-[#ff8b2b]/35 bg-[#132238] p-2">
+              <div className="mb-2 rounded-md border border-primary/35 bg-[#132238] p-2">
                 <p className="mb-2 text-xs text-slate-200">Leave your email or mobile so our team can reply after you leave the site.</p>
                 <div className="grid gap-2">
                   <input
@@ -688,7 +716,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     value={capturePhone}
                   />
                   <button
-                    className="inline-flex h-9 items-center justify-center rounded-md bg-[#ff8b2b] px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={isSubmittingCapture}
                     onClick={() => {
                       void submitContactCapture()
@@ -698,13 +726,13 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     {isSubmittingCapture ? "Sending..." : "Send Contact Details"}
                   </button>
                 </div>
-                {captureStatus ? <p className="mt-2 text-[11px] text-[#ffd7c8]">{captureStatus}</p> : null}
+                {captureStatus ? <p className="mt-2 text-[11px] text-red-200">{captureStatus}</p> : null}
               </div>
             ) : null}
             <div className="flex items-end gap-2">
               <textarea
                 ref={composerRef}
-                className="min-h-[44px] flex-1 resize-none rounded-md border border-white/20 bg-[#0d1828] px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-[#ff8b2b]"
+                className="min-h-[44px] flex-1 resize-none rounded-md border border-white/20 bg-[#0d1828] px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-primary"
                 onChange={(event) => setInputValue(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
@@ -724,7 +752,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
               />
               <button
                 aria-label="Send message"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-[#ff8b2b] text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-primary text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSending}
                 onClick={() => {
                   void sendMessage()

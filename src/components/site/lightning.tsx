@@ -28,9 +28,9 @@ const fragmentShaderSource = `
   uniform float uIntensity;
   uniform float uSize;
 
-  #define OCTAVE_COUNT 2
-  #define STRIKE_COUNT 2
-  #define BRANCH_COUNT 2
+  #define PI 3.14159265359
+  #define LAYER_COUNT 5
+  #define MAX_NODES_PER_LAYER 5
 
   vec3 hsv2rgb(vec3 c) {
     vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
@@ -48,6 +48,44 @@ const fragmentShaderSource = `
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
+  }
+
+  int nodeCount(int layer) {
+    if (layer == 0 || layer == LAYER_COUNT - 1) {
+      return 3;
+    }
+    if (layer == 1 || layer == LAYER_COUNT - 2) {
+      return 4;
+    }
+    return 5;
+  }
+
+  vec2 nodePosition(int layer, int node, float layerSpan, float ySpan) {
+    int count = nodeCount(layer);
+    float layerMix = float(layer) / float(LAYER_COUNT - 1);
+    float local = 0.5;
+    if (count > 1) {
+      local = float(node) / float(count - 1);
+    }
+
+    float seed = float(layer * 37 + node * 19);
+    float x = mix(-layerSpan, layerSpan, layerMix);
+    x += (hash11(seed * 0.73) - 0.5) * 0.06;
+
+    float arch = 0.92 + sin(layerMix * PI) * 0.08;
+    float edgeBias = 1.0 - min(abs(local - 0.5) * 1.75, 1.0);
+    float y = mix(-ySpan, ySpan, local) * arch;
+    y += (hash11(seed * 1.91) - 0.5) * mix(0.04, 0.1, edgeBias);
+
+    return vec2(x, y);
+  }
+
+  float segmentDistance(vec2 p, vec2 a, vec2 b, out float edgeT) {
+    vec2 ab = b - a;
+    float denom = max(dot(ab, ab), 0.0001);
+    edgeT = clamp(dot(p - a, ab) / denom, 0.0, 1.0);
+    vec2 closest = a + ab * edgeT;
+    return length(p - closest);
   }
 
   mat2 rotate2d(float theta) {
@@ -71,162 +109,180 @@ const fragmentShaderSource = `
   float fbm(vec2 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < OCTAVE_COUNT; ++i) {
+
+    for (int i = 0; i < 3; ++i) {
       value += amplitude * noise(p);
       p *= rotate2d(0.45);
       p *= 2.0;
       amplitude *= 0.5;
     }
+
     return value;
   }
 
-  float strikeCurve(float y, float seed, float t, float amp) {
-    float p = y * 1.9 + seed * 3.7;
-    float coarse = fbm(vec2(p * 1.4, t * 0.36 + seed * 5.2)) * 2.0 - 1.0;
-    float fine = fbm(vec2(p * 3.4 - t * 0.22, seed * 11.4)) * 2.0 - 1.0;
-    return (coarse * 0.72 + fine * 0.28) * amp;
+  int routeNode(float routeId, int layer) {
+    int count = nodeCount(layer);
+    float pick = hash11(routeId * 5.91 + float(layer) * 17.13);
+    return min(count - 1, int(floor(pick * float(count))));
   }
 
-  float pathPattern(float y, float seed, float t, float amp, float patternSel) {
-    float yScale = mix(0.93, 1.07, patternSel);
-    float timeScale = mix(0.95, 1.05, patternSel);
-    float ampScale = mix(0.90, 1.10, patternSel);
-    float seedShift = mix(0.0, 7.0, patternSel);
-    return strikeCurve(y * yScale, seed + seedShift, t * timeScale, amp * ampScale);
+  float lightningDistance(vec2 p, vec2 a, vec2 b, float seed, float timeBase, out float edgeT) {
+    vec2 ab = b - a;
+    float len = max(length(ab), 0.0001);
+    vec2 dir = ab / len;
+    vec2 normal = vec2(-dir.y, dir.x);
+    edgeT = clamp(dot(p - a, dir) / len, 0.0, 1.0);
+
+    float taper = sin(edgeT * PI);
+    float coarse = fbm(vec2(edgeT * 4.8 + seed * 2.1, timeBase * 0.32 + seed * 1.7)) * 2.0 - 1.0;
+    float fine = sin(edgeT * 28.0 + seed * 9.0 + timeBase * 15.0) * 0.22;
+    float offset = (coarse * 0.78 + fine * 0.22) * mix(0.004, 0.028, taper);
+    vec2 center = a + dir * (edgeT * len) + normal * offset;
+
+    return length(p - center);
   }
 
   void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord / iResolution.xy;
     uv = 2.0 * uv - 1.0;
-    uv.x *= iResolution.x / iResolution.y;
-    // Keep strike origins and branches inside the visible width on narrow screens.
-    float viewportHalfWidth = max(iResolution.x / iResolution.y, 0.001);
-    float safeHalfWidth = max(0.16, viewportHalfWidth - 0.05);
-    float trunkHalfRange = safeHalfWidth * 0.84;
-    float t = iTime * max(uSpeed, 0.0) * 0.18;
 
-    float glow = 0.0;
-    float core = 0.0;
-    float cloud = 0.0;
+    float aspect = max(iResolution.x / max(iResolution.y, 1.0), 0.001);
+    uv.x *= aspect;
+
+    float sizeT = clamp((uSize - 0.5) / 2.5, 0.0, 1.0);
+    float networkZoom = mix(1.06, 0.72, sizeT);
+    uv *= networkZoom;
+    uv.x -= uXOffset * 0.4;
+
+    float timeBase = iTime * max(uSpeed, 0.0);
+    float layerSpan = min(aspect * 0.68, 1.28);
+    float ySpan = mix(0.6, 0.82, smoothstep(0.78, 1.45, aspect));
+    float routeClock = timeBase * 1.38 + 0.12;
+    float routeCycle = floor(routeClock);
+    float routePhase = fract(routeClock);
+    float routeBlend = smoothstep(0.0, 0.02, routePhase) * (1.0 - smoothstep(0.955, 0.995, routePhase));
+
+    float nodeGlow = 0.0;
+    float nodeCore = 0.0;
+    float edgeGlow = 0.0;
+    float signalGlow = 0.0;
+    float signalCore = 0.0;
+    float flashGlow = 0.0;
+    float mist = 0.0;
     vec3 chroma = vec3(0.0);
-    vec3 flashChroma = vec3(0.0);
-    vec3 cloudChroma = vec3(0.0);
-
-    for (int i = 0; i < STRIKE_COUNT; ++i) {
-      float fi = float(i);
-      float seed = fi * 19.31 + 2.71;
-      float primary = 1.0 - step(0.5, fi);
-      float strikeClock = t * 2.6 + fi * 0.5;
-      float strikeId = floor(strikeClock);
-      float strikePhase = fract(strikeClock);
-
-      float lane = (fi + 0.5) / float(STRIKE_COUNT);
-      float laneRandom = hash11(strikeId * 5.73 + seed * 2.41);
-      float jitter = (hash11((strikeId + 1.0) * 11.7 + seed) - 0.5) * (1.8 / float(STRIKE_COUNT));
-      float spread = clamp(mix(lane, laneRandom, 0.92) + jitter, 0.01, 0.99);
-      float primarySpread = mix(0.18, 0.82, hash11(strikeId * 3.17 + seed * 0.37));
-      spread = mix(spread, primarySpread, primary);
-      float trunkX = clamp(uXOffset + mix(-trunkHalfRange, trunkHalfRange, spread), -safeHalfWidth, safeHalfWidth);
-
-      float patternSel = hash11(strikeId * 1.37 + seed * 7.9);
-      float endY = mix(-0.12, -1.0, hash11(seed * 5.3 + strikeId));
-      float endPrimary = mix(-0.72, -1.0, hash11(seed * 8.3 + strikeId * 0.17));
-      endY = mix(endY, endPrimary, primary);
-      float trunkRange = (1.0 - smoothstep(0.95, 1.2, uv.y)) * smoothstep(endY - 0.03, endY + 0.03, uv.y);
-
-      // Draw a fast but noticeable strike head traveling from top toward endY.
-      float drawDuration = mix(0.10, 0.18, hash11(seed * 6.9 + strikeId * 0.31));
-      drawDuration = mix(drawDuration, 0.14, primary);
-      float drawProgress = smoothstep(0.0, drawDuration, strikePhase);
-      float steppedProgress = floor(drawProgress * 10.0) / 10.0;
-      float headY = mix(1.02, endY, steppedProgress);
-      float drawMask = smoothstep(headY - 0.028, headY + 0.028, uv.y);
-      float headGlow = exp(-abs(uv.y - headY) / 0.04) * (1.0 - 0.35 * drawProgress);
-
-      // Keep a faint persistent primary trunk to avoid full-black frames.
-      float primaryPersist = primary * 0.12 * smoothstep(0.0, 0.06, strikePhase) * (1.0 - smoothstep(0.58, 0.72, strikePhase));
-      float yMask = trunkRange * max(drawMask, primaryPersist);
-
-      float pathAmp = min(0.19 * uSize, trunkHalfRange * 0.26);
-      float path = clamp(trunkX + pathPattern(uv.y, seed, t, pathAmp, patternSel), -safeHalfWidth, safeHalfWidth);
-      float dist = abs(uv.x - path);
-      float width = mix(0.0042, 0.0105, smoothstep(-1.0, 0.45, uv.y));
-      width *= mix(0.70, 1.24, smoothstep(-1.0, 0.9, uv.y));
-
-      float hueShift = (hash11(strikeId * 4.19 + seed * 12.7) - 0.5) * 18.0;
-      float sat = mix(0.14, 0.32, hash11(seed * 3.5 + strikeId));
-      float val = mix(0.92, 1.0, hash11(seed * 7.1 + strikeId * 0.5));
-      vec3 strikeColor = hsv2rgb(vec3((uHue + hueShift) / 360.0, sat, val));
-
-      float pulse = 0.32 + 0.68 * hash11(strikeId * 9.1 + seed * 3.1);
-      float leader = smoothstep(0.0, 0.045, strikePhase) * (1.0 - smoothstep(0.08, 0.16, strikePhase));
-      float returnStroke = smoothstep(0.055, 0.080, strikePhase) * (1.0 - smoothstep(0.13, 0.21, strikePhase));
-      float tail = exp(-12.5 * max(strikePhase - 0.14, 0.0));
-      tail *= (1.0 - smoothstep(0.52, 0.62, strikePhase));
-
-      float restrikeChance = step(0.82, hash11(strikeId * 3.71 + seed * 6.11));
-      float restrikeAt = 0.17 + 0.07 * hash11(strikeId * 7.17 + seed * 2.93);
-      float restrike = restrikeChance * 0.32 * exp(-pow((strikePhase - restrikeAt) / 0.020, 2.0));
-
-      float flickerFrame = floor((strikePhase + t * 0.35) * 90.0);
-      float microFlicker = mix(0.92, 1.06, hash11(flickerFrame + seed * 13.0));
-      float envelope = 0.20 * leader + 1.95 * returnStroke + 0.30 * tail + restrike;
-      float energy = envelope * pulse * microFlicker;
-      float sustainedPrimary = primary * 0.012;
-      energy = max(energy, sustainedPrimary);
-
-      float trunkCore = exp(-dist / max(width * 0.30, 0.0007)) * yMask;
-      float trunkAura = exp(-dist / max(width * 2.2, 0.0012)) * yMask;
-      core += trunkCore * (energy + 0.28 * returnStroke * pulse + 0.08 * headGlow);
-      float flashWindow = returnStroke + restrike;
-      float trunkLight = (0.18 * trunkCore + 0.14 * trunkAura) * energy;
-      glow += trunkLight;
-      chroma += strikeColor * trunkLight;
-
-      float cloudLightA = exp(-abs(uv.x - trunkX) / 0.35) * yMask * 0.024 * flashWindow * pulse;
-      float cloudLightB = exp(-abs(uv.y - endY) / 0.30) * 0.015 * flashWindow * pulse;
-      cloud += cloudLightA + cloudLightB;
-      cloudChroma += mix(strikeColor, vec3(0.82, 0.9, 1.0), 0.55) * (cloudLightA + cloudLightB);
-
-      for (int j = 0; j < BRANCH_COUNT; ++j) {
-        float fj = float(j);
-        float bSeed = seed * 3.4 + fj * 7.9 + strikeId * 0.7;
-        float direction = hash11(bSeed) > 0.5 ? 1.0 : -1.0;
-        float branchStart = mix(0.75, -0.2, hash11(bSeed * 0.9));
-        float branchLength = mix(0.16, 0.55, hash11(bSeed * 2.1));
-        float branchEnd = branchStart - branchLength;
-        float branchMask = (1.0 - smoothstep(branchStart, branchStart + 0.03, uv.y)) * smoothstep(branchEnd - 0.03, branchEnd + 0.03, uv.y);
-
-        float branchSlope = direction * 0.34 * (branchStart - uv.y);
-        float branchPath = clamp(path + branchSlope, -safeHalfWidth, safeHalfWidth);
-        float branchDist = abs(uv.x - branchPath);
-        float branchWidth = width * (0.62 + fj * 0.08);
-        float branchCore = exp(-branchDist / max(branchWidth * 0.44, 0.001));
-        float branchTemporal = smoothstep(0.10, 0.18, strikePhase) * (1.0 - smoothstep(0.28, 0.46, strikePhase));
-        float branchLight = 0.12 * branchCore * branchMask * branchTemporal * energy;
-        glow += branchLight;
-        chroma += strikeColor * branchLight * 1.05;
-      }
-
-      flashChroma += mix(strikeColor, vec3(1.0), 0.72) * trunkCore * flashWindow * 0.70;
-    }
+    vec3 signalChroma = vec3(0.0);
 
     vec3 baseBlue = vec3(0.45, 0.68, 1.0);
-    vec3 hotWhite = vec3(0.95, 0.98, 1.0);
-    vec3 hueTint = hsv2rgb(vec3(uHue / 360.0, 0.22, 1.0));
+    vec3 hotWhite = vec3(0.96, 0.99, 1.0);
+    vec3 hueTint = hsv2rgb(vec3(uHue / 360.0, 0.26, 1.0));
     vec3 lightningColor = mix(baseBlue, hotWhite, 0.74);
     lightningColor = mix(lightningColor, hueTint, 0.14);
 
-    float edgeFadeX = 1.0 - smoothstep(2.2, 3.2, abs(uv.x));
-    float edgeFadeY = 1.0 - smoothstep(1.05, 1.55, abs(uv.y));
-    float edgeFade = clamp(edgeFadeX * edgeFadeY, 0.0, 1.0);
-    vec3 dynamicColor = mix(lightningColor, chroma / max(glow, 0.0001), 0.6);
-    vec3 col = dynamicColor * glow * uIntensity * 1.22;
-    col += hotWhite * pow(max(core - 0.75, 0.0), 1.22) * 1.05 * uIntensity;
-    col += cloudChroma * 0.78 * uIntensity;
-    col += flashChroma * 0.42 * uIntensity;
-    col *= edgeFade;
-    fragColor = vec4(col, 1.0);
+    for (int layer = 0; layer < LAYER_COUNT; ++layer) {
+      int count = nodeCount(layer);
+      int selectedNode = routeNode(routeCycle, layer);
+      float layerHit = exp(-pow((routePhase - float(layer) / float(LAYER_COUNT - 1)) / 0.058, 2.0));
+
+      for (int node = 0; node < MAX_NODES_PER_LAYER; ++node) {
+        if (node >= count) {
+          continue;
+        }
+
+        vec2 current = nodePosition(layer, node, layerSpan, ySpan);
+        float d = length(uv - current);
+        float radius = mix(0.045, 0.07, hash11(float(layer * 19 + node * 13)));
+        float core = exp(-pow(d / radius, 2.25));
+        float aura = exp(-pow(d / (radius * 2.7), 2.0));
+        float twinkle = 0.92 + 0.08 * sin(timeBase * 1.7 + float(layer * 9 + node * 5));
+
+        nodeCore += core * 0.16 * twinkle;
+        nodeGlow += aura * 0.20;
+        chroma += hueTint * aura * 0.055;
+
+        if (node == selectedNode) {
+          float nodeCharge = layerHit * routeBlend;
+          signalCore += core * nodeCharge * 0.95;
+          signalGlow += aura * nodeCharge * 0.72;
+          signalChroma += lightningColor * aura * nodeCharge * 0.78;
+          mist += aura * nodeCharge * 0.05;
+        }
+
+        mist += aura * 0.03;
+
+        if (layer < LAYER_COUNT - 1) {
+          int nextCount = nodeCount(layer + 1);
+          int selectedNextNode = routeNode(routeCycle, layer + 1);
+          float segmentTravel = routePhase * float(LAYER_COUNT - 1) - float(layer);
+          float segmentOn = smoothstep(0.0, 0.025, segmentTravel) * (1.0 - smoothstep(1.0, 1.12, segmentTravel));
+          float headPos = clamp(segmentTravel, 0.0, 1.0);
+          float completedSegment = smoothstep(1.0, 1.04, segmentTravel) * (1.0 - smoothstep(1.22, 1.42, segmentTravel));
+
+          for (int nextNode = 0; nextNode < MAX_NODES_PER_LAYER; ++nextNode) {
+            if (nextNode >= nextCount) {
+              continue;
+            }
+
+            vec2 next = nodePosition(layer + 1, nextNode, layerSpan, ySpan);
+            float seed = float(layer * 97 + node * 17 + nextNode * 29);
+            float edgeT;
+            float baseDist = segmentDistance(uv, current, next, edgeT);
+            float baseWidth = mix(0.013, 0.022, hash11(seed * 1.91));
+            float baseline = exp(-baseDist / baseWidth) * 0.055;
+
+            edgeGlow += baseline;
+            chroma += hueTint * baseline * 0.15;
+
+            if (node == selectedNode && nextNode == selectedNextNode) {
+              float signalT;
+              float signalDist = lightningDistance(uv, current, next, seed, timeBase, signalT);
+              float activeCore = exp(-signalDist / 0.0105);
+              float activeAura = exp(-signalDist / 0.030);
+              float head = exp(-pow((signalT - headPos) / 0.082, 2.0));
+              float trail = exp(-6.5 * max(headPos - signalT, 0.0)) * step(signalT, headPos);
+              float segmentTail = exp(-2.8 * max(headPos - signalT, 0.0));
+              float flickerFrame = floor((routePhase + timeBase * 0.45) * 120.0);
+              float microFlicker = mix(0.92, 1.10, hash11(flickerFrame + seed * 13.0));
+              float persistent = (0.18 * trail + 0.12 * segmentTail) * segmentOn;
+              float energy = (segmentOn * (1.45 * head + 0.72 * trail) + completedSegment * 0.24 + persistent) * microFlicker * routeBlend;
+
+              signalCore += activeCore * energy * 1.18;
+              signalGlow += (0.26 * activeCore + 0.36 * activeAura) * energy;
+              flashGlow += activeAura * max(head, trail * 0.56) * routeBlend * 0.92;
+              signalChroma += lightningColor * (0.34 * activeCore + 0.32 * activeAura) * energy;
+              signalChroma += hotWhite * activeCore * head * 0.34 * routeBlend;
+              mist += activeAura * energy * 0.05;
+            }
+          }
+        }
+      }
+    }
+
+    vec3 networkColor = mix(baseBlue, hueTint, 0.34);
+
+    vec3 col = vec3(0.0);
+    col += chroma * 0.34 * uIntensity;
+    col += networkColor * edgeGlow * 0.36 * uIntensity;
+    col += hotWhite * nodeCore * 0.14 * uIntensity;
+    col += lightningColor * signalGlow * 1.12 * uIntensity;
+    col += hotWhite * pow(max(signalCore - 0.12, 0.0), 1.08) * 0.82 * uIntensity;
+    col += signalChroma * 1.56 * uIntensity;
+    col += hotWhite * flashGlow * 0.56 * uIntensity;
+    col += networkColor * mist * 0.26 * uIntensity;
+    col = 1.0 - exp(-col);
+
+    float vignette = 1.0 - smoothstep(
+      1.3,
+      2.0,
+      length(vec2(uv.x / max(layerSpan, 0.001), uv.y / max(ySpan, 0.001)))
+    );
+    float alpha = clamp(
+      (edgeGlow * 0.28 + nodeGlow * 0.22 + signalGlow * 1.05 + signalCore * 0.75 + flashGlow * 0.60) * (0.45 + 0.70 * uIntensity),
+      0.0,
+      0.98
+    );
+
+    col *= vignette;
+    fragColor = vec4(col, alpha * vignette);
   }
 
   void main() {
@@ -374,6 +430,8 @@ export function Lightning({
     const renderFrame = () => {
       resizeCanvas();
       gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
 
       if (iResolutionLocation) {
         gl.uniform2f(iResolutionLocation, canvas.width, canvas.height);

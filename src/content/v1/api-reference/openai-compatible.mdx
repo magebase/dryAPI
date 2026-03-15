@@ -1,0 +1,53 @@
+---
+title: OpenAI Compatible
+description: OpenAI/OpenRouter-style inference enqueue endpoints.
+full: true
+_openapi:
+  toc:
+    - depth: 2
+      title: Queue a chat completion request
+      url: '#queue-a-chat-completion-request'
+    - depth: 2
+      title: Queue an image generation request
+      url: '#queue-an-image-generation-request'
+    - depth: 2
+      title: Queue an audio transcription request
+      url: '#queue-an-audio-transcription-request'
+    - depth: 2
+      title: Queue an embeddings request
+      url: '#queue-an-embeddings-request'
+  structuredData:
+    headings:
+      - content: Queue a chat completion request
+        id: queue-a-chat-completion-request
+      - content: Queue an image generation request
+        id: queue-an-image-generation-request
+      - content: Queue an audio transcription request
+        id: queue-an-audio-transcription-request
+      - content: Queue an embeddings request
+        id: queue-an-embeddings-request
+    contents:
+      - content: >-
+          Accepts an OpenAI-compatible chat payload and queues execution on the
+          routed provider endpoint. Returns `202 Accepted` immediately with
+          request metadata and provider job details.
+        heading: queue-a-chat-completion-request
+      - content: >-
+          Queues image generation using the configured model and endpoint
+          mapping. The response is asynchronous and includes a provider job
+          payload for downstream polling.
+        heading: queue-an-image-generation-request
+      - content: >-
+          Submits an async transcription job using the configured provider
+          endpoint. Returns quickly with queue metadata and provider job state.
+        heading: queue-an-audio-transcription-request
+      - content: >-
+          Queues embedding generation for one or many input strings and returns
+          async job metadata. Use job status/download routes to resolve final
+          vectors.
+        heading: queue-an-embeddings-request
+---
+
+{/* Auto-generated from Hono openapi route metadata and TypeBox validators. */}
+
+<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.hono.json"} webhooks={[]} operations={[{"path":"/v1/chat/completions","method":"post"},{"path":"/v1/images/generations","method":"post"},{"path":"/v1/audio/transcriptions","method":"post"},{"path":"/v1/embeddings","method":"post"}]} showTitle={true} />

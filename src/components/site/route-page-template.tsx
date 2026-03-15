@@ -53,7 +53,7 @@ export function RoutePageTemplate({
         <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:72px_72px]" />
 
         <Reveal as="div" className="relative mx-auto max-w-7xl px-4 py-14 md:py-20 lg:py-24">
-          <p className="text-sm uppercase tracking-[0.22em] text-[#ff8b2b]" data-tina-field={tinaField(page.hero, "kicker")}>
+          <p className="text-sm uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
@@ -68,8 +68,8 @@ export function RoutePageTemplate({
                 key={`${page.slug}-${action.href}-${action.label}`}
                 className={`inline-flex w-full justify-center rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition sm:w-auto ${
                   index === 0
-                    ? "border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] hover:brightness-110"
-                    : "border border-[#ff8b2b] text-[#ff8b2b] hover:bg-[#ff8b2b] hover:text-white"
+                    ? "border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] text-primary-foreground shadow-lg hover:brightness-110"
+                    : "border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 }`}
                 data-tina-field={tinaField(action)}
                 href={action.href}
@@ -146,7 +146,7 @@ export function RoutePageTemplate({
                 {section.cards.map((card, index) => (
                   <Reveal
                     as="article"
-                    className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-[#ff8b2b]/45`}
+                    className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-primary/45`}
                     delay={index * 0.08}
                     y={0}
                     key={card.id}
@@ -170,7 +170,7 @@ export function RoutePageTemplate({
                         {card.description}
                       </p>
                       <QuoteAwareLink
-                        className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b]"
+                        className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.16em] text-primary"
                         data-tina-field={tinaField(card, "ctaLabel")}
                         href={card.href}
                       >
@@ -188,7 +188,7 @@ export function RoutePageTemplate({
       <Reveal as="section" className="mx-auto mt-10 max-w-7xl px-4 md:mt-14">
         <div className={`${getGradientVariant(2)} rounded-md border border-white/10 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[#ff8b2b]" data-tina-field={ctaKicker.field}>{ctaKicker.value}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-primary" data-tina-field={ctaKicker.field}>{ctaKicker.value}</p>
             <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
               <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
@@ -196,7 +196,7 @@ export function RoutePageTemplate({
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
-              className="inline-flex w-full justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110 sm:w-auto"
+              className="inline-flex w-full justify-center rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-primary-foreground shadow-lg transition hover:brightness-110 sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}
               href={quoteHref}
             >
@@ -220,7 +220,7 @@ export function RoutePageTemplate({
               <KeywordGradientText dataTinaField={tinaField(page.contactPanel, "heading")} text={page.contactPanel.heading} />
             </h3>
             <p className="mt-3 text-slate-300" data-tina-field={tinaField(page.contactPanel, "body")}>{page.contactPanel.body}</p>
-            <p className="mt-3 text-sm uppercase tracking-[0.15em] text-[#ff8b2b]" data-tina-field={tinaField(page.contactPanel, "responseTime")}>
+            <p className="mt-3 text-sm uppercase tracking-[0.15em] text-primary" data-tina-field={tinaField(page.contactPanel, "responseTime")}>
               {page.contactPanel.responseTime}
             </p>
           </Reveal>

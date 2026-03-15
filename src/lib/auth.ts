@@ -1,5 +1,13 @@
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { drizzle } from "drizzle-orm/d1";
+
+import { authSchema } from "@/db/auth-schema";
+import { VerifyEmail } from "@/emails/verify-email";
+import { sendBrevoReactEmail } from "@/lib/brevo-email";
 
 type SocialProviderConfig = {
   clientId: string;
@@ -7,6 +15,55 @@ type SocialProviderConfig = {
 };
 
 type SupportedSocialProvider = "google" | "github";
+
+type VerificationEmailPayload = {
+  user: {
+    email: string;
+    name?: string | null;
+  };
+  url: string;
+  token: string;
+};
+
+async function sendAuthVerificationEmail({
+  user,
+  url,
+}: VerificationEmailPayload): Promise<void> {
+  if (process.env.NODE_ENV !== "production") {
+    console.info(`[auth][dev] Verification URL for ${user.email}: ${url}`);
+  }
+
+  const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+
+  if (!brevoApiKey) {
+    console.warn(
+      "[auth] BREVO_API_KEY is not set; verification email not sent.",
+      { email: user.email, verificationUrl: url },
+    );
+    return;
+  }
+
+  const fromEmail = process.env.BREVO_FROM_EMAIL?.trim() || "no-reply@dryapi.ai";
+  const fromName = process.env.BREVO_FROM_NAME?.trim() || "dryAPI";
+
+  await sendBrevoReactEmail({
+    apiKey: brevoApiKey,
+    from: {
+      email: fromEmail,
+      name: fromName,
+    },
+    to: [{
+      email: user.email,
+      name: user.name || undefined,
+    }],
+    subject: "Verify your email address",
+    react: VerifyEmail({
+      name: user.name || undefined,
+      verificationUrl: url,
+    }),
+    tags: ["auth", "verify-email"],
+  });
+}
 
 function normalizeBaseUrl(value: string | undefined): string | undefined {
   const raw = value?.trim();
@@ -196,6 +253,43 @@ function readSocialProviders():
 const baseURL = resolveBetterAuthBaseUrl();
 const socialProviders = readSocialProviders();
 
+type D1Binding = Parameters<typeof drizzle>[0];
+
+function resolveAuthD1Binding(): D1Binding | null {
+  try {
+    const { env } = getCloudflareContext();
+    const typedEnv = env as Record<string, unknown>;
+    return ((typedEnv.APP_DB ?? typedEnv.TINA_DB ?? null) as D1Binding | null);
+  } catch {
+    return null;
+  }
+}
+
+function resolveBetterAuthDatabase() {
+  const d1Binding = resolveAuthD1Binding();
+
+  if (d1Binding) {
+    const db = drizzle(d1Binding);
+    return drizzleAdapter(db, {
+      provider: "sqlite",
+      schema: authSchema,
+    });
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("[auth] D1 binding unavailable. Expected APP_DB or TINA_DB for Better Auth database.");
+  }
+
+  console.warn("[auth] D1 binding unavailable; Better Auth is falling back to temporary in-memory storage in dev.");
+  return undefined;
+}
+
+type BetterAuthInstance = ReturnType<typeof betterAuth>;
+
+const globalAuthCache = globalThis as typeof globalThis & {
+  __dryapiBetterAuth?: BetterAuthInstance;
+};
+
 export function getConfiguredSocialProviders(): SupportedSocialProvider[] {
   if (!socialProviders) {
     return [];
@@ -204,10 +298,66 @@ export function getConfiguredSocialProviders(): SupportedSocialProvider[] {
   return Object.keys(socialProviders) as SupportedSocialProvider[];
 }
 
-export const auth = betterAuth({
-  baseURL,
-  trustedOrigins: resolveTrustedOrigins(baseURL),
-  secret: process.env.BETTER_AUTH_SECRET,
-  socialProviders,
-  plugins: [nextCookies()],
-});
+function buildAuthOptions() {
+  const database = resolveBetterAuthDatabase();
+
+  return {
+    baseURL,
+    trustedOrigins: resolveTrustedOrigins(baseURL),
+    secret: process.env.BETTER_AUTH_SECRET,
+    ...(database ? { database } : {}),
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      password: {
+        hash: hashPassword,
+        verify: verifyPassword,
+      },
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      sendOnSignIn: true,
+      sendVerificationEmail: async (data) => {
+        try {
+          await sendAuthVerificationEmail(data as VerificationEmailPayload);
+        } catch (error) {
+          console.error("[auth] Failed to send verification email", error);
+        }
+      },
+    },
+    socialProviders,
+    plugins: [nextCookies()],
+  } satisfies Parameters<typeof betterAuth>[0];
+}
+
+function createAuthInstance(): BetterAuthInstance {
+  return betterAuth(buildAuthOptions());
+}
+
+export function getAuth(): BetterAuthInstance {
+  const cached = globalAuthCache.__dryapiBetterAuth;
+  if (cached) {
+    return cached;
+  }
+
+  const instance = createAuthInstance();
+
+  if (process.env.NODE_ENV === "production") {
+    globalAuthCache.__dryapiBetterAuth = instance;
+    return instance;
+  }
+
+  // Only cache in dev when a D1 binding exists so compile-time imports cannot
+  // accidentally lock auth into temporary in-memory mode.
+  if (resolveAuthD1Binding()) {
+    globalAuthCache.__dryapiBetterAuth = instance;
+  }
+
+  return instance;
+}
+
+export const auth = {
+  handler(request: Request) {
+    return getAuth().handler(request);
+  },
+} satisfies Pick<BetterAuthInstance, "handler">;

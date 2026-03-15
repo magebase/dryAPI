@@ -9,11 +9,11 @@ describe("KeywordGradientText", () => {
 
     const node = screen.getByText("Power Plan")
     expect(node).toHaveAttribute("data-tina-field", "field:title")
-    expect(node).not.toHaveClass("text-[#ffbf8a]")
+    expect(node).not.toHaveClass("text-[#7ae8d9]")
   })
 
   it("applies full gradient class when forced", () => {
     render(<KeywordGradientText forceFullGradient text="Power Plan" />)
-    expect(screen.getByText("Power Plan")).toHaveClass("text-[#ffbf8a]")
+    expect(screen.getByText("Power Plan")).toHaveClass("text-[#7ae8d9]")
   })
 })

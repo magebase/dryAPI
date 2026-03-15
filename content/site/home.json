@@ -1,114 +1,114 @@
 {
-  "seoTitle": "deAPI | Unified AI Inference API",
-  "seoDescription": "Ship chat, image, speech, and embeddings through one OpenAI-compatible API with routing, billing, and margin-aware controls.",
+  "seoTitle": "deAPI | Thousands Of Models Through One AI API",
+  "seoDescription": "Access chat, image, speech, video, OCR, embeddings, and rerank models through one OpenAI/OpenRouter-compatible API with cheap pricing and elastic scale.",
   "hero": {
     "visible": true,
-    "kicker": "Unified AI Inference Platform",
-    "heading": "One API For Chat, Images, Speech, And Embeddings",
-    "subheading": "deAPI gives your team one OpenAI-compatible surface with runtime routing, usage billing, and production guardrails across model providers.",
+    "kicker": "Model Variety Without Integration Sprawl",
+    "heading": "Hundreds Of Models.\nOne Fast, Cheap API.",
+    "subheading": "Use the OpenAI or OpenRouter client you already know, switch models across every category, and scale traffic on pricing built to stay lean.",
     "backgroundImage": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
     "primaryAction": {
-      "label": "Open Playground",
+      "label": "Start Building",
       "href": "/playground",
       "style": "solid"
     },
     "secondaryAction": {
-      "label": "View Pricing",
+      "label": "See Cheap Pricing",
       "href": "/pricing",
       "style": "outline"
     },
     "tertiaryAction": {
-      "label": "Browse Models",
+      "label": "Explore Model Catalog",
       "href": "/models",
       "style": "ghost"
     }
   },
   "spotlightSection": {
     "visible": true,
-    "kicker": "Core Platform",
-    "title": "How deAPI Simplifies Production AI"
+    "kicker": "Why Teams Switch",
+    "title": "Drop In Fast, Then Pick The Best Model For Every Job"
   },
   "spotlightCards": [
     {
       "id": "spotlight-sales",
       "visible": true,
-      "title": "OpenAI-Compatible Endpoints",
-      "description": "Use one familiar request format while we normalize provider-specific behavior behind the gateway.",
+      "title": "OpenAI And OpenRouter Compatible",
+      "description": "Point your existing client at deAPI, keep familiar request shapes, and start calling new models in minutes.",
       "icon": "settings"
     },
     {
       "id": "spotlight-rental",
       "visible": true,
-      "title": "RunPod-Aware Routing",
-      "description": "Route requests by latency, queue depth, and cost signals so performance stays predictable under load.",
+      "title": "A Huge Model Catalog By Category",
+      "description": "Choose from chat, reasoning, image, speech, video, OCR, embeddings, rerank, and coding models in one searchable catalog.",
       "icon": "truck"
     },
     {
       "id": "spotlight-support",
       "visible": true,
-      "title": "Billing And Guardrails",
-      "description": "Apply credit checks, margin floors, and rate limits before dispatch so spend and reliability stay under control.",
+      "title": "Scale Traffic At Low Cost",
+      "description": "Route across providers and lower-cost paths automatically so apps stay fast while pricing remains competitive.",
       "icon": "shield"
     }
   ],
   "capabilitySection": {
     "visible": true,
     "kicker": "Capabilities",
-    "title": "Everything Needed To Run AI Workloads Reliably"
+    "title": "Model Breadth, Developer Simplicity, And Pricing That Scales"
   },
   "capabilityCards": [
     {
       "id": "cap-sales",
       "visible": true,
-      "title": "Unified Model Catalog",
-      "description": "Expose chat, image, speech, and embedding models through one endpoint family and consistent metadata.",
+      "title": "Models For Every Category",
+      "description": "Pick from flagship chat, image, speech, video, OCR, embedding, rerank, and coding models without splitting your stack.",
       "icon": "settings"
     },
     {
       "id": "cap-rental",
       "visible": true,
-      "title": "Request Cost Estimation",
-      "description": "Estimate provider cost before dispatch and enforce profitability guardrails when requests are underpriced.",
+      "title": "Drop-In SDK Usage",
+      "description": "Use OpenAI-compatible endpoints from the official OpenAI SDK or OpenRouter-style clients with minimal changes.",
       "icon": "bolt"
     },
     {
       "id": "cap-field",
       "visible": true,
-      "title": "Rate Limits Per Key",
-      "description": "Protect your infrastructure with per-key and per-model throttles that return consistent error contracts.",
+      "title": "Consistent API Surface",
+      "description": "Keep request and response contracts stable while swapping providers and models behind the gateway.",
       "icon": "shield"
     },
     {
       "id": "cap-breakdown",
       "visible": true,
-      "title": "Fallback Routing",
-      "description": "Fail over across GPU tiers and endpoints using policy-based routing for uptime during spikes or incidents.",
+      "title": "Elastic Scaling",
+      "description": "Move from prototype traffic to production spikes with routing designed for burst throughput and predictable latency.",
       "icon": "radio"
     },
     {
       "id": "cap-range",
       "visible": true,
-      "title": "Usage And Cost Tracking",
-      "description": "Track request volume, latency, and spend with records designed for billing reconciliation and analytics.",
+      "title": "Cheap By Design",
+      "description": "Use lower-cost providers and model tiers when they fit the job so your retail pricing can stay aggressive.",
       "icon": "plug"
     },
     {
       "id": "cap-runtime",
       "visible": true,
-      "title": "API Key Lifecycle",
-      "description": "Create, rotate, and revoke keys with scoped controls and audit-friendly access patterns.",
+      "title": "Fast Model Switching",
+      "description": "Swap models by changing a model string instead of rebuilding integrations for each provider or category.",
       "icon": "factory"
     },
     {
       "id": "cap-engineering",
       "visible": true,
-      "title": "OpenRouter-Style Contracts",
-      "description": "Keep response formats stable while providers evolve, reducing integration churn for client applications.",
+      "title": "Usage And Cost Visibility",
+      "description": "Track request volume, latency, and spend clearly so scaling decisions and pricing reviews stay grounded.",
       "icon": "hard-hat"
     }
   ],
   "projectShowcase": {
-    "title": "Featured Use Cases",
+    "title": "Popular Model-Powered Products",
     "visible": true,
     "ctaLabel": "Explore Use Cases",
     "ctaHref": "/blog",
@@ -116,8 +116,8 @@
       {
         "id": "project-1",
         "visible": true,
-        "title": "Claude Code Agent Workflows",
-        "summary": "Ship coding assistants with stable gateway behavior, key management, and predictable per-request economics.",
+        "title": "AI Chat And Agent Products",
+        "summary": "Run assistant, reasoning, and coding workloads on one API while choosing the best chat model for each use case.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/use-cases/claude-code",
         "tag": "Use Case",
@@ -145,8 +145,8 @@
       {
         "id": "project-2",
         "visible": true,
-        "title": "Text To Image Apps",
-        "summary": "Run image generation workloads behind one API while managing model routing and credit consumption centrally.",
+        "title": "Image And Video Apps",
+        "summary": "Launch generation and multimodal products with access to a broad catalog instead of integrating providers one by one.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/use-cases/text-to-image",
         "tag": "Use Case",
@@ -174,8 +174,8 @@
       {
         "id": "project-3",
         "visible": true,
-        "title": "Video To Text Pipelines",
-        "summary": "Transcribe media jobs at scale with endpoint fallbacks and consistent response shapes for downstream systems.",
+        "title": "Speech And Transcription Pipelines",
+        "summary": "Handle transcription, translation, and speech generation behind one stable API contract as volume grows.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/use-cases/video-to-text",
         "tag": "Use Case",
@@ -203,8 +203,8 @@
       {
         "id": "project-4",
         "visible": true,
-        "title": "n8n Automation Integrations",
-        "summary": "Connect workflow automations to a single inference API and enforce organization-level usage controls.",
+        "title": "Search, OCR, And Embedding Workflows",
+        "summary": "Power retrieval, document extraction, and search features with the right embedding and OCR models for each job.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/use-cases/n8n-ai-workflows",
         "tag": "Use Case",
@@ -232,7 +232,7 @@
     ]
   },
   "resourceShowcase": {
-    "title": "Docs And Implementation Guides",
+    "title": "Docs And Migration Guides",
     "visible": true,
     "ctaLabel": "Read Documentation",
     "ctaHref": "/blog",
@@ -240,8 +240,8 @@
       {
         "id": "resource-1",
         "visible": true,
-        "title": "API Integration Starter",
-        "summary": "A practical integration path for auth, retries, and request shaping across deAPI endpoints.",
+        "title": "OpenAI SDK Quickstart",
+        "summary": "Get running with deAPI by changing your base URL and model name instead of rebuilding your client stack.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/blog",
         "tag": "Guide",
@@ -269,8 +269,8 @@
       {
         "id": "resource-2",
         "visible": true,
-        "title": "Margin Guardrail Design",
-        "summary": "How to set floor-margin policies that protect gross profit while keeping latency and UX in bounds.",
+        "title": "Model Selection By Category",
+        "summary": "Choose the right chat, image, speech, and embedding models based on quality, speed, and price targets.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/blog",
         "tag": "Guide",
@@ -278,28 +278,28 @@
           {
             "id": "resource-2-01",
             "src": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
-            "alt": "Margin Guardrail Design image 1",
-            "caption": "Margin Guardrail Design image 1"
+            "alt": "Model Selection By Category image 1",
+            "caption": "Model Selection By Category image 1"
           },
           {
             "id": "resource-2-02",
             "src": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6",
-            "alt": "Margin Guardrail Design image 2",
-            "caption": "Margin Guardrail Design image 2"
+            "alt": "Model Selection By Category image 2",
+            "caption": "Model Selection By Category image 2"
           },
           {
             "id": "resource-2-03",
             "src": "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0",
-            "alt": "Margin Guardrail Design image 3",
-            "caption": "Margin Guardrail Design image 3"
+            "alt": "Model Selection By Category image 3",
+            "caption": "Model Selection By Category image 3"
           }
         ]
       },
       {
         "id": "resource-3",
         "visible": true,
-        "title": "RunPod Routing Patterns",
-        "summary": "Routing strategies for queue depth, GPU fallback, and cold-start mitigation in production traffic.",
+        "title": "Scaling And Pricing Playbook",
+        "summary": "Routing strategies for low-cost throughput, provider fallback, and predictable API behavior under load.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/blog",
         "tag": "Guide",
@@ -327,8 +327,8 @@
       {
         "id": "resource-4",
         "visible": true,
-        "title": "Billing And Usage Reconciliation",
-        "summary": "Build auditable credit and usage pipelines from request metadata to finalized customer balances.",
+        "title": "Migrating From Provider-Specific APIs",
+        "summary": "Consolidate multiple AI integrations into one API without losing model choice or observability.",
         "image": "https://images.unsplash.com/photo-1567789884554-0b844b597180",
         "href": "/blog",
         "tag": "Guide",
@@ -371,10 +371,10 @@
       {
         "id": "testimonial-2",
         "company": "HarborWorks Civil",
-        "quote": "Guardrail checks stopped underpriced requests before dispatch, which gave us confidence to scale traffic.",
+        "quote": "The low-cost routing options let us keep pricing competitive while still scaling traffic confidently.",
         "person": "Asha T.",
         "role": "Operations Engineer",
-        "metric": "Margin floor enforced"
+        "metric": "Lower cost per request"
       },
       {
         "id": "testimonial-3",
@@ -387,10 +387,10 @@
       {
         "id": "testimonial-4",
         "company": "SunCoast Analytics",
-        "quote": "Usage records and billing export made reconciliation straightforward at the end of each cycle.",
+        "quote": "We can move between premium and budget models by workload, and the billing visibility makes the tradeoffs obvious.",
         "person": "Jordan P.",
         "role": "Finance Systems Manager",
-        "metric": "0 manual adjustments"
+        "metric": "Cheaper blended pricing"
       },
       {
         "id": "testimonial-5",
@@ -405,7 +405,7 @@
   "trustedBySection": {
     "visible": true,
     "kicker": "Trusted By",
-    "title": "Teams Shipping AI Products In Production",
+    "title": "Teams Consolidating AI Workloads Across Many Model Types",
     "logos": [
       {
         "id": "logo-1",
@@ -451,11 +451,11 @@
   },
   "contactPanel": {
     "visible": true,
-    "kicker": "Ready To Deploy?",
-    "heading": "Talk To The Team Building deAPI",
-    "body": "Share your traffic profile, target models, and launch timeline. We can help map architecture, pricing, and rollout steps.",
+    "kicker": "Ready To Ship?",
+    "heading": "Bring Massive Model Choice To Production Without Paying Provider-Specific Tax",
+    "body": "Share your traffic profile, target model categories, and budget. We can help map integration, scaling, and pricing around one easy API surface.",
     "primaryAction": {
-      "label": "Contact Sales",
+      "label": "Talk To Sales",
       "href": "/contact-sales",
       "style": "solid"
     },

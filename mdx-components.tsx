@@ -1,12 +1,20 @@
-import { useMDXComponents as getDocsMDXComponents } from "nextra-theme-docs"
+import type { MDXComponents } from "mdx/types"
+import defaultMdxComponents from "fumadocs-ui/mdx"
+
+import { APIPage } from "./src/components/docs/api-page"
 import OpenApiViewer from "./src/components/docs/OpenApiViewer"
 
-const docsComponents = getDocsMDXComponents()
-
-export function useMDXComponents(components: Record<string, unknown> = {}) {
+export function getMDXComponents(components: MDXComponents = {}): MDXComponents {
   return {
-    ...docsComponents,
+    ...defaultMdxComponents,
+    APIPage,
     OpenApiViewer,
     ...components,
-  }
+  } satisfies MDXComponents
+}
+
+export const useMDXComponents = getMDXComponents
+
+declare global {
+  type MDXProvidedComponents = ReturnType<typeof getMDXComponents>
 }

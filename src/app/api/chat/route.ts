@@ -10,6 +10,10 @@ import {
   normalizeConversation,
   type ChatMessage,
 } from "@/lib/chat-assistant";
+import {
+  formatAiSearchPromptContext,
+  searchCloudflareAiContext,
+} from "@/lib/cloudflare-ai-search";
 import { sendBrevoReactEmail } from "@/lib/brevo-email";
 import { moderateInput } from "@/lib/content-moderation";
 import {
@@ -208,11 +212,13 @@ function buildPrompt({
   pagePath,
   quoteCtaLabel,
   brandMark,
+  aiSearchContext,
 }: {
   messages: ChatMessage[];
   pagePath: string;
   quoteCtaLabel: string;
   brandMark: string;
+  aiSearchContext: string;
 }): string {
   const conversation = formatConversation(messages);
 
@@ -231,6 +237,8 @@ function buildPrompt({
     brandMark,
     "Current page path:",
     pagePath,
+    "Cloudflare AI Search grounding context:",
+    aiSearchContext,
     "Conversation transcript:",
     conversation,
     "Return strict JSON only with this exact shape:",
@@ -740,6 +748,11 @@ export async function POST(request: NextRequest) {
       process.env.GOOGLE_API_KEY?.trim() ||
       "";
     const model = process.env.GEMINI_CHAT_MODEL?.trim() || "gemini-2.5-flash";
+    const aiSearchContext = formatAiSearchPromptContext(
+      await searchCloudflareAiContext({
+        query: question,
+      }),
+    );
 
     let assistant: GeneratedAssistantAnswer;
 
@@ -749,6 +762,7 @@ export async function POST(request: NextRequest) {
         pagePath: normalizedPagePath,
         quoteCtaLabel,
         brandMark,
+        aiSearchContext,
       });
 
       try {

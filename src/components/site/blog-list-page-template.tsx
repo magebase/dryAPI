@@ -1,4 +1,5 @@
 import Image from "next/image"
+import { ArrowRight, BookText, MessageSquare } from "lucide-react"
 import { tinaField } from "tinacms/dist/react"
 
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
@@ -94,7 +95,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
         <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:72px_72px]" />
 
         <Reveal className="relative mx-auto max-w-7xl px-4 pb-14 pt-20 md:pb-16 md:pt-24 lg:pb-24 lg:pt-28">
-          <p className="text-xs uppercase tracking-[0.22em] text-[#ff8b2b]" data-tina-field={tinaField(page.hero, "kicker")}>
+          <p className="text-xs uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
@@ -107,16 +108,17 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
             {page.hero.actions.map((action, index) => (
               <QuoteAwareLink
                 key={`${action.href}-${action.label}`}
-                className={`inline-flex w-full justify-center rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition sm:w-auto ${
+                className={`inline-flex items-center justify-center gap-1.5 w-full rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition sm:w-auto ${
                   index === 0
-                    ? "border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] hover:brightness-110"
-                    : "border border-[#ff8b2b] text-[#ff8b2b] hover:bg-[#ff8b2b] hover:text-white"
+                    ? "border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] text-primary-foreground shadow-lg hover:brightness-110"
+                    : "border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 }`}
                 data-tina-field={tinaField(action)}
                 href={action.href}
                 quoteLabel={action.label}
               >
-                {action.label}
+                <span>{action.label}</span>
+                <ArrowRight className="size-4" />
               </QuoteAwareLink>
             ))}
           </div>
@@ -155,12 +157,16 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               width={1200}
             />
             <div className="space-y-4 px-5 py-5 md:px-7 md:py-7">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={featuredLabel.field}>{featuredLabel.value}</p>
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary" data-tina-field={featuredLabel.field}>
+                <BookText className="size-3.5" />
+                <span>{featuredLabel.value}</span>
+              </p>
               <h2 className="font-display text-3xl uppercase leading-[1.08] tracking-[0.03em] text-white md:text-4xl">
                 <KeywordGradientText dataTinaField={tinaField(featuredPost, "title")} text={featuredPost.title} />
               </h2>
-              <p className="text-sm uppercase tracking-[0.16em] text-slate-300" data-tina-field={tinaField(featuredPost, "publishedAt")}>
-                {formatPublishedDate(featuredPost.publishedAt)} · {estimateReadTime(featuredPost)}{" "}
+              <p className="inline-flex items-center gap-1.5 text-sm uppercase tracking-[0.16em] text-slate-300" data-tina-field={tinaField(featuredPost, "publishedAt")}>
+                <BookText className="size-4" />
+                <span>{formatPublishedDate(featuredPost.publishedAt)} · {estimateReadTime(featuredPost)}{" "}</span>
                 <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
               </p>
               <p className="text-xs uppercase tracking-[0.14em] text-slate-400">
@@ -171,11 +177,12 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                 {featuredPost.excerpt}
               </p>
               <QuoteAwareLink
-                className="inline-flex rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-primary-foreground shadow-lg transition hover:brightness-110"
                 data-tina-field={tinaField(featuredPost, "slug")}
                 href={`/blog/${featuredPost.slug}`}
               >
                 <span data-tina-field={featuredCtaLabel.field}>{featuredCtaLabel.value}</span>
+                <ArrowRight className="size-4" />
               </QuoteAwareLink>
             </div>
           </Reveal>
@@ -225,11 +232,12 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                 </div>
 
                 <QuoteAwareLink
-                  className="inline-flex text-xs font-semibold uppercase tracking-[0.15em] text-[#ff8b2b] hover:text-[#ffc18f]"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-primary hover:text-accent"
                   data-tina-field={tinaField(post, "slug")}
                   href={`/blog/${post.slug}`}
                 >
                   <span data-tina-field={cardCtaLabel.field}>{cardCtaLabel.value}</span>
+                  <ArrowRight className="size-4" />
                 </QuoteAwareLink>
               </div>
             </Reveal>
@@ -272,12 +280,13 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                       {card.description}
                     </p>
                     <QuoteAwareLink
-                      className="mt-4 inline-flex text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b] hover:text-[#ffc18f]"
+                      className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:text-accent"
                       data-tina-field={tinaField(card, "ctaLabel")}
                       href={card.href}
                       quoteLabel={card.ctaLabel}
                     >
-                      {card.ctaLabel}
+                      <span>{card.ctaLabel}</span>
+                      <ArrowRight className="size-4" />
                     </QuoteAwareLink>
                   </div>
                 </Reveal>
@@ -290,7 +299,10 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
       <section className="mx-auto mt-12 max-w-7xl px-4">
         <Reveal className={`${getGradientVariant(3)} rounded-md border border-white/10 px-5 py-5 md:flex md:items-center md:justify-between md:gap-8 md:px-6 md:py-6`}>
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={ctaKicker.field}>{ctaKicker.value}</p>
+            <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-primary" data-tina-field={ctaKicker.field}>
+              <MessageSquare className="size-4" />
+              <span>{ctaKicker.value}</span>
+            </p>
             <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
               <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
@@ -298,21 +310,23 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
-              className="inline-flex w-full justify-center rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-primary-foreground shadow-lg transition hover:brightness-110 sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}
               forceQuoteModal
               href={quoteHref}
               quoteLabel={quoteLabel}
             >
-              {quoteLabel}
+              <span>{quoteLabel}</span>
+              <ArrowRight className="size-4" />
             </QuoteAwareLink>
             <QuoteAwareLink
-              className="inline-flex w-full justify-center rounded-sm border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-200 transition hover:border-white hover:text-white sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-200 transition hover:border-white hover:text-white sm:w-auto"
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
               href={productsLink?.href ?? "/products"}
             >
               <span data-tina-field={explorePrefix.field}>{explorePrefix.value}</span>{" "}
-              {productsLink?.label ?? "Products"}
+              <span>{productsLink?.label ?? "Products"}</span>
+              <ArrowRight className="size-4" />
             </QuoteAwareLink>
           </div>
         </Reveal>

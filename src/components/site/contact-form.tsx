@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { FileDropzone } from "@/components/ui/file-dropzone"
@@ -83,6 +84,9 @@ export function ContactForm({
     const nextFileError = validateFiles(files)
     if (nextFileError) {
       setFileError(nextFileError)
+      toast.error("Please fix file attachments", {
+        description: nextFileError,
+      })
       return
     }
 
@@ -95,6 +99,7 @@ export function ContactForm({
         email: fieldErrors.email?.[0],
         message: fieldErrors.message?.[0],
       })
+      toast.error("Please correct the highlighted fields")
       return
     }
 
@@ -113,10 +118,17 @@ export function ContactForm({
 
       if (!response.ok || !body.ok) {
         setStatusMessage(submitErrorMessage.value)
+        toast.error("Message not sent", {
+          description: submitErrorMessage.value,
+        })
         return
       }
 
-      setStatusMessage(body.message ?? "Thanks — your message has been sent.")
+      const successMessage = body.message ?? "Thanks - your message has been sent."
+      setStatusMessage(successMessage)
+      toast.success("Message sent", {
+        description: successMessage,
+      })
       setFormValues({
         name: "",
         email: "",
@@ -126,6 +138,9 @@ export function ContactForm({
       updateFiles([])
     } catch {
       setStatusMessage(submitErrorMessage.value)
+      toast.error("Message not sent", {
+        description: submitErrorMessage.value,
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -134,7 +149,7 @@ export function ContactForm({
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.18em] text-[#ff8b2b]" data-tina-field={projectEnquiryLabel.field}>{projectEnquiryLabel.value}</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-primary" data-tina-field={projectEnquiryLabel.field}>{projectEnquiryLabel.value}</p>
         <h2 className="mt-2 font-display text-3xl uppercase tracking-[0.08em] text-white" data-tina-field={headingField}>{heading}</h2>
         <p className="mt-2 text-slate-300" data-tina-field={descriptionField}>{description}</p>
       </div>
@@ -153,7 +168,7 @@ export function ContactForm({
               placeholder={namePlaceholder.value}
               value={formValues.name}
             />
-            {errors.name ? <p className="text-sm text-[#ff8b2b]">{errors.name}</p> : null}
+            {errors.name ? <p className="text-sm text-primary">{errors.name}</p> : null}
           </div>
 
           <div className="space-y-2">
@@ -169,7 +184,7 @@ export function ContactForm({
               type="email"
               value={formValues.email}
             />
-            {errors.email ? <p className="text-sm text-[#ff8b2b]">{errors.email}</p> : null}
+            {errors.email ? <p className="text-sm text-primary">{errors.email}</p> : null}
           </div>
         </div>
 
@@ -200,7 +215,7 @@ export function ContactForm({
             rows={6}
             value={formValues.message}
           />
-          {errors.message ? <p className="text-sm text-[#ff8b2b]">{errors.message}</p> : null}
+          {errors.message ? <p className="text-sm text-primary">{errors.message}</p> : null}
         </div>
 
         <FileDropzone
@@ -221,7 +236,7 @@ export function ContactForm({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm uppercase tracking-[0.14em] text-slate-400">{responseTime}</p>
           <Button
-            className="rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_10px_22px_rgba(255,116,38,0.35)] transition hover:brightness-110"
+            className="rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground shadow-lg transition hover:brightness-110"
             disabled={isSubmitting}
             type="submit"
           >

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { parseAsString, parseAsStringLiteral, useQueryState, useQueryStates } from "nuqs"
+import { toast } from "sonner"
 
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { Button } from "@/components/ui/button"
@@ -318,8 +319,12 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
     setStatusMessage("")
 
     if (showTurnstile && turnstileEnabled && !turnstileToken) {
+      const verificationMessage = "Please complete the verification challenge before submitting again."
       setStatusTone("error")
-      setStatusMessage("Please complete the verification challenge before submitting again.")
+      setStatusMessage(verificationMessage)
+      toast.error("Verification required", {
+        description: verificationMessage,
+      })
       return
     }
 
@@ -327,6 +332,9 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
     if (nextFileError) {
       setFileError(nextFileError)
       setStatusTone("error")
+      toast.error("Please fix file attachments", {
+        description: nextFileError,
+      })
       return
     }
 
@@ -363,6 +371,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors)
       setStatusTone("error")
+      toast.error("Please complete the required quote fields")
       return
     }
 
@@ -386,6 +395,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
         notes: flattened.message?.[0],
       })
       setStatusTone("error")
+      toast.error("Please correct the highlighted fields")
       return
     }
 
@@ -408,22 +418,34 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
       }
 
       if (response.status === 429 && body.requiresTurnstile) {
+        const verificationError = body.error || "Please complete verification before submitting again."
         setShowTurnstile(true)
         setTurnstileToken("")
         setTurnstileResetKey((previous) => previous + 1)
         setStatusTone("error")
-        setStatusMessage(body.error || "Please complete verification before submitting again.")
+        setStatusMessage(verificationError)
+        toast.error("Verification required", {
+          description: verificationError,
+        })
         return
       }
 
       if (!response.ok || !body.ok) {
+        const failureMessage = body.error || submitError.value
         setStatusTone("error")
-        setStatusMessage(body.error || submitError.value)
+        setStatusMessage(failureMessage)
+        toast.error("Quote request not sent", {
+          description: failureMessage,
+        })
         return
       }
 
+      const successMessage = body.message ?? submitSuccess.value
       setStatusTone("success")
-      setStatusMessage(body.message ?? submitSuccess.value)
+      setStatusMessage(successMessage)
+      toast.success("Quote request sent", {
+        description: successMessage,
+      })
       setFormValues(INITIAL_VALUES)
       updateFiles([])
       if (showTurnstile) {
@@ -439,6 +461,9 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
     } catch {
       setStatusTone("error")
       setStatusMessage(submitError.value)
+      toast.error("Quote request not sent", {
+        description: submitError.value,
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -477,7 +502,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
                 onChange={(event) => handleFieldChange("firstName", event.target.value)}
                 value={formValues.firstName}
               />
-              {errors.firstName ? <p className="text-xs text-[#d3582a]">{errors.firstName}</p> : null}
+              {errors.firstName ? <p className="text-xs text-primary">{errors.firstName}</p> : null}
             </div>
 
             <div className="space-y-2">
@@ -488,7 +513,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
                 onChange={(event) => handleFieldChange("lastName", event.target.value)}
                 value={formValues.lastName}
               />
-              {errors.lastName ? <p className="text-xs text-[#d3582a]">{errors.lastName}</p> : null}
+              {errors.lastName ? <p className="text-xs text-primary">{errors.lastName}</p> : null}
             </div>
           </div>
 
@@ -502,7 +527,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
                 type="email"
                 value={formValues.email}
               />
-              {errors.email ? <p className="text-xs text-[#d3582a]">{errors.email}</p> : null}
+              {errors.email ? <p className="text-xs text-primary">{errors.email}</p> : null}
             </div>
 
             <div className="space-y-2">
@@ -536,7 +561,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
                 value={formValues.projectSuburbPostcode}
               />
               {errors.projectSuburbPostcode ? (
-                <p className="text-xs text-[#d3582a]">{errors.projectSuburbPostcode}</p>
+                <p className="text-xs text-primary">{errors.projectSuburbPostcode}</p>
               ) : null}
             </div>
           </div>
@@ -544,7 +569,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
           <div className="space-y-2">
             <Label className="text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-600" htmlFor="quote-enquiry-stream" data-tina-field={fieldEnquiry.field}>{fieldEnquiry.value}</Label>
             <select
-              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none ring-[#ff8b2b] transition focus:ring-2"
+              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none ring-primary transition focus:ring-2"
               id="quote-enquiry-stream"
               onChange={(event) => handleFieldChange("enquiryStream", event.target.value)}
               value={formValues.enquiryStream}
@@ -556,13 +581,13 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
                 </option>
               ))}
             </select>
-            {errors.enquiryStream ? <p className="text-xs text-[#d3582a]">{errors.enquiryStream}</p> : null}
+            {errors.enquiryStream ? <p className="text-xs text-primary">{errors.enquiryStream}</p> : null}
           </div>
 
           <div className="space-y-2">
             <Label className="text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-600" htmlFor="quote-interest" data-tina-field={fieldInterest.field}>{fieldInterest.value}</Label>
             <select
-              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none ring-[#ff8b2b] transition focus:ring-2"
+              className="h-10 w-full rounded-sm border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none ring-primary transition focus:ring-2"
               id="quote-interest"
               onChange={(event) => handleFieldChange("interest", event.target.value)}
               value={formValues.interest}
@@ -574,7 +599,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
                 </option>
               ))}
             </select>
-            {errors.interest ? <p className="text-xs text-[#d3582a]">{errors.interest}</p> : null}
+            {errors.interest ? <p className="text-xs text-primary">{errors.interest}</p> : null}
           </div>
 
           <div className="space-y-2">
@@ -585,7 +610,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
               onChange={(event) => handleFieldChange("deliveryDetails", event.target.value)}
               value={formValues.deliveryDetails}
             />
-            {errors.deliveryDetails ? <p className="text-xs text-[#d3582a]">{errors.deliveryDetails}</p> : null}
+            {errors.deliveryDetails ? <p className="text-xs text-primary">{errors.deliveryDetails}</p> : null}
           </div>
 
           <div className="space-y-2">
@@ -597,7 +622,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
               rows={3}
               value={formValues.notes}
             />
-            {errors.notes ? <p className="text-xs text-[#d3582a]">{errors.notes}</p> : null}
+            {errors.notes ? <p className="text-xs text-primary">{errors.notes}</p> : null}
           </div>
 
           <FileDropzone
@@ -618,7 +643,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <p className="text-xs text-slate-500" data-tina-field={responseTime.field}>{responseTime.value}</p>
             <Button
-              className="rounded-sm bg-[#f47f2c] px-5 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-white hover:bg-[#e56f1b]"
+              className="rounded-sm bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-primary-foreground hover:bg-accent"
               disabled={isSubmitting}
               type="submit"
             >
@@ -647,7 +672,7 @@ export function QuoteDialog({ site, triggerLabel, triggerClassName, triggerTinaF
               className={cn(
                 "text-sm",
                 statusTone === "error"
-                  ? "text-[#d3582a]"
+                  ? "text-primary"
                   : statusTone === "success"
                     ? "text-emerald-700"
                     : "text-slate-700"

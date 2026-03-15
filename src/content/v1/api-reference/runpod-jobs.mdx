@@ -1,0 +1,83 @@
+---
+title: RunPod Jobs
+description: >-
+  Direct provider operational routes for run, runsync, status, and queue
+  control.
+full: true
+_openapi:
+  toc:
+    - depth: 2
+      title: Submit asynchronous RunPod job
+      url: '#submit-asynchronous-runpod-job'
+    - depth: 2
+      title: Submit synchronous RunPod job
+      url: '#submit-synchronous-runpod-job'
+    - depth: 2
+      title: Get RunPod job status
+      url: '#get-runpod-job-status'
+    - depth: 2
+      title: Stream RunPod job output
+      url: '#stream-runpod-job-output'
+    - depth: 2
+      title: Cancel RunPod job
+      url: '#cancel-runpod-job'
+    - depth: 2
+      title: Retry RunPod job
+      url: '#retry-runpod-job'
+    - depth: 2
+      title: Purge RunPod pending queue
+      url: '#purge-runpod-pending-queue'
+    - depth: 2
+      title: Get RunPod endpoint health
+      url: '#get-runpod-endpoint-health'
+  structuredData:
+    headings:
+      - content: Submit asynchronous RunPod job
+        id: submit-asynchronous-runpod-job
+      - content: Submit synchronous RunPod job
+        id: submit-synchronous-runpod-job
+      - content: Get RunPod job status
+        id: get-runpod-job-status
+      - content: Stream RunPod job output
+        id: stream-runpod-job-output
+      - content: Cancel RunPod job
+        id: cancel-runpod-job
+      - content: Retry RunPod job
+        id: retry-runpod-job
+      - content: Purge RunPod pending queue
+        id: purge-runpod-pending-queue
+      - content: Get RunPod endpoint health
+        id: get-runpod-endpoint-health
+    contents:
+      - content: >-
+          Direct provider control route that calls RunPod `/run`. Prefer
+          OpenAI-compatible surface routes for public clients unless
+          provider-level behavior is required.
+        heading: submit-asynchronous-runpod-job
+      - content: >-
+          Direct provider control route that calls RunPod `/runsync` and waits
+          for completion in a single request lifecycle.
+        heading: submit-synchronous-runpod-job
+      - content: Returns raw provider status payload for a specific RunPod job.
+        heading: get-runpod-job-status
+      - content: >-
+          Forwards provider `/stream` output for the requested job. Useful for
+          incremental updates where supported by the model endpoint.
+        heading: stream-runpod-job-output
+      - content: Requests cancellation for a queued or running provider job.
+        heading: cancel-runpod-job
+      - content: Requests provider-level retry for a prior job execution.
+        heading: retry-runpod-job
+      - content: >-
+          Requests provider queue purge for pending jobs on the selected
+          endpoint.
+        heading: purge-runpod-pending-queue
+      - content: >-
+          Returns provider endpoint health details for the selected surface
+          mapping.
+        heading: get-runpod-endpoint-health
+---
+
+{/* Auto-generated from Hono openapi route metadata and TypeBox validators. */}
+
+<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.hono.json"} webhooks={[]} operations={[{"path":"/v1/runpod/{surface}/run","method":"post"},{"path":"/v1/runpod/{surface}/runsync","method":"post"},{"path":"/v1/runpod/{surface}/status/{jobId}","method":"get"},{"path":"/v1/runpod/{surface}/stream/{jobId}","method":"get"},{"path":"/v1/runpod/{surface}/cancel/{jobId}","method":"post"},{"path":"/v1/runpod/{surface}/retry/{jobId}","method":"post"},{"path":"/v1/runpod/{surface}/purge-queue","method":"post"},{"path":"/v1/runpod/{surface}/health","method":"get"}]} showTitle={true} />

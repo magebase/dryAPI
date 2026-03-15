@@ -1,0 +1,10 @@
+DryAPI LLM artifact - generated at 2026-03-14T15:22:45.049Z
+
+Public OpenAPI: https://api.example.com/openapi.json
+
+Endpoints provided (OpenAI/OpenRouter-compatible shapes):
+- /v1/chat/completions
+- /v1/images/generations
+- /v1/embeddings
+
+Use these endpoints with an Authorization: Bearer $API_KEY header.

@@ -1,3 +1,6 @@
+---
+title: "Webhooks"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -10,9 +13,9 @@
 
 Webhooks allow you to receive real-time HTTP notifications when your inference jobs change status, eliminating the need to poll the `/request-status` endpoint.
 
-> **INFO**
->
-> Webhooks are sent as `POST` requests to your specified URL with a JSON payload and security headers for verification.
+<Callout>
+Webhooks are sent as `POST` requests to your specified URL with a JSON payload and security headers for verification.
+</Callout>
 
 ## Configuration
 
@@ -32,9 +35,9 @@ You can override the global webhook URL on any job request by including the `web
 }
 ```
 
-> **WARNING**
->
-> Only HTTPS URLs are accepted. HTTP URLs will be rejected for security.
+<Callout title="Warning" type="warn">
+Only HTTPS URLs are accepted. HTTP URLs will be rejected for security.
+</Callout>
 
 ## Events
 
@@ -318,9 +321,9 @@ If your endpoint fails to respond with a `2xx` status code, we'll retry delivery
 
 After 10 failed attempts (\~24 hours), the webhook is marked as failed.
 
-> **WARNING**
->
-> **Circuit Breaker:** After 10 consecutive failed deliveries across any webhooks for your account, webhooks are automatically disabled. Re-enable them in your account settings after fixing your endpoint.
+<Callout title="Warning" type="warn">
+**Circuit Breaker:** After 10 consecutive failed deliveries across any webhooks for your account, webhooks are automatically disabled. Re-enable them in your account settings after fixing your endpoint.
+</Callout>
 
 ## Response Requirements
 
@@ -357,6 +360,6 @@ Use [webhook.site](https://webhook.site) to test webhooks during development:
 3. Submit a job and watch the webhooks arrive
 4. Verify headers and payloads match the expected format
 
-> **TIP**
->
-> You can also use tools like ngrok to expose your local development server to receive webhooks.
+<Callout title="Tip" type="idea">
+You can also use tools like ngrok to expose your local development server to receive webhooks.
+</Callout>

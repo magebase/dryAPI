@@ -87,10 +87,10 @@ export function PwaInstallCta() {
 
   return (
     <div className="fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:left-4 sm:max-w-sm">
-      <div className="rounded-md border border-[#ffb67f]/45 bg-[#0c1725]/94 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.36)] backdrop-blur">
+      <div className="rounded-md border border-primary/45 bg-[#0c1725]/94 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.36)] backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffb67f]">Install App</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">Install App</p>
             <p className="mt-1 text-xs text-slate-200">Add GenFix to your home screen for faster access.</p>
           </div>
           <button
@@ -105,7 +105,7 @@ export function PwaInstallCta() {
 
         <button
           type="button"
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#ffb67f]/35 bg-gradient-to-r from-[#ff8b2b] via-[#ff7426] to-[#d45508] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_20px_rgba(255,116,38,0.35)] transition hover:brightness-110"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-lg transition hover:brightness-110"
           onClick={() => {
             void handleInstall()
           }}

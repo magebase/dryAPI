@@ -3,6 +3,20 @@ main = "src/worker.ts"
 compatibility_date = "2026-03-14"
 workers_dev = true
 
+[[durable_objects.bindings]]
+name = "API_KEY_QUOTA_DO"
+class_name = "ApiQuotaDurableObject"
+
+[[ratelimits]]
+name = "EDGE_IP_LIMITER"
+# Replace this with your real Cloudflare rate limit namespace id.
+namespace_id = "1001"
+simple = { limit = 500, period = 60 }
+
+[[migrations]]
+tag = "v1_api_key_quota_do"
+new_sqlite_classes = ["ApiQuotaDurableObject"]
+
 [vars]
 # Public API key required by clients (set in your deploy secrets)
 # Example: API_KEY = "sk-prod-..."
@@ -11,6 +25,12 @@ API_KEY = ""
 ORIGIN_URL = ""
 # A service/internal API key used when proxying to the origin Next API (optional)
 INTERNAL_API_KEY = ""
+
+# Cloudflare edge and API-key quota controls.
+# Keep EDGE_IP_LIMIT_PER_MINUTE aligned with the ratelimit config above.
+EDGE_IP_LIMIT_PER_MINUTE = "500"
+API_KEY_LIMIT_PER_MINUTE = "300"
+API_KEY_LIMIT_PER_DAY = "20000"
 
 # RunPod direct dispatch settings (optional)
 # If these are unset, the gateway falls back to proxying requests to ORIGIN_URL.
@@ -34,4 +54,38 @@ RUNPOD_ENDPOINT_ID_TRANSCRIBE = ""
 # Examples:
 # RUNPOD_ENDPOINT_MAP_JSON = '{"surfaces":{"images":"abc123"},"models":{"Flux1schnell":"def456"}}'
 # RUNPOD_ENDPOINT_MAP_JSON = '{"images":"abc123","Flux1schnell":"def456"}'
+RUNPOD_ENDPOINT_MAP_JSON = ""
+
+# Optional webhook signing/timing controls.
+# WEBHOOK_SIGNING_SECRET = ""
+# WEBHOOK_TIMEOUT_MS = "8000"
+
+# Optional websocket payload threshold; larger payloads return download links instead of inline frames.
+# WS_INLINE_MAX_BYTES = "65536"
+
+[env.test]
+workers_dev = true
+
+[[env.test.durable_objects.bindings]]
+name = "API_KEY_QUOTA_DO"
+class_name = "ApiQuotaDurableObject"
+
+[[env.test.ratelimits]]
+name = "EDGE_IP_LIMITER"
+namespace_id = "1001"
+simple = { limit = 500, period = 60 }
+
+[env.test.vars]
+API_KEY = ""
+ORIGIN_URL = ""
+INTERNAL_API_KEY = ""
+EDGE_IP_LIMIT_PER_MINUTE = "500"
+API_KEY_LIMIT_PER_MINUTE = "300"
+API_KEY_LIMIT_PER_DAY = "20000"
+RUNPOD_API_KEY = ""
+RUNPOD_API_BASE_URL = "https://api.runpod.ai/v2"
+RUNPOD_ENDPOINT_ID_CHAT = ""
+RUNPOD_ENDPOINT_ID_IMAGES = ""
+RUNPOD_ENDPOINT_ID_EMBEDDINGS = ""
+RUNPOD_ENDPOINT_ID_TRANSCRIBE = ""
 RUNPOD_ENDPOINT_MAP_JSON = ""

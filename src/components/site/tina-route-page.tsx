@@ -6,6 +6,7 @@ import { BlogListPageTemplate } from "@/components/site/blog-list-page-template"
 import { ContactPageTemplate } from "@/components/site/contact-page-template"
 import { ProductsPageTemplate } from "@/components/site/products-page-template"
 import { RoutePageTemplate } from "@/components/site/route-page-template"
+import { PlaygroundPageTemplate } from "@/components/site/playground-page-template"
 import { SiteFrame } from "@/components/site/site-frame"
 import type { BlogPost, RoutePage, SiteConfig } from "@/lib/site-content-schema"
 import type { DeapiPricingSnapshot } from "@/types/deapi-pricing"
@@ -52,6 +53,7 @@ export function TinaRoutePage({
   const isProductsIndex = page.slug === "/products"
   const isContactPage = page.slug === "/contact"
   const isBlogIndex = page.slug === "/blog"
+  const isPlayground = page.slug?.startsWith?.("/playground") ?? false
 
   return (
     <SiteFrame site={siteData.siteConfig}>
@@ -61,6 +63,8 @@ export function TinaRoutePage({
         <BlogListPageTemplate page={page} posts={blogPosts} site={siteData.siteConfig} />
       ) : isContactPage ? (
         <ContactPageTemplate page={page} site={siteData.siteConfig} />
+      ) : isPlayground ? (
+        <PlaygroundPageTemplate page={page} site={siteData.siteConfig} />
       ) : (
         <RoutePageTemplate deapiPricingSnapshot={deapiPricingSnapshot} page={page} site={siteData.siteConfig} />
       )}

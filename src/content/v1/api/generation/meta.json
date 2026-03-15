@@ -1,0 +1,19 @@
+{
+  "title": "Generation",
+  "pages": [
+    "audio-to-video",
+    "audio-to-video-price",
+    "image-to-video",
+    "image-to-video-price",
+    "text-to-embedding",
+    "text-to-embedding-price",
+    "text-to-image",
+    "text-to-image-price",
+    "text-to-music",
+    "text-to-music-price",
+    "text-to-speech",
+    "text-to-speech-price",
+    "text-to-video",
+    "text-to-video-price"
+  ]
+}

@@ -141,10 +141,10 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           width={1920}
         />
         <div className="absolute inset-0 bg-[linear-gradient(112deg,rgba(5,11,17,0.93)_14%,rgba(5,11,17,0.78)_54%,rgba(5,11,17,0.9)_100%)]" />
-        <div className="absolute right-0 top-0 hidden h-full w-44 bg-[linear-gradient(180deg,rgba(255,139,43,0.15),rgba(255,139,43,0.45),rgba(255,139,43,0.1))] [clip-path:polygon(36%_0,100%_0,66%_35%,100%_68%,44%_100%,0_100%,38%_66%,0_35%)] lg:block" />
+        <div className="absolute right-0 top-0 hidden h-full w-44 bg-gradient-to-b from-primary/20 via-primary/45 to-primary/10 [clip-path:polygon(36%_0,100%_0,66%_35%,100%_68%,44%_100%,0_100%,38%_66%,0_35%)] lg:block" />
 
         <Reveal className="relative mx-auto max-w-7xl px-4 pb-14 pt-20 md:pb-20 md:pt-24 lg:pb-28 lg:pt-28">
-          <p className="text-xs uppercase tracking-[0.26em] text-[#ff8b2b]" data-tina-field={tinaField(page.hero, "kicker")}>
+          <p className="text-xs uppercase tracking-[0.26em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
@@ -157,7 +157,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
             {page.hero.actions.map((action) => (
               <QuoteAwareLink
                 key={action.href}
-                className="inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
+                className="inline-flex w-full justify-center rounded-sm border border-primary bg-primary/10 px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition hover:bg-primary hover:text-primary-foreground sm:w-auto"
                 data-tina-field={tinaField(action)}
                 href={action.href}
                 quoteLabel={action.label}
@@ -189,7 +189,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
       <Reveal className="border-b border-white/10 bg-[linear-gradient(180deg,#101a2b,#132034)]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:py-20">
           <div className="space-y-5">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={expertsKicker.field}>{expertsKicker.value}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={expertsKicker.field}>{expertsKicker.value}</p>
             <h2 className="max-w-xl font-display text-3xl uppercase leading-tight tracking-[0.03em] text-white md:text-4xl">
               <KeywordGradientText dataTinaField={expertsHeading.field} text={expertsHeading.value} />
             </h2>
@@ -203,7 +203,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
               src={systemsShowcaseImage}
               width={1200}
             />
-            <div className="pointer-events-none absolute bottom-4 left-4 h-10 w-20 bg-[radial-gradient(circle_at_20%_20%,#ff8b2b_20%,transparent_22%),radial-gradient(circle_at_60%_20%,#ff8b2b_20%,transparent_22%),radial-gradient(circle_at_100%_20%,#ff8b2b_20%,transparent_22%),radial-gradient(circle_at_20%_60%,#ff8b2b_20%,transparent_22%),radial-gradient(circle_at_60%_60%,#ff8b2b_20%,transparent_22%),radial-gradient(circle_at_100%_60%,#ff8b2b_20%,transparent_22%)] opacity-80" />
+            <div className="pointer-events-none absolute bottom-4 left-4 h-10 w-20 bg-[radial-gradient(circle_at_20%_20%,var(--primary)_20%,transparent_22%),radial-gradient(circle_at_60%_20%,var(--primary)_20%,transparent_22%),radial-gradient(circle_at_100%_20%,var(--primary)_20%,transparent_22%),radial-gradient(circle_at_20%_60%,var(--primary)_20%,transparent_22%),radial-gradient(circle_at_60%_60%,var(--primary)_20%,transparent_22%),radial-gradient(circle_at_100%_60%,var(--primary)_20%,transparent_22%)] opacity-80" />
           </div>
         </div>
       </Reveal>
@@ -211,7 +211,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
       <section className="border-b border-white/10 bg-[#1a2535]">
         <div className="mx-auto max-w-7xl px-4 py-14 lg:py-16">
           <Reveal className="mb-8">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={rangeKicker.field}>{rangeKicker.value}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={rangeKicker.field}>{rangeKicker.value}</p>
           </Reveal>
 
           <div className="space-y-12">
@@ -240,7 +240,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                         ))}
                     </ul>
                     <QuoteAwareLink
-                      className="mt-6 inline-flex rounded-sm border border-[#ff8b2b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white"
+                      className="mt-6 inline-flex rounded-sm border border-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition hover:bg-primary hover:text-primary-foreground"
                       data-tina-field={feature.ctaField}
                       href={feature.href}
                       quoteLabel={feature.ctaLabel}
@@ -290,7 +290,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
             </h2>
             <p className="mt-4 max-w-xl text-slate-300" data-tina-field={packagesBody.field}>{packagesBody.value}</p>
             <QuoteAwareLink
-              className="mt-7 inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
+              className="mt-7 inline-flex w-full justify-center rounded-sm border border-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition hover:bg-primary hover:text-primary-foreground sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}
               forceQuoteModal
               href={quoteHref}
@@ -301,7 +301,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           </div>
 
           <div className={`${getGradientVariant(3)} rounded-sm border border-white/10 p-6`}>
-            <p className="text-xs uppercase tracking-[0.24em] text-[#ff8b2b]" data-tina-field={packagesPanelKicker.field}>{packagesPanelKicker.value}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={packagesPanelKicker.field}>{packagesPanelKicker.value}</p>
             <p className="mt-5 text-slate-300" data-tina-field={packagesPanelBody.field}>{packagesPanelBody.value}</p>
           </div>
         </div>
@@ -321,7 +321,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold uppercase tracking-[0.13em] text-slate-100">
                     <span data-tina-field={item.questionField}>{item.question}</span>
-                    <span className="text-lg leading-none text-[#ff8b2b] transition group-open:rotate-45">+</span>
+                    <span className="text-lg leading-none text-primary transition group-open:rotate-45">+</span>
                   </summary>
                   <p className="mt-3 max-w-4xl text-sm text-slate-300" data-tina-field={item.answerField}>{item.answer}</p>
                 </details>

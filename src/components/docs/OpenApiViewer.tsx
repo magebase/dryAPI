@@ -2,7 +2,11 @@
 
 import React, { useEffect, useState } from 'react'
 
-type OpenApi = any
+type OpenApi = {
+  info?: {
+    title?: string
+  }
+}
 
 export default function OpenApiViewer() {
   const [spec, setSpec] = useState<OpenApi | null>(null)
@@ -39,17 +43,36 @@ export default function OpenApiViewer() {
 
   return (
     <aside className="hidden lg:block sticky top-24 max-h-[70vh] w-1/3 pl-6">
-      <div className="border rounded-md p-4 bg-white shadow-sm overflow-auto h-[70vh]">
+      <div className="h-[70vh] overflow-auto rounded-md border border-fd-border bg-fd-card p-4 shadow-sm">
         <h4 className="text-sm font-semibold mb-2">Live API Preview</h4>
-        <p className="text-xs text-slate-600 mb-3">Spec: {spec ? spec.info?.title || 'OpenAPI' : 'loading...'}</p>
+        <p className="mb-3 text-xs text-fd-muted-foreground">
+          Spec: {spec ? spec.info?.title || "OpenAPI" : "loading..."}
+        </p>
 
         <div className="flex gap-2 mb-3">
-          <button className={`px-2 py-1 text-xs rounded ${lang === 'curl' ? 'bg-slate-100' : ''}`} onClick={() => setLang('curl')}>curl</button>
-          <button className={`px-2 py-1 text-xs rounded ${lang === 'python' ? 'bg-slate-100' : ''}`} onClick={() => setLang('python')}>python</button>
-          <button className={`px-2 py-1 text-xs rounded ${lang === 'js' ? 'bg-slate-100' : ''}`} onClick={() => setLang('js')}>js</button>
+          <button
+            className={`rounded px-2 py-1 text-xs ${lang === "curl" ? "bg-fd-accent text-fd-accent-foreground" : "text-fd-muted-foreground"}`}
+            onClick={() => setLang("curl")}
+          >
+            curl
+          </button>
+          <button
+            className={`rounded px-2 py-1 text-xs ${lang === "python" ? "bg-fd-accent text-fd-accent-foreground" : "text-fd-muted-foreground"}`}
+            onClick={() => setLang("python")}
+          >
+            python
+          </button>
+          <button
+            className={`rounded px-2 py-1 text-xs ${lang === "js" ? "bg-fd-accent text-fd-accent-foreground" : "text-fd-muted-foreground"}`}
+            onClick={() => setLang("js")}
+          >
+            js
+          </button>
         </div>
 
-        <pre className="text-xs bg-slate-50 rounded p-3 overflow-auto whitespace-pre-wrap">{renderExample()}</pre>
+        <pre className="overflow-auto whitespace-pre-wrap rounded border border-fd-border bg-fd-secondary p-3 text-xs">
+          {renderExample()}
+        </pre>
 
         <div className="mt-4 text-xs">
           <div className="font-medium mb-1">Available Endpoints</div>
@@ -60,7 +83,7 @@ export default function OpenApiViewer() {
           </ul>
         </div>
 
-        <div className="mt-4 text-xs text-slate-600">
+        <div className="mt-4 text-xs text-fd-muted-foreground">
           <div className="font-medium">OpenAPI JSON</div>
           <code className="block break-words">/openapi.json</code>
         </div>

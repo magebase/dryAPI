@@ -22,7 +22,8 @@
       "@serwist/next/typings"
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "collections/*": ["./.source/*"]
     }
   },
   "include": [

@@ -1,0 +1,17 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "api",
+    "architecture-and-security",
+    "execution-modes-and-integrations",
+    "introduction",
+    "limits-and-quotas",
+    "models",
+    "other",
+    "pricing",
+    "quickstart",
+    "openapi",
+    "api-reference"
+  ]
+}

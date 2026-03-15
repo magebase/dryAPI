@@ -1,36 +1,21 @@
-import type { ReactNode } from "react"
-import { Footer, Layout, Navbar } from "nextra-theme-docs"
-import { Search } from "nextra/components"
-import { getPageMap } from "nextra/page-map"
-
-import "nextra-theme-docs/style.css"
+import type { Metadata } from "next"
+import { DocumentationLayout } from "@/components/docs/docs-layout"
+import { DEFAULT_LOCALE } from "@/lib/i18n"
 
 export const dynamic = "force-static"
 
-export default async function DocsLayout({ children }: { children: ReactNode }) {
-  const pageMap = await getPageMap()
+export const metadata: Metadata = {
+  title: {
+    default: "dryAPI Docs",
+    template: "%s | dryAPI Docs",
+  },
+  description:
+    "Reference documentation for the dryAPI platform, including versioned API docs and integration guides.",
+  alternates: {
+    canonical: "/docs",
+  },
+}
 
-  return (
-    <Layout
-      banner={<span>Documentation version: v1 (latest)</span>}
-      docsRepositoryBase="https://github.com/deapi-ai/deapi-docs"
-      editLink="Edit this page"
-      footer={<Footer>deAPI docs mirror</Footer>}
-      navbar={
-        <Navbar
-          logo={
-            <span>
-              <strong>deAPI Docs</strong> <span style={{ opacity: 0.7 }}>via Nextra</span>
-            </span>
-          }
-          projectLink="https://github.com/deapi-ai"
-        />
-      }
-      pageMap={pageMap}
-      search={<Search placeholder="Search deAPI docs..." />}
-      sidebar={{ defaultMenuCollapseLevel: 1 }}
-    >
-      {children}
-    </Layout>
-  )
+export default function DocsLayout({ children }: { children: React.ReactNode }) {
+  return <DocumentationLayout locale={DEFAULT_LOCALE}>{children}</DocumentationLayout>
 }

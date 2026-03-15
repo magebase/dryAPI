@@ -1,61 +1,92 @@
 import type { DeapiModelCatalog } from "@/types/deapi-pricing"
 
 export const DEAPI_MODEL_CATALOG: DeapiModelCatalog = {
-  generatedAt: "2026-03-14T00:00:00.000Z",
+  generatedAt: "2026-03-15T06:54:46.142Z",
   categories: [
-    "audio-to-text",
-    "audio-to-video",
-    "background-removal",
-    "image-to-image",
-    "image-to-text",
-    "image-to-video",
-    "image-upscale",
-    "text-to-audio",
-    "text-to-chat",
-    "text-to-embedding",
-    "text-to-image",
-    "text-to-music",
-    "text-to-video",
-    "video-to-text",
-  ],
+  "background-removal",
+  "image-to-image",
+  "image-to-text",
+  "image-to-video",
+  "image-upscale",
+  "text-to-embedding",
+  "text-to-image",
+  "text-to-music",
+  "text-to-speech",
+  "text-to-video",
+  "video-to-text"
+],
   modelsByCategory: {
-    "audio-to-text": ["WhisperLargeV3", "WhisperX"],
-    "audio-to-video": ["Ltx2_19B_Dist_FP8", "Ltx2_3_19B_Dist_INT8"],
-    "background-removal": ["Ben2"],
-    "image-to-image": ["Flux_2_Klein_4B_BF16", "QwenImageEdit_Plus_NF4"],
-    "image-to-text": ["Nanonets_Ocr_S_F16"],
-    "image-to-video": ["Ltx2_19B_Dist_FP8", "Ltx2_3_19B_Dist_INT8", "Ltxv_13B_0_9_8_Distilled_FP8"],
-    "image-upscale": ["RealESRGAN_x4plus"],
-    "text-to-audio": ["Chatterbox", "Kokoro", "MMS_TTS", "Qwen3_TTS"],
-    "text-to-chat": ["Llama3_8B_Instruct", "Mistral_7B_Instruct", "Mixtral_8x7B_Instruct"],
-    "text-to-embedding": ["Bge_M3_FP16", "BGE_Large", "E5_Large", "GTE_Large"],
-    "text-to-image": [
-      "Flux1schnell",
-      "Flux1dev",
-      "SDXL",
-      "JuggernautXL",
-      "RealVisXL",
-      "Flux_2_Klein_4B_BF16",
-      "ZImageTurbo_INT8",
-    ],
-    "text-to-music": ["ACE-Step-v1.5-turbo"],
-    "text-to-video": ["Ltx2_19B_Dist_FP8", "Ltx2_3_19B_Dist_INT8", "Ltxv_13B_0_9_8_Distilled_FP8"],
-    "video-to-text": ["WhisperLargeV3"],
-  },
+  "text-to-speech": [
+    "Chatterbox",
+    "Kokoro",
+    "Qwen3_TTS_12Hz_1_7B_Base",
+    "Qwen3_TTS_12Hz_1_7B_CustomVoice",
+    "Qwen3_TTS_12Hz_1_7B_VoiceDesign"
+  ],
+  "image-to-image": [
+    "Flux_2_Klein_4B_BF16",
+    "QwenImageEdit_Plus_NF4"
+  ],
+  "text-to-video": [
+    "Ltx2_19B_Dist_FP8",
+    "Ltx2_3_22B_Dist_INT8",
+    "Ltxv_13B_0_9_8_Distilled_FP8"
+  ],
+  "image-to-video": [
+    "Ltx2_19B_Dist_FP8",
+    "Ltx2_3_22B_Dist_INT8",
+    "Ltxv_13B_0_9_8_Distilled_FP8"
+  ],
+  "video-to-text": [
+    "WhisperLargeV3"
+  ],
+  "image-to-text": [
+    "Nanonets_Ocr_S_F16"
+  ],
+  "text-to-music": [
+    "AceStep_1_5_Turbo"
+  ],
+  "text-to-embedding": [
+    "Bge_M3_FP16"
+  ],
+  "background-removal": [
+    "Ben2"
+  ],
+  "text-to-image": [
+    "Flux_2_Klein_4B_BF16",
+    "Flux1schnell",
+    "ZImageTurbo_INT8"
+  ]
+},
   parameterKeysByCategory: {
-    "audio-to-text": ["include_ts", "model"],
-    "audio-to-video": ["audio_url", "duration", "fps", "model", "prompt"],
-    "background-removal": ["image", "model"],
-    "image-to-image": ["guidance", "image", "model", "prompt", "seed", "steps"],
-    "image-to-text": ["image", "model"],
-    "image-to-video": ["duration", "fps", "image", "model", "prompt"],
-    "image-upscale": ["image", "model", "scale"],
-    "text-to-audio": ["language", "model", "text", "voice"],
-    "text-to-chat": ["max_tokens", "messages", "model", "temperature", "top_p"],
-    "text-to-embedding": ["input", "model"],
-    "text-to-image": ["guidance", "height", "model", "negative_prompt", "prompt", "seed", "steps", "width"],
-    "text-to-music": ["caption", "duration", "inference_steps", "model", "reference_audio"],
-    "text-to-video": ["duration", "fps", "model", "negative_prompt", "prompt", "seed"],
-    "video-to-text": ["include_ts", "model", "video_url"],
-  },
+  "text-to-speech": [],
+  "image-to-image": [
+    "steps"
+  ],
+  "text-to-video": [
+    "duration",
+    "height",
+    "width"
+  ],
+  "image-to-video": [
+    "duration",
+    "height",
+    "width"
+  ],
+  "video-to-text": [
+    "durationseconds"
+  ],
+  "image-to-text": [],
+  "text-to-music": [],
+  "text-to-embedding": [],
+  "background-removal": [
+    "height",
+    "width"
+  ],
+  "text-to-image": [
+    "height",
+    "steps",
+    "width"
+  ]
+},
 }

@@ -5,7 +5,6 @@ import { randomUUID } from "node:crypto"
 export type StripeMeterEventType =
   | "ai_model_call"
   | "moderation_model_call"
-  | "brevo_email_send"
   | "brevo_sms_send"
   | "cal_request"
   | "cloudflare_worker_request"
@@ -34,7 +33,6 @@ const DEFAULT_PROJECT_KEY = "genfix"
 const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
   ai_model_call: "genfix_ai_model_call",
   moderation_model_call: "genfix_moderation_model_call",
-  brevo_email_send: "genfix_brevo_email_send",
   brevo_sms_send: "genfix_brevo_sms_send",
   cal_request: "genfix_cal_request",
   cloudflare_worker_request: "genfix_cloudflare_worker_request",
@@ -45,7 +43,6 @@ const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
 const STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS: Record<StripeMeterEventType, string> = {
   ai_model_call: "STRIPE_METER_EVENT_AI_MODEL_CALL",
   moderation_model_call: "STRIPE_METER_EVENT_MODERATION_MODEL_CALL",
-  brevo_email_send: "STRIPE_METER_EVENT_BREVO_EMAIL_SEND",
   brevo_sms_send: "STRIPE_METER_EVENT_BREVO_SMS_SEND",
   cal_request: "STRIPE_METER_EVENT_CAL_REQUEST",
   cloudflare_worker_request: "STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST",

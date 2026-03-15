@@ -1,0 +1,56 @@
+import type { Context } from 'hono'
+
+export type EdgeRateLimitBinding = {
+  limit: (args: { key: string }) => Promise<{ success: boolean } | boolean>
+}
+
+export type DurableObjectIdLike = unknown
+
+export type ApiKeyQuotaDurableObjectStub = {
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+}
+
+export type ApiKeyQuotaDurableObjectNamespace = {
+  idFromName: (name: string) => DurableObjectIdLike
+  get: (id: DurableObjectIdLike) => ApiKeyQuotaDurableObjectStub
+}
+
+export type WorkerBindings = {
+  API_KEY?: string
+  ORIGIN_URL?: string
+  INTERNAL_API_KEY?: string
+  EDGE_IP_LIMITER?: EdgeRateLimitBinding
+  EDGE_IP_LIMIT_PER_MINUTE?: string
+  API_KEY_QUOTA_DO?: ApiKeyQuotaDurableObjectNamespace
+  API_KEY_LIMIT_PER_MINUTE?: string
+  API_KEY_LIMIT_PER_DAY?: string
+  RUNPOD_API_KEY?: string
+  RUNPOD_API_BASE_URL?: string
+  RUNPOD_DEFAULT_MODE?: string
+  RUNPOD_CHAT_MODE?: string
+  RUNPOD_IMAGES_MODE?: string
+  RUNPOD_EMBEDDINGS_MODE?: string
+  RUNPOD_TRANSCRIBE_MODE?: string
+  RUNPOD_ENDPOINT_ID_CHAT?: string
+  RUNPOD_ENDPOINT_ID_IMAGES?: string
+  RUNPOD_ENDPOINT_ID_EMBEDDINGS?: string
+  RUNPOD_ENDPOINT_ID_TRANSCRIBE?: string
+  RUNPOD_ENDPOINT_MAP_JSON?: string
+  WEBHOOK_SIGNING_SECRET?: string
+  WEBHOOK_TIMEOUT_MS?: string
+  WS_INLINE_MAX_BYTES?: string
+  DB?: D1Database
+  [key: string]: unknown
+}
+
+export type WorkerEnv = {
+  Bindings: WorkerBindings
+}
+
+export type AppContext = Context<WorkerEnv>
+
+export const RUNPOD_SURFACES = ['chat', 'images', 'embeddings', 'transcribe'] as const
+
+export type RunpodSurface = (typeof RUNPOD_SURFACES)[number]
+
+export type RunpodJobMode = 'run' | 'runsync'

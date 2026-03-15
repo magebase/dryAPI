@@ -1,33 +1,18 @@
-import { generateStaticParamsFor, importPage } from "nextra/pages"
+import { DocumentationPage, generateDocsMetadata, getDocsStaticParams } from "@/components/docs/docs-page"
+import { DEFAULT_LOCALE } from "@/lib/i18n"
 
-import { useMDXComponents as getMDXComponents } from "../../../../mdx-components"
+export const dynamic = "force-static"
 
-export const generateStaticParams = generateStaticParamsFor("mdxPath")
-
-function resolveMdxPath(mdxPath?: string[]) {
-  return mdxPath && mdxPath.length > 0 ? mdxPath : ["index"]
+export function generateStaticParams() {
+  return getDocsStaticParams(DEFAULT_LOCALE)
 }
 
 export async function generateMetadata(props: { params: Promise<{ mdxPath?: string[] }> }) {
   const params = await props.params
-  const { metadata } = await importPage(resolveMdxPath(params.mdxPath))
-  return metadata
+  return generateDocsMetadata(params.mdxPath, DEFAULT_LOCALE)
 }
 
-const Wrapper = getMDXComponents().wrapper
-
-export default async function Page(props: { params: Promise<{ mdxPath?: string[] }> }) {
+export default async function DocsPageRoute(props: { params: Promise<{ mdxPath?: string[] }> }) {
   const params = await props.params
-  const {
-    default: MDXContent,
-    metadata,
-    sourceCode,
-    toc,
-  } = await importPage(resolveMdxPath(params.mdxPath))
-
-  return (
-    <Wrapper metadata={metadata} sourceCode={sourceCode} toc={toc}>
-      <MDXContent {...props} params={params} />
-    </Wrapper>
-  )
+  return <DocumentationPage slug={params.mdxPath} locale={DEFAULT_LOCALE} />
 }

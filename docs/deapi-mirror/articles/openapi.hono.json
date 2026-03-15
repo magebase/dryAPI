@@ -1,0 +1,2267 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "dryAPI Gateway API",
+    "description": "Unified OpenAI-compatible inference gateway with async job orchestration, provider controls, and webhook tooling.",
+    "version": "2026-03-15"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Same-origin worker URL"
+    }
+  ],
+  "tags": [
+    {
+      "name": "OpenAI-Compatible",
+      "description": "OpenAI/OpenRouter-style inference enqueue endpoints."
+    },
+    {
+      "name": "Jobs",
+      "description": "Provider-agnostic async status, download, and websocket streaming routes."
+    },
+    {
+      "name": "RunPod Jobs",
+      "description": "Direct provider operational routes for run, runsync, status, and queue control."
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhook signature and delivery testing routes."
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key",
+        "description": "Use `Authorization: Bearer <api-key>`."
+      }
+    }
+  },
+  "paths": {
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "tags": [
+          "OpenAI-Compatible"
+        ],
+        "summary": "Queue a chat completion request",
+        "description": "Accepts an OpenAI-compatible chat payload and queues execution on the routed provider endpoint. Returns `202 Accepted` immediately with request metadata and provider job details.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "messages"
+                ],
+                "properties": {
+                  "model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "Llama3_8B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mistral_7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mixtral_8x7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1schnell"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1dev"
+                      },
+                      {
+                        "type": "string",
+                        "const": "SDXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "JuggernautXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "RealVisXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperLargeV3"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperX"
+                      },
+                      {
+                        "type": "string",
+                        "const": "BGE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E5_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "GTE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Bge_M3_FP16"
+                      }
+                    ],
+                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "examples": [
+                      "Flux1schnell",
+                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ]
+                  },
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "role",
+                        "content"
+                      ],
+                      "properties": {
+                        "role": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "system"
+                            },
+                            {
+                              "type": "string",
+                              "const": "user"
+                            },
+                            {
+                              "type": "string",
+                              "const": "assistant"
+                            }
+                          ],
+                          "description": "Role for each chat message in the conversation history.",
+                          "examples": [
+                            "user"
+                          ]
+                        },
+                        "content": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Message text content passed to the selected model.",
+                          "examples": [
+                            "Summarize this document in 5 bullets."
+                          ]
+                        }
+                      }
+                    },
+                    "minItems": 1,
+                    "description": "Conversation message list in OpenAI chat format."
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2,
+                    "description": "Sampling temperature. Lower values are more deterministic.",
+                    "examples": [
+                      0.2
+                    ]
+                  },
+                  "max_tokens": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8192,
+                    "description": "Maximum number of output tokens.",
+                    "examples": [
+                      512
+                    ]
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "description": "Request token streaming from the upstream provider when supported.",
+                    "default": false
+                  },
+                  "user": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Caller-provided user identifier for traceability and abuse monitoring.",
+                    "examples": [
+                      "user_42"
+                    ]
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional HTTPS webhook URL for async status updates.",
+                    "examples": [
+                      "https://example.com/webhooks/dryapi/chat"
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Chat request accepted and queued.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "queued": {
+                    "summary": "Queued response",
+                    "value": {
+                      "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                      "object": "chat.completion.enqueue",
+                      "created": 1773504000,
+                      "status": "queued",
+                      "surface": "chat",
+                      "model": "Llama3_8B_Instruct",
+                      "endpoint_id": "o6r4i5q9j8k7l6",
+                      "runpod": {
+                        "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                        "status": "IN_QUEUE"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload or missing endpoint routing configuration.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "missing_endpoint_id",
+                    "message": "No RunPod endpoint configured for surface chat"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by edge or API-key quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Upstream provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "createImageGeneration",
+        "tags": [
+          "OpenAI-Compatible"
+        ],
+        "summary": "Queue an image generation request",
+        "description": "Queues image generation using the configured model and endpoint mapping. The response is asynchronous and includes a provider job payload for downstream polling.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "properties": {
+                  "model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "Llama3_8B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mistral_7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mixtral_8x7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1schnell"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1dev"
+                      },
+                      {
+                        "type": "string",
+                        "const": "SDXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "JuggernautXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "RealVisXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperLargeV3"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperX"
+                      },
+                      {
+                        "type": "string",
+                        "const": "BGE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E5_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "GTE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Bge_M3_FP16"
+                      }
+                    ],
+                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "examples": [
+                      "Flux1schnell",
+                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ]
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Natural-language prompt used for image generation.",
+                    "examples": [
+                      "A moody cyberpunk alley at night with rain reflections, 35mm film look"
+                    ]
+                  },
+                  "negative_prompt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional content to discourage in the generated output.",
+                    "examples": [
+                      "blurry, low quality, watermark"
+                    ]
+                  },
+                  "n": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8,
+                    "default": 1,
+                    "description": "Number of images to generate."
+                  },
+                  "size": {
+                    "type": "string",
+                    "minLength": 3,
+                    "description": "Requested output size in WIDTHxHEIGHT format.",
+                    "examples": [
+                      "1024x1024"
+                    ]
+                  },
+                  "response_format": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "url"
+                      },
+                      {
+                        "type": "string",
+                        "const": "b64_json"
+                      }
+                    ],
+                    "description": "Preferred image payload format when provider supports it.",
+                    "examples": [
+                      "url"
+                    ]
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional HTTPS webhook URL for async status updates.",
+                    "examples": [
+                      "https://example.com/webhooks/dryapi/images"
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Image generation request accepted and queued.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                  "object": "image.generation.enqueue",
+                  "created": 1773504000,
+                  "status": "queued",
+                  "surface": "images",
+                  "model": "Flux1schnell",
+                  "endpoint_id": "o6r4i5q9j8k7l6",
+                  "runpod": {
+                    "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                    "status": "IN_QUEUE"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload or missing endpoint configuration."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/audio/transcriptions": {
+      "post": {
+        "operationId": "createAudioTranscription",
+        "tags": [
+          "OpenAI-Compatible"
+        ],
+        "summary": "Queue an audio transcription request",
+        "description": "Submits an async transcription job using the configured provider endpoint. Returns quickly with queue metadata and provider job state.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "audioUrl"
+                ],
+                "properties": {
+                  "model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "Llama3_8B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mistral_7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mixtral_8x7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1schnell"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1dev"
+                      },
+                      {
+                        "type": "string",
+                        "const": "SDXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "JuggernautXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "RealVisXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperLargeV3"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperX"
+                      },
+                      {
+                        "type": "string",
+                        "const": "BGE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E5_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "GTE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Bge_M3_FP16"
+                      }
+                    ],
+                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "examples": [
+                      "Flux1schnell",
+                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ]
+                  },
+                  "audioUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Publicly accessible audio URL to transcribe.",
+                    "examples": [
+                      "https://cdn.example.com/audio/customer-call-2026-03-15.mp3"
+                    ]
+                  },
+                  "language": {
+                    "type": "string",
+                    "minLength": 2,
+                    "description": "Optional BCP-47 language hint, such as `en` or `es`.",
+                    "examples": [
+                      "en"
+                    ]
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional prompt to bias transcription output.",
+                    "examples": [
+                      "The call discusses GPU usage billing and webhook retries."
+                    ]
+                  },
+                  "response_format": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "json"
+                      },
+                      {
+                        "type": "string",
+                        "const": "text"
+                      },
+                      {
+                        "type": "string",
+                        "const": "srt"
+                      },
+                      {
+                        "type": "string",
+                        "const": "verbose_json"
+                      },
+                      {
+                        "type": "string",
+                        "const": "vtt"
+                      }
+                    ],
+                    "description": "Preferred output format when provider supports custom transcript renderers.",
+                    "examples": [
+                      "verbose_json"
+                    ]
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional HTTPS webhook URL for async status updates.",
+                    "examples": [
+                      "https://example.com/webhooks/dryapi/transcribe"
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Transcription request accepted and queued.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                  "object": "audio.transcription.enqueue",
+                  "created": 1773504000,
+                  "status": "queued",
+                  "surface": "transcribe",
+                  "model": "WhisperLargeV3",
+                  "endpoint_id": "o6r4i5q9j8k7l6",
+                  "runpod": {
+                    "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                    "status": "IN_QUEUE"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload or missing endpoint configuration."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/embeddings": {
+      "post": {
+        "operationId": "createEmbeddingJob",
+        "tags": [
+          "OpenAI-Compatible"
+        ],
+        "summary": "Queue an embeddings request",
+        "description": "Queues embedding generation for one or many input strings and returns async job metadata. Use job status/download routes to resolve final vectors.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "input"
+                ],
+                "properties": {
+                  "model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "Llama3_8B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mistral_7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mixtral_8x7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1schnell"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1dev"
+                      },
+                      {
+                        "type": "string",
+                        "const": "SDXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "JuggernautXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "RealVisXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperLargeV3"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperX"
+                      },
+                      {
+                        "type": "string",
+                        "const": "BGE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E5_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "GTE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Bge_M3_FP16"
+                      }
+                    ],
+                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "examples": [
+                      "Flux1schnell",
+                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ]
+                  },
+                  "input": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Single input string to embed.",
+                        "examples": [
+                          "How to optimize cold starts for serverless GPUs"
+                        ]
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "description": "Batch input strings to embed in one request.",
+                        "examples": [
+                          [
+                            "Serverless",
+                            "Inference",
+                            "Embeddings"
+                          ]
+                        ]
+                      }
+                    ]
+                  },
+                  "dimensions": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Optional embedding dimensionality override when supported by the model.",
+                    "examples": [
+                      1024
+                    ]
+                  },
+                  "encoding_format": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "float"
+                      },
+                      {
+                        "type": "string",
+                        "const": "base64"
+                      }
+                    ],
+                    "description": "Vector encoding preference when supported by the provider.",
+                    "examples": [
+                      "float"
+                    ]
+                  },
+                  "user": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Caller-provided user identifier for tracing and abuse monitoring.",
+                    "examples": [
+                      "user_42"
+                    ]
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional HTTPS webhook URL for async status updates.",
+                    "examples": [
+                      "https://example.com/webhooks/dryapi/embeddings"
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Embeddings request accepted and queued.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                  "object": "embedding.enqueue",
+                  "created": 1773504000,
+                  "status": "queued",
+                  "surface": "embeddings",
+                  "model": "BGE_Large",
+                  "endpoint_id": "o6r4i5q9j8k7l6",
+                  "runpod": {
+                    "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                    "status": "IN_QUEUE"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload or missing endpoint configuration."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/jobs/{surface}/{jobId}": {
+      "get": {
+        "operationId": "getJobStatus",
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Get async job status",
+        "description": "Returns the latest provider status for an async inference request. Use this route for polling when webhook delivery is not configured.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned from an enqueue route."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider status payload for the requested job.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                  "status": "IN_PROGRESS",
+                  "delayTime": 0,
+                  "executionTime": 4.61
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path/query parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "404": {
+            "description": "Job not found for the selected surface/endpoint."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/jobs/{surface}/{jobId}/download": {
+      "get": {
+        "operationId": "downloadJobResult",
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Download links or serialized payload for a completed job",
+        "description": "Fetches provider result links when available, or returns a serialized payload as JSON/TXT attachment fallback.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned from an enqueue route."
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "json"
+                },
+                {
+                  "type": "string",
+                  "const": "txt"
+                }
+              ],
+              "examples": [
+                "json"
+              ]
+            },
+            "description": "Download file format when no direct media links are available."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result links or serialized payload export.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "links": {
+                    "summary": "Provider result links",
+                    "value": {
+                      "job_id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                      "surface": "images",
+                      "mode": "links",
+                      "links": [
+                        "https://cdn.example.com/out/abc.png"
+                      ]
+                    }
+                  }
+                }
+              },
+              "text/plain": {
+                "example": "{\"status\":\"COMPLETED\"}"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path/query parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "404": {
+            "description": "Job not found for the selected surface/endpoint."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/jobs/{surface}/{jobId}/ws": {
+      "get": {
+        "operationId": "streamJobUpdatesWebsocket",
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Stream async job status over WebSocket",
+        "description": "Upgrades to a WebSocket connection and emits periodic job status/result frames until the provider reports a terminal state.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned from an enqueue route."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "WebSocket protocol upgrade accepted."
+          },
+          "400": {
+            "description": "Invalid path/query parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "426": {
+            "description": "Upgrade header missing. Client must connect via WebSocket."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          }
+        }
+      }
+    },
+    "/v1/webhooks/test": {
+      "post": {
+        "operationId": "sendWebhookTestEvent",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Send a signed webhook test event",
+        "description": "Dispatches a synthetic signed webhook payload to validate URL reachability and signature verification before enabling production callbacks.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "webhook_url"
+                ],
+                "properties": {
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Destination URL that receives signed test events. HTTPS is required.",
+                    "examples": [
+                      "https://example.com/webhooks/dryapi"
+                    ]
+                  },
+                  "event": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "job.processing"
+                      },
+                      {
+                        "type": "string",
+                        "const": "job.completed"
+                      },
+                      {
+                        "type": "string",
+                        "const": "job.failed"
+                      }
+                    ],
+                    "description": "Test webhook event type to send. Defaults to `job.processing`.",
+                    "examples": [
+                      "job.completed"
+                    ]
+                  },
+                  "data": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Optional payload object included as the webhook event data.",
+                    "examples": [
+                      {
+                        "request_id": "test_123",
+                        "latency_ms": 4215
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook test event delivered successfully.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "job_id": "test_a13f6b84-6f23-4cb4-9f2d-97aa858806f0",
+                  "event": "job.completed"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid webhook URL or payload."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Webhook dispatch failed or gateway execution error."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/run": {
+      "post": {
+        "operationId": "runpodSubmitAsyncJob",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Submit asynchronous RunPod job",
+        "description": "Direct provider control route that calls RunPod `/run`. Prefer OpenAI-compatible surface routes for public clients unless provider-level behavior is required.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpointId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Explicit RunPod endpoint ID. Overrides default endpoint mapping when provided.",
+                    "examples": [
+                      "o6r4i5q9j8k7l6"
+                    ]
+                  },
+                  "model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "Llama3_8B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mistral_7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mixtral_8x7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1schnell"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1dev"
+                      },
+                      {
+                        "type": "string",
+                        "const": "SDXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "JuggernautXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "RealVisXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperLargeV3"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperX"
+                      },
+                      {
+                        "type": "string",
+                        "const": "BGE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E5_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "GTE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Bge_M3_FP16"
+                      }
+                    ],
+                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "examples": [
+                      "Flux1schnell",
+                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ]
+                  },
+                  "input": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Provider input payload forwarded to RunPod as `input`.",
+                    "examples": [
+                      {
+                        "prompt": "A cinematic aerial shot of neon Tokyo in the rain."
+                      }
+                    ]
+                  },
+                  "webhook": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Deprecated webhook alias. Prefer `webhook_url`.",
+                    "examples": [
+                      "https://example.com/webhooks/runpod"
+                    ]
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "HTTPS URL that receives signed status updates for this job.",
+                    "examples": [
+                      "https://example.com/webhooks/runpod"
+                    ]
+                  },
+                  "policy": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Optional policy hints used by gateway routing and execution controls.",
+                    "examples": [
+                      {
+                        "maxCostUsd": 0.04,
+                        "maxLatencyMs": 18000
+                      }
+                    ]
+                  },
+                  "s3Config": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Optional object-storage output configuration for provider artifacts.",
+                    "examples": [
+                      {
+                        "bucket": "dryapi-output",
+                        "region": "auto"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RunPod accepted request and returned provider payload.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                  "status": "IN_QUEUE"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload or unresolved endpoint routing."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/runsync": {
+      "post": {
+        "operationId": "runpodSubmitSyncJob",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Submit synchronous RunPod job",
+        "description": "Direct provider control route that calls RunPod `/runsync` and waits for completion in a single request lifecycle.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpointId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Explicit RunPod endpoint ID. Overrides default endpoint mapping when provided.",
+                    "examples": [
+                      "o6r4i5q9j8k7l6"
+                    ]
+                  },
+                  "model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "Llama3_8B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mistral_7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Mixtral_8x7B_Instruct"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1schnell"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Flux1dev"
+                      },
+                      {
+                        "type": "string",
+                        "const": "SDXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "JuggernautXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "RealVisXL"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperLargeV3"
+                      },
+                      {
+                        "type": "string",
+                        "const": "WhisperX"
+                      },
+                      {
+                        "type": "string",
+                        "const": "BGE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E5_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "GTE_Large"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Bge_M3_FP16"
+                      }
+                    ],
+                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "examples": [
+                      "Flux1schnell",
+                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ]
+                  },
+                  "input": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Provider input payload forwarded to RunPod as `input`.",
+                    "examples": [
+                      {
+                        "prompt": "A cinematic aerial shot of neon Tokyo in the rain."
+                      }
+                    ]
+                  },
+                  "webhook": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Deprecated webhook alias. Prefer `webhook_url`.",
+                    "examples": [
+                      "https://example.com/webhooks/runpod"
+                    ]
+                  },
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "HTTPS URL that receives signed status updates for this job.",
+                    "examples": [
+                      "https://example.com/webhooks/runpod"
+                    ]
+                  },
+                  "policy": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Optional policy hints used by gateway routing and execution controls.",
+                    "examples": [
+                      {
+                        "maxCostUsd": 0.04,
+                        "maxLatencyMs": 18000
+                      }
+                    ]
+                  },
+                  "s3Config": {
+                    "type": "object",
+                    "patternProperties": {
+                      "^.*$": {}
+                    },
+                    "description": "Optional object-storage output configuration for provider artifacts.",
+                    "examples": [
+                      {
+                        "bucket": "dryapi-output",
+                        "region": "auto"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RunPod synchronous response payload.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f",
+                  "status": "COMPLETED",
+                  "output": {
+                    "data": [
+                      {
+                        "embedding": [
+                          0.132,
+                          -0.018,
+                          0.004
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload or unresolved endpoint routing."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/status/{jobId}": {
+      "get": {
+        "operationId": "runpodGetJobStatus",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Get RunPod job status",
+        "description": "Returns raw provider status payload for a specific RunPod job.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "images"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned when a request is accepted."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RunPod `/status` response payload."
+          },
+          "400": {
+            "description": "Invalid parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "404": {
+            "description": "Job not found."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/stream/{jobId}": {
+      "get": {
+        "operationId": "runpodStreamJobOutput",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Stream RunPod job output",
+        "description": "Forwards provider `/stream` output for the requested job. Useful for incremental updates where supported by the model endpoint.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "images"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned when a request is accepted."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RunPod `/stream` response payload or event stream."
+          },
+          "400": {
+            "description": "Invalid parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/cancel/{jobId}": {
+      "post": {
+        "operationId": "runpodCancelJob",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Cancel RunPod job",
+        "description": "Requests cancellation for a queued or running provider job.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "images"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned when a request is accepted."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RunPod `/cancel` response payload."
+          },
+          "400": {
+            "description": "Invalid parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "404": {
+            "description": "Job not found."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/retry/{jobId}": {
+      "post": {
+        "operationId": "runpodRetryJob",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Retry RunPod job",
+        "description": "Requests provider-level retry for a prior job execution.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "images"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f"
+              ]
+            },
+            "required": true,
+            "description": "Provider job identifier returned when a request is accepted."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RunPod `/retry` response payload."
+          },
+          "400": {
+            "description": "Invalid parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "404": {
+            "description": "Job not found."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/purge-queue": {
+      "post": {
+        "operationId": "runpodPurgeQueue",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Purge RunPod pending queue",
+        "description": "Requests provider queue purge for pending jobs on the selected endpoint.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RunPod `/purge-queue` response payload."
+          },
+          "400": {
+            "description": "Invalid parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    },
+    "/v1/runpod/{surface}/health": {
+      "get": {
+        "operationId": "runpodGetEndpointHealth",
+        "tags": [
+          "RunPod Jobs"
+        ],
+        "summary": "Get RunPod endpoint health",
+        "description": "Returns provider endpoint health details for the selected surface mapping.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "o6r4i5q9j8k7l6"
+              ]
+            },
+            "description": "Optional provider endpoint override. If omitted, routing uses surface/model mapping."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RunPod `/health` response payload."
+          },
+          "400": {
+            "description": "Invalid parameters or unresolved endpoint mapping."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          },
+          "429": {
+            "description": "Rate-limited by gateway quota controls."
+          },
+          "500": {
+            "description": "Gateway configuration or execution error."
+          },
+          "502": {
+            "description": "Provider returned a non-success response."
+          }
+        }
+      }
+    }
+  }
+}

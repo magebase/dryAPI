@@ -10,7 +10,7 @@
     "role": "AI API Infrastructure Researchers",
     "bio": "We publish practical playbooks for building cheap, scalable AI APIs with predictable margins and production-grade reliability."
   },
-  "coverImage": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
+  "coverImage": "https://picsum.photos/seed/embeddings-api-margin-and-scale-playbook-hero/1600/900",
   "tags": [
     "Embeddings API",
     "AI API Margin",
@@ -29,7 +29,7 @@
     "batching"
   ],
   "canonicalPath": "/blog/embeddings-api-margin-and-scale-playbook",
-  "ogImage": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
+  "ogImage": "https://picsum.photos/seed/embeddings-api-margin-and-scale-playbook-og/1200/630",
   "noindex": false,
   "body": {
     "type": "root",
@@ -581,6 +581,220 @@
             "text": "If you execute this checklist consistently, embeddings api margin becomes a repeatable operating model instead of a one-time optimization project."
           }
         ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Operator playbook snapshot"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Treat "
+          },
+          {
+            "type": "text",
+            "text": "margin floor checks",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " and "
+          },
+          {
+            "type": "text",
+            "text": "idempotent reconciliation",
+            "italic": true
+          },
+          {
+            "type": "text",
+            "text": " as non-negotiable controls. Standardize on "
+          },
+          {
+            "type": "text",
+            "text": "gateway-first routing",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " and retire "
+          },
+          {
+            "type": "text",
+            "text": "direct-provider key leaks",
+            "strikethrough": true
+          },
+          {
+            "type": "text",
+            "text": " before traffic scales."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Reference: "
+          },
+          {
+            "type": "a",
+            "url": "/docs/v1/api-reference",
+            "children": [
+              {
+                "type": "text",
+                "text": "dryAPI API reference"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for stable request/response contracts and error handling expectations."
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Reserve estimated credits before inference dispatch and release on failure."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Use deterministic cache keys for embeddings and repeatable transformation jobs."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Log per-request provider cost, latency, and margin for weekly routing adjustments."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Cost control is an architecture decision, not a dashboard metric retrofitted after launch."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "img",
+        "url": "https://picsum.photos/seed/embeddings-api-margin-and-scale-playbook-body-1/1400/840",
+        "alt": "Embeddings API Margin and Scale Playbook: High Volume, Low Unit Cost infrastructure visual",
+        "caption": "Realtime routing and policy enforcement across API surfaces."
+      },
+      {
+        "type": "code_block",
+        "lang": "bash",
+        "value": "curl -sS https://api.dryapi.com/v1/usage \\\n  -H \"Authorization: Bearer $DRYAPI_KEY\" \\\n  -H \"Content-Type: application/json\""
+      },
+      {
+        "type": "h4",
+        "children": [
+          {
+            "type": "text",
+            "text": "Validation checklist before publishing pricing updates"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Confirm retail credits still clear configured provider-cost floor margins."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Run fallback-path load tests with throttling and timeout fault injection."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Verify billing webhooks remain idempotent during retry storms."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "hr"
+      },
+      {
+        "type": "img",
+        "url": "https://picsum.photos/seed/embeddings-api-margin-and-scale-playbook-body-2/1400/840",
+        "alt": "Embeddings API Margin and Scale Playbook: High Volume, Low Unit Cost analytics dashboard visual",
+        "caption": "Usage analytics and profitability telemetry for growth-stage AI APIs."
       }
     ]
   }

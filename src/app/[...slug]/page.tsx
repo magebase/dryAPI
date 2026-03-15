@@ -138,6 +138,22 @@ export async function generateMetadata({ params }: CatchAllPageProps): Promise<M
     return {}
   }
 
+  if (page.slug === "/blog") {
+    const siteUrl = normalizeSiteUrl()
+
+    return {
+      title: page.seoTitle,
+      description: page.seoDescription,
+      alternates: {
+        types: {
+          "application/rss+xml": `${siteUrl}/blog/feed.xml`,
+          "application/atom+xml": `${siteUrl}/blog/feed.atom`,
+          "application/feed+json": `${siteUrl}/blog/feed.json`,
+        },
+      },
+    }
+  }
+
   return {
     title: page.seoTitle,
     description: page.seoDescription,
@@ -193,7 +209,7 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
     ? (await listRoutePages()).filter((routePage) => routePage.slug.startsWith("/products/"))
     : []
   const blogPosts = isBlogIndex && manualBlogEnabled ? await listBlogPosts() : []
-  const deapiPricingSnapshot = page.slug === "/pricing" ? await getLatestDeapiPricingSnapshot({ maxPermutations: 500 }) : null
+  const deapiPricingSnapshot = page.slug === "/pricing" ? await getLatestDeapiPricingSnapshot() : null
   const relativePath = routeSlugToRelativePath(page.slug)
 
   if (!relativePath) {

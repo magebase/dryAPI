@@ -21,15 +21,15 @@ export function BlogSectionMarkdown({ content, dataTinaField }: BlogSectionMarkd
           h3: ({ children }) => <h3 className="mt-5 text-lg font-semibold text-white">{children}</h3>,
           h4: ({ children }) => <h4 className="mt-4 text-base font-semibold text-white">{children}</h4>,
           p: ({ children }) => <p className="mt-3 first:mt-0">{children}</p>,
-          ul: ({ children }) => <ul className="mt-3 list-disc space-y-2 pl-6 marker:text-[#ff8b2b]">{children}</ul>,
-          ol: ({ children }) => <ol className="mt-3 list-decimal space-y-2 pl-6 marker:text-[#ff8b2b]">{children}</ol>,
+          ul: ({ children }) => <ul className="mt-3 list-disc space-y-2 pl-6 marker:text-primary">{children}</ul>,
+          ol: ({ children }) => <ol className="mt-3 list-decimal space-y-2 pl-6 marker:text-primary">{children}</ol>,
           li: ({ children }) => <li>{children}</li>,
           a: ({ href = "", children, ...props }) => {
             const isExternal = linkIsExternal(href)
             return (
               <a
                 {...props}
-                className="text-[#ffbf8a] underline decoration-[#ff8b2b]/60 underline-offset-4 transition hover:text-[#ffd9b8]"
+                className="text-primary underline decoration-primary/60 underline-offset-4 transition hover:text-accent"
                 href={href}
                 rel={isExternal ? "noopener noreferrer" : undefined}
                 target={isExternal ? "_blank" : undefined}
@@ -39,12 +39,12 @@ export function BlogSectionMarkdown({ content, dataTinaField }: BlogSectionMarkd
             )
           },
           blockquote: ({ children }) => (
-            <blockquote className="mt-4 border-l-2 border-[#ff8b2b]/60 pl-4 italic text-slate-200">{children}</blockquote>
+            <blockquote className="mt-4 border-l-2 border-primary/60 pl-4 italic text-slate-200">{children}</blockquote>
           ),
           hr: () => <hr className="my-5 border-white/15" />,
           code: ({ inline, children, ...props }: ComponentPropsWithoutRef<"code"> & { inline?: boolean }) =>
             inline ? (
-              <code {...props} className="rounded bg-[#0b1624] px-1 py-0.5 text-[0.93em] text-[#ffd3b0]">
+              <code {...props} className="rounded bg-[#0b1624] px-1 py-0.5 text-[0.93em] text-primary">
                 {children}
               </code>
             ) : (

@@ -54,7 +54,6 @@ interface Env {
   STRIPE_PRIVATE_KEY?: string;
   STRIPE_METER_BILLING_CUSTOMER_ID?: string;
   STRIPE_METER_PROJECT_KEY?: string;
-  STRIPE_METER_EVENT_BREVO_EMAIL_SEND?: string;
   STRIPE_METER_EVENT_BREVO_SMS_SEND?: string;
   STRIPE_METER_EVENT_WORKFLOW_DISPATCH?: string;
   STRIPE_METER_EVENT_WORKFLOW_RUN?: string;
@@ -108,7 +107,6 @@ const FLOW_ALIASES: Record<LegacyFlowKind, CanonicalFlowKind> = {
 };
 
 type StripeMeterEventType =
-  | "brevo_email_send"
   | "brevo_sms_send"
   | "workflow_dispatch"
   | "workflow_run"
@@ -120,7 +118,6 @@ const STRIPE_METER_API_URL = "https://api.stripe.com/v1/billing/meter_events";
 const DEFAULT_PROJECT_KEY = "genfix";
 
 const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
-  brevo_email_send: "genfix_brevo_email_send",
   brevo_sms_send: "genfix_brevo_sms_send",
   workflow_dispatch: "genfix_workflow_dispatch",
   workflow_run: "genfix_workflow_run",
@@ -128,7 +125,6 @@ const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
 };
 
 const STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS: Record<StripeMeterEventType, keyof Env> = {
-  brevo_email_send: "STRIPE_METER_EVENT_BREVO_EMAIL_SEND",
   brevo_sms_send: "STRIPE_METER_EVENT_BREVO_SMS_SEND",
   workflow_dispatch: "STRIPE_METER_EVENT_WORKFLOW_DISPATCH",
   workflow_run: "STRIPE_METER_EVENT_WORKFLOW_RUN",
@@ -427,15 +423,6 @@ async function sendBrevoEmail(
       accept: "application/json",
     },
   );
-
-  await recordStripeMeterUsage(env, {
-    eventType: "brevo_email_send",
-    metadata: {
-      provider: "brevo",
-      surface: "cloudflare-workflows",
-      channel: "email",
-    },
-  });
 
   return true;
 }

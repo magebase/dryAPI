@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
-import nextra from "nextra";
+import { createMDX } from "fumadocs-mdx/next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
-import { remarkNextraVersioning } from "./src/lib/nextra-versioning-plugin";
+initOpenNextCloudflareForDev({ configPath: "wrangler.local.jsonc" });
 
 const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"]);
 const FALSE_VALUES = new Set(["0", "false", "no", "off", "disabled"]);
@@ -117,17 +118,19 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development" || !pwaEnabled,
 });
 
-const withNextra = nextra({
-  contentDirBasePath: "/docs",
-  search: {
-    codeblocks: false,
-  },
-  mdxOptions: {
-    remarkPlugins: [[remarkNextraVersioning, { currentVersion: "v1" }]],
-  },
+const withMDX = createMDX({
+  configPath: "source.config.ts",
 });
 
 const nextConfig: NextConfig = {
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.txt$/i,
+      type: "asset/source",
+    });
+
+    return config;
+  },
   async headers() {
     return [
       {
@@ -168,6 +171,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "picsum.photos",
+      },
+      {
+        protocol: "https",
         hostname: "**.r2.dev",
       },
       {
@@ -178,4 +185,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextra(withSerwist(nextConfig));
+export default withMDX(withSerwist(nextConfig));

@@ -61,12 +61,12 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
         />
         <div className="absolute inset-0 bg-[linear-gradient(95deg,rgba(10,18,29,0.97),rgba(10,18,29,0.72),rgba(10,18,29,0.58))]" />
         <div className="absolute inset-0 opacity-26 [background-image:linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:72px_72px]" />
-        <div className="absolute -right-10 top-10 hidden h-72 w-72 rotate-12 border-[22px] border-[#ffb47f]/55 md:block" />
-        <div className="absolute -right-4 top-28 hidden h-56 w-56 rotate-12 border-[18px] border-[#ed9560]/65 md:block" />
+        <div className="absolute -right-10 top-10 hidden h-72 w-72 rotate-12 border-[22px] border-primary/55 md:block" />
+        <div className="absolute -right-4 top-28 hidden h-56 w-56 rotate-12 border-[18px] border-accent/65 md:block" />
 
         <Reveal as="div" className="relative mx-auto max-w-7xl px-4 py-16 md:py-24 lg:py-28">
           <div className="max-w-xl bg-black/28 p-6 backdrop-blur-[1px] md:p-8">
-            <p className="text-sm uppercase tracking-[0.22em] text-[#ff9d53]" data-tina-field={tinaField(page.hero, "kicker")}>
+            <p className="text-sm uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
               {page.hero.kicker}
             </p>
             <h1 className="mt-4 font-display text-3xl uppercase tracking-[0.06em] text-white sm:text-4xl md:text-6xl">
@@ -127,7 +127,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
                     data-tina-field={tinaField(item)}
                     href={item.href}
                   >
-                    <Icon className="mt-0.5 size-4 text-[#ff8b2b]" />
+                    <Icon className="mt-0.5 size-4 text-primary" />
                     <span>{item.label}</span>
                   </QuoteAwareLink>
                 )
@@ -142,7 +142,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
                   <QuoteAwareLink
                     key={item.href}
                     aria-label={item.label}
-                    className="rounded-sm border border-white/20 p-2 text-slate-300 transition hover:border-[#ff8b2b] hover:text-[#ff8b2b]"
+                    className="rounded-sm border border-white/20 p-2 text-slate-300 transition hover:border-primary hover:text-primary"
                     data-tina-field={tinaField(item)}
                     href={item.href}
                   >
@@ -165,13 +165,13 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
       <section className="bg-[#262f3d] py-12 md:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal as="div" className={`${getGradientVariant(3)} rounded-md border border-white/10 p-6`}>
-            <p className="text-xs uppercase tracking-[0.2em] text-[#ff9d53]" data-tina-field={urgentKicker.field}>{urgentKicker.value}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-primary" data-tina-field={urgentKicker.field}>{urgentKicker.value}</p>
             <h2 className="mt-3 font-display text-2xl uppercase tracking-[0.06em] text-white">
               <KeywordGradientText dataTinaField={urgentHeading.field} text={urgentHeading.value} />
             </h2>
             <p className="mt-3 text-sm text-slate-300" data-tina-field={urgentBody.field}>{urgentBody.value}</p>
             <QuoteAwareLink
-              className="mt-5 inline-flex w-full justify-center rounded-sm border border-[#ff8b2b] bg-[#ff8b2b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#ff8b2b] transition hover:bg-[#ff8b2b] hover:text-white sm:w-auto"
+              className="mt-5 inline-flex w-full justify-center rounded-sm border border-primary bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:bg-primary hover:text-primary-foreground sm:w-auto"
               data-tina-field={tinaField(site.header, "phone")}
               href={site.header.phone.href}
             >
@@ -199,7 +199,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
                             <details className="group text-slate-200">
                               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold uppercase tracking-[0.14em]">
                                 <KeywordGradientText dataTinaField={tinaField(location, "title")} text={location.title} />
-                                <ChevronDown className="size-4 text-[#ff8b2b] transition group-open:rotate-180" />
+                                <ChevronDown className="size-4 text-primary transition group-open:rotate-180" />
                               </summary>
                               <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-300" data-tina-field={tinaField(location, "description")}>
                                 {location.description}
@@ -214,7 +214,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
                                 />
                               ) : null}
                               <QuoteAwareLink
-                                className="mt-3 inline-flex text-xs font-semibold uppercase tracking-[0.13em] text-[#ff8b2b]"
+                                className="mt-3 inline-flex text-xs font-semibold uppercase tracking-[0.13em] text-primary"
                                 data-tina-field={tinaField(location, "ctaLabel")}
                                 href={location.href}
                                 quoteLabel={location.ctaLabel}

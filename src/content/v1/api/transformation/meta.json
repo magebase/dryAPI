@@ -1,0 +1,11 @@
+{
+  "title": "Transformation",
+  "pages": [
+    "background-removal",
+    "background-removal-price",
+    "image-to-image",
+    "image-to-image-price",
+    "image-upscale",
+    "image-upscale-price"
+  ]
+}

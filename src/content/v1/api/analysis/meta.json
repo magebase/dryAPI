@@ -1,0 +1,15 @@
+{
+  "title": "Analysis",
+  "pages": [
+    "audio-to-text-spaces",
+    "audio-to-text-spaces-price",
+    "image-to-text",
+    "image-to-text-price",
+    "upload-audio-file",
+    "upload-audio-file-price",
+    "upload-video-file",
+    "upload-video-file-price",
+    "video-to-text",
+    "video-to-text-price"
+  ]
+}

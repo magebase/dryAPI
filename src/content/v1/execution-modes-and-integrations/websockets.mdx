@@ -1,3 +1,6 @@
+---
+title: "WebSockets"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -10,9 +13,9 @@
 
 WebSockets provide real-time job status updates through a persistent connection. Unlike polling, updates are pushed instantly as they happen, including live preview images during generation.
 
-> **INFO**
->
-> WebSockets are ideal for interactive applications where you need instant feedback on job progress.
+<Callout>
+WebSockets are ideal for interactive applications where you need instant feedback on job progress.
+</Callout>
 
 ## Quick Start
 
@@ -69,9 +72,9 @@ pusher.subscribe(`private-client.${CLIENT_ID}`)
 | Reliability         | Requires active connection      | Automatic retries                |
 | Best for            | Interactive UIs, real-time apps | Backend integrations, serverless |
 
-> **TIP**
->
-> For maximum reliability, use both: WebSockets for real-time UI updates and webhooks as a backup for critical notifications.
+<Callout title="Tip" type="idea">
+For maximum reliability, use both: WebSockets for real-time UI updates and webhooks as a backup for critical notifications.
+</Callout>
 
 ## Configuration
 
@@ -214,13 +217,13 @@ Each client has a private channel scoped to their account:
 private-client.{client_id}
 ```
 
-> **WARNING**
->
-> Private channels require authentication. You can only subscribe to your own channel.
+<Callout title="Warning" type="warn">
+Private channels require authentication. You can only subscribe to your own channel.
+</Callout>
 
-> **INFO**
->
-> When using Laravel Echo, use `.listen('.request.status.updated', ...)` with a dot prefix. With raw Pusher, use `.bind('request.status.updated', ...)` without the dot.
+<Callout>
+When using Laravel Echo, use `.listen('.request.status.updated', ...)` with a dot prefix. With raw Pusher, use `.bind('request.status.updated', ...)` without the dot.
+</Callout>
 
 ## Events
 
@@ -248,9 +251,9 @@ Sent whenever a job's status changes or progress is updated.
 | `result_url` | string \| null | Signed download URL (only when `done`)                  |
 | `progress`   | string         | Progress percentage as decimal string (e.g., `"45.50"`) |
 
-> **WARNING**
->
-> The `result_url` is a signed URL that expires. Download promptly or use the job status endpoint to get a fresh URL.
+<Callout title="Warning" type="warn">
+The `result_url` is a signed URL that expires. Download promptly or use the job status endpoint to get a fresh URL.
+</Callout>
 
 ### Status Flow
 
@@ -424,9 +427,9 @@ Content-Type: application/json
 }
 ```
 
-> **INFO**
->
-> The Pusher client libraries handle this automatically via the `authorizer` callback.
+<Callout>
+The Pusher client libraries handle this automatically via the `authorizer` callback.
+</Callout>
 
 ## Connection Management
 

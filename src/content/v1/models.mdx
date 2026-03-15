@@ -1,3 +1,6 @@
+---
+title: "Models"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -10,9 +13,9 @@
 
 The [Model Selection](/docs/v1/api/utilities/model-selection) endpoint returns the live, authoritative list of all available models, their slugs, limits, and defaults. **Use it as the starting point for every integration.**
 
-> **TIP**
->
-> This page explains how model selection works and how to use the endpoint. For the actual list of models and their exact slugs, always refer to the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint.
+<Callout title="Tip" type="idea">
+This page explains how model selection works and how to use the endpoint. For the actual list of models and their exact slugs, always refer to the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint.
+</Callout>
 
 ***
 
@@ -39,9 +42,9 @@ The response returns a paginated `data` array of model objects. Each object cont
 | `loras`           | Array of available LoRA adapters (`display_name` + `name`). Present only on models that support LoRAs.                                                                                    |
 | `languages`       | Array of supported languages, each with available voices. Present only on speech models.                                                                                                  |
 
-> **NOTE**
->
-> Not every model returns all fields. For example, a transcription model may return an empty `info`, while an image-generation model will include detailed `limits`, `features`, and `defaults`. Always check for the presence of fields before using them.
+<Callout>
+Not every model returns all fields. For example, a transcription model may return an empty `info`, while an image-generation model will include detailed `limits`, `features`, and `defaults`. Always check for the presence of fields before using them.
+</Callout>
 
 You can filter the list by task type using the `filter[inference_types]` query parameter:
 
@@ -86,9 +89,9 @@ The table below shows which **task types** deAPI supports. To see which models a
 | Background Removal  | `img-rmbg`              | Remove background from images — product photos, portraits, compositing.                                           |
 | Image Upscale       | `img-upscale`           | Upscale images to higher resolution.                                                                              |
 
-> **NOTE**
->
-> Some models support **multiple tasks** (e.g. both `txt2img` and `img2img`). The models endpoint will list all supported `inference_types` for each model.
+<Callout>
+Some models support **multiple tasks** (e.g. both `txt2img` and `img2img`). The models endpoint will list all supported `inference_types` for each model.
+</Callout>
 
 ***
 
@@ -129,9 +132,9 @@ If you provide image dimensions that are not aligned to the required step, the A
 
 Some models do not support guidance. Check `info.features.supports_guidance` — if it's `false`, do not send a guidance value, or set it to `0`.
 
-> **TIP**
->
-> Always read `info.limits` and `info.defaults` from the models endpoint for the specific model you're using. Do not assume that limits from one model apply to another.
+<Callout title="Tip" type="idea">
+Always read `info.limits` and `info.defaults` from the models endpoint for the specific model you're using. Do not assume that limits from one model apply to another.
+</Callout>
 
 ***
 
@@ -165,9 +168,9 @@ curl -X POST "https://api.deapi.ai/api/v1/client/txt2img" \
   }'
 ```
 
-> **WARNING**
->
-> Replace `<MODEL_SLUG>` with an actual `slug` value from the models endpoint. The `seed` field is required for image generation. Check `info.limits` for valid ranges of `width`, `height`, `steps`, and other parameters before sending.
+<Callout title="Warning" type="warn">
+Replace `<MODEL_SLUG>` with an actual `slug` value from the models endpoint. The `seed` field is required for image generation. Check `info.limits` for valid ranges of `width`, `height`, `steps`, and other parameters before sending.
+</Callout>
 
 **3. Transcribe a video by URL**
 

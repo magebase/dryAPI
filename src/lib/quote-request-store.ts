@@ -1,49 +1,50 @@
-import "server-only"
+import "server-only";
 
-import { drizzle } from "drizzle-orm/d1"
-import { getCloudflareContext } from "@opennextjs/cloudflare"
+import { drizzle } from "drizzle-orm/d1";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-import { quoteRequests } from "@/db/schema"
-import type { ContactSubmission } from "@/lib/contact-schema"
+import { quoteRequests } from "@/db/schema";
+import type { ContactSubmission } from "@/lib/contact-schema";
 
 type QuoteRequestMetadata = {
-  sourcePath: string
-}
+  sourcePath: string;
+};
 
-type D1Binding = Parameters<typeof drizzle>[0]
+type D1Binding = Parameters<typeof drizzle>[0];
 
 function resolveQuoteDbBinding(env: CloudflareEnv): D1Binding | null {
-  return ((env as CloudflareEnv & { QUOTE_DB?: D1Binding }).QUOTE_DB ?? null) as D1Binding | null
+  return ((env as CloudflareEnv & { APP_DB?: D1Binding }).APP_DB ??
+    null) as D1Binding | null;
 }
 
 export async function persistQuoteRequest(
   submission: ContactSubmission,
-  metadata: QuoteRequestMetadata
+  metadata: QuoteRequestMetadata,
 ): Promise<void> {
   if (submission.submissionType !== "quote") {
-    return
+    return;
   }
 
-  let quoteDb: D1Binding | null = null
+  let quoteDb: D1Binding | null = null;
 
   try {
-    const { env } = await getCloudflareContext({ async: true })
-    quoteDb = resolveQuoteDbBinding(env)
+    const { env } = await getCloudflareContext({ async: true });
+    quoteDb = resolveQuoteDbBinding(env);
   } catch {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("Cloudflare context is unavailable.")
+      throw new Error("Cloudflare context is unavailable.");
     }
   }
 
   if (!quoteDb) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("QUOTE_DB binding is missing.")
+      throw new Error("APP_DB binding is missing.");
     }
 
-    return
+    return;
   }
 
-  const db = drizzle(quoteDb)
+  const db = drizzle(quoteDb);
 
   await db.insert(quoteRequests).values({
     id: crypto.randomUUID(),
@@ -58,5 +59,5 @@ export async function persistQuoteRequest(
     message: submission.message,
     sourcePath: metadata.sourcePath,
     createdAt: new Date(),
-  })
+  });
 }

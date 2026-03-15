@@ -1,3 +1,6 @@
+---
+title: "Limits & Quotas"
+---
 > ## Documentation Index
 > Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
 > Use this file to discover all available pages before exploring further.
@@ -19,15 +22,15 @@ All new accounts start as **Basic** and can upgrade to **Premium** by making any
 | **Basic**   | New accounts (no payments made) |
 | **Premium** | Any payment made via Stripe     |
 
-> **NOTE**
->
-> Upon registration, you receive a **\$5 bonus** added to your balance. This bonus is available for **Basic accounts** with conservative rate limits designed for testing and evaluation.
-> 
-> To upgrade to **Premium** (300 RPM, unlimited daily requests), simply top up your account with any available amount. Your remaining bonus balance carries over — for example, if you use \$2 of your bonus and then purchase \$10, your total balance becomes \$13 (\$3 remaining + \$10 purchased), now usable with Premium limits.
+<Callout>
+Upon registration, you receive a **\$5 bonus** added to your balance. This bonus is available for **Basic accounts** with conservative rate limits designed for testing and evaluation.
 
-> **WARNING**
->
-> Accounts registered with temporary or disposable email addresses do not receive the \$5 bonus. We value long-term users and honest usage.
+To upgrade to **Premium** (300 RPM, unlimited daily requests), simply top up your account with any available amount. Your remaining bonus balance carries over — for example, if you use \$2 of your bonus and then purchase \$10, your total balance becomes \$13 (\$3 remaining + \$10 purchased), now usable with Premium limits.
+</Callout>
+
+<Callout title="Warning" type="warn">
+Accounts registered with temporary or disposable email addresses do not receive the \$5 bonus. We value long-term users and honest usage.
+</Callout>
 
 ***
 
@@ -65,16 +68,16 @@ Basic accounts have conservative limits designed for testing and evaluation.
 | `/api/v1/client/img2txt`           | `Nanonets_Ocr_S_F16` | 5   | 50  |
 | **Whisper Transcription (shared)** | `WhisperLargeV3`     | 1   | 10  |
 
-> **WARNING**
->
-> **Whisper Shared Limit:** All four Whisper transcription endpoints share a single combined limit of **1 RPM** and **10 RPD**:
-> 
-> * `/api/v1/client/vid2txt` — Video URL transcription (YouTube, X, Twitch, TikTok, Kick)
-> * `/api/v1/client/videofile2txt` — Video file upload transcription
-> * `/api/v1/client/aud2txt` — X Spaces transcription
-> * `/api/v1/client/audiofile2txt` — Audio file upload transcription
-> 
-> For example: 5× `/vid2txt` + 3× `/aud2txt` + 2× `/audiofile2txt` = 10 RPD ✓
+<Callout title="Warning" type="warn">
+**Whisper Shared Limit:** All four Whisper transcription endpoints share a single combined limit of **1 RPM** and **10 RPD**:
+
+* `/api/v1/client/vid2txt` — Video URL transcription (YouTube, X, Twitch, TikTok, Kick)
+* `/api/v1/client/videofile2txt` — Video file upload transcription
+* `/api/v1/client/aud2txt` — X Spaces transcription
+* `/api/v1/client/audiofile2txt` — Audio file upload transcription
+
+For example: 5× `/vid2txt` + 3× `/aud2txt` + 2× `/audiofile2txt` = 10 RPD ✓
+</Callout>
 
 #### Transformation Endpoints
 
@@ -115,9 +118,9 @@ Premium accounts have high limits suitable for production workloads. All endpoin
 | `/api/v1/client/img-rmbg`      | `Ben2`                                                                     | 300 | Unlimited |
 | `/api/v1/client/img-upscale`   | `RealESRGAN_x4plus`                                                        | 300 | Unlimited |
 
-> **INFO**
->
-> Premium Whisper endpoints have independent limits — each endpoint has its own 300 RPM allocation.
+<Callout>
+Premium Whisper endpoints have independent limits — each endpoint has its own 300 RPM allocation.
+</Callout>
 
 ***
 
