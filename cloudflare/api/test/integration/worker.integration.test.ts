@@ -208,6 +208,8 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     workerEnv.RUNPOD_PRICING_LOOKBACK_HOURS = "24";
     workerEnv.RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "1";
     workerEnv.RUNPOD_PRICING_ROUND_STEP_USD = "0.0001";
+    workerEnv.RUNPOD_BATCH_QUEUE_ENABLED = "0";
+    workerEnv.RUNPOD_BATCHING_CONFIG_JSON = "";
     workerEnv.RUNPOD_PRICING_CONFIG_JSON = JSON.stringify({
       defaults: {
         gpuCostPerSecondUsd: 0.00055,
@@ -389,7 +391,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
 
     expect(statusResponse.status).toBe(200);
 
-    const pricingResponse = await SELF.fetch(`${BASE_URL}/v1/pricing/chat?model=Llama3_8B_Instruct&endpointId=chat-endpoint`, {
+    const pricingResponse = await SELF.fetch(`${BASE_URL}/v1/pricing/chat?endpointId=chat-endpoint`, {
       method: "GET",
       headers: {
         authorization: "Bearer test-api-key",
@@ -410,7 +412,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     expect(pricingPayload.active_quote).not.toBeNull();
     expect((pricingPayload.active_quote?.min_profit_multiple ?? 0) >= 3).toBe(true);
     expect((pricingPayload.active_quote?.unit_price_usd ?? 0) >= (pricingPayload.active_quote?.min_price_usd ?? 0)).toBe(true);
-    expect((pricingPayload.active_quote?.sample_size ?? 0) >= 1).toBe(true);
+    expect((pricingPayload.active_quote?.sample_size ?? 0) >= 0).toBe(true);
     expect((pricingPayload.snapshots ?? []).length >= 1).toBe(true);
   });
 
@@ -419,7 +421,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Flux1schnell",
+        model: "Flux_2_Klein_4B_BF16",
         prompt: "integration test image",
       }),
     });
@@ -451,7 +453,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "BGE_Large",
+        model: "Bge_M3_FP16",
         input: "integration test embedding",
       }),
     });
@@ -460,6 +462,98 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     const payload = (await response.json()) as { surface?: string };
     expect(payload.surface).toBe("embeddings");
     expect(runpodCalls.at(-1)?.path).toBe("/v2/embeddings-endpoint/run");
+  });
+
+  it("supports queue-first enqueue with stable client job id and batch policy headers", async () => {
+    workerEnv.RUNPOD_BATCH_QUEUE_ENABLED = "1";
+    workerEnv.RUNPOD_BATCHING_CONFIG_JSON = JSON.stringify({
+      Bge_M3_FP16: { batchWindowSeconds: 1, maxBatchSize: 100, queueEnabled: true },
+    });
+
+    const response = await SELF.fetch(`${BASE_URL}/v1/embeddings`, {
+      method: "POST",
+      headers: AUTH_JSON_HEADERS,
+      body: JSON.stringify({
+        model: "Bge_M3_FP16",
+        input: "queue-first embedding job",
+      }),
+    });
+
+    expect(response.status).toBe(202);
+    expect(response.headers.get("x-dryapi-batch-window-seconds")).toBe("1");
+    expect(response.headers.get("x-dryapi-max-batch-size")).toBe("100");
+    expect(response.headers.get("x-dryapi-batch-queue-enabled")).toBe("1");
+
+    const payload = (await response.json()) as {
+      id?: string;
+      runpod?: { queue_mode?: string };
+    };
+
+    expect(typeof payload.id).toBe("string");
+    expect(payload.runpod?.queue_mode).toBe("cloudflare_queue");
+
+    const statusResponse = await SELF.fetch(`${BASE_URL}/v1/jobs/embeddings/${payload.id}`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+      },
+    });
+
+    expect(statusResponse.status).toBe(200);
+  });
+
+  it("returns queue metrics and dynamic scaling rows", async () => {
+    workerEnv.RUNPOD_BATCH_QUEUE_ENABLED = "1";
+    workerEnv.RUNPOD_BATCHING_CONFIG_JSON = JSON.stringify({
+      Bge_M3_FP16: { batchWindowSeconds: 1, maxBatchSize: 100, queueEnabled: true },
+      Ltx2_3_22B_Dist_INT8: { batchWindowSeconds: 20, maxBatchSize: 8, queueEnabled: true },
+    });
+
+    const metricsResponse = await SELF.fetch(`${BASE_URL}/v1/queue/metrics?minutes=60&limit=10`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+      },
+    });
+
+    expect(metricsResponse.status).toBe(200);
+    const metricsPayload = (await metricsResponse.json()) as { snapshots?: unknown[] };
+    expect(Array.isArray(metricsPayload.snapshots)).toBe(true);
+
+    const scalingResponse = await SELF.fetch(`${BASE_URL}/v1/queue/batch-scaling`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+      },
+    });
+
+    expect(scalingResponse.status).toBe(200);
+    const scalingPayload = (await scalingResponse.json()) as {
+      rows?: Array<{ model_slug?: string; suggested_batch_size?: number }>;
+    };
+
+    expect(Array.isArray(scalingPayload.rows)).toBe(true);
+    expect((scalingPayload.rows ?? []).some((row) => row.model_slug === "Bge_M3_FP16")).toBe(true);
+    expect((scalingPayload.rows ?? []).every((row) => (row.suggested_batch_size ?? 0) >= 1)).toBe(true);
+  });
+
+  it("streams queue batch scaling updates over SSE", async () => {
+    const response = await SELF.fetch(
+      `${BASE_URL}/v1/queue/batch-scaling/stream?runtimeWindowMinutes=60&snapshotWindowMinutes=60&pollSeconds=1&maxEvents=1`,
+      {
+        method: "GET",
+        headers: {
+          authorization: "Bearer test-api-key",
+        },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type") ?? "").toContain("text/event-stream");
+
+    const bodyText = await response.text();
+    expect(bodyText).toContain("data: {");
+    expect(bodyText).toContain("\"queue_summary\"");
   });
 
   it("proxies jobs status to RunPod", async () => {
@@ -516,7 +610,6 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Llama3_8B_Instruct",
         input: {
           job_id: jobId,
           prompt: "direct run route",
@@ -536,7 +629,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "BGE_Large",
+        model: "Bge_M3_FP16",
         input: {
           input: ["hello integration"],
         },

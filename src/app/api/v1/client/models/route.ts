@@ -5,7 +5,8 @@ import {
   parsePositiveInt,
   requireApiTokenIfConfigured,
 } from "@/app/api/v1/client/_shared"
-import { DEAPI_MODEL_CATALOG } from "@/data/deapi-model-catalog"
+import { getOpenApiParameterKeysForInferenceTypes } from "@/lib/model-openapi-params"
+import { getActiveRunpodModelsGeneratedAt, listActiveRunpodModels } from "@/lib/runpod-active-models"
 
 export const runtime = "nodejs"
 
@@ -18,60 +19,17 @@ type ClientModelRecord = {
   parameter_keys: string[]
 }
 
-const CATEGORY_TO_INFERENCE_TYPE: Record<string, string> = {
-  "background-removal": "img_rmbg",
-  "image-to-image": "img2img",
-  "image-to-text": "img2txt",
-  "image-to-video": "img2video",
-  "image-upscale": "img_upscale",
-  "text-to-embedding": "txt2embedding",
-  "text-to-image": "txt2img",
-  "text-to-music": "txt2music",
-  "text-to-speech": "txt2audio",
-  "text-to-video": "txt2video",
-  "video-to-text": "vid2txt",
-}
-
 function buildModelRecords(): ClientModelRecord[] {
-  const records = new Map<string, ClientModelRecord>()
-
-  for (const [category, models] of Object.entries(DEAPI_MODEL_CATALOG.modelsByCategory)) {
-    const inferenceType = CATEGORY_TO_INFERENCE_TYPE[category]
-    const parameterKeys = DEAPI_MODEL_CATALOG.parameterKeysByCategory[category] ?? []
-
-    for (const modelName of models) {
-      const existing = records.get(modelName)
-
-      if (existing) {
-        if (!existing.categories.includes(category)) {
-          existing.categories.push(category)
-        }
-
-        if (inferenceType && !existing.inference_types.includes(inferenceType)) {
-          existing.inference_types.push(inferenceType)
-        }
-
-        for (const parameterKey of parameterKeys) {
-          if (!existing.parameter_keys.includes(parameterKey)) {
-            existing.parameter_keys.push(parameterKey)
-          }
-        }
-
-        continue
-      }
-
-      records.set(modelName, {
-        id: modelName,
-        slug: modelName,
-        model: modelName,
-        inference_types: inferenceType ? [inferenceType] : [],
-        categories: [category],
-        parameter_keys: [...parameterKeys],
-      })
-    }
-  }
-
-  return Array.from(records.values()).sort((left, right) => left.model.localeCompare(right.model))
+  return listActiveRunpodModels()
+    .map((model) => ({
+      id: model.slug,
+      slug: model.slug,
+      model: model.slug,
+      inference_types: [...model.inferenceTypes],
+      categories: [...model.categories],
+      parameter_keys: getOpenApiParameterKeysForInferenceTypes(model.inferenceTypes),
+    }))
+    .sort((left, right) => left.model.localeCompare(right.model))
 }
 
 function applyInferenceTypeFilter(models: ClientModelRecord[], filters: Set<string>): ClientModelRecord[] {
@@ -110,7 +68,7 @@ export async function GET(request: NextRequest) {
       count: data.length,
       total,
       total_pages: totalPages,
-      generated_at: DEAPI_MODEL_CATALOG.generatedAt,
+      generated_at: getActiveRunpodModelsGeneratedAt(),
     },
   })
 }

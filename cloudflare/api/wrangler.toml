@@ -12,6 +12,15 @@ binding = "DB"
 database_name = "dryapi-api-analytics"
 database_id = "00000000-0000-0000-0000-000000000000"
 
+[[d1_databases]]
+binding = "DB_QUEUE_METRICS"
+database_name = "dryapi-api-queue-metrics"
+database_id = "33333333-3333-3333-3333-333333333333"
+
+[[kv_namespaces]]
+binding = "QUEUE_METRICS_KV"
+id = "queue_metrics_kv_prod"
+
 [[ratelimits]]
 name = "EDGE_IP_LIMITER"
 # Replace this with your real Cloudflare rate limit namespace id.
@@ -70,6 +79,12 @@ RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
 # Optional full pricing policy map (defaults/surfaces/models/endpoints).
 # RUNPOD_PRICING_CONFIG_JSON = '{"defaults":{"gpuCostPerSecondUsd":0.00055,"infraCostUsd":0.00005,"paymentFeeFraction":0.04,"retrySafetyFraction":0.12}}'
 RUNPOD_PRICING_CONFIG_JSON = ""
+RUNPOD_BATCH_QUEUE_ENABLED = "1"
+# Optional per-model queue batching overrides.
+# RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true}}'
+RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
+RUNPOD_QUEUE_METRICS_RETENTION_HOURS = "48"
+RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS = "900"
 
 # Optional webhook signing/timing controls.
 # WEBHOOK_SIGNING_SECRET = ""
@@ -77,6 +92,15 @@ RUNPOD_PRICING_CONFIG_JSON = ""
 
 # Optional websocket payload threshold; larger payloads return download links instead of inline frames.
 # WS_INLINE_MAX_BYTES = "65536"
+
+[[queues.producers]]
+binding = "RUNPOD_BATCH_QUEUE"
+queue = "dryapi-runpod-batch"
+
+[[queues.consumers]]
+queue = "dryapi-runpod-batch"
+max_batch_size = 100
+max_batch_timeout = 20
 
 [env.test]
 workers_dev = true
@@ -89,6 +113,15 @@ class_name = "ApiQuotaDurableObject"
 binding = "DB"
 database_name = "dryapi-api-analytics-test"
 database_id = "11111111-1111-1111-1111-111111111111"
+
+[[env.test.d1_databases]]
+binding = "DB_QUEUE_METRICS"
+database_name = "dryapi-api-queue-metrics-test"
+database_id = "44444444-4444-4444-4444-444444444444"
+
+[[env.test.kv_namespaces]]
+binding = "QUEUE_METRICS_KV"
+id = "queue_metrics_kv_test"
 
 [[env.test.ratelimits]]
 name = "EDGE_IP_LIMITER"
@@ -114,3 +147,75 @@ RUNPOD_PRICING_LOOKBACK_HOURS = "24"
 RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "1"
 RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
 RUNPOD_PRICING_CONFIG_JSON = ""
+RUNPOD_BATCH_QUEUE_ENABLED = "1"
+RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
+RUNPOD_QUEUE_METRICS_RETENTION_HOURS = "48"
+RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS = "900"
+
+[env.dev]
+workers_dev = true
+
+[[env.dev.durable_objects.bindings]]
+name = "API_KEY_QUOTA_DO"
+class_name = "ApiQuotaDurableObject"
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "dryapi-api-analytics-dev"
+database_id = "22222222-2222-2222-2222-222222222222"
+
+[[env.dev.d1_databases]]
+binding = "DB_QUEUE_METRICS"
+database_name = "dryapi-api-queue-metrics-dev"
+database_id = "55555555-5555-5555-5555-555555555555"
+
+[[env.dev.kv_namespaces]]
+binding = "QUEUE_METRICS_KV"
+id = "queue_metrics_kv_dev"
+
+[[env.dev.ratelimits]]
+name = "EDGE_IP_LIMITER"
+namespace_id = "1001"
+simple = { limit = 500, period = 60 }
+
+[env.dev.vars]
+API_KEY = ""
+ORIGIN_URL = ""
+INTERNAL_API_KEY = ""
+EDGE_IP_LIMIT_PER_MINUTE = "500"
+API_KEY_LIMIT_PER_MINUTE = "300"
+API_KEY_LIMIT_PER_DAY = "20000"
+RUNPOD_API_KEY = ""
+RUNPOD_API_BASE_URL = "https://api.runpod.ai/v2"
+RUNPOD_ENDPOINT_ID_CHAT = ""
+RUNPOD_ENDPOINT_ID_IMAGES = ""
+RUNPOD_ENDPOINT_ID_EMBEDDINGS = ""
+RUNPOD_ENDPOINT_ID_TRANSCRIBE = ""
+RUNPOD_ENDPOINT_MAP_JSON = ""
+RUNPOD_PRICING_MIN_PROFIT_MULTIPLE = "3"
+RUNPOD_PRICING_LOOKBACK_HOURS = "24"
+RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "60"
+RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
+RUNPOD_PRICING_CONFIG_JSON = ""
+RUNPOD_BATCH_QUEUE_ENABLED = "0"
+RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
+RUNPOD_QUEUE_METRICS_RETENTION_HOURS = "48"
+RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS = "900"
+
+[[env.dev.queues.producers]]
+binding = "RUNPOD_BATCH_QUEUE"
+queue = "dryapi-runpod-batch-dev"
+
+[[env.dev.queues.consumers]]
+queue = "dryapi-runpod-batch-dev"
+max_batch_size = 100
+max_batch_timeout = 20
+
+[[env.test.queues.producers]]
+binding = "RUNPOD_BATCH_QUEUE"
+queue = "dryapi-runpod-batch-test"
+
+[[env.test.queues.consumers]]
+queue = "dryapi-runpod-batch-test"
+max_batch_size = 100
+max_batch_timeout = 20

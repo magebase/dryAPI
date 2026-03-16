@@ -1,6 +1,7 @@
 import { describeRoute, validator } from 'hono-openapi'
 import type { Hono } from 'hono'
 
+import { getRunpodJobRecord } from '../../lib/db'
 import { jsonError } from '../../lib/errors'
 import type { AppContext, WorkerEnv } from '../../types'
 import { estimatePayloadBytes, extractDownloadLinks } from './job-result-utils'
@@ -75,7 +76,7 @@ export function registerJobsWebSocketRoute(app: Hono<WorkerEnv>) {
           name: 'jobId',
           in: 'path',
           required: true,
-          description: 'Provider job identifier returned by enqueue endpoint.',
+          description: 'Client-visible job identifier returned by enqueue endpoint.',
           schema: { type: 'string' },
           example: 'f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f',
         },
@@ -142,13 +143,37 @@ export function registerJobsWebSocketRoute(app: Hono<WorkerEnv>) {
 
       const streamLoop = async () => {
         for (let poll = 0; poll < 40; poll += 1) {
+          const storedJob = await getRunpodJobRecord({ c, jobId })
+          const providerJobId = storedJob?.providerJobId ?? jobId
+          const resolvedSurface = storedJob?.surface ?? surface
+          const endpointId = query.endpointId ?? storedJob?.endpointId ?? resolved.endpointId
+          const queuedViaCloudflare =
+            storedJob &&
+            typeof storedJob.responsePayload === 'object' &&
+            storedJob.responsePayload !== null &&
+            'queued_via' in storedJob.responsePayload &&
+            (storedJob.responsePayload as { queued_via?: unknown }).queued_via === 'cloudflare_queue'
+
+          if (storedJob && !storedJob.providerJobId && queuedViaCloudflare) {
+            server.send(
+              JSON.stringify({
+                type: 'queued',
+                id: jobId,
+                status: storedJob.status,
+                queued_via: 'cloudflare_queue',
+              }),
+            )
+            await new Promise((resolve) => setTimeout(resolve, 1500))
+            continue
+          }
+
           const statusResponse = await forwardRunpodOperation({
             c,
-            surface,
-            endpointId: resolved.endpointId,
-            operationPath: `status/${jobId}`,
+            surface: resolvedSurface,
+            endpointId,
+            operationPath: `status/${providerJobId}`,
             method: 'GET',
-            cacheKey: `jobs:ws:${surface}:${resolved.endpointId}:${jobId}`,
+            cacheKey: `jobs:ws:${resolvedSurface}:${endpointId}:${providerJobId}`,
             cacheTtlSeconds: 2,
           })
 

@@ -16,13 +16,13 @@ import { ModelSlugCopyButton } from "@/components/site/dashboard/model-slug-copy
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { modelCategories } from "@/components/site/dashboard/model-categories"
 import { buildModelTaskSectionId } from "@/components/site/dashboard/model-section-id"
-import { DEAPI_MODEL_CATALOG } from "@/data/deapi-model-catalog"
 import { getModelDetail } from "@/lib/deapi-model-details"
+import { getOpenApiParameterKeysForInferenceTypes } from "@/lib/model-openapi-params"
 import { toModelDisplayName, toModelRouteSlug } from "@/lib/deapi-model-routes"
 import { toPricingCategorySlug } from "@/lib/deapi-pricing-utils"
+import { listActiveRunpodModels } from "@/lib/runpod-active-models"
 import type { DeapiPricingPermutation, DeapiPricingSnapshot } from "@/types/deapi-pricing"
 import pricingSnapshotJson from "../../../../content/pricing/deapi-pricing-snapshot.json"
-import openApiJson from "../../../../docs/deapi-mirror/articles/openapi.json"
 
 type ModelCardItem = {
   id: string
@@ -47,26 +47,12 @@ type PricingStats = {
   fromCredits: number | null
 }
 
-type OpenApiDocument = {
-  paths?: Record<string, unknown>
+type ActiveCategoryModel = {
+  modelName: string
+  inferenceTypes: string[]
 }
 
 const PRICING_SNAPSHOT = pricingSnapshotJson as unknown as DeapiPricingSnapshot
-const OPENAPI_DOCUMENT = openApiJson as OpenApiDocument
-
-const CATEGORY_TO_OPENAPI_PATHS: Record<string, string[]> = {
-  "background-removal": ["/api/v1/client/img-rmbg"],
-  "image-to-image": ["/api/v1/client/img2img", "/api/v1/client/prompt/image2image"],
-  "image-to-text": ["/api/v1/client/img2txt"],
-  "image-to-video": ["/api/v1/client/img2video"],
-  "image-upscale": ["/api/v1/client/img-upscale"],
-  "text-to-embedding": ["/api/v1/client/txt2embedding"],
-  "text-to-image": ["/api/v1/client/txt2img", "/api/v1/client/prompt/image"],
-  "text-to-music": ["/api/v1/client/txt2music"],
-  "text-to-speech": ["/api/v1/client/txt2audio", "/api/v1/client/prompt/speech"],
-  "text-to-video": ["/api/v1/client/txt2video", "/api/v1/client/prompt/video"],
-  "video-to-text": ["/api/v1/client/vid2txt", "/api/v1/client/videofile2txt"],
-}
 
 const categoryIconMap: Record<string, LucideIcon> = {
   "text-to-image": ImageGlyph,
@@ -115,22 +101,6 @@ function toModelCardGradientStyle(seed: string): CSSProperties {
     backgroundSize: "100% 100%, 3px 3px",
     backgroundPosition: "0 0, 0 0",
   }
-}
-
-function uniqueByOrder(values: string[]): string[] {
-  const seen = new Set<string>()
-  const output: string[] = []
-
-  for (const value of values) {
-    if (seen.has(value)) {
-      continue
-    }
-
-    seen.add(value)
-    output.push(value)
-  }
-
-  return output
 }
 
 function toSentenceCase(text: string): string {
@@ -224,148 +194,42 @@ function buildPricingStatsByCategoryModel(grouped: Map<string, DeapiPricingPermu
   return statsByKey
 }
 
-function collectSchemaPropertyKeys(schema: unknown): string[] {
-  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
-    return []
-  }
-
-  const schemaRecord = schema as Record<string, unknown>
-  const directProperties =
-    schemaRecord.properties && typeof schemaRecord.properties === "object" && !Array.isArray(schemaRecord.properties)
-      ? Object.keys(schemaRecord.properties as Record<string, unknown>)
-      : []
-
-  const composedKeys = ["allOf", "oneOf", "anyOf"].flatMap((key) => {
-    const value = schemaRecord[key]
-    if (!Array.isArray(value)) {
-      return []
-    }
-
-    return value.flatMap((node) => collectSchemaPropertyKeys(node))
-  })
-
-  return uniqueByOrder([...directProperties, ...composedKeys]).sort((left, right) => left.localeCompare(right))
-}
-
-function resolveJsonPointer(root: OpenApiDocument, reference: string): unknown {
-  if (!reference.startsWith("#/")) {
-    return null
-  }
-
-  const segments = reference
-    .slice(2)
-    .split("/")
-    .map((segment) => segment.replace(/~1/g, "/").replace(/~0/g, "~"))
-
-  let current: unknown = root
-
-  for (const segment of segments) {
-    if (!current || typeof current !== "object" || Array.isArray(current)) {
-      return null
-    }
-
-    current = (current as Record<string, unknown>)[segment]
-  }
-
-  return current
-}
-
-function resolveSchemaRefs(schema: unknown, root: OpenApiDocument, seen: Set<string> = new Set()): unknown {
-  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
-    return schema
-  }
-
-  const schemaRecord = schema as Record<string, unknown>
-  const reference = typeof schemaRecord.$ref === "string" ? schemaRecord.$ref : null
-
-  if (reference) {
-    if (seen.has(reference)) {
-      return null
-    }
-
-    seen.add(reference)
-    const resolved = resolveJsonPointer(root, reference)
-    return resolveSchemaRefs(resolved, root, seen)
-  }
-
-  return schema
-}
-
-function collectRequestBodySchemaKeysFromPath(pathname: string): string[] {
-  const pathItem = OPENAPI_DOCUMENT.paths?.[pathname]
-  if (!pathItem || typeof pathItem !== "object" || Array.isArray(pathItem)) {
-    return []
-  }
-
-  const post = (pathItem as Record<string, unknown>).post
-  if (!post || typeof post !== "object" || Array.isArray(post)) {
-    return []
-  }
-
-  const requestBody = (post as Record<string, unknown>).requestBody
-  const resolvedRequestBody = resolveSchemaRefs(requestBody, OPENAPI_DOCUMENT)
-  if (!resolvedRequestBody || typeof resolvedRequestBody !== "object" || Array.isArray(resolvedRequestBody)) {
-    return []
-  }
-
-  const content = (resolvedRequestBody as Record<string, unknown>).content
-  if (!content || typeof content !== "object" || Array.isArray(content)) {
-    return []
-  }
-
-  const contentRecord = content as Record<string, unknown>
-  const schemaKeys = ["application/json", "multipart/form-data"].flatMap((contentType) => {
-    const mediaType = contentRecord[contentType]
-    if (!mediaType || typeof mediaType !== "object" || Array.isArray(mediaType)) {
-      return []
-    }
-
-    const schema = resolveSchemaRefs((mediaType as Record<string, unknown>).schema, OPENAPI_DOCUMENT)
-    return collectSchemaPropertyKeys(schema)
-  })
-
-  return uniqueByOrder(schemaKeys).sort((left, right) => left.localeCompare(right))
-}
-
-function buildOpenApiParamsByCategory(categorySlugs: string[]): Map<string, string[]> {
-  const paramsByCategory = new Map<string, string[]>()
-
-  for (const categorySlug of categorySlugs) {
-    const openApiPaths = CATEGORY_TO_OPENAPI_PATHS[categorySlug] ?? []
-    const keys = uniqueByOrder(
-      openApiPaths.flatMap((pathname) => collectRequestBodySchemaKeysFromPath(pathname)),
-    )
-    paramsByCategory.set(categorySlug, keys)
-  }
-
-  return paramsByCategory
-}
-
 function buildModelSections(): ModelSection[] {
+  const activeModelsByCategory = new Map<string, ActiveCategoryModel[]>()
+  for (const activeModel of listActiveRunpodModels()) {
+    for (const category of activeModel.categories) {
+      const existing = activeModelsByCategory.get(category) ?? []
+      existing.push({
+        modelName: activeModel.slug,
+        inferenceTypes: activeModel.inferenceTypes,
+      })
+      activeModelsByCategory.set(category, existing)
+    }
+  }
+
   const categoryBySlug = new Map(modelCategories.map((category) => [category.slug, category]))
   const pricingRowsByCategoryModel = buildPricingRowsByCategoryModel()
   const pricingByCategoryModel = buildPricingStatsByCategoryModel(pricingRowsByCategoryModel)
-  const catalogSlugs = Object.keys(DEAPI_MODEL_CATALOG.modelsByCategory)
+  const activeSlugs = [...activeModelsByCategory.keys()]
   const orderedSlugs = [
     ...modelCategories.map((category) => category.slug),
-    ...catalogSlugs.filter((slug) => !categoryBySlug.has(slug)),
+    ...activeSlugs.filter((slug) => !categoryBySlug.has(slug)),
   ]
-  const openApiParamsByCategory = buildOpenApiParamsByCategory(orderedSlugs)
 
   const sections: ModelSection[] = []
 
   for (const categorySlug of orderedSlugs) {
-    const modelNames = DEAPI_MODEL_CATALOG.modelsByCategory[categorySlug] ?? []
-    if (modelNames.length === 0) {
+    const categoryModels = activeModelsByCategory.get(categorySlug) ?? []
+    if (categoryModels.length === 0) {
       continue
     }
 
     const category = categoryBySlug.get(categorySlug)
     const categoryLabel = category?.label ?? toTitleCaseFromSlug(categorySlug)
-    const parameterKeys = openApiParamsByCategory.get(categorySlug) ?? []
 
-    const models = modelNames
-      .map((modelName) => {
+    const models = categoryModels
+      .map((categoryModel) => {
+        const { modelName } = categoryModel
         const modelKey = `${categorySlug}::${modelName}`
         const pricingStats = pricingByCategoryModel.get(modelKey)
         const modelRows = pricingRowsByCategoryModel.get(modelKey) ?? []
@@ -378,7 +242,7 @@ function buildModelSections(): ModelSection[] {
           excerpt: toStrongExcerpt(modelName, modelRows, categoryLabel),
           detailHref: `/dashboard/models/${categoryRouteSlug}/${modelRouteSlug}`,
           pricingHref: `/dashboard/models/${categoryRouteSlug}/${modelRouteSlug}/pricing`,
-          parameterKeys,
+          parameterKeys: getOpenApiParameterKeysForInferenceTypes(categoryModel.inferenceTypes),
           fromPriceUsd: pricingStats?.fromPriceUsd ?? null,
           fromCredits: pricingStats?.fromCredits ?? null,
         }
@@ -396,9 +260,12 @@ function buildModelSections(): ModelSection[] {
   return sections
 }
 
+const MODEL_SECTIONS = buildModelSections()
+const TOTAL_MODELS = MODEL_SECTIONS.reduce((count, section) => count + section.models.length, 0)
+
 export default function DashboardModelsPage() {
-  const modelSections = buildModelSections()
-  const totalModels = modelSections.reduce((count, section) => count + section.models.length, 0)
+  const modelSections = MODEL_SECTIONS
+  const totalModels = TOTAL_MODELS
 
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6">
@@ -506,7 +373,7 @@ export default function DashboardModelsPage() {
                             ))
                           ) : (
                             <span className="rounded-md border border-zinc-900/20 bg-white/78 px-2 py-1 text-xs font-medium text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100">
-                              No documented params in OpenAPI for this task category yet
+                              No documented params in OpenAPI for this model yet
                             </span>
                           )}
                         </div>

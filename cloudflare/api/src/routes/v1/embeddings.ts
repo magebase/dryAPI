@@ -3,12 +3,12 @@ import type { Hono } from 'hono'
 import { Type } from 'typebox'
 
 import { enqueueOpenAiCompatible } from './openai-enqueue'
-import { ModelSlugSchema } from './schemas'
+import { EmbeddingsModelSlugSchema } from './schemas'
 import { toStandardTypeboxSchema } from '../../lib/typebox-standard'
 import type { WorkerEnv } from '../../types'
 
 const EmbeddingsPayloadSchema = Type.Object({
-  model: Type.Optional(ModelSlugSchema),
+  model: Type.Optional(EmbeddingsModelSlugSchema),
   input: Type.Union([
     Type.String({
       minLength: 1,

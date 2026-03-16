@@ -9,6 +9,8 @@ const DEFAULT_GPU_MARKET = [
       "ltx-video": 0.45,
       "image-upscale": 1.0,
       "background-removal": 1.0,
+      "embeddings-text": 1.2,
+      "tts-customvoice": 0.8,
     },
   },
   {
@@ -21,6 +23,8 @@ const DEFAULT_GPU_MARKET = [
       "ltx-video": 0.65,
       "image-upscale": 1.12,
       "background-removal": 1.12,
+      "embeddings-text": 1.5,
+      "tts-customvoice": 1.0,
     },
   },
   {
@@ -33,6 +37,8 @@ const DEFAULT_GPU_MARKET = [
       "ltx-video": 0.72,
       "image-upscale": 1.15,
       "background-removal": 1.14,
+      "embeddings-text": 1.45,
+      "tts-customvoice": 1.02,
     },
   },
   {
@@ -45,6 +51,8 @@ const DEFAULT_GPU_MARKET = [
       "ltx-video": 1.2,
       "image-upscale": 1.38,
       "background-removal": 1.33,
+      "embeddings-text": 2.2,
+      "tts-customvoice": 1.6,
     },
   },
   {
@@ -57,6 +65,8 @@ const DEFAULT_GPU_MARKET = [
       "ltx-video": 1.9,
       "image-upscale": 1.7,
       "background-removal": 1.62,
+      "embeddings-text": 3.2,
+      "tts-customvoice": 2.4,
     },
   },
 ]

@@ -8,17 +8,25 @@ import {
   type PricingPolicy,
 } from './pricing'
 
-let schemaReady = false
-let schemaReadyPromise: Promise<void> | null = null
+const coreSchemaReady = new WeakSet<D1Database>()
+const coreSchemaReadyPromises = new WeakMap<D1Database, Promise<void>>()
+const queueSchemaReady = new WeakSet<D1Database>()
+const queueSchemaReadyPromises = new WeakMap<D1Database, Promise<void>>()
 
 function getDb(c: AppContext): D1Database | null {
   const binding = c.env.DB
   return binding ?? null
 }
 
-const SCHEMA_STATEMENTS = [
+function getQueueMetricsDb(c: AppContext): D1Database | null {
+  const binding = c.env.DB_QUEUE_METRICS ?? c.env.DB
+  return binding ?? null
+}
+
+const CORE_SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS runpod_jobs (
     job_id TEXT PRIMARY KEY,
+    provider_job_id TEXT,
     surface TEXT NOT NULL,
     endpoint_id TEXT NOT NULL,
     model_slug TEXT,
@@ -32,6 +40,7 @@ const SCHEMA_STATEMENTS = [
     updated_at TEXT NOT NULL
   )`,
   'CREATE INDEX IF NOT EXISTS idx_runpod_jobs_surface_created_at ON runpod_jobs(surface, created_at DESC)',
+  'CREATE INDEX IF NOT EXISTS idx_runpod_jobs_provider_job_id ON runpod_jobs(provider_job_id)',
   `CREATE TABLE IF NOT EXISTS runpod_job_webhooks (
     job_id TEXT PRIMARY KEY,
     surface TEXT NOT NULL,
@@ -95,6 +104,31 @@ const SCHEMA_STATEMENTS = [
   )`,
 ]
 
+const QUEUE_SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS runpod_queue_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    queue_depth INTEGER NOT NULL,
+    batch_size INTEGER NOT NULL,
+    avg_runtime REAL NOT NULL
+  )`,
+  'CREATE INDEX IF NOT EXISTS idx_runpod_queue_metrics_timestamp ON runpod_queue_metrics(timestamp DESC)',
+  `CREATE TABLE IF NOT EXISTS runpod_queue_metrics_hourly (
+    hour_bucket TEXT PRIMARY KEY,
+    sample_count INTEGER NOT NULL,
+    avg_queue_depth REAL NOT NULL,
+    max_queue_depth INTEGER NOT NULL,
+    avg_batch_size REAL NOT NULL,
+    avg_runtime REAL NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS runpod_queue_metrics_compaction_state (
+    state_key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+]
+
 function isDuplicateColumnError(error: unknown): boolean {
   if (!(error instanceof Error)) {
     return false
@@ -106,6 +140,7 @@ function isDuplicateColumnError(error: unknown): boolean {
 
 async function ensureOptionalColumns(db: D1Database): Promise<void> {
   const alterStatements = [
+    'ALTER TABLE runpod_jobs ADD COLUMN provider_job_id TEXT',
     'ALTER TABLE runpod_jobs ADD COLUMN quoted_price_usd REAL',
     'ALTER TABLE runpod_jobs ADD COLUMN price_key TEXT',
     'ALTER TABLE runpod_jobs ADD COLUMN pricing_source TEXT',
@@ -122,38 +157,72 @@ async function ensureOptionalColumns(db: D1Database): Promise<void> {
   }
 }
 
+async function ensureSchemaForDb(args: {
+  db: D1Database
+  statements: readonly string[]
+  readySet: WeakSet<D1Database>
+  readyPromiseMap: WeakMap<D1Database, Promise<void>>
+  onReady?: () => Promise<void>
+}): Promise<void> {
+  if (args.readySet.has(args.db)) {
+    return
+  }
+
+  const existingPromise = args.readyPromiseMap.get(args.db)
+  if (existingPromise) {
+    await existingPromise
+    return
+  }
+
+  const setupPromise = (async () => {
+    for (const statement of args.statements) {
+      await args.db.prepare(statement).run()
+    }
+    if (args.onReady) {
+      await args.onReady()
+    }
+    args.readySet.add(args.db)
+  })()
+    .catch((error) => {
+      console.warn('[db] schema setup failed', error)
+    })
+    .finally(() => {
+      args.readyPromiseMap.delete(args.db)
+    })
+
+  args.readyPromiseMap.set(args.db, setupPromise)
+  await setupPromise
+}
+
 async function ensureSchema(c: AppContext): Promise<void> {
-  if (schemaReady) {
-    return
-  }
-
-  if (schemaReadyPromise) {
-    await schemaReadyPromise
-    return
-  }
-
   const db = getDb(c)
   if (!db) {
     return
   }
 
-  schemaReadyPromise = (async () => {
-    for (const statement of SCHEMA_STATEMENTS) {
-      await db.prepare(statement).run()
-    }
-  })()
-    .then(async () => {
+  await ensureSchemaForDb({
+    db,
+    statements: CORE_SCHEMA_STATEMENTS,
+    readySet: coreSchemaReady,
+    readyPromiseMap: coreSchemaReadyPromises,
+    onReady: async () => {
       await ensureOptionalColumns(db)
-      schemaReady = true
-    })
-    .catch((error) => {
-      console.warn('[db] schema setup failed', error)
-    })
-    .finally(() => {
-      schemaReadyPromise = null
-    })
+    },
+  })
+}
 
-  await schemaReadyPromise
+async function ensureQueueSchema(c: AppContext): Promise<void> {
+  const db = getQueueMetricsDb(c)
+  if (!db) {
+    return
+  }
+
+  await ensureSchemaForDb({
+    db,
+    statements: QUEUE_SCHEMA_STATEMENTS,
+    readySet: queueSchemaReady,
+    readyPromiseMap: queueSchemaReadyPromises,
+  })
 }
 
 function safeJson(value: unknown): string {
@@ -257,6 +326,36 @@ export type PricingSnapshotView = {
   retrySafetyFraction: number
   minProfitMultiple: number
   updatedAt: string
+}
+
+export type QueueMetricSnapshot = {
+  id: number
+  timestamp: string
+  queueDepth: number
+  batchSize: number
+  avgRuntime: number
+}
+
+export type QueueRuntimeStat = {
+  modelSlug: string
+  sampleCount: number
+  avgRuntimeSeconds: number
+  p95RuntimeSeconds: number
+}
+
+export type QueueMetricsHotState = {
+  timestamp: string
+  queueDepth: number
+  batchSize: number
+  avgRuntime: number
+}
+
+export type QueueMetricHourlyAggregate = {
+  timestamp: string
+  sampleCount: number
+  queueDepth: number
+  batchSize: number
+  avgRuntime: number
 }
 
 function normalizeSnapshotRow(row: PricingSnapshotRow): PricingSnapshotView {
@@ -777,6 +876,7 @@ async function recordTerminalStatusAnalytics(args: {
 export async function persistRunpodEnqueue(args: {
   c: AppContext
   jobId: string
+  providerJobId?: string | null
   surface: RunpodSurface
   endpointId: string
   modelSlug?: string | null
@@ -800,6 +900,7 @@ export async function persistRunpodEnqueue(args: {
       .prepare(
         `INSERT INTO runpod_jobs (
           job_id,
+          provider_job_id,
           surface,
           endpoint_id,
           model_slug,
@@ -811,8 +912,9 @@ export async function persistRunpodEnqueue(args: {
           pricing_source,
           created_at,
           updated_at
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?11)
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?12)
         ON CONFLICT(job_id) DO UPDATE SET
+          provider_job_id = excluded.provider_job_id,
           surface = excluded.surface,
           endpoint_id = excluded.endpoint_id,
           model_slug = excluded.model_slug,
@@ -826,6 +928,7 @@ export async function persistRunpodEnqueue(args: {
       )
       .bind(
         args.jobId,
+        args.providerJobId ?? null,
         args.surface,
         args.endpointId,
         args.modelSlug ?? null,
@@ -857,6 +960,7 @@ export async function persistRunpodStatus(args: {
   c: AppContext
   jobId: string
   status: string
+  providerJobId?: string | null
   responsePayload?: unknown
 }): Promise<void> {
   const db = getDb(args.c)
@@ -871,11 +975,12 @@ export async function persistRunpodStatus(args: {
       .prepare(
         `UPDATE runpod_jobs
          SET status = ?2,
-             response_json = ?3,
-             updated_at = ?4
+             provider_job_id = COALESCE(?3, provider_job_id),
+             response_json = ?4,
+             updated_at = ?5
          WHERE job_id = ?1`,
       )
-      .bind(args.jobId, args.status, safeJson(args.responsePayload ?? null), new Date().toISOString())
+      .bind(args.jobId, args.status, args.providerJobId ?? null, safeJson(args.responsePayload ?? null), new Date().toISOString())
       .run()
 
     if (isTerminalRunpodStatus(args.status)) {
@@ -997,4 +1102,421 @@ export async function markJobWebhookDelivered(args: {
   } catch (error) {
     console.warn('[db] mark webhook delivered failed', error)
   }
+}
+
+export async function getRunpodJobRecord(args: {
+  c: AppContext
+  jobId: string
+}): Promise<{
+  jobId: string
+  providerJobId: string | null
+  surface: RunpodSurface
+  endpointId: string
+  modelSlug: string | null
+  status: string
+  responsePayload: unknown
+  createdAt: string
+  updatedAt: string
+} | null> {
+  const db = getDb(args.c)
+  if (!db) {
+    return null
+  }
+
+  try {
+    await ensureSchema(args.c)
+
+    const result = await db
+      .prepare(
+        `SELECT job_id, provider_job_id, surface, endpoint_id, model_slug, status, response_json, created_at, updated_at
+         FROM runpod_jobs
+         WHERE job_id = ?1
+         LIMIT 1`,
+      )
+      .bind(args.jobId)
+      .first<{
+        job_id: string
+        provider_job_id: string | null
+        surface: RunpodSurface
+        endpoint_id: string
+        model_slug: string | null
+        status: string
+        response_json: string | null
+        created_at: string
+        updated_at: string
+      }>()
+
+    if (!result) {
+      return null
+    }
+
+    const parsedResponse = result.response_json ? JSON.parse(result.response_json) : null
+
+    return {
+      jobId: result.job_id,
+      providerJobId: result.provider_job_id,
+      surface: result.surface,
+      endpointId: result.endpoint_id,
+      modelSlug: result.model_slug,
+      status: result.status,
+      responsePayload: parsedResponse,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    }
+  } catch (error) {
+    console.warn('[db] get job record failed', error)
+    return null
+  }
+}
+
+export async function recordQueueMetricSnapshot(args: {
+  c: AppContext
+  queueDepth: number
+  batchSize: number
+  avgRuntime: number
+  retentionHours?: number
+}): Promise<void> {
+  const db = getQueueMetricsDb(args.c)
+  if (!db) {
+    return
+  }
+
+  try {
+    await ensureQueueSchema(args.c)
+
+    const nowIso = new Date().toISOString()
+    const queueDepth = Math.max(0, Math.floor(args.queueDepth))
+    const batchSize = Math.max(1, Math.floor(args.batchSize))
+    const avgRuntime = Math.max(0, Number(args.avgRuntime) || 0)
+    const configuredRetentionHours = Number(args.c.env.RUNPOD_QUEUE_METRICS_RETENTION_HOURS)
+    const resolvedRetentionHours =
+      args.retentionHours ?? (Number.isFinite(configuredRetentionHours) && configuredRetentionHours > 0 ? configuredRetentionHours : 48)
+
+    const retentionHours = Math.max(24, Math.min(72, Math.floor(resolvedRetentionHours)))
+
+    await db
+      .prepare(
+        `INSERT INTO runpod_queue_metrics (timestamp, queue_depth, batch_size, avg_runtime)
+         VALUES (?1, ?2, ?3, ?4)`,
+      )
+      .bind(nowIso, queueDepth, batchSize, avgRuntime)
+      .run()
+
+    if (args.c.env.QUEUE_METRICS_KV) {
+      const hotTtlSeconds = Math.max(60, Math.min(3600, Number(args.c.env.RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS) || 900))
+      const hotPayload: QueueMetricsHotState = {
+        timestamp: nowIso,
+        queueDepth,
+        batchSize,
+        avgRuntime,
+      }
+
+      await args.c.env.QUEUE_METRICS_KV.put('queue:metrics:latest', safeJson(hotPayload), {
+        expirationTtl: hotTtlSeconds,
+      })
+    }
+
+    if (Math.random() < 0.1) {
+      const cutoffIso = toIsoFromMillis(Date.now() - retentionHours * 60 * 60 * 1000)
+      const state = await db
+        .prepare(
+          `SELECT value
+           FROM runpod_queue_metrics_compaction_state
+           WHERE state_key = 'last_raw_id'`,
+        )
+        .first<{ value: string }>()
+
+      const lastRawId = Math.max(0, Number.parseInt(state?.value ?? '0', 10) || 0)
+
+      const maxRow = await db
+        .prepare(
+          `SELECT MAX(id) AS max_id
+           FROM runpod_queue_metrics
+           WHERE id > ?1
+             AND timestamp < ?2`,
+        )
+        .bind(lastRawId, cutoffIso)
+        .first<{ max_id: number | null }>()
+
+      const maxCompactionId = Number(maxRow?.max_id ?? 0)
+
+      if (maxCompactionId > lastRawId) {
+        await db
+          .prepare(
+            `INSERT INTO runpod_queue_metrics_hourly (
+               hour_bucket,
+               sample_count,
+               avg_queue_depth,
+               max_queue_depth,
+               avg_batch_size,
+               avg_runtime,
+               updated_at
+             )
+             SELECT
+               strftime('%Y-%m-%dT%H:00:00.000Z', timestamp) AS hour_bucket,
+               COUNT(*) AS sample_count,
+               AVG(queue_depth) AS avg_queue_depth,
+               MAX(queue_depth) AS max_queue_depth,
+               AVG(batch_size) AS avg_batch_size,
+               AVG(avg_runtime) AS avg_runtime,
+               ?3 AS updated_at
+             FROM runpod_queue_metrics
+             WHERE id > ?1
+               AND id <= ?2
+             GROUP BY hour_bucket
+             ON CONFLICT(hour_bucket) DO UPDATE SET
+               sample_count = runpod_queue_metrics_hourly.sample_count + excluded.sample_count,
+               avg_queue_depth = (
+                 (runpod_queue_metrics_hourly.avg_queue_depth * runpod_queue_metrics_hourly.sample_count) +
+                 (excluded.avg_queue_depth * excluded.sample_count)
+               ) / (runpod_queue_metrics_hourly.sample_count + excluded.sample_count),
+               max_queue_depth = MAX(runpod_queue_metrics_hourly.max_queue_depth, excluded.max_queue_depth),
+               avg_batch_size = (
+                 (runpod_queue_metrics_hourly.avg_batch_size * runpod_queue_metrics_hourly.sample_count) +
+                 (excluded.avg_batch_size * excluded.sample_count)
+               ) / (runpod_queue_metrics_hourly.sample_count + excluded.sample_count),
+               avg_runtime = (
+                 (runpod_queue_metrics_hourly.avg_runtime * runpod_queue_metrics_hourly.sample_count) +
+                 (excluded.avg_runtime * excluded.sample_count)
+               ) / (runpod_queue_metrics_hourly.sample_count + excluded.sample_count),
+               updated_at = excluded.updated_at`,
+          )
+          .bind(lastRawId, maxCompactionId, nowIso)
+          .run()
+
+        await db
+          .prepare(
+            `DELETE FROM runpod_queue_metrics
+             WHERE id > ?1
+               AND id <= ?2`,
+          )
+          .bind(lastRawId, maxCompactionId)
+          .run()
+
+        await db
+          .prepare(
+            `INSERT INTO runpod_queue_metrics_compaction_state (state_key, value, updated_at)
+             VALUES ('last_raw_id', ?1, ?2)
+             ON CONFLICT(state_key) DO UPDATE SET
+               value = excluded.value,
+               updated_at = excluded.updated_at`,
+          )
+          .bind(String(maxCompactionId), nowIso)
+          .run()
+      }
+
+      await db
+        .prepare(
+          `DELETE FROM runpod_queue_metrics_hourly
+           WHERE hour_bucket < ?1`,
+        )
+        .bind(cutoffIso)
+        .run()
+    }
+  } catch (error) {
+    console.warn('[db] queue metric snapshot write failed', error)
+  }
+}
+
+export async function listQueueMetricSnapshots(args: {
+  c: AppContext
+  sinceMinutes?: number
+  limit?: number
+}): Promise<QueueMetricSnapshot[]> {
+  const db = getQueueMetricsDb(args.c)
+  if (!db) {
+    return []
+  }
+
+  await ensureQueueSchema(args.c)
+
+  const sinceMinutes = Math.max(1, Math.min(24 * 60, Math.floor(args.sinceMinutes ?? 60)))
+  const limit = Math.max(1, Math.min(1000, Math.floor(args.limit ?? 240)))
+  const cutoffIso = toIsoFromMillis(Date.now() - sinceMinutes * 60 * 1000)
+  const retentionHours = Math.max(24, Math.min(72, Number(args.c.env.RUNPOD_QUEUE_METRICS_RETENTION_HOURS) || 48))
+  const rawCutoffIso = toIsoFromMillis(Date.now() - retentionHours * 60 * 60 * 1000)
+
+  const rawWindowStartIso = cutoffIso > rawCutoffIso ? cutoffIso : rawCutoffIso
+
+  const rawResult = await db
+    .prepare(
+      `SELECT id, timestamp, queue_depth, batch_size, avg_runtime
+       FROM runpod_queue_metrics
+       WHERE timestamp >= ?1
+       ORDER BY timestamp DESC
+       LIMIT ?2`,
+    )
+    .bind(rawWindowStartIso, limit)
+    .all<{
+      id: number
+      timestamp: string
+      queue_depth: number
+      batch_size: number
+      avg_runtime: number
+    }>()
+
+  const rawSnapshots = (rawResult.results ?? []).map((row) => ({
+    id: Number(row.id) || 0,
+    timestamp: row.timestamp,
+    queueDepth: Number(row.queue_depth) || 0,
+    batchSize: Number(row.batch_size) || 0,
+    avgRuntime: Number(row.avg_runtime) || 0,
+  }))
+
+  if (cutoffIso >= rawCutoffIso || rawSnapshots.length >= limit) {
+    return rawSnapshots.slice(0, limit)
+  }
+
+  const remaining = Math.max(0, limit - rawSnapshots.length)
+  if (remaining === 0) {
+    return rawSnapshots.slice(0, limit)
+  }
+
+  const hourlyResult = await db
+    .prepare(
+      `SELECT hour_bucket, sample_count, avg_queue_depth, avg_batch_size, avg_runtime
+       FROM runpod_queue_metrics_hourly
+       WHERE hour_bucket >= ?1
+         AND hour_bucket < ?2
+       ORDER BY hour_bucket DESC
+       LIMIT ?3`,
+    )
+    .bind(cutoffIso, rawCutoffIso, remaining)
+    .all<{
+      hour_bucket: string
+      sample_count: number
+      avg_queue_depth: number
+      avg_batch_size: number
+      avg_runtime: number
+    }>()
+
+  const hourlySnapshots = (hourlyResult.results ?? []).map((row, index) => ({
+    id: -1 * (index + 1),
+    timestamp: row.hour_bucket,
+    queueDepth: Math.max(0, Math.round(Number(row.avg_queue_depth) || 0)),
+    batchSize: Math.max(1, Math.round(Number(row.avg_batch_size) || 0)),
+    avgRuntime: Math.max(0, Number(row.avg_runtime) || 0),
+  }))
+
+  return [...rawSnapshots, ...hourlySnapshots]
+    .sort((left, right) => right.timestamp.localeCompare(left.timestamp))
+    .slice(0, limit)
+}
+
+export async function readQueueMetricsHotState(args: {
+  c: AppContext
+}): Promise<QueueMetricsHotState | null> {
+  const kv = args.c.env.QUEUE_METRICS_KV
+  if (!kv) {
+    return null
+  }
+
+  try {
+    const raw = await kv.get('queue:metrics:latest')
+    if (!raw) {
+      return null
+    }
+
+    const parsed = JSON.parse(raw) as QueueMetricsHotState
+    if (!parsed || typeof parsed !== 'object') {
+      return null
+    }
+
+    return {
+      timestamp: typeof parsed.timestamp === 'string' ? parsed.timestamp : new Date().toISOString(),
+      queueDepth: Math.max(0, Number(parsed.queueDepth) || 0),
+      batchSize: Math.max(1, Number(parsed.batchSize) || 1),
+      avgRuntime: Math.max(0, Number(parsed.avgRuntime) || 0),
+    }
+  } catch (error) {
+    console.warn('[db] queue metrics hot-state read failed', error)
+    return null
+  }
+}
+
+export async function listQueueMetricHourlyAggregates(args: {
+  c: AppContext
+  sinceMinutes?: number
+  limit?: number
+}): Promise<QueueMetricHourlyAggregate[]> {
+  const db = getQueueMetricsDb(args.c)
+  if (!db) {
+    return []
+  }
+
+  await ensureQueueSchema(args.c)
+
+  const sinceMinutes = Math.max(60, Math.min(30 * 24 * 60, Math.floor(args.sinceMinutes ?? 24 * 60)))
+  const limit = Math.max(1, Math.min(3000, Math.floor(args.limit ?? 720)))
+  const cutoffIso = toIsoFromMillis(Date.now() - sinceMinutes * 60 * 1000)
+
+  const result = await db
+    .prepare(
+      `SELECT hour_bucket, sample_count, avg_queue_depth, avg_batch_size, avg_runtime
+       FROM runpod_queue_metrics_hourly
+       WHERE hour_bucket >= ?1
+       ORDER BY hour_bucket DESC
+       LIMIT ?2`,
+    )
+    .bind(cutoffIso, limit)
+    .all<{
+      hour_bucket: string
+      sample_count: number
+      avg_queue_depth: number
+      avg_batch_size: number
+      avg_runtime: number
+    }>()
+
+  return (result.results ?? []).map((row) => ({
+    timestamp: row.hour_bucket,
+    sampleCount: Math.max(0, Number(row.sample_count) || 0),
+    queueDepth: Math.max(0, Number(row.avg_queue_depth) || 0),
+    batchSize: Math.max(1, Number(row.avg_batch_size) || 1),
+    avgRuntime: Math.max(0, Number(row.avg_runtime) || 0),
+  }))
+}
+
+export async function listRecentRuntimeStatsByModel(args: {
+  c: AppContext
+  sinceMinutes?: number
+  limit?: number
+}): Promise<QueueRuntimeStat[]> {
+  const db = getDb(args.c)
+  if (!db) {
+    return []
+  }
+
+  await ensureSchema(args.c)
+
+  const sinceMinutes = Math.max(1, Math.min(24 * 60, Math.floor(args.sinceMinutes ?? 60)))
+  const limit = Math.max(1, Math.min(200, Math.floor(args.limit ?? 50)))
+  const cutoffIso = toIsoFromMillis(Date.now() - sinceMinutes * 60 * 1000)
+
+  const result = await db
+    .prepare(
+      `SELECT
+         COALESCE(model_slug, 'unknown') AS model_slug,
+         COUNT(*) AS sample_count,
+         AVG(execution_seconds) AS avg_execution_seconds,
+         MAX(execution_seconds) AS max_execution_seconds
+       FROM runpod_request_analytics
+       WHERE created_at >= ?1
+       GROUP BY model_slug
+       ORDER BY sample_count DESC
+       LIMIT ?2`,
+    )
+    .bind(cutoffIso, limit)
+    .all<{
+      model_slug: string
+      sample_count: number
+      avg_execution_seconds: number
+      max_execution_seconds: number
+    }>()
+
+  return (result.results ?? []).map((row) => ({
+    modelSlug: row.model_slug,
+    sampleCount: Number(row.sample_count) || 0,
+    avgRuntimeSeconds: Number(row.avg_execution_seconds) || 0,
+    p95RuntimeSeconds: Number(row.max_execution_seconds) || 0,
+  }))
 }

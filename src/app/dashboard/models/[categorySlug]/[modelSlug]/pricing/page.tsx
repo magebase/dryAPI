@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getModelDetail } from "@/lib/deapi-model-details"
 import { toModelDisplayName, toModelRouteSlug } from "@/lib/deapi-model-routes"
 import { toPricingCategoryLabel, toPricingCategorySlug } from "@/lib/deapi-pricing-utils"
+import { getActiveRunpodModelSlugSet } from "@/lib/runpod-active-models"
 import type { DeapiPricingPermutation, DeapiPricingSnapshot } from "@/types/deapi-pricing"
 import pricingSnapshotJson from "../../../../../../../content/pricing/deapi-pricing-snapshot.json"
 
@@ -26,6 +27,7 @@ type RoutePair = {
 }
 
 const PRICING_SNAPSHOT = pricingSnapshotJson as unknown as DeapiPricingSnapshot
+const ACTIVE_MODEL_SLUGS = getActiveRunpodModelSlugSet()
 
 function isFiniteNumber(value: number | null): value is number {
   return value !== null && Number.isFinite(value)
@@ -77,6 +79,10 @@ function toRoutePairs(): RoutePair[] {
   const pairs = new Map<string, RoutePair>()
 
   for (const row of PRICING_SNAPSHOT.permutations) {
+    if (!ACTIVE_MODEL_SLUGS.has(row.model)) {
+      continue
+    }
+
     const categorySlug = toPricingCategorySlug(row.category)
     const modelSlug = toModelRouteSlug(row.model)
     const key = `${categorySlug}::${modelSlug}`
@@ -114,7 +120,7 @@ function resolveRoutePair(categorySlug: string, modelSlug: string): RoutePair | 
 
 function toModelRows(pair: RoutePair): DeapiPricingPermutation[] {
   return PRICING_SNAPSHOT.permutations
-    .filter((row) => row.category === pair.category && row.model === pair.model)
+    .filter((row) => ACTIVE_MODEL_SLUGS.has(row.model) && row.category === pair.category && row.model === pair.model)
     .sort((left, right) => {
       const leftPrice = left.priceUsd ?? Number.POSITIVE_INFINITY
       const rightPrice = right.priceUsd ?? Number.POSITIVE_INFINITY

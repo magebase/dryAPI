@@ -16,6 +16,14 @@ const DEFAULT_WORKERS_MAX = 3
 const DEFAULT_FLASHBOOT = true
 const MIN_GPU_FALLBACK_COUNT = 3
 
+function pickNonNegativeNumber(value, fallback) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return fallback
+  }
+
+  return value
+}
+
 function parseArgs(argv) {
   const args = {
     catalog: defaultCatalogPath,
@@ -170,6 +178,11 @@ function buildManifest(catalog) {
     const endpointId = toEndpointId(model.slug)
     const gpuTypes = inferGpuTypes(model.runpod)
     const minCudaVersion = getMinCudaVersion(model.runpod)
+    const queueDelaySeconds = pickNonNegativeNumber(model.runpod.queueDelaySeconds, DEFAULT_QUEUE_DELAY_SECONDS)
+    const workersMin = pickNonNegativeNumber(model.runpod.workersMin, DEFAULT_WORKERS_MIN)
+    const workersMax = pickNonNegativeNumber(model.runpod.workersMax, DEFAULT_WORKERS_MAX)
+    const batchWindowSeconds = pickNonNegativeNumber(model.runpod.batchWindowSeconds, queueDelaySeconds)
+    const maxBatchSize = pickNonNegativeNumber(model.runpod.maxBatchSize, 1)
     const huggingFaceModel = model.openSource.kind === "huggingface"
       ? model.openSource.repo
       : ""
@@ -196,12 +209,14 @@ function buildManifest(catalog) {
         gpuType: gpuTypes[0],
         gpuTypes,
         minCudaVersion,
-        queueDelaySeconds: DEFAULT_QUEUE_DELAY_SECONDS,
+        queueDelaySeconds,
         flashboot: DEFAULT_FLASHBOOT,
         executionTimeoutMs: model.runpod.executionTimeoutMs,
         idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
-        workersMin: DEFAULT_WORKERS_MIN,
-        workersMax: DEFAULT_WORKERS_MAX,
+        workersMin,
+        workersMax,
+        batchWindowSeconds,
+        maxBatchSize,
         templateIdEnv: getTemplateEnvVar(model.runpod.workerClass),
       },
       endpointEnvironment: {
@@ -217,7 +232,9 @@ function buildManifest(catalog) {
         MODEL_OPEN_SOURCE_IMAGE_TAG: model.openSource.imageTag,
         MODEL_MIN_CUDA_VERSION: minCudaVersion,
         MODEL_GPU_CANDIDATES: gpuTypes.join(","),
-        MODEL_QUEUE_DELAY_SECONDS: String(DEFAULT_QUEUE_DELAY_SECONDS),
+        MODEL_QUEUE_DELAY_SECONDS: String(queueDelaySeconds),
+        MODEL_BATCH_WINDOW_SECONDS: String(batchWindowSeconds),
+        MODEL_MAX_BATCH_SIZE: String(maxBatchSize),
         MODEL_FLASHBOOT: DEFAULT_FLASHBOOT ? "1" : "0",
         MODEL_WORKER_CLASS: model.runpod.workerClass,
       },

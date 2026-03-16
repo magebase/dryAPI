@@ -3,7 +3,7 @@ import type { Hono } from 'hono'
 import { Type } from 'typebox'
 
 import { enqueueOpenAiCompatible } from './openai-enqueue'
-import { ModelSlugSchema } from './schemas'
+import { ChatModelSlugSchema } from './schemas'
 import { toStandardTypeboxSchema } from '../../lib/typebox-standard'
 import type { WorkerEnv } from '../../types'
 
@@ -24,7 +24,7 @@ const ChatMessageSchema = Type.Object({
 })
 
 const ChatPayloadSchema = Type.Object({
-  model: Type.Optional(ModelSlugSchema),
+  model: Type.Optional(ChatModelSlugSchema),
   messages: Type.Array(ChatMessageSchema, {
     minItems: 1,
     description: 'Conversation message list in OpenAI chat format.',

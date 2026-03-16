@@ -1,4 +1,4 @@
 name: runpod-image-endpoints
 runtime: nodejs
 description: RunPod serverless image endpoints managed from generated dryAPI manifest
-main: ./index.js
+main: ./index.ts

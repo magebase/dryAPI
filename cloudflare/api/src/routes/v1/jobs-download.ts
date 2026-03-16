@@ -1,6 +1,7 @@
 import { describeRoute, validator } from 'hono-openapi'
 import type { Hono } from 'hono'
 
+import { getRunpodJobRecord } from '../../lib/db'
 import { jsonError } from '../../lib/errors'
 import type { WorkerEnv } from '../../types'
 import { extractDownloadLinks } from './job-result-utils'
@@ -30,7 +31,7 @@ export function registerJobsDownloadRoute(app: Hono<WorkerEnv>) {
           name: 'jobId',
           in: 'path',
           required: true,
-          description: 'Provider job identifier returned by enqueue endpoint.',
+          description: 'Client-visible job identifier returned by enqueue endpoint.',
           schema: { type: 'string' },
           example: 'f3de27f8-61d5-4d58-aad1-a7d63f8a6e0f',
         },
@@ -94,18 +95,36 @@ export function registerJobsDownloadRoute(app: Hono<WorkerEnv>) {
       }
       const query = c.req.valid('query') as { format?: 'json' | 'txt' }
 
-      const resolved = resolveEndpointIdOrError({ c, surface })
+      const storedJob = await getRunpodJobRecord({ c, jobId })
+      const queuedViaCloudflare =
+        storedJob &&
+        typeof storedJob.responsePayload === 'object' &&
+        storedJob.responsePayload !== null &&
+        'queued_via' in storedJob.responsePayload &&
+        (storedJob.responsePayload as { queued_via?: unknown }).queued_via === 'cloudflare_queue'
+      const resolvedSurface = storedJob?.surface ?? surface
+      const resolvedJobId = storedJob?.providerJobId ?? jobId
+
+      if (storedJob && !storedJob.providerJobId && queuedViaCloudflare) {
+        return jsonError(c, 409, 'job_not_ready', 'Job is still queued and has not been dispatched to provider yet')
+      }
+
+      const resolved = resolveEndpointIdOrError({
+        c,
+        surface: resolvedSurface,
+        endpointId: storedJob?.endpointId ?? null,
+      })
       if ('error' in resolved) {
         return resolved.error
       }
 
       const statusResponse = await forwardRunpodOperation({
         c,
-        surface,
+        surface: resolvedSurface,
         endpointId: resolved.endpointId,
-        operationPath: `status/${jobId}`,
+        operationPath: `status/${resolvedJobId}`,
         method: 'GET',
-        cacheKey: `jobs:download-status:${surface}:${resolved.endpointId}:${jobId}`,
+        cacheKey: `jobs:download-status:${resolvedSurface}:${resolved.endpointId}:${resolvedJobId}`,
         cacheTtlSeconds: 3,
       })
 
@@ -121,8 +140,9 @@ export function registerJobsDownloadRoute(app: Hono<WorkerEnv>) {
       const links = extractDownloadLinks(payload)
       if (links.length > 0) {
         return c.json({
-          job_id: jobId,
-          surface,
+          job_id: storedJob?.jobId ?? jobId,
+          provider_job_id: storedJob?.providerJobId ?? resolvedJobId,
+          surface: resolvedSurface,
           mode: 'links',
           links,
         })

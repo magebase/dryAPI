@@ -1,6 +1,7 @@
 import { hashJson, readCachedJson, writeCachedJson } from '../../lib/cache'
 import { getCurrentPricingQuote, persistRunpodEnqueue, registerJobWebhook } from '../../lib/db'
 import { jsonError, jsonUpstreamError } from '../../lib/errors'
+import { getRunpodBatchQueuePolicy, isRunpodBatchQueueEnabled } from '../../lib/runpod-batch-queue'
 import { applyPriceMultiplier, computePayloadPriceMultiplier } from '../../lib/pricing'
 import { dispatchSignedWebhook, toWebhookEvent } from '../../lib/webhooks'
 import {
@@ -11,6 +12,7 @@ import {
 } from '../../lib/runpod'
 import { safeParseJson } from '../../lib/validation'
 import type { AppContext, RunpodSurface } from '../../types'
+import type { RunpodBatchQueueMessage } from '../../lib/runpod-batch-queue'
 
 type EnqueueOptions = {
   c: AppContext
@@ -80,11 +82,139 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     surface,
     payload,
   })
+  const queueBatchPolicy = getRunpodBatchQueuePolicy(c.env, modelSlug)
+  const queueBatchEnabled = isRunpodBatchQueueEnabled(c.env) && queueBatchPolicy.queueEnabled
   const quotedPriceUsd = applyPriceMultiplier({
     basePriceUsd: pricingQuote.recommendedPriceUsd,
     multiplier: payloadMultiplier,
     roundStepUsd: pricingQuote.roundStepUsd,
   })
+
+  const webhookUrl = typeof payload.webhook_url === 'string' ? payload.webhook_url : null
+  const shouldUseQueueFirst = queueBatchEnabled && typeof c.env.RUNPOD_BATCH_QUEUE?.send === 'function'
+
+  if (shouldUseQueueFirst) {
+    const clientJobId = crypto.randomUUID()
+    const queueMessage: RunpodBatchQueueMessage = {
+      clientJobId,
+      surface,
+      endpointId,
+      modelSlug,
+      payload,
+      webhookUrl,
+      requestHash,
+      quotedPriceUsd,
+      priceKey: pricingQuote.priceKey,
+      pricingSource: pricingQuote.source,
+      enqueuedAt: new Date().toISOString(),
+    }
+
+    try {
+      await c.env.RUNPOD_BATCH_QUEUE!.send(queueMessage)
+    } catch (error) {
+      return jsonError(c, 500, 'queue_dispatch_failed', error instanceof Error ? error.message : 'Failed to enqueue request')
+    }
+
+    const initialStatusPayload = {
+      id: clientJobId,
+      status: 'IN_QUEUE',
+      queued_via: 'cloudflare_queue',
+    }
+
+    const persistPromise = persistRunpodEnqueue({
+      c,
+      jobId: clientJobId,
+      providerJobId: null,
+      surface,
+      endpointId,
+      modelSlug,
+      requestHash,
+      status: 'IN_QUEUE',
+      responsePayload: initialStatusPayload,
+      quotedPriceUsd,
+      priceKey: pricingQuote.priceKey,
+      pricingSource: pricingQuote.source,
+    })
+
+    if (c.executionCtx?.waitUntil) {
+      c.executionCtx.waitUntil(persistPromise)
+    } else {
+      await persistPromise
+    }
+
+    if (webhookUrl && webhookUrl.startsWith('https://')) {
+      const registerPromise = registerJobWebhook({
+        c,
+        jobId: clientJobId,
+        surface,
+        webhookUrl,
+      })
+
+      if (c.executionCtx?.waitUntil) {
+        c.executionCtx.waitUntil(registerPromise)
+      } else {
+        await registerPromise
+      }
+
+      const deliveryPromise = dispatchSignedWebhook({
+        c,
+        webhookUrl,
+        eventName: toWebhookEvent('IN_QUEUE') ?? 'job.processing',
+        jobId: clientJobId,
+        surface,
+        status: 'IN_QUEUE',
+        payload: initialStatusPayload,
+      })
+
+      if (c.executionCtx?.waitUntil) {
+        c.executionCtx.waitUntil(deliveryPromise)
+      } else {
+        await deliveryPromise
+      }
+    }
+
+    const responseBody: EnqueueResponseBody = {
+      id: clientJobId,
+      object: options.objectName,
+      created: Math.floor(Date.now() / 1000),
+      status: 'queued',
+      surface,
+      model: modelSlug,
+      endpoint_id: endpointId,
+      pricing: {
+        unit_price_usd: quotedPriceUsd,
+        source: pricingQuote.source,
+        price_key: pricingQuote.priceKey,
+        sample_size: pricingQuote.sampleSize,
+        p95_execution_seconds: pricingQuote.p95ExecutionSeconds,
+        min_profit_multiple: pricingQuote.minProfitMultiple,
+        payload_multiplier: payloadMultiplier,
+        updated_at: pricingQuote.updatedAt,
+      },
+      runpod: {
+        id: clientJobId,
+        status: 'IN_QUEUE',
+        provider_job_id: null,
+        queue_mode: 'cloudflare_queue',
+      },
+    }
+
+    const cacheWrite = writeCachedJson(c, cacheKey, responseBody, options.cacheTtlSeconds ?? 20)
+    if (c.executionCtx?.waitUntil) {
+      c.executionCtx.waitUntil(cacheWrite)
+    } else {
+      await cacheWrite
+    }
+
+    return c.json(responseBody, 202, {
+      'x-dryapi-unit-price-usd': String(quotedPriceUsd),
+      'x-dryapi-price-key': pricingQuote.priceKey,
+      'x-dryapi-price-source': pricingQuote.source,
+      'x-dryapi-batch-window-seconds': String(queueBatchPolicy.batchWindowSeconds),
+      'x-dryapi-max-batch-size': String(queueBatchPolicy.maxBatchSize),
+      'x-dryapi-batch-queue-enabled': queueBatchEnabled ? '1' : '0',
+    })
+  }
 
   let upstream: Response
   try {
@@ -107,7 +237,6 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
   const upstreamPayload = safeParseJson(upstreamText) ?? upstreamText
   const jobId = extractRunpodJobId(upstreamPayload)
   const runpodStatus = extractRunpodStatus(upstreamPayload) ?? 'IN_QUEUE'
-  const webhookUrl = typeof payload.webhook_url === 'string' ? payload.webhook_url : null
 
   if (jobId) {
     const persistPromise = persistRunpodEnqueue({
@@ -194,5 +323,8 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     'x-dryapi-unit-price-usd': String(quotedPriceUsd),
     'x-dryapi-price-key': pricingQuote.priceKey,
     'x-dryapi-price-source': pricingQuote.source,
+    'x-dryapi-batch-window-seconds': String(queueBatchPolicy.batchWindowSeconds),
+    'x-dryapi-max-batch-size': String(queueBatchPolicy.maxBatchSize),
+    'x-dryapi-batch-queue-enabled': queueBatchEnabled ? '1' : '0',
   })
 }

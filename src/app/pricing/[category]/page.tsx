@@ -10,6 +10,7 @@ import {
   toPricingCategoryLabel,
   toPricingCategorySlug,
 } from "@/lib/deapi-pricing-utils"
+import { filterPricingSnapshotToActiveModels } from "@/lib/runpod-active-models"
 import { readSiteConfig } from "@/lib/site-content-loader"
 
 export const dynamic = "force-static"
@@ -20,7 +21,12 @@ type PricingCategoryPageProps = {
 
 export async function generateStaticParams() {
   const snapshot = await getLatestDeapiPricingSnapshot()
-  const categories = listPricingCategories(snapshot)
+  if (!snapshot) {
+    return []
+  }
+
+  const filteredSnapshot = filterPricingSnapshotToActiveModels(snapshot)
+  const categories = listPricingCategories(filteredSnapshot)
 
   return categories.map((category) => ({
     category: toPricingCategorySlug(category),
@@ -30,7 +36,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PricingCategoryPageProps): Promise<Metadata> {
   const { category } = await params
   const snapshot = await getLatestDeapiPricingSnapshot()
-  const categories = listPricingCategories(snapshot)
+  const filteredSnapshot = snapshot ? filterPricingSnapshotToActiveModels(snapshot) : null
+  const categories = listPricingCategories(filteredSnapshot)
   const resolvedCategory = findPricingCategoryBySlug(categories, category)
 
   if (!resolvedCategory) {
@@ -62,7 +69,9 @@ export default async function PricingCategoryPage({ params }: PricingCategoryPag
     notFound()
   }
 
-  const categories = listPricingCategories(snapshot)
+  const filteredSnapshot = filterPricingSnapshotToActiveModels(snapshot)
+
+  const categories = listPricingCategories(filteredSnapshot)
   const resolvedCategory = findPricingCategoryBySlug(categories, category)
 
   if (!resolvedCategory) {
@@ -71,7 +80,7 @@ export default async function PricingCategoryPage({ params }: PricingCategoryPag
 
   return (
     <SiteFrame site={site}>
-      <DeapiPricingCategoryDetail category={resolvedCategory} snapshot={snapshot} />
+      <DeapiPricingCategoryDetail category={resolvedCategory} snapshot={filteredSnapshot} />
     </SiteFrame>
   )
 }

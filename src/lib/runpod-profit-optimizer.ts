@@ -153,6 +153,9 @@ export function recommendRunpodEndpointConfig(modelSlug: string, expectedRpm: nu
     gpuFallbackOrder: profile.gpuFallbackOrder,
     autoscaling,
     workerPool,
+    defaultBatchSize: profile.defaultBatchSize,
+    maxBatchSize: profile.maxBatchSize,
+    batchWindowSeconds: profile.batchWindowSeconds ?? 0,
   }
 }
 

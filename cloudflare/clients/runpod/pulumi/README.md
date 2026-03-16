@@ -18,11 +18,17 @@ Provider package:
 pulumi config set --secret runpod:token <YOUR_RUNPOD_API_KEY>
 ```
 
+- Non-interactive Pulumi secret passphrase exported:
+
+```bash
+export PULUMI_CONFIG_PASSPHRASE=<strong-passphrase>
+```
+
 - R2 backend access credentials exported:
 
 ```bash
-export AWS_ACCESS_KEY_ID=<R2_ACCESS_KEY_ID>
-export AWS_SECRET_ACCESS_KEY=<R2_SECRET_ACCESS_KEY>
+export CLOUDFLARE_OBJECT_STORAGE_ACCESS_KEY=<R2_ACCESS_KEY_ID>
+export CLOUDFLARE_OBJECT_STORAGE_SECRET_KEY=<R2_SECRET_ACCESS_KEY>
 ```
 
 - R2 state backend location exported (either explicit URL, or bucket + account id):
@@ -34,6 +40,12 @@ export RUNPOD_PULUMI_BACKEND_URL="s3://<bucket>?endpoint=https://<account-id>.r2
 # Option B: constructed by script
 export RUNPOD_PULUMI_STATE_BUCKET=<bucket>
 export CLOUDFLARE_ACCOUNT_ID=<account-id>
+```
+
+When a state bucket is configured (explicitly or inferred from backend URL), the wrapper script creates/verifies it using Wrangler:
+
+```bash
+wrangler r2 bucket create <bucket>
 ```
 
 - Endpoint template IDs exported in your shell (must match manifest `templateIdEnv` values):
@@ -66,6 +78,17 @@ Optional environment variables:
 - `RUNPOD_NETWORK_VOLUME_ID` (optional, applied to all endpoints)
 - `RUNPOD_PULUMI_BACKEND_URL` (explicit R2 backend URL)
 - `RUNPOD_PULUMI_STATE_BUCKET` + `CLOUDFLARE_ACCOUNT_ID` (backend URL components)
+- `CLOUDFLARE_OBJECT_STORAGE_ACCESS_KEY` / `CLOUDFLARE_OBJECT_STORAGE_SECRET_KEY` (R2 S3 API credentials)
+- `RUNPOD_ENDPOINTS_WORKERS_MAX_OVERRIDE` (optional cap for `workersMax` across all endpoints, useful for account quota limits)
+- `RUNPOD_ENDPOINT_PROFILE` (optional profile override: `serverless10` or `all`; default is `serverless10`)
+
+Pulumi stack config option:
+
+- `runpod-image-endpoints:endpointProfile=serverless10` (default) deploys 10 fixed endpoints:
+- `acestep-1-5-turbo`, `bge-m3-fp16`, `ben2`, `flux-2-klein-4b-bf16`, `ltx2-3-22b-dist-int8`
+- `nanonets-ocr-s-f16`, `qwen3-tts-12hz-1-7b-customvoice`, `realesrgan-x4`, `whisperlargev3`
+- `zimageturbo-int8`
+- `runpod-image-endpoints:endpointProfile=all` deploys all endpoints from the manifest.
 
 ## Notes
 

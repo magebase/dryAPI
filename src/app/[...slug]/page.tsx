@@ -5,6 +5,7 @@ import { TinaBlogPostPage } from "@/components/site/tina-blog-post-page"
 import { TinaRoutePage } from "@/components/site/tina-route-page"
 import { getLatestDeapiPricingSnapshot } from "@/lib/deapi-pricing-store"
 import { isManualBlogEnabled } from "@/lib/feature-flags"
+import { filterPricingSnapshotToActiveModels } from "@/lib/runpod-active-models"
 import {
   listBlogPosts,
   listRoutePages,
@@ -210,6 +211,9 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
     : []
   const blogPosts = isBlogIndex && manualBlogEnabled ? await listBlogPosts() : []
   const deapiPricingSnapshot = page.slug === "/pricing" ? await getLatestDeapiPricingSnapshot() : null
+  const filteredDeapiPricingSnapshot = deapiPricingSnapshot
+    ? filterPricingSnapshotToActiveModels(deapiPricingSnapshot)
+    : null
   const relativePath = routeSlugToRelativePath(page.slug)
 
   if (!relativePath) {
@@ -219,7 +223,7 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
   return (
     <TinaRoutePage
       blogPosts={blogPosts}
-      deapiPricingSnapshot={deapiPricingSnapshot}
+      deapiPricingSnapshot={filteredDeapiPricingSnapshot}
       pageDocument={{
         query: tinaRoutePageQuery,
         variables: { relativePath },

@@ -15,6 +15,15 @@ export type ApiKeyQuotaDurableObjectNamespace = {
   get: (id: DurableObjectIdLike) => ApiKeyQuotaDurableObjectStub
 }
 
+export type CloudflareQueueBinding = {
+  send: (message: unknown) => Promise<void>
+}
+
+export type KvNamespaceBinding = {
+  get: (key: string) => Promise<string | null>
+  put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>
+}
+
 export type WorkerBindings = {
   API_KEY?: string
   ORIGIN_URL?: string
@@ -41,10 +50,17 @@ export type WorkerBindings = {
   RUNPOD_PRICING_LOOKBACK_HOURS?: string
   RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS?: string
   RUNPOD_PRICING_ROUND_STEP_USD?: string
+  RUNPOD_BATCH_QUEUE_ENABLED?: string
+  RUNPOD_BATCHING_CONFIG_JSON?: string
+  RUNPOD_QUEUE_METRICS_RETENTION_HOURS?: string
+  RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS?: string
+  RUNPOD_BATCH_QUEUE?: CloudflareQueueBinding
+  QUEUE_METRICS_KV?: KvNamespaceBinding
   WEBHOOK_SIGNING_SECRET?: string
   WEBHOOK_TIMEOUT_MS?: string
   WS_INLINE_MAX_BYTES?: string
   DB?: D1Database
+  DB_QUEUE_METRICS?: D1Database
   [key: string]: unknown
 }
 

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 
 type DashboardModelCategoryPageProps = {
   params: Promise<{
-    slug: string
+    categorySlug: string
   }>
 }
 

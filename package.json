@@ -63,6 +63,7 @@
     "runpod:endpoints:image:pulumi:install": "pnpm --dir cloudflare/clients/runpod/pulumi install",
     "runpod:endpoints:image:pulumi:preview": "bash ./scripts/runpod-endpoints-pulumi.sh preview",
     "runpod:endpoints:image:pulumi:up": "bash ./scripts/runpod-endpoints-pulumi.sh up",
+    "runpod:endpoints:image:pulumi:deploy": "bash ./scripts/runpod-endpoints-pulumi.sh deploy",
     "runpod:endpoints:image:pulumi:destroy": "bash ./scripts/runpod-endpoints-pulumi.sh destroy",
     "runpod:endpoints:image:redeploy": "bash ./scripts/runpod-endpoints-pulumi-redeploy.sh"
   },

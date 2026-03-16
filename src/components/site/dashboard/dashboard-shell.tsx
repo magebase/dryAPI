@@ -11,6 +11,7 @@ import {
   ChevronRight,
   KeyRound,
   LayoutDashboard,
+  Layers3,
   LogOut,
   Menu,
   MessageCircle,
@@ -103,6 +104,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
     if (pathname.startsWith("/dashboard/billing")) {
       return "Billing";
+    }
+
+    if (pathname.startsWith("/dashboard/queue-scaling")) {
+      return "Queue Scaling";
     }
 
     if (pathname.startsWith("/dashboard/settings")) {
@@ -223,6 +228,20 @@ export function DashboardShell({ children }: DashboardShellProps) {
               <WalletCards className="size-4" />
               <span className="flex-1 whitespace-nowrap text-sm font-medium leading-none">
                 Billing
+              </span>
+            </Link>
+
+            <Link
+              href="/dashboard/queue-scaling"
+              prefetch={false}
+              onClick={() => setMobileSidebarOpen(false)}
+              className={getNavItemClass(
+                isRouteActive(pathname, "/dashboard/queue-scaling"),
+              )}
+            >
+              <Layers3 className="size-4" />
+              <span className="flex-1 whitespace-nowrap text-sm font-medium leading-none">
+                Queue Scaling
               </span>
             </Link>
 

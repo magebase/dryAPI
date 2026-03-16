@@ -12,6 +12,13 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
+    exclude: [
+      "cloudflare/api/test/e2e/**",
+      "cloudflare/api/test/integration/**",
+      "**/.wrangler/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

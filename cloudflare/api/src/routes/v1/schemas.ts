@@ -1,27 +1,60 @@
 import { Type } from 'typebox'
 import type { Static } from 'typebox'
 
+import {
+  listActiveRunpodModelSlugs,
+  listActiveRunpodModelSlugsForSurface,
+} from '../../lib/runpod-active-models'
 import { toStandardTypeboxSchema } from '../../lib/typebox-standard'
 
-export const ModelSlugSchema = Type.Union([
-  Type.Literal('Llama3_8B_Instruct'),
-  Type.Literal('Mistral_7B_Instruct'),
-  Type.Literal('Mixtral_8x7B_Instruct'),
-  Type.Literal('Flux1schnell'),
-  Type.Literal('Flux1dev'),
-  Type.Literal('SDXL'),
-  Type.Literal('JuggernautXL'),
-  Type.Literal('RealVisXL'),
-  Type.Literal('WhisperLargeV3'),
-  Type.Literal('WhisperX'),
-  Type.Literal('BGE_Large'),
-  Type.Literal('E5_Large'),
-  Type.Literal('GTE_Large'),
-  Type.Literal('Bge_M3_FP16'),
-], {
-  description: 'Model slug used for endpoint routing and cost estimation.',
-  examples: ['Flux1schnell', 'Llama3_8B_Instruct', 'WhisperLargeV3'],
-})
+function createModelSlugSchema(modelSlugs: string[], description: string) {
+  const examples = modelSlugs.slice(0, 3)
+
+  if (modelSlugs.length === 0) {
+    return Type.String({
+      description,
+      examples: ['model_slug'],
+      minLength: 1,
+    })
+  }
+
+  return Type.String({
+    description,
+    examples,
+    enum: modelSlugs,
+  })
+}
+
+const ACTIVE_MODEL_SLUGS = listActiveRunpodModelSlugs()
+const ACTIVE_CHAT_MODEL_SLUGS = listActiveRunpodModelSlugsForSurface('chat')
+const ACTIVE_IMAGE_MODEL_SLUGS = listActiveRunpodModelSlugsForSurface('images')
+const ACTIVE_EMBEDDING_MODEL_SLUGS = listActiveRunpodModelSlugsForSurface('embeddings')
+const ACTIVE_TRANSCRIBE_MODEL_SLUGS = listActiveRunpodModelSlugsForSurface('transcribe')
+
+export const ModelSlugSchema = createModelSlugSchema(
+  ACTIVE_MODEL_SLUGS,
+  'Model slug used for endpoint routing and cost estimation.',
+)
+
+export const ChatModelSlugSchema = createModelSlugSchema(
+  ACTIVE_CHAT_MODEL_SLUGS,
+  'Active chat model slug used for OpenAI-compatible chat routing.',
+)
+
+export const ImageModelSlugSchema = createModelSlugSchema(
+  ACTIVE_IMAGE_MODEL_SLUGS,
+  'Active image model slug used for OpenAI-compatible image routing.',
+)
+
+export const EmbeddingsModelSlugSchema = createModelSlugSchema(
+  ACTIVE_EMBEDDING_MODEL_SLUGS,
+  'Active embeddings model slug used for OpenAI-compatible embedding routing.',
+)
+
+export const TranscriptionModelSlugSchema = createModelSlugSchema(
+  ACTIVE_TRANSCRIBE_MODEL_SLUGS,
+  'Active transcription model slug used for OpenAI-compatible transcription routing.',
+)
 
 export const SurfaceParamSchema = Type.Object({
   surface: Type.Union([

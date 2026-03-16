@@ -56,8 +56,9 @@ Pulumi state backend requirement:
   - `RUNPOD_PULUMI_BACKEND_URL=s3://<bucket>?endpoint=https://<account-id>.r2.cloudflarestorage.com&region=auto&s3ForcePathStyle=true`
   - or both `RUNPOD_PULUMI_STATE_BUCKET` and `CLOUDFLARE_ACCOUNT_ID`
 - Also export R2 credentials for backend access:
-  - `AWS_ACCESS_KEY_ID`
-  - `AWS_SECRET_ACCESS_KEY`
+  - `CLOUDFLARE_OBJECT_STORAGE_ACCESS_KEY`
+  - `CLOUDFLARE_OBJECT_STORAGE_SECRET_KEY`
+- If a state bucket is set (or inferred from backend URL), the script creates/verifies the bucket via Wrangler (`wrangler r2 bucket create`).
 
 Pulumi config requirement:
 

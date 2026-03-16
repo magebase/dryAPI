@@ -3,12 +3,12 @@ import type { Hono } from 'hono'
 import { Type } from 'typebox'
 
 import { enqueueOpenAiCompatible } from './openai-enqueue'
-import { ModelSlugSchema } from './schemas'
+import { ImageModelSlugSchema } from './schemas'
 import { toStandardTypeboxSchema } from '../../lib/typebox-standard'
 import type { WorkerEnv } from '../../types'
 
 const ImagePayloadSchema = Type.Object({
-  model: Type.Optional(ModelSlugSchema),
+  model: Type.Optional(ImageModelSlugSchema),
   prompt: Type.String({
     minLength: 1,
     description: 'Natural-language prompt used for image generation.',

@@ -297,7 +297,7 @@ function resolveBaseDocsPath(pathname: string): string | null {
   return null
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const traceId = createAuthTraceId(request.headers.get("x-request-id"))
   const pathname = request.nextUrl.pathname
   const isAuthObservedPath =

@@ -77,6 +77,7 @@ export type DeapiRunpodModelProfile = {
   idleHoldSeconds: number
   defaultBatchSize: number
   maxBatchSize: number
+  batchWindowSeconds?: number
   cacheTtlSeconds: number
   targetRetailPriceUsd: number
   quantizationFormats?: RunpodQuantizationFormat[]
@@ -154,6 +155,9 @@ export type RunpodEndpointRecommendation = {
   gpuFallbackOrder: RunpodGpuTier[]
   autoscaling: AutoscalingWindow
   workerPool: WorkerPoolPreset
+  defaultBatchSize: number
+  maxBatchSize: number
+  batchWindowSeconds: number
 }
 
 export type RunpodDispatchGuardrailInput = {

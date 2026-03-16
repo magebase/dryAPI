@@ -1,0 +1,6 @@
+encryptionsalt: v1:dZLHub0zgKY=:v1:rg4dHZp5CcyCRPzd:HvKo8EIFtMTBEq8eHBs+LWLplOIyjQ==
+config:
+  runpod-image-endpoints:endpointProfile: serverless10
+  runpod-image-endpoints:workersMaxOverride: "1"
+  runpod:token:
+    secure: v1:i5MzTwJHe1Eum1JN:7CN6s4GVT/yumaf5yY6UCNdyWEjac7PXQy86Q7iucEUGQBIM8xaOML6oC9IUQR+1NoIXrn5aeLPXGnTvHl8fQPkK

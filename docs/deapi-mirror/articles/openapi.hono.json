@@ -64,70 +64,12 @@
                 ],
                 "properties": {
                   "model": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "const": "Llama3_8B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mistral_7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mixtral_8x7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1schnell"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1dev"
-                      },
-                      {
-                        "type": "string",
-                        "const": "SDXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "JuggernautXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "RealVisXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperLargeV3"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperX"
-                      },
-                      {
-                        "type": "string",
-                        "const": "BGE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "E5_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "GTE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Bge_M3_FP16"
-                      }
-                    ],
-                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "type": "string",
+                    "description": "Active chat model slug used for OpenAI-compatible chat routing.",
                     "examples": [
-                      "Flux1schnell",
-                      "Llama3_8B_Instruct",
-                      "WhisperLargeV3"
-                    ]
+                      "model_slug"
+                    ],
+                    "minLength": 1
                   },
                   "messages": {
                     "type": "array",
@@ -294,69 +236,19 @@
                 ],
                 "properties": {
                   "model": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "const": "Llama3_8B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mistral_7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mixtral_8x7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1schnell"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1dev"
-                      },
-                      {
-                        "type": "string",
-                        "const": "SDXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "JuggernautXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "RealVisXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperLargeV3"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperX"
-                      },
-                      {
-                        "type": "string",
-                        "const": "BGE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "E5_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "GTE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Bge_M3_FP16"
-                      }
-                    ],
-                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "type": "string",
+                    "description": "Active image model slug used for OpenAI-compatible image routing.",
                     "examples": [
-                      "Flux1schnell",
-                      "Llama3_8B_Instruct",
-                      "WhisperLargeV3"
+                      "Ben2",
+                      "Flux_2_Klein_4B_BF16",
+                      "Ltx2_3_22B_Dist_INT8"
+                    ],
+                    "enum": [
+                      "Ben2",
+                      "Flux_2_Klein_4B_BF16",
+                      "Ltx2_3_22B_Dist_INT8",
+                      "RealESRGAN_x4",
+                      "ZImageTurbo_INT8"
                     ]
                   },
                   "prompt": {
@@ -483,68 +375,12 @@
                 ],
                 "properties": {
                   "model": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "const": "Llama3_8B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mistral_7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mixtral_8x7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1schnell"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1dev"
-                      },
-                      {
-                        "type": "string",
-                        "const": "SDXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "JuggernautXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "RealVisXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperLargeV3"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperX"
-                      },
-                      {
-                        "type": "string",
-                        "const": "BGE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "E5_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "GTE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Bge_M3_FP16"
-                      }
-                    ],
-                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "type": "string",
+                    "description": "Active transcription model slug used for OpenAI-compatible transcription routing.",
                     "examples": [
-                      "Flux1schnell",
-                      "Llama3_8B_Instruct",
+                      "WhisperLargeV3"
+                    ],
+                    "enum": [
                       "WhisperLargeV3"
                     ]
                   },
@@ -677,69 +513,13 @@
                 ],
                 "properties": {
                   "model": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "const": "Llama3_8B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mistral_7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mixtral_8x7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1schnell"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1dev"
-                      },
-                      {
-                        "type": "string",
-                        "const": "SDXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "JuggernautXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "RealVisXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperLargeV3"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperX"
-                      },
-                      {
-                        "type": "string",
-                        "const": "BGE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "E5_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "GTE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Bge_M3_FP16"
-                      }
-                    ],
-                    "description": "Model slug used for endpoint routing and cost estimation.",
+                    "type": "string",
+                    "description": "Active embeddings model slug used for OpenAI-compatible embedding routing.",
                     "examples": [
-                      "Flux1schnell",
-                      "Llama3_8B_Instruct",
-                      "WhisperLargeV3"
+                      "Bge_M3_FP16"
+                    ],
+                    "enum": [
+                      "Bge_M3_FP16"
                     ]
                   },
                   "input": {
@@ -1172,6 +952,170 @@
         }
       }
     },
+    "/v1/pricing/{surface}": {
+      "get": {
+        "operationId": "listPricingSnapshots",
+        "tags": [
+          "Pricing"
+        ],
+        "summary": "List dynamic pricing snapshots for a surface",
+        "description": "Returns worker-calculated pricing snapshots derived from runtime analytics. Prices are computed with a hard 200% profit floor (3x effective unit cost) and refreshed continuously from recent request statistics.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "surface",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "chat"
+                },
+                {
+                  "type": "string",
+                  "const": "images"
+                },
+                {
+                  "type": "string",
+                  "const": "embeddings"
+                },
+                {
+                  "type": "string",
+                  "const": "transcribe"
+                }
+              ],
+              "examples": [
+                "chat"
+              ]
+            },
+            "required": true,
+            "description": "Inference surface used to select the provider endpoint."
+          },
+          {
+            "in": "query",
+            "name": "model",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "AceStep_1_5_Turbo",
+                "Ben2",
+                "Bge_M3_FP16"
+              ],
+              "enum": [
+                "AceStep_1_5_Turbo",
+                "Ben2",
+                "Bge_M3_FP16",
+                "Flux_2_Klein_4B_BF16",
+                "Ltx2_3_22B_Dist_INT8",
+                "Nanonets_Ocr_S_F16",
+                "Qwen3_TTS_12Hz_1_7B_CustomVoice",
+                "RealESRGAN_x4",
+                "WhisperLargeV3",
+                "ZImageTurbo_INT8"
+              ]
+            },
+            "description": "Model slug used for endpoint routing and cost estimation."
+          },
+          {
+            "in": "query",
+            "name": "endpointId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "chat-endpoint"
+              ]
+            },
+            "description": "Optional endpoint filter and quote override."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "examples": [
+                25
+              ]
+            },
+            "description": "Maximum snapshots to return, newest first."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing snapshots and active quote for the current routing context."
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          }
+        }
+      }
+    },
+    "/v1/queue/metrics": {
+      "get": {
+        "operationId": "getQueueMetrics",
+        "tags": [
+          "Queue"
+        ],
+        "summary": "Get recent queue metric snapshots",
+        "description": "Returns recent queue snapshots from D1 (queue depth, batch size, average runtime). Historical retention is trimmed to the last 48 hours.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queue metric snapshots in descending timestamp order."
+          }
+        }
+      }
+    },
+    "/v1/queue/batch-scaling/stream": {
+      "get": {
+        "operationId": "streamQueueBatchScaling",
+        "tags": [
+          "Queue"
+        ],
+        "summary": "Stream live queue batch scaling updates",
+        "description": "Streams server-sent events with dynamic batch scaling payloads built from queue metrics and runtime analytics.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream that emits live queue batch scaling updates."
+          }
+        }
+      }
+    },
+    "/v1/queue/batch-scaling": {
+      "get": {
+        "operationId": "getQueueBatchScaling",
+        "tags": [
+          "Queue"
+        ],
+        "summary": "Get dynamic queue batch scaling table",
+        "description": "Builds a real-time batch scaling table from queue depth snapshots and recent runtime analytics to suggest model-level batch sizes and throughput.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dynamic batch scaling table and queue summary."
+          }
+        }
+      }
+    },
     "/v1/webhooks/test": {
       "post": {
         "operationId": "sendWebhookTestEvent",
@@ -1341,69 +1285,24 @@
                     ]
                   },
                   "model": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "const": "Llama3_8B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mistral_7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mixtral_8x7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1schnell"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1dev"
-                      },
-                      {
-                        "type": "string",
-                        "const": "SDXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "JuggernautXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "RealVisXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperLargeV3"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperX"
-                      },
-                      {
-                        "type": "string",
-                        "const": "BGE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "E5_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "GTE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Bge_M3_FP16"
-                      }
-                    ],
+                    "type": "string",
                     "description": "Model slug used for endpoint routing and cost estimation.",
                     "examples": [
-                      "Flux1schnell",
-                      "Llama3_8B_Instruct",
-                      "WhisperLargeV3"
+                      "AceStep_1_5_Turbo",
+                      "Ben2",
+                      "Bge_M3_FP16"
+                    ],
+                    "enum": [
+                      "AceStep_1_5_Turbo",
+                      "Ben2",
+                      "Bge_M3_FP16",
+                      "Flux_2_Klein_4B_BF16",
+                      "Ltx2_3_22B_Dist_INT8",
+                      "Nanonets_Ocr_S_F16",
+                      "Qwen3_TTS_12Hz_1_7B_CustomVoice",
+                      "RealESRGAN_x4",
+                      "WhisperLargeV3",
+                      "ZImageTurbo_INT8"
                     ]
                   },
                   "input": {
@@ -1568,69 +1467,24 @@
                     ]
                   },
                   "model": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "const": "Llama3_8B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mistral_7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Mixtral_8x7B_Instruct"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1schnell"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Flux1dev"
-                      },
-                      {
-                        "type": "string",
-                        "const": "SDXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "JuggernautXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "RealVisXL"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperLargeV3"
-                      },
-                      {
-                        "type": "string",
-                        "const": "WhisperX"
-                      },
-                      {
-                        "type": "string",
-                        "const": "BGE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "E5_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "GTE_Large"
-                      },
-                      {
-                        "type": "string",
-                        "const": "Bge_M3_FP16"
-                      }
-                    ],
+                    "type": "string",
                     "description": "Model slug used for endpoint routing and cost estimation.",
                     "examples": [
-                      "Flux1schnell",
-                      "Llama3_8B_Instruct",
-                      "WhisperLargeV3"
+                      "AceStep_1_5_Turbo",
+                      "Ben2",
+                      "Bge_M3_FP16"
+                    ],
+                    "enum": [
+                      "AceStep_1_5_Turbo",
+                      "Ben2",
+                      "Bge_M3_FP16",
+                      "Flux_2_Klein_4B_BF16",
+                      "Ltx2_3_22B_Dist_INT8",
+                      "Nanonets_Ocr_S_F16",
+                      "Qwen3_TTS_12Hz_1_7B_CustomVoice",
+                      "RealESRGAN_x4",
+                      "WhisperLargeV3",
+                      "ZImageTurbo_INT8"
                     ]
                   },
                   "input": {

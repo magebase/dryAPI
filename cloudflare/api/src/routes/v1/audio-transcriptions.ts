@@ -3,12 +3,12 @@ import type { Hono } from 'hono'
 import { Type } from 'typebox'
 
 import { enqueueOpenAiCompatible } from './openai-enqueue'
-import { ModelSlugSchema } from './schemas'
+import { TranscriptionModelSlugSchema } from './schemas'
 import { toStandardTypeboxSchema } from '../../lib/typebox-standard'
 import type { WorkerEnv } from '../../types'
 
 const TranscriptionPayloadSchema = Type.Object({
-  model: Type.Optional(ModelSlugSchema),
+  model: Type.Optional(TranscriptionModelSlugSchema),
   audioUrl: Type.String({
     format: 'uri',
     description: 'Publicly accessible audio URL to transcribe.',
