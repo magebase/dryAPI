@@ -3,7 +3,12 @@ import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { drizzle } from "drizzle-orm/d1";
 
-import { moderationRejections } from "@/db/schema";
+import { moderationRejections } from "@/db/schema-analytics";
+import {
+  D1_BINDING_PRIORITY,
+  formatExpectedBindings,
+  resolveD1Binding,
+} from "@/lib/d1-bindings";
 
 type D1Binding = Parameters<typeof drizzle>[0];
 
@@ -16,7 +21,7 @@ type ModerationRejectionAttempt = {
 };
 
 function resolveQuoteDbBinding(env: Record<string, unknown>): D1Binding | null {
-  return ((env.APP_DB ?? env.TINA_DB ?? null) as D1Binding | null) || null;
+  return resolveD1Binding<D1Binding>(env, D1_BINDING_PRIORITY.analytics);
 }
 
 export async function persistModerationRejectionAttempt(
@@ -35,7 +40,9 @@ export async function persistModerationRejectionAttempt(
 
   if (!quoteDb) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("APP_DB binding is missing.");
+      throw new Error(
+        `${formatExpectedBindings(D1_BINDING_PRIORITY.analytics)} binding is missing.`,
+      );
     }
 
     return;

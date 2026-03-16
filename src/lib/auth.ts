@@ -8,6 +8,11 @@ import { drizzle } from "drizzle-orm/d1";
 import { authSchema } from "@/db/auth-schema";
 import { VerifyEmail } from "@/emails/verify-email";
 import { sendBrevoReactEmail } from "@/lib/brevo-email";
+import {
+  D1_BINDING_PRIORITY,
+  formatExpectedBindings,
+  resolveD1Binding,
+} from "@/lib/d1-bindings";
 
 type SocialProviderConfig = {
   clientId: string;
@@ -255,11 +260,63 @@ const socialProviders = readSocialProviders();
 
 type D1Binding = Parameters<typeof drizzle>[0];
 
+type D1CleanupStatement = {
+  bind: (...values: unknown[]) => D1CleanupStatement;
+  run: () => Promise<unknown>;
+};
+
+type D1CleanupBinding = {
+  prepare: (query: string) => D1CleanupStatement;
+};
+
+const SESSION_CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+let lastSessionCleanupAt = 0;
+let sessionCleanupPromise: Promise<void> | null = null;
+
+function isCleanupBinding(value: D1Binding): value is D1CleanupBinding {
+  const typed = value as { prepare?: unknown };
+  return typeof typed.prepare === "function";
+}
+
+function maybeCleanupExpiredSessions(binding: D1Binding): void {
+  if (!isCleanupBinding(binding)) {
+    return;
+  }
+
+  const now = Date.now();
+
+  if (sessionCleanupPromise) {
+    return;
+  }
+
+  if (now - lastSessionCleanupAt < SESSION_CLEANUP_INTERVAL_MS) {
+    return;
+  }
+
+  lastSessionCleanupAt = now;
+  sessionCleanupPromise = (async () => {
+    try {
+      await binding
+        .prepare("DELETE FROM session WHERE expiresAt < ?")
+        .bind(now)
+        .run();
+    } catch (error) {
+      console.warn("[auth] Session cleanup skipped after D1 error", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      sessionCleanupPromise = null;
+    }
+  })();
+}
+
 function resolveAuthD1Binding(): D1Binding | null {
   try {
     const { env } = getCloudflareContext();
-    const typedEnv = env as Record<string, unknown>;
-    return ((typedEnv.APP_DB ?? typedEnv.TINA_DB ?? null) as D1Binding | null);
+    return resolveD1Binding<D1Binding>(
+      env as Record<string, unknown>,
+      D1_BINDING_PRIORITY.auth,
+    );
   } catch {
     return null;
   }
@@ -269,6 +326,7 @@ function resolveBetterAuthDatabase() {
   const d1Binding = resolveAuthD1Binding();
 
   if (d1Binding) {
+    maybeCleanupExpiredSessions(d1Binding);
     const db = drizzle(d1Binding);
     return drizzleAdapter(db, {
       provider: "sqlite",
@@ -277,7 +335,9 @@ function resolveBetterAuthDatabase() {
   }
 
   if (process.env.NODE_ENV === "production") {
-    throw new Error("[auth] D1 binding unavailable. Expected APP_DB or TINA_DB for Better Auth database.");
+    throw new Error(
+      `[auth] D1 binding unavailable. Expected ${formatExpectedBindings(D1_BINDING_PRIORITY.auth)} for Better Auth database.`,
+    );
   }
 
   console.warn("[auth] D1 binding unavailable; Better Auth is falling back to temporary in-memory storage in dev.");

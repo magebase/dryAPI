@@ -3,7 +3,12 @@ import "server-only";
 import { drizzle } from "drizzle-orm/d1";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-import { quoteRequests } from "@/db/schema";
+import { quoteRequests } from "@/db/schema-analytics";
+import {
+  D1_BINDING_PRIORITY,
+  formatExpectedBindings,
+  resolveD1Binding,
+} from "@/lib/d1-bindings";
 import type { ContactSubmission } from "@/lib/contact-schema";
 
 type QuoteRequestMetadata = {
@@ -12,9 +17,8 @@ type QuoteRequestMetadata = {
 
 type D1Binding = Parameters<typeof drizzle>[0];
 
-function resolveQuoteDbBinding(env: CloudflareEnv): D1Binding | null {
-  return ((env as CloudflareEnv & { APP_DB?: D1Binding }).APP_DB ??
-    null) as D1Binding | null;
+function resolveQuoteDbBinding(env: Record<string, unknown>): D1Binding | null {
+  return resolveD1Binding<D1Binding>(env, D1_BINDING_PRIORITY.analytics);
 }
 
 export async function persistQuoteRequest(
@@ -38,7 +42,9 @@ export async function persistQuoteRequest(
 
   if (!quoteDb) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("APP_DB binding is missing.");
+      throw new Error(
+        `${formatExpectedBindings(D1_BINDING_PRIORITY.analytics)} binding is missing.`,
+      );
     }
 
     return;

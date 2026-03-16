@@ -8,6 +8,7 @@ import {
   isCrmWorkflowAutomationsEnabled,
   resolveEnabledWorkflowKinds,
 } from "@/lib/feature-flags";
+import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings";
 import type {
   CrmDashboardData,
   CrmHistoryEvent,
@@ -55,7 +56,7 @@ type ModerationRow = {
 };
 
 function toDbBinding(env: Record<string, unknown>): D1DatabaseLike | null {
-  return ((env.APP_DB ?? env.TINA_DB ?? null) as D1DatabaseLike | null) || null;
+  return resolveD1Binding<D1DatabaseLike>(env, D1_BINDING_PRIORITY.analytics);
 }
 
 function toTimestampMs(input: number | string): number {

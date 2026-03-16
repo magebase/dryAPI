@@ -3,4 +3,4 @@ config:
   runpod-image-endpoints:endpointProfile: serverless10
   runpod-image-endpoints:workersMaxOverride: "1"
   runpod:token:
-    secure: v1:i5MzTwJHe1Eum1JN:7CN6s4GVT/yumaf5yY6UCNdyWEjac7PXQy86Q7iucEUGQBIM8xaOML6oC9IUQR+1NoIXrn5aeLPXGnTvHl8fQPkK
+    secure: v1:zTn32aJ97J8TnsTV:RIlCCWy19SsAmzP794sKCq2f0iCTkqhCZl2GQGyNfMudXD0ZZ8K/VIYJtQ+riCZBBpSKV/w8t6TbDsniMRfys3WJ

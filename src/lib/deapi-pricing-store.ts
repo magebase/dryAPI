@@ -9,6 +9,7 @@ import type {
   DeapiPricingPermutation,
   DeapiPricingSnapshot,
 } from "@/types/deapi-pricing";
+import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings";
 
 type D1PreparedResult<T> = {
   results: T[];
@@ -22,6 +23,7 @@ type D1PreparedStatement = {
 
 type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement;
+  batch?: (statements: D1PreparedStatement[]) => Promise<unknown>;
 };
 
 type SnapshotRow = {
@@ -116,12 +118,13 @@ function normalizePermutations(
   );
 }
 
-async function resolveQuoteDb(): Promise<D1DatabaseLike | null> {
+async function resolveMetadataDb(): Promise<D1DatabaseLike | null> {
   try {
     const { env } = await getCloudflareContext({ async: true });
-    const binding = ((env as Record<string, unknown>).APP_DB ??
-      null) as D1DatabaseLike | null;
-    return binding;
+    return resolveD1Binding<D1DatabaseLike>(
+      env as Record<string, unknown>,
+      D1_BINDING_PRIORITY.metadata,
+    );
   } catch {
     if (process.env.NODE_ENV === "production") {
       throw new Error("Cloudflare context is unavailable.");
@@ -158,6 +161,29 @@ async function safeRun(
       ? db.prepare(sql).bind(...bindValues)
       : db.prepare(sql);
   await statement.run();
+}
+
+async function safeRunBatch(
+  db: D1DatabaseLike,
+  statements: Array<{ sql: string; bindValues: unknown[] }>,
+): Promise<void> {
+  if (statements.length < 1) {
+    return;
+  }
+
+  if (typeof db.batch === "function") {
+    const prepared = statements.map(({ sql, bindValues }) =>
+      bindValues.length > 0
+        ? db.prepare(sql).bind(...bindValues)
+        : db.prepare(sql),
+    );
+    await db.batch(prepared);
+    return;
+  }
+
+  for (const statement of statements) {
+    await safeRun(db, statement.sql, statement.bindValues);
+  }
 }
 
 function toSnapshotFromRows(
@@ -248,7 +274,7 @@ export async function getLatestDeapiPricingSnapshot(options?: {
   maxPermutations?: number;
 }): Promise<DeapiPricingSnapshot | null> {
   const maxPermutations = options?.maxPermutations;
-  const db = await resolveQuoteDb();
+  const db = await resolveMetadataDb();
 
   if (db) {
     const snapshots = await safeAll<SnapshotRow>(
@@ -309,7 +335,7 @@ export async function getLatestDeapiPricingSnapshot(options?: {
 export async function persistDeapiPricingSnapshot(
   snapshot: DeapiPricingSnapshot,
 ): Promise<boolean> {
-  const db = await resolveQuoteDb();
+  const db = await resolveMetadataDb();
   if (!db) {
     return false;
   }
@@ -348,31 +374,30 @@ export async function persistDeapiPricingSnapshot(
     ],
   );
 
-  for (const permutation of normalizePermutations(
-    snapshot.permutations || [],
-  )) {
-    await safeRun(
-      db,
-      `
-        INSERT INTO deapi_pricing_permutations (
-          id,
-          snapshot_id,
-          category,
-          source_url,
-          model,
-          model_label,
-          params_json,
-          price_text,
-          price_usd,
-          credits,
-          metadata_json,
-          excerpts_json,
-          descriptions_json,
-          scraped_at,
-          created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
+  const insertSql = `
+    INSERT INTO deapi_pricing_permutations (
+      id,
+      snapshot_id,
+      category,
+      source_url,
+      model,
+      model_label,
+      params_json,
+      price_text,
+      price_usd,
+      credits,
+      metadata_json,
+      excerpts_json,
+      descriptions_json,
+      scraped_at,
+      created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const permutationStatements = normalizePermutations(snapshot.permutations || []).map(
+    (permutation) => ({
+      sql: insertSql,
+      bindValues: [
         permutation.id,
         snapshotId,
         permutation.category,
@@ -389,7 +414,12 @@ export async function persistDeapiPricingSnapshot(
         permutation.scrapedAt,
         Date.now(),
       ],
-    );
+    }),
+  );
+
+  const chunkSize = 100;
+  for (let index = 0; index < permutationStatements.length; index += chunkSize) {
+    await safeRunBatch(db, permutationStatements.slice(index, index + chunkSize));
   }
 
   await safeRun(

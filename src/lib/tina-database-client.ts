@@ -6,6 +6,11 @@ import type { Schema } from "@tinacms/schema-tools";
 import { drizzle } from "drizzle-orm/d1";
 
 import { DrizzleD1Level } from "@/lib/tina/drizzle-d1-level";
+import {
+  D1_BINDING_PRIORITY,
+  formatExpectedBindings,
+  resolveD1Binding,
+} from "@/lib/d1-bindings";
 import homeContentArtifact from "../../content/site/home.json";
 import siteConfigContentArtifact from "../../content/site/site-config.json";
 import graphQLSchemaArtifact from "../../tina/__generated__/_graphql.json";
@@ -83,14 +88,14 @@ async function resolveTinaD1Binding(): Promise<D1Binding | null> {
   try {
     const { env } = await getCloudflareContext({ async: true });
     const typedEnv = env as Record<string, unknown>;
-
-    const binding = (typedEnv.TINA_DB ??
-      typedEnv.APP_DB ??
-      null) as D1Binding | null;
+    const binding = resolveD1Binding<D1Binding>(typedEnv, [
+      "TINA_DB",
+      ...D1_BINDING_PRIORITY.metadata,
+    ]);
 
     if (!binding) {
       throw new Error(
-        "Tina D1 binding is missing. Expected TINA_DB or APP_DB in Cloudflare env.",
+        `Tina D1 binding is missing. Expected TINA_DB or ${formatExpectedBindings(D1_BINDING_PRIORITY.metadata)} in Cloudflare env.`,
       );
     }
 

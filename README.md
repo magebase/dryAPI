@@ -189,23 +189,70 @@ pnpm db:migrate:local
 pnpm db:migrate:remote
 ```
 
-`db:migrate:*` commands require `CF_D1_DATABASE_NAME` to be set in your shell.
+Per-database variants are also available:
+
+```bash
+pnpm db:generate:auth
+pnpm db:generate:billing
+pnpm db:generate:analytics
+pnpm db:generate:metadata
+
+pnpm db:migrate:local:auth
+pnpm db:migrate:local:billing
+pnpm db:migrate:local:analytics
+pnpm db:migrate:local:metadata
+```
+
+`db:migrate:*` can use these env vars when you need custom DB names:
+
+- `CF_D1_DATABASE_NAME_AUTH`
+- `CF_D1_DATABASE_NAME_BILLING`
+- `CF_D1_DATABASE_NAME_ANALYTICS`
+- `CF_D1_DATABASE_NAME_METADATA`
 
 ### D1 Binding
 
-`wrangler.jsonc` includes a `APP_DB` binding for quote request persistence.
-Set the real D1 database ID before deploy:
+`wrangler.jsonc` is segmented by write workload:
+
+- `AUTH_DB` for Better Auth tables (`user`, `session`, `account`, `verification`)
+- `BILLING_DB` for billing state tables (`credit_balance_profiles` and future billing rows)
+- `ANALYTICS_DB` for operational analytics/contact ingestion (`quote_requests`, `moderation_rejections`)
+- `METADATA_DB` for snapshots/config/Tina state (`deapi_pricing_*`, `tina_level_entries`, `hot_cold_*`)
+
+`APP_DB` remains as a compatibility alias during migration but should not be the long-term primary binding.
+
+Set real D1 database IDs before deploy:
 
 ```json
 "d1_databases": [
   {
-    "binding": "APP_DB",
-    "database_name": "genfix-db",
-    "database_id": "<your-d1-database-id>",
-    "migrations_dir": "drizzle/migrations"
+    "binding": "AUTH_DB",
+    "database_name": "genfix-auth-db",
+    "database_id": "<auth-db-id>",
+    "migrations_dir": "drizzle/migrations/auth"
+  },
+  {
+    "binding": "BILLING_DB",
+    "database_name": "genfix-billing-db",
+    "database_id": "<billing-db-id>",
+    "migrations_dir": "drizzle/migrations/billing"
+  },
+  {
+    "binding": "ANALYTICS_DB",
+    "database_name": "genfix-analytics-db",
+    "database_id": "<analytics-db-id>",
+    "migrations_dir": "drizzle/migrations/analytics"
+  },
+  {
+    "binding": "METADATA_DB",
+    "database_name": "genfix-metadata-db",
+    "database_id": "<metadata-db-id>",
+    "migrations_dir": "drizzle/migrations/metadata"
   }
 ]
 ```
+
+See `docs/cloudflare-d1-architecture-guidelines.md` for the full D1 architecture policy.
 
 Local production preview:
 

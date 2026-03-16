@@ -84,22 +84,121 @@ function hashString(input: string): number {
   return hash
 }
 
-function toModelCardGradientStyle(seed: string): CSSProperties {
+enum ModelCardGradientName {
+  Hyper = "Hyper",
+  Oceanic = "Oceanic",
+  CottonCandy = "Cotton Candy",
+  Gotham = "Gotham",
+  Sunset = "Sunset",
+  Mojave = "Mojave",
+  Beachside = "Beachside",
+  Gunmetal = "Gunmetal",
+  Peachy = "Peachy",
+  Seafoam = "Seafoam",
+  Pumpkin = "Pumpkin",
+  Pandora = "Pandora",
+  Valentine = "Valentine",
+  Hawaii = "Hawaii",
+  Lavender = "Lavender",
+  Wintergreen = "Wintergreen",
+  Huckleberry = "Huckleberry",
+  BlueSteel = "Blue Steel",
+  Arendelle = "Arendelle",
+  Spearmint = "Spearmint",
+  Midnight = "Midnight",
+  Borealis = "Borealis",
+  Flamingo = "Flamingo",
+  Emerald = "Emerald",
+  Messenger = "Messenger",
+  PurpleHaze = "Purple Haze",
+  BigSur = "Big Sur",
+  Oahu = "Oahu",
+  RocketPower = "Rocket Power",
+  BlueFlame = "Blue Flame",
+}
+
+const MODEL_CARD_GRADIENTS: Record<ModelCardGradientName, string> = {
+  [ModelCardGradientName.Hyper]: "linear-gradient(to right, #ec4899, #ef4444, #eab308)",
+  [ModelCardGradientName.Oceanic]: "linear-gradient(to right, #86efac, #3b82f6, #9333ea)",
+  [ModelCardGradientName.CottonCandy]: "linear-gradient(to right, #f9a8d4, #d8b4fe, #818cf8)",
+  [ModelCardGradientName.Gotham]: "linear-gradient(to right, #374151, #111827, #000000)",
+  [ModelCardGradientName.Sunset]: "linear-gradient(to right, #a5b4fc, #fca5a5, #fef3c7)",
+  [ModelCardGradientName.Mojave]: "linear-gradient(to right, #fef3c7, #fcd34d, #eab308)",
+  [ModelCardGradientName.Beachside]: "linear-gradient(to right, #fde68a, #bbf7d0, #22c55e)",
+  [ModelCardGradientName.Gunmetal]: "linear-gradient(to right, #e5e7eb, #9ca3af, #4b5563)",
+  [ModelCardGradientName.Peachy]: "linear-gradient(to right, #fecaca, #fca5a5, #fde68a)",
+  [ModelCardGradientName.Seafoam]: "linear-gradient(to right, #bbf7d0, #86efac, #3b82f6)",
+  [ModelCardGradientName.Pumpkin]: "linear-gradient(to right, #fde68a, #facc15, #a16207)",
+  [ModelCardGradientName.Pandora]: "linear-gradient(to right, #bbf7d0, #4ade80, #6d28d9)",
+  [ModelCardGradientName.Valentine]: "linear-gradient(to right, #fecaca, #dc2626)",
+  [ModelCardGradientName.Hawaii]: "linear-gradient(to right, #86efac, #fde047, #f9a8d4)",
+  [ModelCardGradientName.Lavender]: "linear-gradient(to right, #a5b4fc, #c084fc)",
+  [ModelCardGradientName.Wintergreen]: "linear-gradient(to right, #bbf7d0, #22c55e)",
+  [ModelCardGradientName.Huckleberry]: "linear-gradient(to right, #c4b5fd, #a855f7, #6b21a8)",
+  [ModelCardGradientName.BlueSteel]: "linear-gradient(to right, #9ca3af, #4b5563, #1e3a8a)",
+  [ModelCardGradientName.Arendelle]: "linear-gradient(to right, #dbeafe, #93c5fd, #3b82f6)",
+  [ModelCardGradientName.Spearmint]: "linear-gradient(to right, #bbf7d0, #4ade80, #22c55e)",
+  [ModelCardGradientName.Midnight]: "linear-gradient(to right, #1d4ed8, #1e40af, #111827)",
+  [ModelCardGradientName.Borealis]: "linear-gradient(to right, #86efac, #a78bfa)",
+  [ModelCardGradientName.Flamingo]: "linear-gradient(to right, #f472b6, #db2777)",
+  [ModelCardGradientName.Emerald]: "linear-gradient(to right, #10b981, #65a30d)",
+  [ModelCardGradientName.Messenger]: "linear-gradient(to right, #38bdf8, #3b82f6)",
+  [ModelCardGradientName.PurpleHaze]: "linear-gradient(to right, #6b21a8, #4c1d95, #6b21a8)",
+  [ModelCardGradientName.BigSur]: "linear-gradient(to top right, #8b5cf6, #fdba74)",
+  [ModelCardGradientName.Oahu]: "linear-gradient(to top, #fb923c, #38bdf8)",
+  [ModelCardGradientName.RocketPower]: "radial-gradient(ellipse at top, #b45309, #fdba74, #9f1239)",
+  [ModelCardGradientName.BlueFlame]: "radial-gradient(ellipse at bottom, #fde68a, #7c3aed, #0c4a6e)",
+}
+
+const MODEL_CARD_GRADIENT_ORDER: ModelCardGradientName[] = [
+  ModelCardGradientName.Hyper,
+  ModelCardGradientName.Oceanic,
+  ModelCardGradientName.CottonCandy,
+  ModelCardGradientName.Gotham,
+  ModelCardGradientName.Sunset,
+  ModelCardGradientName.Mojave,
+  ModelCardGradientName.Beachside,
+  ModelCardGradientName.Gunmetal,
+  ModelCardGradientName.Peachy,
+  ModelCardGradientName.Seafoam,
+  ModelCardGradientName.Pumpkin,
+  ModelCardGradientName.Pandora,
+  ModelCardGradientName.Valentine,
+  ModelCardGradientName.Hawaii,
+  ModelCardGradientName.Lavender,
+  ModelCardGradientName.Wintergreen,
+  ModelCardGradientName.Huckleberry,
+  ModelCardGradientName.BlueSteel,
+  ModelCardGradientName.Arendelle,
+  ModelCardGradientName.Spearmint,
+  ModelCardGradientName.Midnight,
+  ModelCardGradientName.Borealis,
+  ModelCardGradientName.Flamingo,
+  ModelCardGradientName.Emerald,
+  ModelCardGradientName.Messenger,
+  ModelCardGradientName.PurpleHaze,
+  ModelCardGradientName.BigSur,
+  ModelCardGradientName.Oahu,
+  ModelCardGradientName.RocketPower,
+  ModelCardGradientName.BlueFlame,
+]
+
+function toModelCardGradientPreset(seed: string): { name: ModelCardGradientName; background: string } {
   const hash = hashString(seed)
-  const hueA = hash % 360
-  const hueB = (hueA + 45 + (hash % 64)) % 360
-  const satA = 55 + (hash % 20)
-  const satB = 48 + ((hash >> 3) % 24)
-  const lightA = 93 - ((hash >> 5) % 6)
-  const lightB = 86 - ((hash >> 7) % 8)
+  const gradientName = MODEL_CARD_GRADIENT_ORDER[hash % MODEL_CARD_GRADIENT_ORDER.length]
 
   return {
-    backgroundImage: [
-      `linear-gradient(145deg, hsl(${hueA} ${satA}% ${lightA}%) 0%, hsl(${hueB} ${satB}% ${lightB}%) 100%)`,
-      "radial-gradient(rgba(255,255,255,0.28) 0.7px, rgba(0,0,0,0) 0.9px)",
-    ].join(", "),
-    backgroundSize: "100% 100%, 3px 3px",
-    backgroundPosition: "0 0, 0 0",
+    name: gradientName,
+    background: MODEL_CARD_GRADIENTS[gradientName],
+  }
+}
+
+function toModelCardGradientLayerStyle(background: string): CSSProperties {
+
+  return {
+    background,
+    filter: "url(#model-card-grain)",
+    clipPath: "inset(0)",
   }
 }
 
@@ -269,6 +368,14 @@ export default function DashboardModelsPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6">
+      <svg aria-hidden="true" className="fixed h-0 w-0">
+        <filter id="model-card-grain" colorInterpolationFilters="sRGB" x="0" y="0" width="1" height="1">
+          <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="5" seed="13" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="160" xChannelSelector="R" yChannelSelector="A" result="displaced" />
+          <feBlend in="displaced" in2="SourceGraphic" />
+        </filter>
+      </svg>
+
       <Card className="border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
         <CardHeader className="gap-2 border-b border-zinc-200/70 py-6 dark:border-zinc-700/70">
           <CardTitle className="inline-flex items-center gap-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
@@ -304,60 +411,75 @@ export default function DashboardModelsPage() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {section.models.map((modelCard) => {
+                const gradientPreset = toModelCardGradientPreset(modelCard.id)
+
                 return (
                   <article
                     key={modelCard.id}
-                    className="h-full space-y-4 rounded-xl border border-zinc-900/15 p-4 shadow-[0_1px_0_rgba(255,255,255,0.45)] dark:border-zinc-600/70"
-                    style={toModelCardGradientStyle(modelCard.id)}
+                    data-gradient-name={gradientPreset.name}
+                    className="relative isolate flex flex-col gap-3 overflow-hidden rounded-2xl border border-white/35 p-4 text-zinc-950 shadow-[0_10px_28px_rgba(15,23,42,0.2)]"
                   >
-                    <header className="space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 [overflow-wrap:anywhere]">
-                            {modelCard.modelName}
-                          </h3>
-                          <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                            {section.label}
-                          </p>
-                        </div>
-                        <div className="shrink-0 rounded-lg border border-zinc-900/20 bg-zinc-900/92 px-2.5 py-1.5 text-right text-xs text-zinc-100">
-                          <p className="whitespace-nowrap font-semibold">From {formatUsd(modelCard.fromPriceUsd)}</p>
-                          <p className="whitespace-nowrap text-[10px] text-zinc-300">
-                            {modelCard.fromCredits !== null ? `${modelCard.fromCredits.toFixed(6)} credits` : "No credits sample"}
-                          </p>
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0"
+                      style={toModelCardGradientLayerStyle(gradientPreset.background)}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(255,255,255,0.22),transparent_46%)]"
+                    />
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white/10" />
+
+                    <header className="relative z-10 space-y-2">
+                      <div className="rounded-xl border border-black/10 bg-white/75 p-3 backdrop-blur-[2px]">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <h3 className="text-base font-semibold text-zinc-950 [overflow-wrap:anywhere]">
+                              {modelCard.modelName}
+                            </h3>
+                            <p className="text-sm text-zinc-900/75">
+                              {section.label}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right text-xs text-zinc-950/95">
+                            <p className="whitespace-nowrap font-semibold">From {formatUsd(modelCard.fromPriceUsd)}</p>
+                            <p className="whitespace-nowrap text-[10px] text-zinc-900/65">
+                              {modelCard.fromCredits !== null ? `${modelCard.fromCredits.toFixed(6)} credits` : "No credits sample"}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
-                      <p className="rounded-md border border-zinc-900/15 bg-white/65 px-2.5 py-2 text-sm font-medium leading-snug text-zinc-900/90 dark:border-zinc-600/60 dark:bg-zinc-900/55 dark:text-zinc-100">
+                      <p className="rounded-xl border border-black/10 bg-white/72 p-3 text-sm font-medium leading-snug text-zinc-950/95">
                         {modelCard.excerpt}
                       </p>
 
                       <div className="flex flex-wrap items-center gap-2">
                         <ModelSlugCopyButton
                           modelSlug={modelCard.modelName}
-                          className="h-8 border-zinc-900/20 bg-white/75 text-zinc-900 hover:bg-zinc-100 hover:text-zinc-900"
+                          className="h-8 !border-black/10 !bg-white/78 px-2 text-zinc-950 shadow-sm hover:!bg-white/90 hover:text-zinc-900"
                         />
                         <Link
                           href={modelCard.pricingHref}
-                          className="inline-flex h-8 items-center gap-1 rounded-md border border-zinc-900/25 bg-white/80 px-2.5 text-[11px] font-semibold text-zinc-900 underline decoration-zinc-700/70 underline-offset-2 transition hover:bg-zinc-900 hover:text-zinc-100 hover:decoration-zinc-200"
+                          className="inline-flex h-8 items-center gap-1 rounded-md border border-black/10 bg-white/78 px-2 text-[11px] font-semibold text-zinc-950 underline decoration-zinc-900/40 underline-offset-2 shadow-sm transition hover:bg-white/90 hover:text-zinc-900 hover:decoration-zinc-900/70"
                         >
                           <span>Open Pricing Details Page</span>
                           <ArrowUpRight className="size-3.5" />
                         </Link>
                         <Link
                           href={modelCard.detailHref}
-                          className="inline-flex h-8 items-center rounded-md border border-zinc-900/25 bg-white/80 px-2.5 text-[11px] font-medium text-zinc-900 transition hover:bg-zinc-100 hover:text-zinc-900"
+                          className="inline-flex h-8 items-center rounded-md border border-black/10 bg-white/78 px-2 text-[11px] font-medium text-zinc-950 shadow-sm transition hover:bg-white/90 hover:text-zinc-900"
                         >
                           Model Details
                         </Link>
                       </div>
                     </header>
 
-                    <div className="space-y-2 px-1 text-sm text-zinc-800 dark:text-zinc-200">
+                    <div className="relative z-10 mt-0 space-y-2 rounded-xl border border-black/10 bg-white/72 p-3 text-sm text-zinc-950">
                       <div className="space-y-2">
-                        <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.1em] text-zinc-600">
+                        <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.1em] text-zinc-900/70">
                           <FileText className="size-3.5" />
                           <span>Params (OpenAPI)</span>
                         </p>
@@ -366,13 +488,13 @@ export default function DashboardModelsPage() {
                             modelCard.parameterKeys.map((parameterKey) => (
                               <span
                                 key={`${modelCard.id}:${parameterKey}`}
-                                className="rounded-md border border-zinc-900/20 bg-white/78 px-2 py-1 text-xs font-medium text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100"
+                                className="rounded-md border border-black/10 bg-white/80 px-2 py-1 text-xs font-medium text-zinc-900/90"
                               >
                                 {parameterKey}
                               </span>
                             ))
                           ) : (
-                            <span className="rounded-md border border-zinc-900/20 bg-white/78 px-2 py-1 text-xs font-medium text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100">
+                            <span className="rounded-md border border-black/10 bg-white/80 px-2 py-1 text-xs font-medium text-zinc-900/90">
                               No documented params in OpenAPI for this model yet
                             </span>
                           )}
