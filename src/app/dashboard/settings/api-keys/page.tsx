@@ -1,9 +1,7 @@
-import dynamic from "next/dynamic"
 import { KeyRound } from "lucide-react"
 
+import KeyTable from "@/components/site/dashboard/api-keys/KeyTable"
 import { SettingsPageCard } from "@/components/site/dashboard/settings/settings-page-card"
-
-const KeyTable = dynamic(() => import("@/components/site/dashboard/api-keys/KeyTable"), { ssr: false })
 
 export default function DashboardSettingsApiKeysPage() {
   return (

@@ -1,18 +1,48 @@
+import Stripe from "stripe";
+import { apiKey } from "@better-auth/api-key";
+import { i18n } from "@better-auth/i18n";
+import { sso } from "@better-auth/sso";
+import { stripe as stripePlugin } from "@better-auth/stripe";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
+import {
+  admin,
+  captcha,
+  haveIBeenPwned,
+  lastLoginMethod,
+  organization,
+  twoFactor,
+} from "better-auth/plugins";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { drizzle } from "drizzle-orm/d1";
+import emailHarmony from "better-auth-harmony/email";
 
 import { authSchema } from "@/db/auth-schema";
+import { BillingPaymentFailedEmail } from "@/emails/billing-payment-failed-email";
+import { BillingReceiptEmail } from "@/emails/billing-receipt-email";
+import { buildEmailBranding, resolveCurrentEmailBranding } from "@/emails/brand";
+import { CheckoutSuccessEmail } from "@/emails/checkout-success-email";
+import { SubscriptionCanceledEmail } from "@/emails/subscription-canceled-email";
 import { VerifyEmail } from "@/emails/verify-email";
+import { sendOrganizationInvitationEmail } from "@/lib/auth-organization-invitations";
+import { ensureCurrentUserSubscriptionBenefits, syncSubscriptionBenefitsForReferenceId } from "@/lib/auth-subscription-benefits";
 import { sendBrevoReactEmail } from "@/lib/brevo-email";
+import { resolveActiveBrand } from "@/lib/brand-catalog";
+import { syncDashboardTopUpFromStripeCheckout } from "@/lib/dashboard-billing-credits";
 import {
   D1_BINDING_PRIORITY,
   formatExpectedBindings,
   resolveD1Binding,
 } from "@/lib/d1-bindings";
+import { resolveBrandForCheckoutSession } from "@/lib/stripe-branding";
+import {
+  listSaasPlans,
+  resolveSaasPlan,
+  resolveSaasPlanStripeAnnualPriceId,
+  resolveSaasPlanStripePriceId,
+} from "@/lib/stripe-saas-plans";
 
 type SocialProviderConfig = {
   clientId: string;
@@ -50,6 +80,14 @@ async function sendAuthVerificationEmail({
 
   const fromEmail = process.env.BREVO_FROM_EMAIL?.trim() || "no-reply@dryapi.ai";
   const fromName = process.env.BREVO_FROM_NAME?.trim() || "dryAPI";
+  const branding = await resolveCurrentEmailBranding().catch(() =>
+    buildEmailBranding({
+      displayName: fromName,
+      mark: fromName,
+      supportEmail: fromEmail,
+      homeUrl: process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://dryapi.dev",
+    }),
+  );
 
   await sendBrevoReactEmail({
     apiKey: brevoApiKey,
@@ -63,6 +101,7 @@ async function sendAuthVerificationEmail({
     }],
     subject: "Verify your email address",
     react: VerifyEmail({
+      branding,
       name: user.name || undefined,
       verificationUrl: url,
     }),
@@ -131,6 +170,11 @@ function parseCsv(value: string | undefined): string[] {
 
 function isString(value: string | undefined): value is string {
   return typeof value === "string" && value.length > 0;
+}
+
+function parseBooleanFlag(value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
 }
 
 function isLoopbackOrigin(origin: string): boolean {
@@ -255,6 +299,909 @@ function readSocialProviders():
   return Object.keys(providers).length > 0 ? providers : undefined;
 }
 
+type BetterAuthOptions = Parameters<typeof betterAuth>[0];
+
+function buildI18nPlugin() {
+  const locales = Array.from(
+    new Set(parseCsv(process.env.BETTER_AUTH_LOCALES || process.env.NEXT_PUBLIC_APP_LOCALES).concat("en")),
+  );
+
+  const translations = Object.fromEntries(locales.map((locale) => [locale, {}])) as Record<string, Record<string, string>>;
+
+  return i18n({
+    translations,
+    defaultLocale: locales[0] ?? "en",
+    detection: ["header", "cookie"],
+  });
+}
+
+const CHECKOUT_EMAIL_SENT_AT_METADATA_KEY = "dryapi_checkout_email_sent_at";
+const CHECKOUT_EMAIL_SENT_FLOW_METADATA_KEY = "dryapi_checkout_email_sent_flow";
+const CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY = "dryapi_checkout_email_sent_brand";
+const STRIPE_BRAND_KEY_METADATA_KEY = "dryapi_brand_key";
+const INVOICE_RECEIPT_EMAIL_SENT_AT_METADATA_KEY = "dryapi_invoice_receipt_email_sent_at";
+const INVOICE_PAYMENT_FAILED_EMAIL_SENT_AT_METADATA_KEY = "dryapi_invoice_payment_failed_email_sent_at";
+const SUBSCRIPTION_CANCELED_EMAIL_SENT_AT_METADATA_KEY = "dryapi_subscription_canceled_email_sent_at";
+
+type CheckoutEmailFlow = "topup" | "subscription";
+
+function readCheckoutSessionEmail(session: Stripe.Checkout.Session): string {
+  return session.customer_email?.trim() || session.customer_details?.email?.trim() || "";
+}
+
+function resolveCheckoutEmailFlow(session: Stripe.Checkout.Session): CheckoutEmailFlow | null {
+  if (session.mode === "subscription") {
+    return "subscription";
+  }
+
+  if (session.mode === "payment" && session.metadata?.source === "dryapi-dashboard-top-up") {
+    return "topup";
+  }
+
+  return null;
+}
+
+function safeParseUrl(value: string | null | undefined): URL | null {
+  const raw = value?.trim();
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return new URL(raw);
+  } catch {
+    return null;
+  }
+}
+
+function resolveCheckoutPlanLabel(session: Stripe.Checkout.Session): string | null {
+  const planFromMetadata = session.metadata?.planSlug?.trim();
+  if (planFromMetadata) {
+    return resolveSaasPlan(planFromMetadata)?.label || planFromMetadata;
+  }
+
+  const successUrl = safeParseUrl(session.success_url);
+  const planFromUrl = successUrl?.searchParams.get("plan")?.trim();
+  if (!planFromUrl) {
+    return null;
+  }
+
+  return resolveSaasPlan(planFromUrl)?.label || planFromUrl;
+}
+
+function toEnvBrandSuffix(brandKey: string): string {
+  return brandKey.trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+}
+
+function resolveBrandHost(siteUrl: string): string {
+  try {
+    return new URL(siteUrl).hostname;
+  } catch {
+    return "dryapi.dev";
+  }
+}
+
+function resolveBrandSender(brand: { key: string; mark: string; siteUrl: string }) {
+  const suffix = toEnvBrandSuffix(brand.key);
+  const host = resolveBrandHost(brand.siteUrl);
+
+  const fromEmail = process.env[`BREVO_FROM_EMAIL_${suffix}`]?.trim()
+    || process.env.BREVO_FROM_EMAIL?.trim()
+    || `billing@${host}`;
+
+  const fromName = process.env[`BREVO_FROM_NAME_${suffix}`]?.trim()
+    || process.env.BREVO_FROM_NAME?.trim()
+    || brand.mark;
+
+  const supportEmail = process.env[`BILLING_SUPPORT_EMAIL_${suffix}`]?.trim()
+    || process.env.BILLING_SUPPORT_EMAIL?.trim()
+    || `support@${host}`;
+
+  return {
+    fromEmail,
+    fromName,
+    supportEmail,
+    billingUrl: `${brand.siteUrl.replace(/\/+$/, "")}/dashboard/billing`,
+  };
+}
+
+function readStringMetadata(metadata: Stripe.Metadata | null | undefined, key: string): string | null {
+  const value = metadata?.[key];
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function readExpandableId(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || null;
+  }
+
+  if (value && typeof value === "object") {
+    const id = (value as { id?: unknown }).id;
+    if (typeof id === "string") {
+      const trimmed = id.trim();
+      return trimmed || null;
+    }
+  }
+
+  return null;
+}
+
+function readExpandableEmail(value: unknown): string | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  if ((value as { deleted?: boolean }).deleted) {
+    return null;
+  }
+
+  const email = (value as { email?: unknown }).email;
+  if (typeof email !== "string") {
+    return null;
+  }
+
+  const trimmed = email.trim();
+  return trimmed || null;
+}
+
+function readExpandableMetadata(value: unknown): Stripe.Metadata | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const metadata = (value as { metadata?: unknown }).metadata;
+  if (!metadata || typeof metadata !== "object") {
+    return null;
+  }
+
+  return metadata as Stripe.Metadata;
+}
+
+function formatStripeAmount(amountMinor: number | null | undefined, currency: string | null | undefined): string {
+  const normalizedCurrency = (currency || "usd").trim().toUpperCase() || "USD";
+  const amount = Number.isFinite(amountMinor) ? Number(amountMinor) : 0;
+
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: normalizedCurrency,
+    }).format(amount / 100);
+  } catch {
+    return `${(amount / 100).toFixed(2)} ${normalizedCurrency}`;
+  }
+}
+
+function formatStripeUnixTimestamp(unixSeconds: number | null | undefined): string | null {
+  if (!Number.isFinite(unixSeconds) || !unixSeconds) {
+    return null;
+  }
+
+  const date = new Date(Number(unixSeconds) * 1000);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return `${new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(date)} UTC`;
+}
+
+function buildStripeEmailBrandingContext(brand: {
+  key: string;
+  displayName: string;
+  mark: string;
+  siteUrl: string;
+}) {
+  const sender = resolveBrandSender(brand);
+  const branding = buildEmailBranding({
+    brand,
+    brandKey: brand.key,
+    displayName: brand.displayName,
+    mark: brand.mark,
+    homeUrl: brand.siteUrl,
+    supportEmail: sender.supportEmail,
+    salesEmail: sender.supportEmail,
+  });
+
+  return {
+    brand,
+    sender,
+    branding,
+  };
+}
+
+async function resolveStripeEmailBrandingContext(brandKey: string | null | undefined) {
+  const brand = await resolveActiveBrand({ brandKey: brandKey || undefined });
+  return buildStripeEmailBrandingContext(brand);
+}
+
+async function resolveCustomerEmailFromStripeCustomer(input: {
+  stripeClient: Stripe;
+  customer: unknown;
+}): Promise<string> {
+  const inlineEmail = readExpandableEmail(input.customer);
+  if (inlineEmail) {
+    return inlineEmail;
+  }
+
+  const customerId = readExpandableId(input.customer);
+  if (!customerId) {
+    return "";
+  }
+
+  try {
+    const customer = await input.stripeClient.customers.retrieve(customerId);
+    return readExpandableEmail(customer) || "";
+  } catch (error) {
+    console.warn("[auth] Failed to resolve Stripe customer email", {
+      customerId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return "";
+  }
+}
+
+async function resolveBrandKeyForInvoice(input: {
+  stripeClient: Stripe;
+  invoice: Stripe.Invoice;
+}): Promise<string | null> {
+  const invoiceBrandKey = readStringMetadata(input.invoice.metadata, STRIPE_BRAND_KEY_METADATA_KEY)
+    || readStringMetadata(input.invoice.metadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  if (invoiceBrandKey) {
+    return invoiceBrandKey;
+  }
+
+  const invoiceSubscriptionRef = (input.invoice as { subscription?: unknown }).subscription;
+  const subscriptionMetadata = readExpandableMetadata(invoiceSubscriptionRef);
+  const subscriptionBrandKey = readStringMetadata(subscriptionMetadata, STRIPE_BRAND_KEY_METADATA_KEY)
+    || readStringMetadata(subscriptionMetadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  if (subscriptionBrandKey) {
+    return subscriptionBrandKey;
+  }
+
+  const subscriptionId = readExpandableId(invoiceSubscriptionRef);
+  if (subscriptionId) {
+    try {
+      const subscription = await input.stripeClient.subscriptions.retrieve(subscriptionId);
+      const retrievedBrandKey = readStringMetadata(subscription.metadata, STRIPE_BRAND_KEY_METADATA_KEY)
+        || readStringMetadata(subscription.metadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+      if (retrievedBrandKey) {
+        return retrievedBrandKey;
+      }
+    } catch (error) {
+      console.warn("[auth] Failed to resolve Stripe subscription brand key", {
+        subscriptionId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const customerMetadata = readExpandableMetadata(input.invoice.customer);
+  const customerBrandKey = readStringMetadata(customerMetadata, STRIPE_BRAND_KEY_METADATA_KEY)
+    || readStringMetadata(customerMetadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  if (customerBrandKey) {
+    return customerBrandKey;
+  }
+
+  const customerId = readExpandableId(input.invoice.customer);
+  if (!customerId) {
+    return null;
+  }
+
+  try {
+    const customer = await input.stripeClient.customers.retrieve(customerId);
+    const metadata = readExpandableMetadata(customer);
+    return readStringMetadata(metadata, STRIPE_BRAND_KEY_METADATA_KEY)
+      || readStringMetadata(metadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  } catch (error) {
+    console.warn("[auth] Failed to resolve Stripe customer brand key", {
+      customerId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+async function resolveBrandKeyForSubscription(input: {
+  stripeClient: Stripe;
+  subscription: Stripe.Subscription;
+}): Promise<string | null> {
+  const subscriptionBrandKey = readStringMetadata(input.subscription.metadata, STRIPE_BRAND_KEY_METADATA_KEY)
+    || readStringMetadata(input.subscription.metadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  if (subscriptionBrandKey) {
+    return subscriptionBrandKey;
+  }
+
+  const customerMetadata = readExpandableMetadata(input.subscription.customer);
+  const customerBrandKey = readStringMetadata(customerMetadata, STRIPE_BRAND_KEY_METADATA_KEY)
+    || readStringMetadata(customerMetadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  if (customerBrandKey) {
+    return customerBrandKey;
+  }
+
+  const customerId = readExpandableId(input.subscription.customer);
+  if (!customerId) {
+    return null;
+  }
+
+  try {
+    const customer = await input.stripeClient.customers.retrieve(customerId);
+    const metadata = readExpandableMetadata(customer);
+    return readStringMetadata(metadata, STRIPE_BRAND_KEY_METADATA_KEY)
+      || readStringMetadata(metadata, CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY);
+  } catch (error) {
+    console.warn("[auth] Failed to resolve Stripe customer brand key for subscription", {
+      customerId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+function resolveSubscriptionPlanLabel(subscription: Stripe.Subscription): string | null {
+  const fromMetadata = readStringMetadata(subscription.metadata, "planSlug");
+  if (fromMetadata) {
+    return resolveSaasPlan(fromMetadata)?.label || fromMetadata;
+  }
+
+  const firstItem = subscription.items.data[0];
+  const nickname = firstItem?.price?.nickname?.trim();
+  if (nickname) {
+    return nickname;
+  }
+
+  const lookupKey = firstItem?.price?.lookup_key;
+  if (typeof lookupKey === "string" && lookupKey.trim()) {
+    return lookupKey.trim();
+  }
+
+  return null;
+}
+
+async function sendBrandedCheckoutSuccessEmail(input: {
+  stripeClient: Stripe;
+  session: Stripe.Checkout.Session;
+  customerEmail: string;
+}): Promise<void> {
+  const flow = resolveCheckoutEmailFlow(input.session);
+  if (!flow) {
+    return;
+  }
+
+  if (input.session.metadata?.[CHECKOUT_EMAIL_SENT_AT_METADATA_KEY]?.trim()) {
+    return;
+  }
+
+  const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+  if (!brevoApiKey) {
+    console.warn("[auth] BREVO_API_KEY is not set; checkout confirmation email not sent.", {
+      checkoutSessionId: input.session.id,
+      flow,
+    });
+    return;
+  }
+
+  const { brand } = await resolveBrandForCheckoutSession({
+    success_url: input.session.success_url,
+    cancel_url: input.session.cancel_url,
+  });
+  const { sender, branding } = buildStripeEmailBrandingContext(brand);
+  const planLabel = flow === "subscription" ? resolveCheckoutPlanLabel(input.session) : null;
+
+  await sendBrevoReactEmail({
+    apiKey: brevoApiKey,
+    from: {
+      email: sender.fromEmail,
+      name: sender.fromName,
+    },
+    to: [{
+      email: input.customerEmail,
+    }],
+    subject: flow === "topup"
+      ? `Your ${brand.mark} credit top-up is complete`
+      : `Your ${brand.mark} plan is active`,
+    react: CheckoutSuccessEmail({
+      branding,
+      flow,
+      planLabel,
+      billingUrl: sender.billingUrl,
+      supportEmail: sender.supportEmail,
+    }),
+    tags: ["billing", "stripe-checkout", `brand:${brand.key}`, `flow:${flow}`],
+  });
+
+  const sentAtIso = new Date().toISOString();
+  try {
+    await input.stripeClient.checkout.sessions.update(input.session.id, {
+      metadata: {
+        ...(input.session.metadata || {}),
+        [CHECKOUT_EMAIL_SENT_AT_METADATA_KEY]: sentAtIso,
+        [CHECKOUT_EMAIL_SENT_FLOW_METADATA_KEY]: flow,
+        [CHECKOUT_EMAIL_SENT_BRAND_METADATA_KEY]: brand.key,
+      },
+    });
+  } catch (error) {
+    console.warn("[auth] Failed to mark checkout confirmation email metadata", {
+      checkoutSessionId: input.session.id,
+      flow,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const brandMetadata = {
+    [STRIPE_BRAND_KEY_METADATA_KEY]: brand.key,
+  };
+  const customerId = readExpandableId(input.session.customer);
+  const subscriptionId = readExpandableId(input.session.subscription);
+  const propagationTasks: Promise<unknown>[] = [];
+
+  if (customerId) {
+    propagationTasks.push(input.stripeClient.customers.update(customerId, {
+      metadata: brandMetadata,
+    }));
+  }
+
+  if (subscriptionId) {
+    propagationTasks.push(input.stripeClient.subscriptions.update(subscriptionId, {
+      metadata: brandMetadata,
+    }));
+  }
+
+  if (propagationTasks.length > 0) {
+    const propagationResults = await Promise.allSettled(propagationTasks);
+    const failedCount = propagationResults.filter((result) => result.status === "rejected").length;
+    if (failedCount > 0) {
+      console.warn("[auth] Failed to propagate Stripe brand metadata", {
+        checkoutSessionId: input.session.id,
+        failedCount,
+      });
+    }
+  }
+}
+
+async function sendBrandedInvoiceReceiptEmail(input: {
+  stripeClient: Stripe;
+  invoice: Stripe.Invoice;
+}): Promise<void> {
+  if (!input.invoice.id) {
+    return;
+  }
+
+  if (readStringMetadata(input.invoice.metadata, INVOICE_RECEIPT_EMAIL_SENT_AT_METADATA_KEY)) {
+    return;
+  }
+
+  const customerEmail = input.invoice.customer_email?.trim()
+    || await resolveCustomerEmailFromStripeCustomer({
+      stripeClient: input.stripeClient,
+      customer: input.invoice.customer,
+    });
+
+  if (!customerEmail) {
+    return;
+  }
+
+  const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+  if (!brevoApiKey) {
+    console.warn("[auth] BREVO_API_KEY is not set; Stripe invoice receipt email not sent.", {
+      invoiceId: input.invoice.id,
+    });
+    return;
+  }
+
+  const brandKey = await resolveBrandKeyForInvoice(input);
+  const { brand, sender, branding } = await resolveStripeEmailBrandingContext(brandKey);
+  const amountLabel = formatStripeAmount(
+    Number.isFinite(input.invoice.amount_paid) ? input.invoice.amount_paid : input.invoice.amount_due,
+    input.invoice.currency,
+  );
+  const receiptUrl = input.invoice.hosted_invoice_url?.trim() || input.invoice.invoice_pdf?.trim() || sender.billingUrl;
+  const billedAt = formatStripeUnixTimestamp(input.invoice.status_transitions?.paid_at || input.invoice.created);
+
+  await sendBrevoReactEmail({
+    apiKey: brevoApiKey,
+    from: {
+      email: sender.fromEmail,
+      name: sender.fromName,
+    },
+    to: [{ email: customerEmail }],
+    subject: `Your ${brand.mark} receipt is ready`,
+    react: BillingReceiptEmail({
+      branding,
+      amountLabel,
+      description: input.invoice.description?.trim() || "Stripe invoice payment",
+      receiptUrl,
+      invoiceNumber: input.invoice.number,
+      billedAt,
+      billingUrl: sender.billingUrl,
+    }),
+    tags: ["billing", "stripe-invoice-paid", `brand:${brand.key}`],
+  });
+
+  const sentAtIso = new Date().toISOString();
+  try {
+    await input.stripeClient.invoices.update(input.invoice.id, {
+      metadata: {
+        ...(input.invoice.metadata || {}),
+        [STRIPE_BRAND_KEY_METADATA_KEY]: brand.key,
+        [INVOICE_RECEIPT_EMAIL_SENT_AT_METADATA_KEY]: sentAtIso,
+      },
+    });
+  } catch (error) {
+    console.warn("[auth] Failed to mark Stripe invoice receipt email metadata", {
+      invoiceId: input.invoice.id,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function sendBrandedInvoicePaymentFailedEmail(input: {
+  stripeClient: Stripe;
+  invoice: Stripe.Invoice;
+}): Promise<void> {
+  if (!input.invoice.id) {
+    return;
+  }
+
+  if (readStringMetadata(input.invoice.metadata, INVOICE_PAYMENT_FAILED_EMAIL_SENT_AT_METADATA_KEY)) {
+    return;
+  }
+
+  const customerEmail = input.invoice.customer_email?.trim()
+    || await resolveCustomerEmailFromStripeCustomer({
+      stripeClient: input.stripeClient,
+      customer: input.invoice.customer,
+    });
+
+  if (!customerEmail) {
+    return;
+  }
+
+  const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+  if (!brevoApiKey) {
+    console.warn("[auth] BREVO_API_KEY is not set; Stripe payment failure email not sent.", {
+      invoiceId: input.invoice.id,
+    });
+    return;
+  }
+
+  const brandKey = await resolveBrandKeyForInvoice(input);
+  const { brand, sender, branding } = await resolveStripeEmailBrandingContext(brandKey);
+  const amountDueLabel = formatStripeAmount(
+    Number.isFinite(input.invoice.amount_due) ? input.invoice.amount_due : input.invoice.total,
+    input.invoice.currency,
+  );
+  const nextPaymentAttempt = formatStripeUnixTimestamp(
+    (input.invoice as { next_payment_attempt?: number | null }).next_payment_attempt,
+  );
+
+  await sendBrevoReactEmail({
+    apiKey: brevoApiKey,
+    from: {
+      email: sender.fromEmail,
+      name: sender.fromName,
+    },
+    to: [{ email: customerEmail }],
+    subject: `Action required: update your ${brand.mark} billing method`,
+    react: BillingPaymentFailedEmail({
+      branding,
+      amountDueLabel,
+      invoiceNumber: input.invoice.number,
+      retryAt: nextPaymentAttempt,
+      invoiceUrl: input.invoice.hosted_invoice_url?.trim() || input.invoice.invoice_pdf?.trim() || null,
+      billingUrl: sender.billingUrl,
+      supportEmail: sender.supportEmail,
+    }),
+    tags: ["billing", "stripe-invoice-payment-failed", `brand:${brand.key}`],
+  });
+
+  const sentAtIso = new Date().toISOString();
+  try {
+    await input.stripeClient.invoices.update(input.invoice.id, {
+      metadata: {
+        ...(input.invoice.metadata || {}),
+        [STRIPE_BRAND_KEY_METADATA_KEY]: brand.key,
+        [INVOICE_PAYMENT_FAILED_EMAIL_SENT_AT_METADATA_KEY]: sentAtIso,
+      },
+    });
+  } catch (error) {
+    console.warn("[auth] Failed to mark Stripe payment failure email metadata", {
+      invoiceId: input.invoice.id,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function sendBrandedSubscriptionCanceledEmail(input: {
+  stripeClient: Stripe;
+  subscription: Stripe.Subscription;
+}): Promise<void> {
+  if (!input.subscription.id) {
+    return;
+  }
+
+  if (readStringMetadata(input.subscription.metadata, SUBSCRIPTION_CANCELED_EMAIL_SENT_AT_METADATA_KEY)) {
+    return;
+  }
+
+  const customerEmail = await resolveCustomerEmailFromStripeCustomer({
+    stripeClient: input.stripeClient,
+    customer: input.subscription.customer,
+  });
+  if (!customerEmail) {
+    return;
+  }
+
+  const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+  if (!brevoApiKey) {
+    console.warn("[auth] BREVO_API_KEY is not set; Stripe cancellation email not sent.", {
+      subscriptionId: input.subscription.id,
+    });
+    return;
+  }
+
+  const brandKey = await resolveBrandKeyForSubscription(input);
+  const { brand, sender, branding } = await resolveStripeEmailBrandingContext(brandKey);
+  const canceledAt = formatStripeUnixTimestamp(
+    input.subscription.canceled_at || input.subscription.ended_at || input.subscription.current_period_end,
+  );
+
+  await sendBrevoReactEmail({
+    apiKey: brevoApiKey,
+    from: {
+      email: sender.fromEmail,
+      name: sender.fromName,
+    },
+    to: [{ email: customerEmail }],
+    subject: `Your ${brand.mark} subscription was canceled`,
+    react: SubscriptionCanceledEmail({
+      branding,
+      planLabel: resolveSubscriptionPlanLabel(input.subscription),
+      canceledAt,
+      billingUrl: sender.billingUrl,
+      supportEmail: sender.supportEmail,
+    }),
+    tags: ["billing", "stripe-subscription-canceled", `brand:${brand.key}`],
+  });
+
+  const sentAtIso = new Date().toISOString();
+  try {
+    await input.stripeClient.subscriptions.update(input.subscription.id, {
+      metadata: {
+        ...(input.subscription.metadata || {}),
+        [STRIPE_BRAND_KEY_METADATA_KEY]: brand.key,
+        [SUBSCRIPTION_CANCELED_EMAIL_SENT_AT_METADATA_KEY]: sentAtIso,
+      },
+    });
+  } catch (error) {
+    console.warn("[auth] Failed to mark Stripe cancellation email metadata", {
+      subscriptionId: input.subscription.id,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+function buildStripePlugin() {
+  const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim();
+  if (!stripePrivateKey) {
+    return null;
+  }
+
+  const stripeClient = new Stripe(stripePrivateKey, {
+    apiVersion: "2026-02-25.clover",
+  });
+
+  const plans = listSaasPlans().flatMap((plan) => {
+    const priceId = resolveSaasPlanStripePriceId(plan);
+    if (!priceId) {
+      return [];
+    }
+
+    return [{
+      name: plan.slug,
+      priceId,
+      annualDiscountPriceId: resolveSaasPlanStripeAnnualPriceId(plan) || undefined,
+      limits: {
+        monthlyCredits: plan.monthlyCredits,
+        monthlyTokens: plan.monthlyTokens,
+        discountPercent: plan.discountPercent,
+        annualDiscountPercent: plan.annualDiscountPercent,
+      },
+    }];
+  });
+
+  const syncSubscriptionBenefits = async (referenceId: string | undefined) => {
+    if (!referenceId) {
+      return;
+    }
+
+    try {
+      await syncSubscriptionBenefitsForReferenceId(referenceId);
+    } catch (error) {
+      console.error("[auth] Failed to sync subscription benefits", error);
+    }
+  };
+
+  return stripePlugin({
+    stripeClient,
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET?.trim() || "",
+    subscription: {
+      enabled: true,
+      requireEmailVerification: true,
+      plans,
+      onSubscriptionCreated: async ({ subscription }) => {
+        await syncSubscriptionBenefits(subscription.referenceId);
+      },
+      onSubscriptionComplete: async ({ subscription }) => {
+        await syncSubscriptionBenefits(subscription?.referenceId);
+      },
+      onSubscriptionUpdate: async ({ subscription }) => {
+        await syncSubscriptionBenefits(subscription.referenceId);
+      },
+      onSubscriptionDeleted: async ({ subscription }) => {
+        await syncSubscriptionBenefits(subscription.referenceId);
+      },
+    },
+    onEvent: async (event) => {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          if (!session.id) {
+            return;
+          }
+
+          const customerEmail = readCheckoutSessionEmail(session);
+          if (!customerEmail) {
+            return;
+          }
+
+          const flow = resolveCheckoutEmailFlow(session);
+
+          if (flow === "topup") {
+            await syncDashboardTopUpFromStripeCheckout({
+              checkoutSessionId: session.id,
+              customerEmail,
+              stripePrivateKey,
+            }).catch((error) => {
+              console.error("[auth] Failed to sync Stripe top-up checkout", error);
+            });
+          }
+
+          await ensureCurrentUserSubscriptionBenefits(customerEmail).catch(() => {
+            return null;
+          });
+
+          await sendBrandedCheckoutSuccessEmail({
+            stripeClient,
+            session,
+            customerEmail,
+          }).catch((error) => {
+            console.error("[auth] Failed to send branded checkout confirmation email", error);
+          });
+          return;
+        }
+
+        case "invoice.paid": {
+          const invoice = event.data.object as Stripe.Invoice;
+          await sendBrandedInvoiceReceiptEmail({
+            stripeClient,
+            invoice,
+          }).catch((error) => {
+            console.error("[auth] Failed to send branded Stripe receipt email", error);
+          });
+
+          const customerEmail = invoice.customer_email?.trim()
+            || await resolveCustomerEmailFromStripeCustomer({
+              stripeClient,
+              customer: invoice.customer,
+            });
+
+          if (customerEmail) {
+            await ensureCurrentUserSubscriptionBenefits(customerEmail).catch(() => {
+              return null;
+            });
+          }
+
+          return;
+        }
+
+        case "invoice.payment_failed": {
+          const invoice = event.data.object as Stripe.Invoice;
+          await sendBrandedInvoicePaymentFailedEmail({
+            stripeClient,
+            invoice,
+          }).catch((error) => {
+            console.error("[auth] Failed to send branded Stripe payment failure email", error);
+          });
+          return;
+        }
+
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object as Stripe.Subscription;
+          await sendBrandedSubscriptionCanceledEmail({
+            stripeClient,
+            subscription,
+          }).catch((error) => {
+            console.error("[auth] Failed to send branded Stripe cancellation email", error);
+          });
+          return;
+        }
+
+        default:
+          return;
+    },
+  });
+}
+
+function buildAuthPlugins(): NonNullable<BetterAuthOptions["plugins"]> {
+  const plugins: NonNullable<BetterAuthOptions["plugins"]> = [
+    nextCookies(),
+    emailHarmony({
+      allowNormalizedSignin: true,
+    }),
+    buildI18nPlugin(),
+    lastLoginMethod({ storeInDatabase: true }),
+    haveIBeenPwned(),
+    admin({
+      defaultRole: "user",
+      adminRoles: parseCsv(process.env.BETTER_AUTH_ADMIN_ROLES).length > 0
+        ? parseCsv(process.env.BETTER_AUTH_ADMIN_ROLES)
+        : ["admin"],
+    }),
+    organization({
+      allowUserToCreateOrganization: true,
+      requireEmailVerificationOnInvitation: true,
+      cancelPendingInvitationsOnReInvite: true,
+      sendInvitationEmail: async (invitation, request) => {
+        await sendOrganizationInvitationEmail({
+          invitation,
+          request,
+        }).catch((error) => {
+          console.error("[auth] Failed to send organization invitation email", error);
+        });
+      },
+    }),
+    twoFactor(),
+    apiKey({
+      enableMetadata: true,
+      keyExpiration: {
+        defaultExpiresIn: null,
+        minExpiresIn: 0,
+        maxExpiresIn: 3650,
+      },
+      startingCharactersConfig: {
+        shouldStore: true,
+        charactersLength: 16,
+      },
+    }),
+    sso({}),
+  ];
+
+  const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY?.trim();
+  if (turnstileSecret) {
+    plugins.push(captcha({
+      provider: "cloudflare-turnstile",
+      secretKey: turnstileSecret,
+      endpoints: ["/sign-in/email", "/sign-up/email", "/forget-password"],
+    }));
+  }
+
+  const stripe = buildStripePlugin();
+  if (stripe) {
+    plugins.push(stripe);
+  }
+
+  return plugins;
+}
+
 const baseURL = resolveBetterAuthBaseUrl();
 const socialProviders = readSocialProviders();
 
@@ -369,6 +1316,9 @@ function buildAuthOptions() {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
+      ...(parseBooleanFlag(process.env.BETTER_AUTH_DISABLE_SIGN_UP)
+        ? { disableSignUp: true }
+        : {}),
       password: {
         hash: hashPassword,
         verify: verifyPassword,
@@ -386,7 +1336,7 @@ function buildAuthOptions() {
       },
     },
     socialProviders,
-    plugins: [nextCookies()],
+    plugins: buildAuthPlugins(),
   } satisfies Parameters<typeof betterAuth>[0];
 }
 

@@ -11,11 +11,12 @@ import {
   ChevronRight,
   KeyRound,
   LayoutDashboard,
-  Layers3,
+  LifeBuoy,
   LogOut,
   Menu,
-  MessageCircle,
+  Rss,
   Settings2,
+  Users,
   WalletCards,
   X,
 } from "lucide-react";
@@ -104,10 +105,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
     if (pathname.startsWith("/dashboard/billing")) {
       return "Billing";
-    }
-
-    if (pathname.startsWith("/dashboard/queue-scaling")) {
-      return "Queue Scaling";
     }
 
     if (pathname.startsWith("/dashboard/settings")) {
@@ -232,20 +229,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
             </Link>
 
             <Link
-              href="/dashboard/queue-scaling"
-              prefetch={false}
-              onClick={() => setMobileSidebarOpen(false)}
-              className={getNavItemClass(
-                isRouteActive(pathname, "/dashboard/queue-scaling"),
-              )}
-            >
-              <Layers3 className="size-4" />
-              <span className="flex-1 whitespace-nowrap text-sm font-medium leading-none">
-                Queue Scaling
-              </span>
-            </Link>
-
-            <Link
               href="/dashboard/settings/general"
               prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
@@ -276,7 +259,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
           <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-white/10 dark:bg-white/10">
             <p className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-zinc-800 dark:text-white">
-              <MessageCircle className="size-4" />
+              <LifeBuoy className="size-4" />
               <span>Need Help?</span>
             </p>
             <nav
@@ -289,7 +272,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 rel="noopener noreferrer"
                 className={getNavItemClass(false)}
               >
-                <MessageCircle className="size-4" />
+                <Rss className="size-4" />
                 <span>News & Updates</span>
               </a>
               <a
@@ -298,7 +281,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 rel="noopener noreferrer"
                 className={getNavItemClass(false)}
               >
-                <MessageCircle className="size-4" />
+                <Users className="size-4" />
                 <span>Join Discord</span>
               </a>
             </nav>
@@ -402,7 +385,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             ) : null}
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
+          <main className="flex-1 animate-page-in overflow-y-auto p-4 lg:p-8">{children}</main>
         </section>
       </div>
     </div>

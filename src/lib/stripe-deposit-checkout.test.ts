@@ -5,6 +5,7 @@ import {
   normalizeCurrencyCode,
   parseDepositAmountToCents,
   parseDepositCents,
+  resolveTopUpCharge,
   sanitizeDepositMetadata,
 } from "@/lib/stripe-deposit-checkout"
 
@@ -16,7 +17,7 @@ describe("stripe deposit checkout helpers", () => {
 
   it("rejects invalid major-unit amounts", () => {
     expect(() => parseDepositAmountToCents("10.999")).toThrowError(/2 decimal places/i)
-    expect(() => parseDepositAmountToCents(0)).toThrowError(/greater than zero/i)
+    expect(() => parseDepositAmountToCents(0)).toThrowError(/at least/i)
   })
 
   it("parses and validates cent amounts", () => {
@@ -63,5 +64,21 @@ describe("stripe deposit checkout helpers", () => {
     expect(payload.get("line_items[0][price_data][currency]")).toBe("aud")
     expect(payload.get("customer_email")).toBe("ops@example.com")
     expect(payload.get("metadata[source]")).toBe("genfix")
+  })
+
+  it("keeps default top-up discount behavior when no plan discount is supplied", () => {
+    const topUp = resolveTopUpCharge(10_000)
+
+    expect(topUp.discountCents).toBe(500)
+    expect(topUp.chargeAmountCents).toBe(9_500)
+    expect(topUp.appliedDiscountPercent).toBe(5)
+  })
+
+  it("applies tier discount percentages when provided", () => {
+    const topUp = resolveTopUpCharge(5_000, { discountPercent: 15 })
+
+    expect(topUp.discountCents).toBe(750)
+    expect(topUp.chargeAmountCents).toBe(4_250)
+    expect(topUp.appliedDiscountPercent).toBe(15)
   })
 })

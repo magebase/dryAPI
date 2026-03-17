@@ -1,0 +1,11 @@
+{
+  "brand": {
+    "name": "Embedding API Infrastructure",
+    "mark": "embedAPI"
+  },
+  "contact": {
+    "contactEmail": "support@embedapi.dev",
+    "quoteEmail": "sales@embedapi.dev"
+  },
+  "announcement": "Unified inference APIs tuned for retrieval and semantic search teams."
+}

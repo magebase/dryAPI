@@ -144,6 +144,33 @@ first_non_empty_value() {
   return 1
 }
 
+normalize_source_value() {
+  local value="$1"
+  local trimmed="$value"
+
+  trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"
+  trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+
+  if [[ -z "$trimmed" ]]; then
+    printf ''
+    return 0
+  fi
+
+  trimmed="${trimmed%/}"
+
+  if [[ "$trimmed" =~ ^https?:// ]]; then
+    printf '%s' "$trimmed"
+    return 0
+  fi
+
+  if [[ "$trimmed" =~ ^[A-Za-z0-9.-]+(:[0-9]+)?(/.*)?$ ]]; then
+    printf 'https://%s' "$trimmed"
+    return 0
+  fi
+
+  printf '%s' "$trimmed"
+}
+
 account_id="$(first_non_empty_value \
   CLOUDFLARE_AI_SEARCH_ACCOUNT_ID \
   CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID || true)"
@@ -193,8 +220,28 @@ do_put_secret() {
     return 0
   fi
 
-  printf '%s' "$value" | pnpm wrangler secret put "$key" --name "$WORKER_NAME" --config "$WRANGLER_CONFIG" >/dev/null
-  echo "Synced $key"
+  local err_file
+  err_file="$(mktemp)"
+
+  if printf '%s' "$value" | pnpm wrangler secret put "$key" --name "$WORKER_NAME" --config "$WRANGLER_CONFIG" >/dev/null 2>"$err_file"; then
+    rm -f "$err_file"
+    echo "Synced $key"
+    return 0
+  fi
+
+  if grep -qi "latest version of your Worker isn't currently deployed" "$err_file"; then
+    if printf '%s' "$value" | pnpm wrangler versions secret put "$key" --name "$WORKER_NAME" --config "$WRANGLER_CONFIG" >/dev/null 2>"$err_file"; then
+      rm -f "$err_file"
+      echo "Synced $key (versioned)"
+      return 0
+    fi
+  fi
+
+  local err_line
+  err_line="$(sed -n '1p' "$err_file" | tr -d '\r')"
+  rm -f "$err_file"
+  echo "Failed to sync $key${err_line:+: $err_line}" >&2
+  return 1
 }
 
 do_put_secret "CLOUDFLARE_AI_SEARCH_ACCOUNT_ID" "$account_id"
@@ -205,6 +252,10 @@ for key in "${optional_keys[@]}"; do
   value="${ENV_VALUES[$key]:-}"
   if [[ -z "$value" ]]; then
     continue
+  fi
+
+  if [[ "$key" == "CLOUDFLARE_AI_SEARCH_SOURCE" ]]; then
+    value="$(normalize_source_value "$value")"
   fi
 
   do_put_secret "$key" "$value"

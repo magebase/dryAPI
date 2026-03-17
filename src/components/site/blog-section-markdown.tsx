@@ -14,12 +14,12 @@ function linkIsExternal(href: string): boolean {
 
 export function BlogSectionMarkdown({ content, dataTinaField }: BlogSectionMarkdownProps) {
   return (
-    <div className="mt-3 text-base leading-relaxed text-slate-300" data-tina-field={dataTinaField}>
+    <div className="mt-3 text-base leading-relaxed text-slate-600" data-tina-field={dataTinaField}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          h3: ({ children }) => <h3 className="mt-5 text-lg font-semibold text-white">{children}</h3>,
-          h4: ({ children }) => <h4 className="mt-4 text-base font-semibold text-white">{children}</h4>,
+          h3: ({ children }) => <h3 className="mt-5 text-lg font-semibold text-slate-900">{children}</h3>,
+          h4: ({ children }) => <h4 className="mt-4 text-base font-semibold text-slate-900">{children}</h4>,
           p: ({ children }) => <p className="mt-3 first:mt-0">{children}</p>,
           ul: ({ children }) => <ul className="mt-3 list-disc space-y-2 pl-6 marker:text-primary">{children}</ul>,
           ol: ({ children }) => <ol className="mt-3 list-decimal space-y-2 pl-6 marker:text-primary">{children}</ol>,
@@ -39,33 +39,33 @@ export function BlogSectionMarkdown({ content, dataTinaField }: BlogSectionMarkd
             )
           },
           blockquote: ({ children }) => (
-            <blockquote className="mt-4 border-l-2 border-primary/60 pl-4 italic text-slate-200">{children}</blockquote>
+            <blockquote className="mt-4 border-l-2 border-primary/60 pl-4 italic text-slate-700">{children}</blockquote>
           ),
-          hr: () => <hr className="my-5 border-white/15" />,
+          hr: () => <hr className="my-5 border-slate-200" />,
           code: ({ inline, children, ...props }: ComponentPropsWithoutRef<"code"> & { inline?: boolean }) =>
             inline ? (
-              <code {...props} className="rounded bg-[#0b1624] px-1 py-0.5 text-[0.93em] text-primary">
+              <code {...props} className="rounded bg-[var(--site-surface-0)] px-1 py-0.5 text-[0.93em] text-primary">
                 {children}
               </code>
             ) : (
               <code
                 {...props}
-                className="mt-3 block overflow-x-auto rounded-md border border-white/10 bg-[#081221] px-4 py-3 text-sm text-slate-200"
+                className="mt-3 block overflow-x-auto rounded-md border border-slate-200 bg-[var(--site-surface-0)] px-4 py-3 text-sm text-slate-700"
               >
                 {children}
               </code>
             ),
           table: ({ children }) => (
-            <div className="mt-4 overflow-x-auto rounded-md border border-white/10">
+            <div className="mt-4 overflow-x-auto rounded-md border border-slate-200">
               <table className="min-w-full border-collapse text-sm">{children}</table>
             </div>
           ),
-          thead: ({ children }) => <thead className="bg-[#12253a] text-slate-100">{children}</thead>,
+          thead: ({ children }) => <thead className="bg-[var(--site-surface-1)] text-slate-900">{children}</thead>,
           tbody: ({ children }) => <tbody className="divide-y divide-white/10">{children}</tbody>,
           tr: ({ children }) => <tr>{children}</tr>,
           th: ({ children }) => <th className="px-3 py-2 text-left font-semibold">{children}</th>,
-          td: ({ children }) => <td className="px-3 py-2 align-top text-slate-300">{children}</td>,
-          strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+          td: ({ children }) => <td className="px-3 py-2 align-top text-slate-600">{children}</td>,
+          strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
         }}
       >
         {content}

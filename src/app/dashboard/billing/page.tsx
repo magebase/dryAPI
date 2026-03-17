@@ -14,6 +14,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { SaasPlanCards } from "@/components/site/dashboard/billing/saas-plan-cards"
+import { syncDashboardTopUpFromStripeCheckout } from "@/lib/dashboard-billing-credits"
+import { listSaasPlans, resolveMonthlyTokenExpiryIso } from "@/lib/stripe-saas-plans"
 
 export const dynamic = "force-dynamic"
 
@@ -24,6 +27,12 @@ type HeaderStore = {
 type EndpointResult = {
   status: number | null
   data: unknown
+}
+
+type DashboardBillingPageSearchParams = Record<string, string | string[] | undefined>
+
+type DashboardBillingPageProps = {
+  searchParams?: Promise<DashboardBillingPageSearchParams>
 }
 
 type StripeSubscriptionSummary = {
@@ -147,6 +156,24 @@ function resolveRequestOrigin(requestHeaders: HeaderStore): string {
   }
 
   return "http://localhost:3000"
+}
+
+function resolveSearchParamValue(
+  searchParams: DashboardBillingPageSearchParams,
+  key: string,
+): string | null {
+  const value = searchParams[key]
+  if (Array.isArray(value)) {
+    const first = value[0]?.trim()
+    return first && first.length > 0 ? first : null
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : null
+  }
+
+  return null
 }
 
 async function fetchFirstEndpointJson(
@@ -309,12 +336,21 @@ function resolveUsageSummary(payload: unknown): {
   }
 }
 
-type StripeCustomerListResponse = {
+type StripeObjectListResponse = {
   data?: Array<Record<string, unknown>>
 }
 
-type StripeObjectListResponse = {
-  data?: Array<Record<string, unknown>>
+function getStripeListEntries(payload: unknown): Array<Record<string, unknown>> {
+  if (!payload || typeof payload !== "object") {
+    return []
+  }
+
+  const entries = (payload as StripeObjectListResponse).data
+  if (!Array.isArray(entries)) {
+    return []
+  }
+
+  return entries.filter((entry): entry is Record<string, unknown> => !!entry && typeof entry === "object")
 }
 
 async function fetchStripeJson(
@@ -345,11 +381,7 @@ async function fetchStripeJson(
 }
 
 function resolveCustomerIdFromPayload(payload: unknown): string | null {
-  if (!payload || typeof payload !== "object") {
-    return null
-  }
-
-  const entries = (payload as StripeCustomerListResponse).data
+  const entries = getStripeListEntries(payload)
   if (!Array.isArray(entries) || entries.length === 0) {
     return null
   }
@@ -360,10 +392,7 @@ function resolveCustomerIdFromPayload(payload: unknown): string | null {
 }
 
 function mapPaymentMethods(payload: unknown): StripePaymentMethodSummary[] {
-  const entries = (payload as StripeObjectListResponse).data
-  if (!Array.isArray(entries)) {
-    return []
-  }
+  const entries = getStripeListEntries(payload)
 
   return entries
     .map((entry) => {
@@ -382,10 +411,7 @@ function mapPaymentMethods(payload: unknown): StripePaymentMethodSummary[] {
 }
 
 function mapInvoices(payload: unknown): StripeInvoiceSummary[] {
-  const entries = (payload as StripeObjectListResponse).data
-  if (!Array.isArray(entries)) {
-    return []
-  }
+  const entries = getStripeListEntries(payload)
 
   return entries
     .map((entry) => {
@@ -407,13 +433,12 @@ function mapInvoices(payload: unknown): StripeInvoiceSummary[] {
 }
 
 function pickSubscription(payload: unknown): StripeSubscriptionSummary | null {
-  const entries = (payload as StripeObjectListResponse).data
-  if (!Array.isArray(entries) || entries.length === 0) {
+  const entries = getStripeListEntries(payload)
+  if (entries.length === 0) {
     return null
   }
 
   const scored = entries
-    .filter((entry): entry is Record<string, unknown> => !!entry && typeof entry === "object")
     .sort((left, right) => {
       const leftStatus = typeof left.status === "string" ? left.status : ""
       const rightStatus = typeof right.status === "string" ? right.status : ""
@@ -424,6 +449,10 @@ function pickSubscription(payload: unknown): StripeSubscriptionSummary | null {
       const normalizedRight = rightScore === -1 ? priority.length : rightScore
       return normalizedLeft - normalizedRight
     })
+
+  if (scored.length === 0) {
+    return null
+  }
 
   const chosen = scored[0]
   const items = readPath(chosen, ["items", "data"])
@@ -591,7 +620,11 @@ function getSubscriptionStatusVariant(status: string): "default" | "secondary" |
   return "secondary"
 }
 
-export default async function DashboardBillingPage() {
+export default async function DashboardBillingPage({ searchParams }: DashboardBillingPageProps) {
+  const resolvedSearchParams = (await searchParams) || {}
+  const checkoutStatus = resolveSearchParamValue(resolvedSearchParams, "checkout")
+  const checkoutSessionId = resolveSearchParamValue(resolvedSearchParams, "session_id")
+
   const requestHeaderStore = await headers()
   const origin = resolveRequestOrigin(requestHeaderStore)
 
@@ -614,13 +647,28 @@ export default async function DashboardBillingPage() {
     }
   }
 
-  const [balanceResult, usageResult, sessionResult] = await Promise.all([
-    fetchFirstEndpointJson(origin, ["/api/v1/client/balance", "/api/v1/balance"], requestHeaders),
-    fetchFirstEndpointJson(origin, ["/api/v1/usage", "/api/v1/client/usage"], requestHeaders),
-    fetchFirstEndpointJson(origin, ["/api/auth/get-session"], requestHeaders),
-  ])
+  const usagePromise = fetchFirstEndpointJson(origin, ["/api/v1/usage", "/api/v1/client/usage"], requestHeaders)
+  const sessionResult = await fetchFirstEndpointJson(origin, ["/api/auth/get-session"], requestHeaders)
 
   const customerEmail = resolveSessionEmail(sessionResult.data)
+
+  if (
+    checkoutStatus === "success"
+    && checkoutSessionId
+    && customerEmail
+  ) {
+    await syncDashboardTopUpFromStripeCheckout({
+      checkoutSessionId,
+      customerEmail,
+      stripePrivateKey: process.env.STRIPE_PRIVATE_KEY?.trim() || "",
+    }).catch(() => null)
+  }
+
+  const [balanceResult, usageResult] = await Promise.all([
+    fetchFirstEndpointJson(origin, ["/api/v1/client/balance", "/api/v1/balance"], requestHeaders),
+    usagePromise,
+  ])
+
   const stripeSummary = await getStripeBillingSummary(process.env.STRIPE_PRIVATE_KEY?.trim() || null, customerEmail)
 
   const availableCredits = resolveBalance(balanceResult.data)
@@ -628,10 +676,12 @@ export default async function DashboardBillingPage() {
   const usage = resolveUsageSummary(usageResult.data)
 
   const topUpAmounts = [10, 25, 50, 100]
+  const saasPlans = listSaasPlans()
+  const monthlyTokenExpiryIso = resolveMonthlyTokenExpiryIso()
 
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6">
-      <Card className="border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+      <Card className="animate-fade-in border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
         <CardHeader className="gap-3 border-b border-zinc-200/70 py-6 dark:border-zinc-700/70">
           <CardTitle className="inline-flex items-center gap-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
             <BadgeDollarSign className="size-5" />
@@ -643,7 +693,7 @@ export default async function DashboardBillingPage() {
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button asChild size="sm">
               <Link href="/api/dashboard/billing/portal" prefetch={false}>
-                Open Stripe Billing
+                Open Stripe Customer Portal
               </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
@@ -654,7 +704,7 @@ export default async function DashboardBillingPage() {
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-        <Card className="border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+        <Card className="animate-slide-up border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
           <CardHeader className="gap-2 px-5">
             <CardTitle className="inline-flex items-center gap-2 text-lg text-zinc-900 dark:text-zinc-100">
               <CreditCard className="size-4" />
@@ -690,7 +740,7 @@ export default async function DashboardBillingPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+        <Card style={{ animationDelay: "50ms" }} className="animate-slide-up border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
           <CardHeader className="gap-2 px-5">
             <CardTitle className="inline-flex items-center gap-2 text-lg text-zinc-900 dark:text-zinc-100">
               <Layers2 className="size-4" />
@@ -722,6 +772,8 @@ export default async function DashboardBillingPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1fr_1.25fr]">
+        <SaasPlanCards plans={saasPlans} monthlyTokenExpiryIso={monthlyTokenExpiryIso} />
+
         <Card className="border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
           <CardHeader className="gap-2 px-5">
             <CardTitle className="inline-flex items-center gap-2 text-lg text-zinc-900 dark:text-zinc-100">
@@ -765,6 +817,14 @@ export default async function DashboardBillingPage() {
                 {stripeSummary.errors.join(" ")}
               </div>
             ) : null}
+
+            <div className="pt-1">
+              <Button asChild size="sm" variant="outline">
+                <Link href="/api/dashboard/billing/portal" prefetch={false}>
+                  Manage In Stripe Customer Portal
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

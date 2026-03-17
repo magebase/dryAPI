@@ -1,16 +1,13 @@
+import { defaultEmailBranding, type EmailBranding } from "@/emails/brand"
 import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components"
+  EmailCallout,
+  EmailDataList,
+  EmailLayout,
+  EmailParagraph,
+} from "@/emails/email-ui"
 
 type QuoteEmailProps = {
+  branding?: EmailBranding
   name: string
   email: string
   company?: string
@@ -65,139 +62,31 @@ export function QuoteEmail(props: QuoteEmailProps) {
   const summaryRows = quoteSummaryRows(props)
 
   return (
-    <Html>
-      <Head />
-      <Preview>New quote request from {props.name}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Section style={banner}>
-            <Text style={bannerKicker}>GENFIX WEBSITE</Text>
-            <Heading style={bannerHeading}>New Quote Request</Heading>
-            <Text style={bannerText}>Review the submission details below and follow up with the customer.</Text>
-          </Section>
-
-          <Section style={card}>
-            <Text style={sectionTitle}>Customer Summary</Text>
-            {summaryRows.map((row) => (
-              <Section key={row.label} style={rowWrap}>
-                <Text style={rowLabel}>{row.label}</Text>
-                <Text style={rowValue}>{row.value}</Text>
-              </Section>
-            ))}
-          </Section>
-
-          <Hr style={separator} />
-
-          <Section style={card}>
-            <Text style={sectionTitle}>Project Details</Text>
-            {intro ? <Text style={introText}>{intro}</Text> : null}
-            {details.map((detail) => (
-              <Section key={detail.label} style={rowWrap}>
-                <Text style={rowLabel}>{detail.label}</Text>
-                <Text style={rowValue}>{detail.value}</Text>
-              </Section>
-            ))}
-            {details.length === 0 ? <Text style={bodyText}>{props.message}</Text> : null}
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+    <EmailLayout
+      branding={props.branding || defaultEmailBranding}
+      preview={`New quote request from ${props.name}`}
+      eyebrow="Internal Quote Alert"
+      title="New quote request"
+      summary="Review the customer summary and project details below, then follow up directly with the sender."
+      kind="internal"
+    >
+      <EmailDataList
+        items={summaryRows.map((row) => ({
+          label: row.label,
+          value: row.value,
+        }))}
+      />
+      {intro ? <EmailParagraph>{intro}</EmailParagraph> : null}
+      {details.length > 0 ? (
+        <EmailDataList
+          items={details.map((detail) => ({
+            label: detail.label,
+            value: detail.value,
+          }))}
+        />
+      ) : (
+        <EmailCallout title="Project details">{props.message}</EmailCallout>
+      )}
+    </EmailLayout>
   )
-}
-
-const main = {
-  backgroundColor: "#f3f6f9",
-  fontFamily: "Helvetica, Arial, sans-serif",
-  margin: "0",
-  padding: "24px 12px",
-}
-
-const container = {
-  backgroundColor: "#ffffff",
-  border: "1px solid #d6dde5",
-  borderRadius: "12px",
-  margin: "0 auto",
-  maxWidth: "640px",
-  overflow: "hidden",
-}
-
-const banner = {
-  backgroundColor: "#101a28",
-  color: "#ffffff",
-  padding: "24px",
-}
-
-const bannerKicker = {
-  color: "#d2d9e5",
-  fontSize: "11px",
-  letterSpacing: "0.18em",
-  margin: "0 0 10px",
-  textTransform: "uppercase" as const,
-}
-
-const bannerHeading = {
-  color: "#ffffff",
-  fontSize: "24px",
-  fontWeight: "700",
-  lineHeight: "1.3",
-  margin: "0 0 8px",
-}
-
-const bannerText = {
-  color: "#dce3ef",
-  fontSize: "14px",
-  lineHeight: "1.6",
-  margin: "0",
-}
-
-const card = {
-  padding: "22px 24px",
-}
-
-const sectionTitle = {
-  color: "#101a28",
-  fontSize: "14px",
-  fontWeight: "700",
-  letterSpacing: "0.06em",
-  margin: "0 0 14px",
-  textTransform: "uppercase" as const,
-}
-
-const rowWrap = {
-  marginBottom: "12px",
-}
-
-const rowLabel = {
-  color: "#5e6d80",
-  fontSize: "11px",
-  letterSpacing: "0.08em",
-  margin: "0 0 4px",
-  textTransform: "uppercase" as const,
-}
-
-const rowValue = {
-  color: "#1d2939",
-  fontSize: "15px",
-  lineHeight: "1.6",
-  margin: "0",
-}
-
-const introText = {
-  color: "#334155",
-  fontSize: "14px",
-  lineHeight: "1.6",
-  margin: "0 0 14px",
-}
-
-const bodyText = {
-  color: "#334155",
-  fontSize: "14px",
-  lineHeight: "1.6",
-  margin: "0",
-  whiteSpace: "pre-line" as const,
-}
-
-const separator = {
-  borderColor: "#e5eaf0",
-  margin: "0",
 }

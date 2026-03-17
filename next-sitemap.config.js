@@ -1,5 +1,5 @@
 /** @type {import('next-sitemap').IConfig} */
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "https://genfix.com.au").replace(/\/+$/, "")
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "https://dryapi.dev").replace(/\/+$/, "")
 
 module.exports = {
   siteUrl,

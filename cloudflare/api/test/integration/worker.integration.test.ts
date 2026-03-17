@@ -2,12 +2,42 @@ import { SELF, env } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const BASE_URL = "https://dryapi.test";
+const TEST_USER_ID = "integration-test-user";
 const AUTH_HEADERS = {
   authorization: "Bearer test-api-key",
   "content-type": "application/json",
+  "x-dryapi-user-id": TEST_USER_ID,
 };
 
+async function seedCreditBalanceForTestUser(balance: number): Promise<void> {
+  const database = (env as unknown as { DB?: D1Database }).DB;
+  if (!database) {
+    return;
+  }
+
+  await database
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS credit_balances (
+        user_id TEXT PRIMARY KEY,
+        balance REAL NOT NULL,
+        updated_at TEXT NOT NULL
+      )`,
+    )
+    .run();
+
+  await database
+    .prepare(
+      "INSERT INTO credit_balances (user_id, balance, updated_at) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET balance = excluded.balance, updated_at = excluded.updated_at",
+    )
+    .bind(TEST_USER_ID, balance, new Date().toISOString())
+    .run();
+}
+
 describe("Cloudflare API worker integration", () => {
+  beforeEach(async () => {
+    await seedCreditBalanceForTestUser(1000);
+  });
+
   it("returns CORS preflight response on OPTIONS", async () => {
     const response = await SELF.fetch(`${BASE_URL}/v1/chat/completions`, {
       method: "OPTIONS",
@@ -86,6 +116,25 @@ describe("Cloudflare API worker integration", () => {
     expect(payload.error?.code).toBe("runpod_configuration_error");
   });
 
+  it("returns client balance payload from the credit ledger", async () => {
+    const response = await SELF.fetch(`${BASE_URL}/v1/client/balance`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+        "x-dryapi-user-id": TEST_USER_ID,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      available_credits?: number | null;
+      user_id?: string;
+    };
+
+    expect(payload.user_id).toBe(TEST_USER_ID);
+    expect(payload.available_credits).toBe(1000);
+  });
+
   it("rejects non-https webhook destinations", async () => {
     const response = await SELF.fetch(`${BASE_URL}/v1/webhooks/test`, {
       method: "POST",
@@ -149,6 +198,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
   const AUTH_JSON_HEADERS = {
     authorization: "Bearer test-api-key",
     "content-type": "application/json",
+    "x-dryapi-user-id": TEST_USER_ID,
   };
 
   type CapturedRunpodCall = {
@@ -195,8 +245,10 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     return false;
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     runpodCalls = [];
+
+    await seedCreditBalanceForTestUser(1000);
 
     workerEnv.RUNPOD_API_KEY = "test-runpod-api-key";
     workerEnv.RUNPOD_API_BASE_URL = "https://api.runpod.ai/v2";
@@ -226,6 +278,8 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       },
     });
     workerEnv.WS_INLINE_MAX_BYTES = "65536";
+    workerEnv.CREDIT_LEDGER_FLUSH_INTERVAL_SECONDS = "1";
+    workerEnv.CREDIT_LEDGER_FLUSH_MAX_PENDING_USERS = "16";
 
     fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
       const parsed = parseRunpodRequest(input, init);

@@ -10,13 +10,13 @@ import {
 
 describe("chat-assistant helpers", () => {
   it("detects quote intent from pricing language", () => {
-    expect(detectQuoteIntent("Can I get a quote for generator hire?")).toBe(true)
-    expect(detectQuoteIntent("How do you handle maintenance windows?")).toBe(false)
+    expect(detectQuoteIntent("Can I get enterprise pricing for dryAPI?")).toBe(true)
+    expect(detectQuoteIntent("How should I think about latency tradeoffs?")).toBe(false)
   })
 
   it("detects escalation intent for human follow-up requests", () => {
     expect(detectEscalationIntent("Please call me, I need a person")).toBe(true)
-    expect(detectEscalationIntent("What size generator do I need?")).toBe(false)
+    expect(detectEscalationIntent("How do I pick an embeddings model?")).toBe(false)
   })
 
   it("detects low confidence bot wording", () => {
@@ -41,7 +41,7 @@ describe("chat-assistant helpers", () => {
   })
 
   it("returns quote CTA in fallback answer when user asks for pricing", () => {
-    const answer = buildFallbackSalesAnswer("Need a budget quote for a mine site")
+    const answer = buildFallbackSalesAnswer("Need enterprise pricing for 5M monthly requests")
 
     expect(answer.showQuoteButton).toBe(true)
     expect(answer.answer.toLowerCase()).toContain("quote")

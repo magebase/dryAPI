@@ -1,14 +1,13 @@
-import { ImageResponse } from "next/og"
-
-import { PwaIconImage } from "@/app/pwa-icon-image"
-
 export const runtime = "nodejs"
 
-export async function GET() {
-  const size = 180
+export async function GET(request: Request) {
+  const faviconResponse = await fetch(new URL("/favicon.ico", request.url))
+  const icon = await faviconResponse.arrayBuffer()
 
-  return new ImageResponse(<PwaIconImage includeInsetRing size={size} />, {
-    width: size,
-    height: size,
+  return new Response(icon, {
+    headers: {
+      "Content-Type": "image/x-icon",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
   })
 }

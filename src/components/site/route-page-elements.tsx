@@ -19,7 +19,7 @@ export function RoutePageElements({ elements }: RoutePageElementsProps) {
   }
 
   return (
-    <section className="border-b border-white/10 bg-[#0f1a29] py-8 md:py-12">
+    <section className="border-b border-slate-200 bg-[var(--site-surface-0)] py-8 md:py-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 md:gap-6">
         {elements.map((element, index) => (
           <Reveal as="div" key={element.id} delay={index * 0.06} data-tina-field={tinaField(element)}>
@@ -35,14 +35,14 @@ function PageElement({ element }: { element: RoutePageElement }) {
   switch (element.type) {
     case "heading":
       return (
-        <h2 className="font-display text-2xl uppercase tracking-[0.08em] text-white sm:text-3xl md:text-4xl">
+        <h2 className="font-display text-2xl uppercase tracking-[0.08em] text-slate-900 sm:text-3xl md:text-4xl">
           <KeywordGradientText dataTinaField={tinaField(element, "text")} text={element.text ?? ""} />
         </h2>
       )
 
     case "paragraph":
       return (
-        <p className="max-w-3xl whitespace-pre-line text-sm leading-relaxed text-slate-300 sm:text-base" data-tina-field={tinaField(element, "text")}>
+        <p className="max-w-3xl whitespace-pre-line text-sm leading-relaxed text-slate-600 sm:text-base" data-tina-field={tinaField(element, "text")}>
           {element.text}
         </p>
       )
@@ -71,7 +71,7 @@ function PageElement({ element }: { element: RoutePageElement }) {
       return (
         <Image
           alt={element.text || "Page content image"}
-          className="w-full max-w-4xl rounded-md border border-white/10 object-cover"
+          className="w-full max-w-4xl rounded-md border border-slate-200 object-cover"
           data-tina-field={tinaField(element, "src")}
           height={900}
           src={element.src}
@@ -82,7 +82,7 @@ function PageElement({ element }: { element: RoutePageElement }) {
     case "custom":
       return (
         <div
-          className={`${getGradientVariant(2)} rounded-md border border-white/10 p-4 text-sm text-slate-200`}
+          className={`${getGradientVariant(2)} rounded-md border border-slate-200 p-4 text-sm text-slate-700`}
           data-tina-field={tinaField(element, "text")}
         >
           {element.text || "Custom element"}

@@ -195,8 +195,10 @@ export function HomeSections({
     <>
       {home.hero.visible ? (
         <section
-          className="relative -mt-[var(--site-header-height)] min-h-screen overflow-hidden bg-[#071a34] pt-[var(--site-header-height)]"
+          className="relative -mt-[var(--site-header-height)] min-h-screen overflow-hidden bg-[var(--site-surface-0)] pt-[var(--site-header-height)]"
+          data-landing-slot="hero"
           data-tina-field={tinaField(home, "hero")}
+          id="landing-slot-hero"
         >
           <HeroGradientCanvas />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(168,118,255,0.32),transparent_42%),radial-gradient(circle_at_84%_18%,rgba(201,92,255,0.3),transparent_46%),radial-gradient(circle_at_66%_80%,rgba(255,108,181,0.2),transparent_52%),radial-gradient(circle_at_88%_88%,rgba(255,131,74,0.22),transparent_38%),linear-gradient(180deg,rgba(26,12,51,0.72)_0%,rgba(45,16,72,0.58)_46%,rgba(72,19,84,0.56)_78%,rgba(116,36,64,0.62)_100%)]" />
@@ -227,7 +229,7 @@ export function HomeSections({
                     {home.hero.heading}
                   </h1>
                   <p
-                    className="mt-5 max-w-2xl text-sm leading-relaxed text-slate-200 md:text-base"
+                    className="text-site-inverse-muted mt-5 max-w-2xl text-sm leading-relaxed md:text-base"
                     data-tina-field={tinaField(home.hero, "subheading")}
                   >
                     {home.hero.subheading}
@@ -254,7 +256,7 @@ export function HomeSections({
                   <div className="mt-7 flex flex-wrap gap-2">
                     {capabilitySignals.map((signal) => (
                       <div
-                        className="rounded-full border border-white/40 bg-white/12 px-3 py-1.5 text-[11px] text-slate-100"
+                        className="text-site-inverse rounded-full border border-white/40 bg-white/12 px-3 py-1.5 text-[11px]"
                         key={signal.label.value}
                       >
                         <span
@@ -279,10 +281,10 @@ export function HomeSections({
                         className="rounded-lg border border-white/40 bg-white/15 px-3 py-2 backdrop-blur-sm"
                         key={metric.label}
                       >
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-site-inverse text-sm font-semibold">
                           {metric.value}
                         </p>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-200">
+                        <p className="text-site-inverse-soft text-[10px] font-semibold uppercase tracking-[0.12em]">
                           {metric.label}
                         </p>
                       </div>
@@ -305,7 +307,7 @@ export function HomeSections({
                       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
                         Gateway Status
                       </p>
-                      <p className="mt-1 text-xs text-slate-700">
+                      <p className="text-site-muted mt-1 text-xs">
                         OpenAI/OpenRouter compatible, broad model catalog
                         online, low-cost routing active.
                       </p>
@@ -322,7 +324,7 @@ export function HomeSections({
                 data-tina-field={tinaField(home, "trustedBySection")}
                 y={14}
               >
-                <p className="text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-[#cad4ea]">
+                <p className="text-site-inverse-soft text-center text-[11px] font-semibold uppercase tracking-[0.14em]">
                   Used by teams consolidating multi-model AI stacks
                 </p>
 
@@ -345,7 +347,9 @@ export function HomeSections({
       {trustedLogos.length > 0 && !home.hero.visible ? (
         <section
           className="border-y border-[#dddddd] bg-[#efefef] py-7"
+          data-landing-slot="trusted-fallback"
           data-tina-field={tinaField(home, "trustedBySection")}
+          id="landing-slot-trusted-fallback"
         >
           <div className="mx-auto max-w-7xl px-4">
             <Reveal as="div" className="text-center">
@@ -371,7 +375,9 @@ export function HomeSections({
 
       <section
         className="bg-[#ececec] py-8 md:py-12"
+        data-landing-slot="spotlight"
         data-tina-field={tinaField(home, "spotlightSection")}
+        id="landing-slot-spotlight"
       >
         <div className="mx-auto max-w-7xl px-4">
           <div className="rounded-xl border border-[#dedede] bg-[#f2f2f2] p-5 md:p-8">
@@ -444,21 +450,25 @@ export function HomeSections({
       </section>
 
       {/* Developer + infrastructure quickstart */}
-      <section className="bg-gradient-to-b from-[#071029] to-[#071426] py-12 text-white">
+      <section
+        className="bg-gradient-to-b from-[var(--site-surface-1)] to-[var(--site-surface-2)] py-12 text-site-strong"
+        data-landing-slot="developer-quickstart"
+        id="landing-slot-developer-quickstart"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
-            className="rounded-xl border border-[#0f2130] bg-gradient-to-b from-[#071029] to-[#071426] p-6 md:p-8"
+            className="rounded-xl border border-[#0f2130] bg-gradient-to-b from-[var(--site-surface-1)] to-[var(--site-surface-2)] p-6 md:p-8"
           >
             <div className="grid gap-6 lg:grid-cols-2 lg:items-center">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9fb3d6]">
+                <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
                   Developers
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold">
                   API-first, production-ready
                 </h3>
-                <p className="mt-3 text-sm text-[#9fb3d6]">
+                <p className="text-site-muted mt-3 text-sm">
                   Ship integrations with familiar OpenAI-compatible clients and
                   predictable response shapes.
                 </p>
@@ -473,14 +483,14 @@ export function HomeSections({
 
               <div>
                 <div className="grid gap-3">
-                  <div className="rounded-lg border border-[#122034] bg-[#041024] p-3">
+                  <div className="rounded-lg border border-[#122034] bg-[var(--site-surface-0)] p-3">
                     <MockCodePanel />
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-3">
-                    <div className="rounded-md bg-[#041024] p-3">
+                    <div className="rounded-md bg-[var(--site-surface-0)] p-3">
                       <MockUiPreview compact />
                     </div>
-                    <div className="rounded-md bg-[#041024] p-3">
+                    <div className="rounded-md bg-[var(--site-surface-0)] p-3">
                       <MockUiPreview compact />
                     </div>
                   </div>
@@ -493,13 +503,15 @@ export function HomeSections({
 
       <section
         className="bg-[#ececec] py-3 pb-10 md:pb-12"
+        data-landing-slot="capability-grid"
         data-tina-field={tinaField(home, "capabilitySection")}
+        id="landing-slot-capability-grid"
       >
         <div className="mx-auto max-w-7xl px-4">
           <div className="rounded-xl border border-[#dedede] bg-[#f5f5f5] p-5 md:p-8">
             <Reveal as="div" className="mx-auto max-w-2xl text-center">
               <h2
-                className="text-2xl leading-tight text-[#1b1b1b] md:text-3xl"
+                className="text-site-strong text-2xl leading-tight md:text-3xl"
                 data-tina-field={tinaField(home.capabilitySection, "title")}
               >
                 {home.capabilitySection.title}
@@ -518,13 +530,13 @@ export function HomeSections({
                     <MockUiPreview compact />
                   </div>
                   <h3
-                    className="mt-3 text-sm font-semibold text-[#1f1f1f]"
+                    className="text-site-strong mt-3 text-sm font-semibold"
                     data-tina-field={tinaField(card, "title")}
                   >
                     {card.title}
                   </h3>
                   <p
-                    className="mt-2 text-sm leading-relaxed text-[#5f5f5f]"
+                    className="text-site-muted mt-2 text-sm leading-relaxed"
                     data-tina-field={tinaField(card, "description")}
                   >
                     {card.description}
@@ -537,17 +549,21 @@ export function HomeSections({
       </section>
 
       {/* Three-card value grid (more distinct visuals) */}
-      <section className="bg-white py-10">
+      <section
+        className="bg-white py-10"
+        data-landing-slot="value-grid"
+        id="landing-slot-value-grid"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
             className="rounded-xl border border-[#eef0f2] bg-white p-6 md:p-8"
           >
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d6d6d]">
+              <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
                 What Fast and Compliant Looks Like
               </p>
-              <h2 className="mt-2 text-3xl leading-tight text-[#171717] md:text-4xl">
+              <h2 className="text-site-strong mt-2 text-3xl leading-tight md:text-4xl">
                 Outcomes, Not Hype
               </h2>
             </div>
@@ -575,15 +591,17 @@ export function HomeSections({
 
       <section
         className="border-y border-[#dfdfdf] bg-[#f2f2f2] py-12"
+        data-landing-slot="operational-proof"
         data-tina-field={operationalHeading.field}
+        id="landing-slot-operational-proof"
       >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal as="div" className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl leading-tight text-[#1a1a1a] md:text-4xl">
+            <h2 className="text-site-strong text-3xl leading-tight md:text-4xl">
               {operationalHeading.value}
             </h2>
             <p
-              className="mt-3 text-sm leading-relaxed text-[#676767]"
+              className="text-site-muted mt-3 text-sm leading-relaxed"
               data-tina-field={operationalBody.field}
             >
               {operationalBody.value}
@@ -611,7 +629,11 @@ export function HomeSections({
       </section>
 
       {/* Workflow proof with mock UI */}
-      <section className="bg-[#fbfcfd] py-10">
+      <section
+        className="bg-[#fbfcfd] py-10"
+        data-landing-slot="workflow-proof"
+        id="landing-slot-workflow-proof"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
@@ -619,13 +641,13 @@ export function HomeSections({
           >
             <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-center">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d6d6d]">
+                <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
                   See It Work
                 </p>
-                <h3 className="mt-2 text-2xl font-semibold text-[#151515]">
+                <h3 className="text-site-strong mt-2 text-2xl font-semibold">
                   Policy checks in the flow
                 </h3>
-                <p className="mt-3 text-sm text-[#666666]">
+                <p className="text-site-muted mt-3 text-sm">
                   A compact mock shows how content is validated and approved
                   before delivery.
                 </p>
@@ -641,17 +663,19 @@ export function HomeSections({
 
       <section
         className="bg-[#ececec] py-12"
+        data-landing-slot="api-planning"
         data-tina-field={planningHeading.field}
+        id="landing-slot-api-planning"
       >
         <div className="mx-auto grid max-w-7xl gap-7 px-4 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <Reveal as="div">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7b7b7b]">
+            <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.16em]">
               API
             </p>
-            <h2 className="mt-2 text-3xl leading-tight text-[#181818] md:text-4xl">
+            <h2 className="text-site-strong mt-2 text-3xl leading-tight md:text-4xl">
               {planningHeading.value}
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-[#5e5e5e]">
+            <p className="text-site-muted mt-4 text-sm leading-relaxed">
               Use the official OpenAI SDK, OpenRouter-style request shapes, and
               one base URL to reach a wide range of models with minimal
               integration work.
@@ -675,9 +699,9 @@ export function HomeSections({
           <div className="grid gap-3">
             <Reveal
               as="div"
-              className="rounded-lg border border-[#2d2d2d] bg-[#131313] p-4 text-[#f0f0f0]"
+              className="text-site-strong rounded-lg border border-[#2d2d2d] bg-[var(--site-surface-1)] p-4"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b6b6b6]">
+              <p className="text-site-soft text-[10px] font-semibold uppercase tracking-[0.16em]">
                 Request
               </p>
               <pre className="mt-2 overflow-x-auto text-xs leading-relaxed">
@@ -686,10 +710,10 @@ export function HomeSections({
             </Reveal>
             <Reveal
               as="div"
-              className="rounded-lg border border-[#2d2d2d] bg-[#0f0f0f] p-4 text-[#f6f6f6]"
+              className="text-site-strong rounded-lg border border-[#2d2d2d] bg-[var(--site-surface-0)] p-4"
               delay={0.08}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b6b6b6]">
+              <p className="text-site-soft text-[10px] font-semibold uppercase tracking-[0.16em]">
                 Response
               </p>
               <pre className="mt-2 overflow-x-auto text-xs leading-relaxed">
@@ -701,7 +725,11 @@ export function HomeSections({
       </section>
 
       {/* Omnichannel coverage */}
-      <section className="bg-[#f8f9fb] py-12">
+      <section
+        className="bg-[#f8f9fb] py-12"
+        data-landing-slot="omnichannel"
+        id="landing-slot-omnichannel"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
@@ -711,14 +739,14 @@ export function HomeSections({
 
             <div className="relative grid gap-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d6d6d]">
+                <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
                   Omnichannel
                 </p>
-                <h3 className="mt-2 text-2xl font-semibold text-[#151515] md:text-3xl">
+                <h3 className="text-site-strong mt-2 text-2xl font-semibold md:text-3xl">
                   Unified enforcement across channels
                 </h3>
                 <p
-                  className="mt-3 text-sm leading-relaxed text-[#616161]"
+                  className="text-site-muted mt-3 text-sm leading-relaxed"
                   data-tina-field={omnichannelBody.field}
                 >
                   {omnichannelBody.value}
@@ -741,10 +769,10 @@ export function HomeSections({
                       <tile.icon className="size-5 text-[#2b2b2b]" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#111111]">
+                      <p className="text-site-strong text-sm font-semibold">
                         {tile.title}
                       </p>
-                      <p className="mt-1 text-xs text-[#616161]">{tile.body}</p>
+                      <p className="text-site-muted mt-1 text-xs">{tile.body}</p>
                       <div className="mt-2">
                         <span className="inline-flex items-center gap-2 rounded-md border border-[#dfeaf8] bg-white px-2 py-1 text-[11px] font-semibold text-[#2b6cb0]">
                           Preview
@@ -764,13 +792,17 @@ export function HomeSections({
         </div>
       </section>
 
-      <section className="border-y border-[#dddddd] bg-[#f0f0f0] py-16">
+      <section
+        className="border-y border-[#dddddd] bg-[#f0f0f0] py-16"
+        data-landing-slot="scale-banner"
+        id="landing-slot-scale-banner"
+      >
         <div className="mx-auto max-w-4xl px-4 text-center">
           <Reveal as="div">
-            <h2 className="text-3xl leading-tight text-[#1f1f1f] md:text-4xl">
+            <h2 className="text-site-strong text-3xl leading-tight md:text-4xl">
               Built To Scale Without Expensive Lock-In
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#666666]">
+            <p className="text-site-muted mx-auto mt-4 max-w-2xl text-sm leading-relaxed">
               Move from prototype volume to production spikes with elastic
               routing, predictable contracts, and pricing designed to stay
               competitive as usage grows.
@@ -780,17 +812,21 @@ export function HomeSections({
       </section>
 
       {/* Use cases grid */}
-      <section className="bg-white py-10">
+      <section
+        className="bg-white py-10"
+        data-landing-slot="use-cases"
+        id="landing-slot-use-cases"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
             className="rounded-xl border border-[#eef0f2] bg-white p-6 md:p-8"
           >
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d6d6d]">
+              <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
                 Use Cases
               </p>
-              <h3 className="mt-2 text-2xl font-semibold text-[#151515]">
+              <h3 className="text-site-strong mt-2 text-2xl font-semibold">
                 Real workflows that save time
               </h3>
             </div>
@@ -798,20 +834,20 @@ export function HomeSections({
             <div className="mt-6 grid gap-6 sm:grid-cols-3">
               <div className="rounded-lg border border-[#ececec] p-4">
                 <p className="text-sm font-semibold">Customer Support</p>
-                <p className="mt-2 text-xs text-[#616161]">
+                <p className="text-site-muted mt-2 text-xs">
                   Automated triage and safe responses across channels.
                 </p>
               </div>
               <div className="rounded-lg border border-[#ececec] p-4">
                 <p className="text-sm font-semibold">Document Processing</p>
-                <p className="mt-2 text-xs text-[#616161]">
+                <p className="text-site-muted mt-2 text-xs">
                   OCR, embeddings, and retrieval to extract value from
                   documents.
                 </p>
               </div>
               <div className="rounded-lg border border-[#ececec] p-4">
                 <p className="text-sm font-semibold">Image Generation</p>
-                <p className="mt-2 text-xs text-[#616161]">
+                <p className="text-site-muted mt-2 text-xs">
                   High-volume, low-cost image pipelines with quality tiers.
                 </p>
               </div>
@@ -821,10 +857,14 @@ export function HomeSections({
       </section>
 
       {/* Metrics / stats band */}
-      <section className="bg-[#0b1220] py-10 text-white">
+      <section
+        className="bg-[var(--site-surface-0)] py-10 text-site-strong"
+        data-landing-slot="metrics"
+        id="landing-slot-metrics"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal as="div" className="text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8aa1bb]">
+            <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
               Reliability Snapshot
             </p>
           </Reveal>
@@ -838,19 +878,23 @@ export function HomeSections({
       </section>
 
       {/* Institutional trust / certifications */}
-      <section className="bg-[#f7f9fb] py-10">
+      <section
+        className="bg-[#f7f9fb] py-10"
+        data-landing-slot="trust-security"
+        id="landing-slot-trust-security"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
             className="rounded-xl border border-[#eef2f4] bg-white p-6 md:p-8 text-center"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6d6d6d]">
+            <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.12em]">
               Trust &amp; Security
             </p>
-            <h3 className="mt-2 text-2xl font-semibold text-[#151515]">
+            <h3 className="text-site-strong mt-2 text-2xl font-semibold">
               Enterprise-grade monitoring and controls
             </h3>
-            <p className="mt-3 text-sm text-[#666666]">
+            <p className="text-site-muted mt-3 text-sm">
               Certifications, audit logs, and strict access controls for
               regulated workloads.
             </p>
@@ -869,36 +913,40 @@ export function HomeSections({
       </section>
 
       {/* Pricing teaser */}
-      <section className="bg-white py-10">
+      <section
+        className="bg-white py-10"
+        data-landing-slot="pricing"
+        id="landing-slot-pricing"
+      >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
             className="rounded-xl border border-[#eef0f2] bg-white p-6 md:p-8"
           >
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6d6d6d]">
+              <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
                 Pricing
               </p>
-              <h3 className="mt-2 text-2xl font-semibold text-[#151515]">
+              <h3 className="text-site-strong mt-2 text-2xl font-semibold">
                 Start with credits, scale with confidence
               </h3>
             </div>
             <div className="mt-6 grid gap-6 sm:grid-cols-3">
               <div className="rounded-lg border p-5">
                 <p className="text-lg font-semibold">Starter</p>
-                <p className="mt-2 text-sm text-[#616161]">
+                <p className="text-site-muted mt-2 text-sm">
                   Prepaid credits, limited models, great for early tests.
                 </p>
               </div>
               <div className="rounded-lg border p-5">
                 <p className="text-lg font-semibold">Pro</p>
-                <p className="mt-2 text-sm text-[#616161]">
+                <p className="text-site-muted mt-2 text-sm">
                   Monthly plan with usage-based billing and priority support.
                 </p>
               </div>
               <div className="rounded-lg border p-5">
                 <p className="text-lg font-semibold">Enterprise</p>
-                <p className="mt-2 text-sm text-[#616161]">
+                <p className="text-site-muted mt-2 text-sm">
                   Custom pricing, SSO, SLAs, and dedicated routing.
                 </p>
               </div>
@@ -909,15 +957,19 @@ export function HomeSections({
 
       {/* Final conversion band */}
       {!home.contactPanel.visible ? (
-        <section className="overflow-hidden py-12">
+        <section
+          className="overflow-hidden py-12"
+          data-landing-slot="final-cta-band"
+          id="landing-slot-final-cta-band"
+        >
           <div className="mx-auto max-w-7xl px-4">
-            <div className="rounded-[16px] bg-[linear-gradient(90deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_56%,var(--cta-cool-b)_100%)] p-8 text-white">
+            <div className="text-site-inverse rounded-[16px] bg-[linear-gradient(90deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_56%,var(--cta-cool-b)_100%)] p-8">
               <div className="grid gap-6 lg:grid-cols-[1fr_0.6fr] lg:items-center">
                 <div>
                   <h3 className="text-3xl font-semibold">
                     Ready to consolidate your AI stack?
                   </h3>
-                  <p className="mt-2 text-sm text-white/90">
+                  <p className="text-site-inverse-muted mt-2 text-sm">
                     Talk with us about migration, pricing, and open
                     integrations.
                   </p>
@@ -943,17 +995,19 @@ export function HomeSections({
       {home.contactPanel.visible ? (
         <section
           className="bg-[#ececec] py-10 md:py-14"
+          data-landing-slot="contact-panel"
           data-tina-field={tinaField(home, "contactPanel")}
+          id="landing-slot-contact-panel"
         >
           <div className="mx-auto max-w-7xl px-4">
             <Reveal
               as="div"
-              className="overflow-hidden rounded-[20px] border border-[#7fb5ef] bg-[linear-gradient(120deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_54%,var(--cta-cool-b)_100%)] p-6 text-white md:p-10"
+              className="text-site-inverse overflow-hidden rounded-[20px] border border-[#7fb5ef] bg-[linear-gradient(120deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_54%,var(--cta-cool-b)_100%)] p-6 md:p-10"
             >
               <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-end">
                 <div>
                   <p
-                    className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e2e9ff]"
+                    className="text-site-inverse-soft text-[11px] font-semibold uppercase tracking-[0.16em]"
                     data-tina-field={tinaField(home.contactPanel, "kicker")}
                   >
                     {home.contactPanel.kicker}
@@ -965,7 +1019,7 @@ export function HomeSections({
                     {commandHeading.value}
                   </h2>
                   <p
-                    className="mt-3 max-w-2xl text-sm leading-relaxed text-[#f2f4ff]"
+                    className="text-site-inverse-muted mt-3 max-w-2xl text-sm leading-relaxed"
                     data-tina-field={tinaField(home.contactPanel, "body")}
                   >
                     {commandBody.value}
@@ -984,7 +1038,7 @@ export function HomeSections({
                     />
                   </div>
                   <p
-                    className="mt-4 text-[11px] uppercase tracking-[0.14em] text-[#d9e2ff]"
+                    className="text-site-inverse-soft mt-4 text-[11px] uppercase tracking-[0.14em]"
                     data-tina-field={supportPrompt.field}
                   >
                     {supportPrompt.value}
@@ -992,14 +1046,14 @@ export function HomeSections({
                 </div>
 
                 <div className="rounded-xl border border-white/35 bg-white/16 p-4 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#e8edff]">
+                  <p className="text-site-inverse-soft text-[10px] uppercase tracking-[0.15em]">
                     Customer Note
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-[#f8f9ff]">
+                  <p className="text-site-inverse mt-2 text-sm leading-relaxed">
                     {testimonial ? (
                       <>
                         &ldquo;{testimonial.quote}&rdquo;
-                        <span className="mt-2 block text-[11px] uppercase tracking-[0.14em] text-[#dce2ff]">
+                        <span className="text-site-inverse-soft mt-2 block text-[11px] uppercase tracking-[0.14em]">
                           {testimonial.company} / {testimonial.role}
                         </span>
                       </>
@@ -1020,10 +1074,10 @@ export function HomeSections({
 function FrameworkCell({ body, label }: { body: string; label: string }) {
   return (
     <div className="rounded-md border border-[#e3e3e3] bg-white px-3 py-2.5">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#292929]">
+      <p className="text-site-strong text-xs font-semibold uppercase tracking-[0.12em]">
         {label}
       </p>
-      <p className="mt-1 text-xs text-[#6b6b6b]">{body}</p>
+      <p className="text-site-muted mt-1 text-xs">{body}</p>
     </div>
   );
 }
@@ -1055,24 +1109,24 @@ function FeatureStory({
       className={`grid gap-5 rounded-lg border border-[#dddddd] bg-white p-4 md:p-5 ${reverse ? "lg:grid-cols-[1fr_0.95fr]" : "lg:grid-cols-[0.95fr_1fr]"}`}
     >
       <div className={reverse ? "lg:order-2" : ""}>
-        <p className="inline-flex items-center gap-2 rounded-full border border-[#dfdfdf] bg-[#f7f7f7] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6a6a6a]">
-          <SiteIcon className="size-3.5 text-[#343434]" icon={card.icon} />
+        <p className="text-site-soft inline-flex items-center gap-2 rounded-full border border-[#dfdfdf] bg-[#f7f7f7] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">
+          <SiteIcon className="text-site-strong size-3.5" icon={card.icon} />
           Section
         </p>
         <h3
-          className="mt-3 text-2xl leading-tight text-[#1f1f1f]"
+          className="text-site-strong mt-3 text-2xl leading-tight"
           data-tina-field={tinaField(card, "title")}
         >
           {card.title}
         </h3>
         <p
-          className="mt-3 text-sm leading-relaxed text-[#636363]"
+          className="text-site-muted mt-3 text-sm leading-relaxed"
           data-tina-field={tinaField(card, "description")}
         >
           {card.description}
         </p>
         <QuoteAwareLink
-          className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#151515] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-black"
+          className="text-site-strong mt-5 inline-flex items-center gap-2 rounded-md bg-[var(--site-surface-1)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-[color:var(--site-text-strong)] hover:text-[color:var(--primary-foreground)]"
           href={linkHref}
           quoteLabel={actionLabel}
         >
@@ -1108,13 +1162,13 @@ function TrustedLogoPill({
       data-tina-field={tinaField(logo)}
     >
       <span
-        className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#111111] text-[10px] font-semibold uppercase text-white"
+        className="text-site-strong inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--site-surface-1)] text-[10px] font-semibold uppercase"
         data-tina-field={tinaField(logo, "abbreviation")}
       >
         {logo.abbreviation}
       </span>
       <span
-        className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#323232]"
+        className="text-site-strong text-[10px] font-semibold uppercase tracking-[0.1em]"
         data-tina-field={tinaField(logo, "name")}
       >
         {logo.name}
@@ -1136,12 +1190,12 @@ function ActionLink({
     tone === "dark"
       ? "inline-flex items-center gap-2 rounded-md border border-white/28 bg-gradient-to-r from-[color:var(--cta-cool-a)] to-[color:var(--cta-cool-b)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground shadow-md transition hover:brightness-110"
       : tone === "light"
-        ? "inline-flex items-center gap-2 rounded-md border border-white/55 bg-white/88 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1c1c1c] transition hover:bg-white"
+        ? "text-site-strong inline-flex items-center gap-2 rounded-md border border-white/55 bg-white/88 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-white"
         : tone === "ghost"
-          ? "inline-flex items-center gap-2 rounded-md border border-white/42 bg-transparent px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-white/14"
+          ? "text-site-inverse inline-flex items-center gap-2 rounded-md border border-white/42 bg-transparent px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-white/14"
           : tone === "ink"
             ? "inline-flex items-center gap-2 rounded-md border border-primary/35 bg-gradient-to-r from-[color:var(--cta-cool-a)] to-[color:var(--cta-cool-b)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground shadow-md transition hover:brightness-110"
-            : "inline-flex items-center gap-2 rounded-md border border-[#272727] bg-white px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#222222] transition hover:bg-[#f4f4f4]";
+            : "text-site-strong inline-flex items-center gap-2 rounded-md border border-[#272727] bg-white px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-[#f4f4f4]";
 
   return (
     <QuoteAwareLink
@@ -1166,7 +1220,7 @@ function MockUiPreview({ compact }: { compact?: boolean }) {
           <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-          <div className="ml-auto text-[10px] text-[#9aa6b2]">Preview</div>
+          <div className="text-site-soft ml-auto text-[10px]">Preview</div>
         </div>
 
         <div className="mt-3 space-y-2">
@@ -1200,21 +1254,21 @@ function ValueCard({
       >
         <MockUiPreview />
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-[#151515]">{title}</h3>
-      <p className="mt-2 text-sm text-[#616161]">{body}</p>
+      <h3 className="text-site-strong mt-4 text-lg font-semibold">{title}</h3>
+      <p className="text-site-muted mt-2 text-sm">{body}</p>
     </div>
   );
 }
 
 function MockCodePanel() {
   return (
-    <div className="text-xs font-mono text-[#dbeafe]">
-      <div className="rounded-md bg-[#071025] p-3">
-        <div className="mb-2 h-3 w-24 rounded-full bg-[#0f1724]" />
+    <div className="text-site-strong text-xs font-mono">
+      <div className="rounded-md bg-[var(--site-surface-0)] p-3">
+        <div className="mb-2 h-3 w-24 rounded-full bg-[var(--site-surface-0)]" />
         <div className="space-y-1">
-          <div className="h-3 w-full rounded bg-[#07203a]" />
-          <div className="h-3 w-5/6 rounded bg-[#07203a]" />
-          <div className="h-3 w-4/6 rounded bg-[#07203a]" />
+          <div className="h-3 w-full rounded bg-[var(--site-surface-0)]" />
+          <div className="h-3 w-5/6 rounded bg-[var(--site-surface-0)]" />
+          <div className="h-3 w-4/6 rounded bg-[var(--site-surface-0)]" />
         </div>
       </div>
     </div>
@@ -1229,10 +1283,10 @@ function MockWorkflowFrame() {
           <div className="h-8 w-8 rounded-md border bg-gradient-to-br from-secondary/75 to-primary/15" />
           <div>
             <p className="text-sm font-semibold">Compose</p>
-            <p className="text-xs text-[#6b6b6b]">Message with policy check</p>
+            <p className="text-site-muted text-xs">Message with policy check</p>
           </div>
         </div>
-        <div className="text-xs text-[#6b6b6b]">
+        <div className="text-site-muted text-xs">
           Enforced • <strong className="text-[#2b6cb0]">Policy: Safety</strong>
         </div>
       </div>
@@ -1252,8 +1306,8 @@ function MockWorkflowFrame() {
 function StatBand({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-white/12 bg-white/4 px-4 py-3 text-center">
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="mt-1 text-sm text-[#b6c6d6]">{label}</div>
+      <div className="text-site-strong text-2xl font-bold">{value}</div>
+      <div className="text-site-muted mt-1 text-sm">{label}</div>
     </div>
   );
 }

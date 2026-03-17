@@ -29,27 +29,27 @@
   "d1_databases": [
     {
       "binding": "AUTH_DB",
-      "database_name": "genfix-auth-db-local",
+      "database_name": "dryapi-auth-db-local",
       "migrations_dir": "drizzle/migrations/auth"
     },
     {
       "binding": "BILLING_DB",
-      "database_name": "genfix-billing-db-local",
+      "database_name": "dryapi-billing-db-local",
       "migrations_dir": "drizzle/migrations/billing"
     },
     {
       "binding": "ANALYTICS_DB",
-      "database_name": "genfix-analytics-db-local",
+      "database_name": "dryapi-analytics-db-local",
       "migrations_dir": "drizzle/migrations/analytics"
     },
     {
       "binding": "METADATA_DB",
-      "database_name": "genfix-metadata-db-local",
+      "database_name": "dryapi-metadata-db-local",
       "migrations_dir": "drizzle/migrations/metadata"
     },
     {
       "binding": "APP_DB",
-      "database_name": "genfix-analytics-db-local",
+      "database_name": "dryapi-analytics-db-local",
       "migrations_dir": "drizzle/migrations/analytics"
     }
   ],

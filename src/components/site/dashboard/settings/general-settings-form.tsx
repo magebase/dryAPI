@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -28,8 +29,6 @@ type SessionUser = {
   name?: string | null
 }
 
-const STORAGE_KEY = "dryapi.dashboard.settings.general.v1"
-
 const initialState: GeneralSettingsState = {
   username: "",
   fullName: "",
@@ -47,52 +46,106 @@ function toUsername(name: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
+function GeneralSettingsFormSkeleton() {
+  return (
+    <div className="space-y-5" aria-busy="true">
+      <div className="grid gap-5 md:grid-cols-2">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <Skeleton className="h-4 w-52" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-zinc-200/80 pt-4 dark:border-zinc-700/80">
+        <Skeleton className="h-4 w-56" />
+        <Skeleton className="h-10 w-20" />
+      </div>
+    </div>
+  )
+}
+
 export function GeneralSettingsForm() {
   const [values, setValues] = useState<GeneralSettingsState>(initialState)
   const [loadingSession, setLoadingSession] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let active = true
 
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const stored = JSON.parse(raw) as Partial<GeneralSettingsState>
-        if (active) {
-          setValues((prev) => ({ ...prev, ...stored }))
-        }
-      }
-    } catch {
-      // Ignore malformed local setting payloads.
-    }
-
-    async function loadSession() {
+    async function loadSessionAndSettings() {
       try {
-        const response = await fetch("/api/auth/get-session", {
-          cache: "no-store",
-          credentials: "include",
-        })
+        const [sessionResponse, settingsResponse] = await Promise.all([
+          fetch("/api/auth/get-session", {
+            cache: "no-store",
+            credentials: "include",
+          }),
+          fetch("/api/dashboard/settings", {
+            cache: "no-store",
+            credentials: "include",
+          }),
+        ])
 
-        const payload = (await response.json().catch(() => null)) as { user?: SessionUser | null } | null
-        const user = payload?.user
+        if (!sessionResponse.ok || !settingsResponse.ok) {
+          throw new Error("Failed to load settings session data")
+        }
 
-        if (!active || !user) {
+        const sessionPayload = (await sessionResponse.json().catch(() => null)) as { user?: SessionUser | null } | null
+        const settingsPayload = (await settingsResponse.json().catch(() => null)) as {
+          data?: { general?: Partial<GeneralSettingsState> }
+        } | null
+
+        const user = sessionPayload?.user
+        const generalSettings = settingsPayload?.data?.general ?? {}
+
+        if (!active) {
           return
         }
 
         setValues((prev) => {
-          const candidateFullName = user.name?.trim() || ""
-          const candidateEmail = user.email?.trim() || ""
+          const base = { ...prev, ...generalSettings }
+          const candidateFullName = user?.name?.trim() || ""
+          const candidateEmail = user?.email?.trim() || ""
           const candidateUsername = candidateFullName ? toUsername(candidateFullName) : ""
 
           return {
-            ...prev,
-            fullName: prev.fullName || candidateFullName,
-            email: prev.email || candidateEmail,
-            username: prev.username || candidateUsername,
+            ...base,
+            fullName: base.fullName || candidateFullName,
+            email: base.email || candidateEmail,
+            username: base.username || candidateUsername,
           }
         })
+        setLoadError(null)
+      } catch {
+        if (active) {
+          setLoadError("Unable to load general settings.")
+        }
       } finally {
         if (active) {
           setLoadingSession(false)
@@ -100,12 +153,12 @@ export function GeneralSettingsForm() {
       }
     }
 
-    void loadSession()
+    void loadSessionAndSettings()
 
     return () => {
       active = false
     }
-  }, [])
+  }, [reloadToken])
 
   function updateField<K extends keyof GeneralSettingsState>(field: K, value: GeneralSettingsState[K]) {
     setValues((prev) => ({ ...prev, [field]: value }))
@@ -122,13 +175,54 @@ export function GeneralSettingsForm() {
     setSaving(true)
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(values))
+      const response = await fetch("/api/dashboard/settings", {
+        method: "PATCH",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          section: "general",
+          values,
+        }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string
+        data?: { general?: GeneralSettingsState }
+      } | null
+
+      if (!response.ok) {
+        toast.error(payload?.message || "Unable to save settings")
+        return
+      }
+
+      if (payload?.data?.general) {
+        setValues(payload.data.general)
+      }
+
       toast.success("General settings saved")
     } catch {
       toast.error("Unable to save settings")
     } finally {
       setSaving(false)
     }
+  }
+
+  if (loadingSession) {
+    return <GeneralSettingsFormSkeleton />
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-3 rounded-lg border border-red-200/80 bg-red-50/70 p-4 dark:border-red-900/40 dark:bg-red-900/20">
+        <p className="text-sm text-red-700 dark:text-red-300">{loadError}</p>
+        <Button type="button" variant="outline" onClick={() => setReloadToken((value) => value + 1)}>
+          Retry
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -211,9 +305,7 @@ export function GeneralSettingsForm() {
       </div>
 
       <div className="flex items-center justify-between border-t border-zinc-200/80 pt-4 dark:border-zinc-700/80">
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {loadingSession ? "Syncing account defaults..." : "Changes are stored for this browser session."}
-        </p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">Changes are persisted to your dashboard profile.</p>
         <Button type="submit" disabled={saving}>
           {saving ? "Saving..." : "Save"}
         </Button>

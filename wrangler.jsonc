@@ -43,32 +43,32 @@
   "d1_databases": [
     {
       "binding": "AUTH_DB",
-      "database_name": "genfix-auth-db",
+      "database_name": "dryapi-auth-db",
       "database_id": "00000000-0000-0000-0000-000000000010",
       "migrations_dir": "drizzle/migrations/auth",
     },
     {
       "binding": "BILLING_DB",
-      "database_name": "genfix-billing-db",
+      "database_name": "dryapi-billing-db",
       "database_id": "00000000-0000-0000-0000-000000000020",
       "migrations_dir": "drizzle/migrations/billing",
     },
     {
       "binding": "ANALYTICS_DB",
-      "database_name": "genfix-analytics-db",
+      "database_name": "dryapi-analytics-db",
       "database_id": "a977b631-526d-4cc2-b5d0-f0a17a93a9fa",
       "migrations_dir": "drizzle/migrations/analytics",
     },
     {
       "binding": "METADATA_DB",
-      "database_name": "genfix-metadata-db",
+      "database_name": "dryapi-metadata-db",
       "database_id": "00000000-0000-0000-0000-000000000040",
       "migrations_dir": "drizzle/migrations/metadata",
     },
     {
       // Compatibility alias while older paths still reference APP_DB.
       "binding": "APP_DB",
-      "database_name": "genfix-analytics-db",
+      "database_name": "dryapi-analytics-db",
       "database_id": "a977b631-526d-4cc2-b5d0-f0a17a93a9fa",
       "migrations_dir": "drizzle/migrations/analytics",
     },

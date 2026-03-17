@@ -1,0 +1,11 @@
+{
+  "brand": {
+    "name": "Agent API Infrastructure",
+    "mark": "agentAPI"
+  },
+  "contact": {
+    "contactEmail": "support@agentapi.dev",
+    "quoteEmail": "sales@agentapi.dev"
+  },
+  "announcement": "Build production AI agents with one unified API for chat, tools, and orchestration."
+}

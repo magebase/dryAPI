@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { defaultEmailBranding, resolveCurrentEmailBranding } from "@/emails/brand";
 import { ChatEscalationEmail } from "@/emails/chat-escalation-email";
 import {
   buildFallbackSalesAnswer,
@@ -223,14 +224,15 @@ function buildPrompt({
   const conversation = formatConversation(messages);
 
   return [
-    "You are the GenFix AI sales assistant for genfix.com.au.",
-    "Business focus: generator hire, generator sales, generator maintenance, emergency backup support, load testing, installation support, and on-site power advice in Brisbane.",
+    "You are the dryAPI website assistant for dryapi.com.",
+    "Product focus: unified AI inference for chat, images, speech, and embeddings with OpenAI/OpenRouter-compatible APIs, usage controls, and credit-based billing.",
     "Primary behavior requirements:",
     "- Answer clearly and practically.",
-    "- Keep replies sales-oriented without being pushy.",
-    "- If the visitor signals buying intent or asks for pricing, recommend requesting a quote.",
+    "- Keep replies technical and conversion-oriented without being pushy.",
+    "- If the visitor asks about pricing, plans, enterprise, or contracts, recommend requesting a quote.",
+    "- If the visitor asks implementation questions, provide concrete API-oriented next steps.",
     "- If uncertain, be transparent and set needsHumanFollowup=true.",
-    "- Never invent unavailable company details.",
+    "- Never invent unavailable company details, pricing terms, model availability, or SLA claims.",
     "Quote CTA label:",
     quoteCtaLabel,
     "Brand mark:",
@@ -402,6 +404,8 @@ async function sendEscalationEmail({
     return false;
   }
 
+  const emailBranding = await resolveCurrentEmailBranding().catch(() => defaultEmailBranding);
+
   await sendBrevoReactEmail({
     apiKey,
     from: {
@@ -409,8 +413,9 @@ async function sendEscalationEmail({
       name: fromName,
     },
     to: [{ email: recipient }],
-    subject: `Chat escalation (${queue}): ${question.slice(0, 72)}`,
+    subject: `${emailBranding.mark} chat escalation (${queue}): ${question.slice(0, 72)}`,
     react: ChatEscalationEmail({
+      branding: emailBranding,
       question,
       queue,
       pagePath,
@@ -455,7 +460,7 @@ async function sendEscalationSms({
       body: JSON.stringify({
         sender,
         recipient,
-        content: `GenFix chat escalation: ${question}`.slice(0, 150),
+        content: `dryAPI chat escalation: ${question}`.slice(0, 150),
         type: "transactional",
       }),
     },
@@ -506,7 +511,7 @@ async function notifyEscalation({
         url: webhookUrl,
         token: webhookToken,
         payload: {
-          source: "genfix-chatbot",
+          source: "dryapi-chatbot",
           queue,
           pagePath,
           visitorId,
@@ -613,7 +618,7 @@ export async function POST(request: NextRequest) {
       process.env.CHAT_ESCALATION_EMAIL_DEFAULT_TO?.trim() ||
       process.env.CHAT_ESCALATION_EMAIL_TO?.trim() ||
       null;
-    let brandMark = "GenFix";
+    let brandMark = "dryAPI";
 
     try {
       const siteConfig = await readSiteConfig();

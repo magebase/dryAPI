@@ -314,11 +314,11 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
 
   if (!snapshot || permutations.length === 0) {
     return (
-      <section className="border-b border-white/10 bg-[#0f1f33] py-10 md:py-14">
+      <section className="border-b border-slate-200 bg-[var(--site-surface-0)] py-10 md:py-14">
         <div className="mx-auto max-w-7xl px-4">
           <p className="text-xs uppercase tracking-[0.2em] text-primary">Live Pricing Sync</p>
-          <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.08em] text-white md:text-3xl">Pricing data unavailable</h2>
-          <p className="mt-3 max-w-3xl text-sm text-slate-300 md:text-base">
+          <h2 className="text-site-strong mt-2 font-display text-2xl uppercase tracking-[0.08em] md:text-3xl">Pricing data unavailable</h2>
+          <p className="text-site-muted mt-3 max-w-3xl text-sm md:text-base">
             No pricing snapshot was found in the current runtime. Run the pricing sync job or check D1 connectivity to populate scraped permutations.
           </p>
         </div>
@@ -329,20 +329,20 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
   const resolvedSnapshot = snapshot
 
   return (
-    <section className="border-b border-white/10 bg-[#0f1f33] py-10 md:py-14">
+    <section className="border-b border-slate-200 bg-[var(--site-surface-0)] py-10 md:py-14">
       <div className="mx-auto max-w-7xl px-4">
         <p className="text-xs uppercase tracking-[0.2em] text-primary">Live Pricing Sync</p>
-        <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.08em] text-white md:text-3xl">Model Pricing (USD)</h2>
-        <p className="mt-3 max-w-4xl text-sm text-slate-300 md:text-base">
+        <h2 className="text-site-strong mt-2 font-display text-2xl uppercase tracking-[0.08em] md:text-3xl">Model Pricing (USD)</h2>
+        <p className="text-site-muted mt-3 max-w-4xl text-sm md:text-base">
           Categories: {categories.length} | Models: {resolvedSnapshot.models.length} | Pricing rows: {resolvedSnapshot.metadata.totalPermutations}
         </p>
 
-        <div className="mt-6 rounded-md border border-white/10 bg-[#15233a] p-4 md:p-5">
+        <div className="mt-6 rounded-md border border-slate-200 bg-[var(--site-surface-1)] p-4 md:p-5">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <label className="text-xs uppercase tracking-[0.12em] text-slate-300">
+            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
               Category
               <select
-                className="mt-2 w-full rounded-sm border border-white/20 bg-[#0d182a] px-3 py-2 text-sm text-white outline-none transition focus:border-primary"
+                className="text-site-strong mt-2 w-full rounded-sm border border-slate-300 bg-[var(--site-surface-0)] px-3 py-2 text-sm outline-none transition focus:border-primary"
                 onChange={(event) => {
                   setSelectedCategory(event.target.value)
                   setSelectedModel("all")
@@ -358,10 +358,10 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
               </select>
             </label>
 
-            <label className="text-xs uppercase tracking-[0.12em] text-slate-300">
+            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
               Model
               <select
-                className="mt-2 w-full rounded-sm border border-white/20 bg-[#0d182a] px-3 py-2 text-sm text-white outline-none transition focus:border-primary"
+                className="text-site-strong mt-2 w-full rounded-sm border border-slate-300 bg-[var(--site-surface-0)] px-3 py-2 text-sm outline-none transition focus:border-primary"
                 onChange={(event) => setSelectedModel(event.target.value)}
                 value={selectedModel}
               >
@@ -374,11 +374,11 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
               </select>
             </label>
 
-            <label className="text-xs uppercase tracking-[0.12em] text-slate-300">
+            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
               Sort By
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <select
-                  className="rounded-sm border border-white/20 bg-[#0d182a] px-3 py-2 text-sm text-white outline-none transition focus:border-primary"
+                  className="text-site-strong rounded-sm border border-slate-300 bg-[var(--site-surface-0)] px-3 py-2 text-sm outline-none transition focus:border-primary"
                   onChange={(event) => setSortKey(event.target.value as SortKey)}
                   value={sortKey}
                 >
@@ -389,7 +389,7 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
                   <option value="scrapedAt">Updated</option>
                 </select>
                 <select
-                  className="rounded-sm border border-white/20 bg-[#0d182a] px-3 py-2 text-sm text-white outline-none transition focus:border-primary"
+                  className="text-site-strong rounded-sm border border-slate-300 bg-[var(--site-surface-0)] px-3 py-2 text-sm outline-none transition focus:border-primary"
                   onChange={(event) => setSortDirection(event.target.value as SortDirection)}
                   value={sortDirection}
                 >
@@ -399,10 +399,10 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
               </div>
             </label>
 
-            <label className="text-xs uppercase tracking-[0.12em] text-slate-300">
+            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
               Search
               <input
-                className="mt-2 w-full rounded-sm border border-white/20 bg-[#0d182a] px-3 py-2 text-sm text-white outline-none transition focus:border-primary"
+                className="text-site-strong mt-2 w-full rounded-sm border border-slate-300 bg-[var(--site-surface-0)] px-3 py-2 text-sm outline-none transition focus:border-primary"
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="model, category, params"
                 type="search"
@@ -411,7 +411,7 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
             </label>
           </div>
 
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="text-site-soft mt-3 text-xs">
             Filtered models: {filteredRows.length} | Current sort: {getSortLabel(sortKey)} ({sortDirection.toUpperCase()})
           </p>
         </div>
@@ -420,19 +420,19 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
           {categorySummary.map((summary) => (
             <Link
               key={summary.category}
-              className="rounded-md border border-white/10 bg-[#15233a] p-4 transition hover:border-primary/45 hover:bg-[#1a2a44]"
+              className="rounded-md border border-slate-200 bg-[var(--site-surface-1)] p-4 transition hover:border-primary/45 hover:bg-[var(--site-surface-1)]"
               href={`/pricing/${toPricingCategorySlug(summary.category)}`}
             >
               <p className="text-xs uppercase tracking-[0.14em] text-primary">{toPricingCategoryLabel(summary.category)}</p>
-              <p className="mt-2 text-sm text-slate-300">Models: {summary.modelCount} | Rows: {summary.rowCount}</p>
-              <p className="mt-1 text-sm text-slate-300">From: {formatUsd(summary.minPriceUsd)} | Median: {formatUsd(summary.medianPriceUsd)}</p>
-              <p className="mt-3 text-xs uppercase tracking-[0.12em] text-slate-400">Open category page</p>
+              <p className="text-site-muted mt-2 text-sm">Models: {summary.modelCount} | Rows: {summary.rowCount}</p>
+              <p className="text-site-muted mt-1 text-sm">From: {formatUsd(summary.minPriceUsd)} | Median: {formatUsd(summary.medianPriceUsd)}</p>
+              <p className="text-site-soft mt-3 text-xs uppercase tracking-[0.12em]">Open category page</p>
             </Link>
           ))}
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-md border border-white/10 bg-[#132238]">
-          <div className="hidden border-b border-white/10 bg-[#17273d] px-3 py-3 text-xs uppercase tracking-[0.12em] text-slate-300 md:grid md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:gap-3">
+        <div className="mt-6 overflow-hidden rounded-md border border-slate-200 bg-[var(--site-surface-1)]">
+          <div className="text-site-muted hidden border-b border-slate-200 bg-[var(--site-surface-1)] px-3 py-3 text-xs uppercase tracking-[0.12em] md:grid md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:gap-3">
             <p>Category</p>
             <p>Model</p>
             <p>Parameters</p>
@@ -448,45 +448,45 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
 
                 return (
                   <AccordionItem key={entry.id} className="border-white/5" value={entry.id}>
-                    <AccordionTrigger className="px-3 py-3 text-left hover:no-underline data-[state=open]:bg-[#182a44]">
+                    <AccordionTrigger className="px-3 py-3 text-left hover:no-underline data-[state=open]:bg-[var(--site-surface-1)]">
                       <div className="grid w-full gap-2 md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:items-start md:gap-3">
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Category</p>
+                          <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Category</p>
                           <p className="text-xs uppercase tracking-[0.12em] text-primary">{entry.categorySummary || "Uncategorized"}</p>
-                          {entry.categories.length > 1 ? <p className="mt-1 text-[11px] text-slate-400">{entry.categories.length} categories</p> : null}
+                          {entry.categories.length > 1 ? <p className="text-site-soft mt-1 text-[11px]">{entry.categories.length} categories</p> : null}
                         </div>
 
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Model</p>
-                          <p className="text-sm text-white">{entry.modelName}</p>
+                          <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Model</p>
+                          <p className="text-site-strong text-sm">{entry.modelName}</p>
                         </div>
 
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Parameters</p>
-                          <p className="text-xs text-slate-300">{entry.representativeParamText}</p>
-                          <p className="mt-1 text-[11px] text-slate-400">Most common params in {entry.commonParamCount} of {totalRows} rows</p>
+                          <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Parameters</p>
+                          <p className="text-site-muted text-xs">{entry.representativeParamText}</p>
+                          <p className="text-site-soft mt-1 text-[11px]">Most common params in {entry.commonParamCount} of {totalRows} rows</p>
                         </div>
 
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Price (USD)</p>
-                          <p className="text-sm font-semibold text-white">{formatUsd(representative.priceUsd)}</p>
+                          <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Price (USD)</p>
+                          <p className="text-site-strong text-sm font-semibold">{formatUsd(representative.priceUsd)}</p>
                         </div>
 
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Credits</p>
-                          <p className="text-xs text-slate-300">{formatCredits(representative.credits)}</p>
+                          <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Credits</p>
+                          <p className="text-site-muted text-xs">{formatCredits(representative.credits)}</p>
                         </div>
 
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Permutations</p>
+                          <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Permutations</p>
                           <p className="text-xs text-primary">View {totalRows} rows</p>
                         </div>
                       </div>
                     </AccordionTrigger>
 
                     <AccordionContent className="px-3 pb-3">
-                      <div className="overflow-hidden rounded-sm border border-white/10 bg-[#0f1d31]">
-                        <div className="hidden border-b border-white/10 bg-[#152740] px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-slate-400 md:grid md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:gap-3">
+                      <div className="overflow-hidden rounded-sm border border-slate-200 bg-[var(--site-surface-0)]">
+                        <div className="text-site-soft hidden border-b border-slate-200 bg-[var(--site-surface-1)] px-3 py-2 text-[11px] uppercase tracking-[0.12em] md:grid md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:gap-3">
                           <p>Category</p>
                           <p>Model</p>
                           <p>Permutation</p>
@@ -503,35 +503,35 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
                             return (
                               <div key={row.id} className="grid gap-2 px-3 py-2 md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:items-start md:gap-3">
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Category</p>
-                                  <Link className="text-[11px] uppercase tracking-[0.1em] text-primary transition hover:text-white" href={`/pricing/${rowCategorySlug}`}>
+                                  <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Category</p>
+                                  <Link className="text-[11px] uppercase tracking-[0.1em] text-primary transition hover:text-[color:var(--site-text-strong)]" href={`/pricing/${rowCategorySlug}`}>
                                     {toPricingCategoryLabel(row.category)}
                                   </Link>
                                 </div>
 
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Model</p>
-                                  <p className="text-xs text-slate-300">{entry.modelName}</p>
+                                  <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Model</p>
+                                  <p className="text-site-muted text-xs">{entry.modelName}</p>
                                 </div>
 
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Permutation</p>
-                                  <p className="text-xs text-slate-300">{toParamText(row.params)}</p>
+                                  <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Permutation</p>
+                                  <p className="text-site-muted text-xs">{toParamText(row.params)}</p>
                                 </div>
 
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Price</p>
-                                  <p className="text-xs font-semibold text-white">{formatUsd(row.priceUsd)}</p>
+                                  <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Price</p>
+                                  <p className="text-site-strong text-xs font-semibold">{formatUsd(row.priceUsd)}</p>
                                 </div>
 
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Credits</p>
-                                  <p className="text-xs text-slate-300">{formatCredits(row.credits)}</p>
+                                  <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Credits</p>
+                                  <p className="text-site-muted text-xs">{formatCredits(row.credits)}</p>
                                 </div>
 
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-400 md:hidden">Context</p>
-                                  <p className="line-clamp-2 text-xs text-slate-400">{context}</p>
+                                  <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Context</p>
+                                  <p className="text-site-soft line-clamp-2 text-xs">{context}</p>
                                 </div>
                               </div>
                             )
@@ -545,7 +545,7 @@ export function DeapiPricingTable({ snapshot }: { snapshot?: DeapiPricingSnapsho
             </Accordion>
           </div>
         </div>
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="text-site-soft mt-3 text-xs">
           Showing up to 220 model rows from the filtered result set. Each row expands into full-width permutation rows.
         </p>
       </div>

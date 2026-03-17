@@ -222,7 +222,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
       const children = props?.children
       const id = slugifyHeading(extractTextFromReactNode(children))
       return (
-        <h2 className="mt-10 scroll-mt-24 text-3xl font-semibold tracking-tight text-slate-950 first:mt-0" id={id}>
+        <h2 className="text-site-strong mt-10 scroll-mt-24 text-3xl font-semibold tracking-tight first:mt-0" id={id}>
           {children}
         </h2>
       )
@@ -231,7 +231,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
       const children = props?.children
       const id = slugifyHeading(extractTextFromReactNode(children))
       return (
-        <h2 className="mt-10 scroll-mt-24 text-2xl font-semibold tracking-tight text-slate-950 first:mt-0" id={id}>
+        <h2 className="text-site-strong mt-10 scroll-mt-24 text-2xl font-semibold tracking-tight first:mt-0" id={id}>
           {children}
         </h2>
       )
@@ -240,7 +240,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
       const children = props?.children
       const id = slugifyHeading(extractTextFromReactNode(children))
       return (
-        <h3 className="mt-8 scroll-mt-24 text-xl font-semibold tracking-tight text-slate-900" id={id}>
+        <h3 className="text-site-strong mt-8 scroll-mt-24 text-xl font-semibold tracking-tight" id={id}>
           {children}
         </h3>
       )
@@ -249,19 +249,19 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
       const children = props?.children
       const id = slugifyHeading(extractTextFromReactNode(children))
       return (
-        <h4 className="mt-7 scroll-mt-24 text-lg font-semibold text-slate-900" id={id}>
+        <h4 className="text-site-strong mt-7 scroll-mt-24 text-lg font-semibold" id={id}>
           {children}
         </h4>
       )
     },
     p: (props: { children?: React.ReactNode } | undefined) => (
-      <p className="mt-4 text-[1.04rem] leading-8 text-slate-700 first:mt-0">{props?.children}</p>
+      <p className="text-site-muted mt-4 text-[1.04rem] leading-8 first:mt-0">{props?.children}</p>
     ),
     ul: (props: { children?: React.ReactNode } | undefined) => (
-      <ul className="mt-5 list-disc space-y-2 pl-6 text-slate-700 marker:text-orange-500">{props?.children}</ul>
+      <ul className="text-site-muted mt-5 list-disc space-y-2 pl-6 marker:text-orange-500">{props?.children}</ul>
     ),
     ol: (props: { children?: React.ReactNode } | undefined) => (
-      <ol className="mt-5 list-decimal space-y-2 pl-6 text-slate-700 marker:text-orange-500">{props?.children}</ol>
+      <ol className="text-site-muted mt-5 list-decimal space-y-2 pl-6 marker:text-orange-500">{props?.children}</ol>
     ),
     li: (props: { children?: React.ReactNode } | undefined) => <li className="leading-7">{props?.children}</li>,
     lic: (props: { children?: React.ReactNode } | undefined) => <>{props?.children}</>,
@@ -281,16 +281,16 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
       )
     },
     blockquote: (props: { children?: React.ReactNode } | undefined) => (
-      <blockquote className="mt-6 rounded-r-lg border-l-4 border-orange-400 bg-orange-50/60 px-5 py-3 italic text-slate-700">
+      <blockquote className="text-site-muted mt-6 rounded-r-lg border-l-4 border-orange-400 bg-orange-50/60 px-5 py-3 italic">
         {props?.children}
       </blockquote>
     ),
     code: (props: { children?: React.ReactNode } | undefined) => (
-      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.92em] text-slate-800">{props?.children}</code>
+      <code className="text-site-strong rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.92em]">{props?.children}</code>
     ),
     code_block: (props: { value?: string; lang?: string } | undefined) => (
-      <pre className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-sm text-slate-100">
-        {props?.lang ? <p className="mb-3 text-xs uppercase tracking-[0.14em] text-slate-400">{props.lang}</p> : null}
+      <pre className="text-site-inverse mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-sm">
+        {props?.lang ? <p className="text-site-inverse-soft mb-3 text-xs uppercase tracking-[0.14em]">{props.lang}</p> : null}
         <code className="font-mono leading-6">{props?.value ?? ""}</code>
       </pre>
     ),
@@ -313,7 +313,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
   const resourcesPrefix = resolveSiteUiText(site, "blogPost.resourcesPrefix", "View")
 
   return (
-    <main className="overflow-x-clip bg-[radial-gradient(circle_at_top_left,#fff6ec_0,#f8fafc_34%,#f8fafc_100%)] pb-16 text-slate-900 md:pb-20">
+    <main className="text-site-strong overflow-x-clip bg-[radial-gradient(circle_at_top_left,#fff6ec_0,#f8fafc_34%,#f8fafc_100%)] pb-16 md:pb-20">
       <div className="sticky top-0 z-40 h-1 w-full bg-slate-900/10 backdrop-blur supports-[backdrop-filter]:bg-slate-900/5">
         <div
           aria-hidden
@@ -343,7 +343,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
         {...(publishedIso ? { datePublished: publishedIso } : {})}
       />
 
-      <section className="relative isolate overflow-hidden border-b border-white/10">
+      <section className="relative isolate overflow-hidden border-b border-slate-200">
         <Image
           alt={post.title}
           className="absolute inset-0 h-full w-full object-cover opacity-25"
@@ -365,22 +365,22 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
             {backToBlog.value}
           </QuoteAwareLink>
 
-          <h1 className="mt-4 font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
+          <h1 className="text-site-inverse mt-4 font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] sm:text-4xl md:text-6xl">
             <KeywordGradientText dataTinaField={tinaField(post, "title")} text={post.title} />
           </h1>
 
-          <p className="mt-4 text-sm text-slate-300 sm:text-base md:text-lg" data-tina-field={tinaField(post, "excerpt")}>
+          <p className="text-site-inverse-muted mt-4 text-sm sm:text-base md:text-lg" data-tina-field={tinaField(post, "excerpt")}>
             {post.excerpt}
           </p>
 
-          <p className="mt-5 inline-flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em] text-slate-300">
+          <p className="text-site-inverse-muted mt-5 inline-flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
             <BookText className="size-4" />
             <span data-tina-field={tinaField(post, "publishedAt")}>{formatPublishedDate(post.publishedAt)}</span>
-            <span className="text-slate-500">|</span>
+            <span className="text-site-inverse-soft">|</span>
             <span data-tina-field={tinaField(post.author, "name")}>{post.author.name}</span>
-            <span className="text-slate-500">|</span>
+            <span className="text-site-inverse-soft">|</span>
             <span data-tina-field={tinaField(post.author, "role")}>{post.author.role}</span>
-            <span className="text-slate-500">|</span>
+            <span className="text-site-inverse-soft">|</span>
             <Clock3 className="size-4" />
             <span>{readTime} min read</span>
           </p>
@@ -389,7 +389,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
             {post.tags.slice(0, 4).map((tag) => (
               <span
                 key={`${post.slug}-${tag}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-200"
+                className="text-site-inverse inline-flex items-center gap-1.5 rounded-full border border-white/18 bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
               >
                 <Tag className="size-3" />
                 <span>{tag}</span>
@@ -413,7 +413,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
           {tocAnchors.length > 0 ? (
             <Reveal as="section" className="hidden lg:block">
               <div className="sticky top-20 rounded-xl border border-slate-200 bg-white p-4 shadow-[0_10px_26px_rgba(15,23,42,0.07)]">
-                <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                <p className="text-site-soft inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em]">
                   <TableOfContents className="size-4" />
                   <span>On This Page</span>
                 </p>
@@ -421,7 +421,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
                   {tocAnchors.map((anchor) => (
                     <a
                       key={anchor.id}
-                      className={`block text-sm leading-relaxed text-slate-600 transition-colors hover:text-slate-950 ${
+                      className={`text-site-muted block text-sm leading-relaxed transition-colors hover:text-[color:var(--site-text-strong)] ${
                         anchor.level === 3 ? "pl-3" : ""
                       }`}
                       href={`#${anchor.id}`}
@@ -459,14 +459,14 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
                 <BookText className="size-4" />
                 <span>Author</span>
               </p>
-              <p className="mt-1 text-base font-semibold text-slate-950" data-tina-field={tinaField(post.author, "name")}>
+              <p className="text-site-strong mt-1 text-base font-semibold" data-tina-field={tinaField(post.author, "name")}>
                 {post.author.name}
               </p>
-              <p className="text-sm text-slate-600" data-tina-field={tinaField(post.author, "role")}>
+              <p className="text-site-soft text-sm" data-tina-field={tinaField(post.author, "role")}>
                 {post.author.role}
               </p>
               {post.author.bio ? (
-                <p className="mt-3 text-sm leading-relaxed text-slate-700" data-tina-field={tinaField(post.author, "bio")}>
+                <p className="text-site-muted mt-3 text-sm leading-relaxed" data-tina-field={tinaField(post.author, "bio")}>
                   {post.author.bio}
                 </p>
               ) : null}
@@ -480,16 +480,16 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
           <MessageSquare className="size-4" />
           <span>{nextStepKicker.value}</span>
         </p>
-        <h2 className="mt-2 text-lg font-semibold uppercase tracking-[0.14em] text-slate-950">
+        <h2 className="text-site-strong mt-2 text-lg font-semibold uppercase tracking-[0.14em]">
           <KeywordGradientText dataTinaField={nextStepHeading.field} text={nextStepHeading.value} />
         </h2>
-        <p className="mt-3 text-slate-700" data-tina-field={nextStepBody.field}>
+        <p className="text-site-muted mt-3" data-tina-field={nextStepBody.field}>
           {nextStepBody.value}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <QuoteAwareLink
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-orange-300 bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-lg transition hover:brightness-105 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-orange-300 bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-900 shadow-lg transition hover:brightness-105 sm:w-auto"
             data-tina-field={tinaField(site.header, "quoteCta")}
             forceQuoteModal
             href={quoteHref}
@@ -500,7 +500,7 @@ export function BlogPostPageTemplate({ post, site }: BlogPostPageTemplateProps) 
           </QuoteAwareLink>
 
           <QuoteAwareLink
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-700 transition hover:border-slate-500 hover:text-slate-900 sm:w-auto"
+            className="text-site-muted inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-[color:var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition hover:border-primary/40 hover:text-[color:var(--site-text-strong)] sm:w-auto"
             data-tina-field={resourcesLink ? tinaField(resourcesLink) : undefined}
             href={resourcesLink?.href ?? "/resources"}
           >

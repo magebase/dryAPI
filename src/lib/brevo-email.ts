@@ -41,7 +41,11 @@ type BrevoSendResponse = {
 export async function sendBrevoReactEmail(
   options: SendBrevoReactEmailOptions,
 ): Promise<BrevoSendResult> {
-  const htmlContent = await render(options.react);
+  const [htmlContent, textContent] = await Promise.all([
+    render(options.react),
+    render(options.react, { plainText: true }),
+  ]);
+  const normalizedTextContent = textContent.replace(/\n{3,}/g, "\n\n").trim();
 
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -55,6 +59,7 @@ export async function sendBrevoReactEmail(
       to: options.to,
       subject: options.subject,
       htmlContent,
+      textContent: normalizedTextContent || undefined,
       replyTo: options.replyTo,
       tags: options.tags,
       attachment: options.attachments,

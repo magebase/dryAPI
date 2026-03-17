@@ -628,13 +628,13 @@ async function runChatEscalation(step: WorkflowStep, env: Env, payload: JsonObje
   });
 
   const smsSent = await step.do("notify escalation sms", async () => {
-    return sendBrevoSms(env, `GenFix chat escalation (${queue}): ${question}`, smsTo);
+    return sendBrevoSms(env, `dryAPI chat escalation (${queue}): ${question}`, smsTo);
   });
 
   const crmSynced = await step.do("forward escalation to crm webhook", async () => {
     return postToWebhook(env.CRM_WEBHOOK_URL, {
       type: "chat-escalation",
-      source: "genfix-chatbot",
+      source: "dryapi-chatbot",
       queue,
       question,
       pagePath,

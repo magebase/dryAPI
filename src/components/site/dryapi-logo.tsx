@@ -19,19 +19,19 @@ const SIZE_STYLES: Record<
   { icon: string; mark: string; name: string; suffix: string }
 > = {
   sm: {
-    icon: "size-7 text-[10px]",
+    icon: "size-7 text-[12px]",
     mark: "text-xl",
     name: "text-[10px] tracking-[0.16em]",
     suffix: "text-[10px] px-2 py-0.5",
   },
   md: {
-    icon: "size-16 text-[10px]",
+    icon: "size-16 text-[14px]",
     mark: "text-[1.7rem]",
     name: "text-[11px] tracking-[0.18em]",
     suffix: "text-[11px] px-2.5 py-1",
   },
   lg: {
-    icon: "size-9 text-[11px]",
+    icon: "size-9 text-[16px]",
     mark: "text-[2rem] md:text-[2.25rem]",
     name: "text-xs tracking-[0.2em]",
     suffix: "text-[11px] px-2.5 py-1",
@@ -70,7 +70,7 @@ export function DryApiLogo({
         <span
           className={cn(
             "font-heading font-extrabold tracking-[-0.028em]",
-            isDarkTone ? "text-white" : "text-[#0f172a]",
+            isDarkTone ? "text-site-strong" : "text-site-inverse",
             sizeStyles.mark,
             markClassName,
           )}
@@ -83,7 +83,7 @@ export function DryApiLogo({
           <span
             className={cn(
               "hidden font-semibold uppercase sm:inline",
-              isDarkTone ? "text-slate-400" : "text-slate-500",
+              isDarkTone ? "text-site-soft" : "text-site-inverse-soft",
               sizeStyles.name,
               nameClassName,
             )}
@@ -98,8 +98,8 @@ export function DryApiLogo({
             className={cn(
               "rounded-full border font-semibold uppercase tracking-[0.16em]",
               isDarkTone
-                ? "border-white/25 bg-white/6 text-slate-200"
-                : "border-slate-300 bg-slate-100 text-slate-700",
+                ? "border-[color:var(--border)] bg-[var(--site-surface-1)] text-site-muted"
+                : "border-white/25 bg-white/8 text-site-inverse-muted",
               sizeStyles.suffix,
               suffixClassName,
             )}

@@ -9,7 +9,16 @@ import {
   sanitizeDepositMetadata,
 } from "@/lib/stripe-deposit-checkout"
 import { isStripeDepositsEnabledServer } from "@/lib/feature-flags"
+import {
+  resolveCurrentMonthlyTokenCycleStartIso,
+  resolveMonthlyTokenExpiryIso,
+  resolveSaasPlan,
+} from "@/lib/stripe-saas-plans"
 import { getDashboardSessionSnapshot, resolveRequestOriginFromRequest } from "@/lib/dashboard-billing"
+import {
+  buildBrandedCheckoutCancelUrl,
+  buildBrandedCheckoutSuccessUrl,
+} from "@/lib/stripe-branding"
 
 export const runtime = "nodejs"
 
@@ -66,6 +75,19 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const requestedPlanSlug = request.nextUrl.searchParams.get("plan")?.trim() || ""
+    const plan = requestedPlanSlug ? resolveSaasPlan(requestedPlanSlug) : null
+
+    if (requestedPlanSlug && !plan) {
+      return NextResponse.json(
+        {
+          error: "invalid_plan",
+          message: "Unknown SaaS plan. Use starter, growth, or scale.",
+        },
+        { status: 400 },
+      )
+    }
+
     const amountMajor = resolveAmountMajor(request)
     const amountCents = parseDepositAmountToCents(amountMajor)
 
@@ -79,24 +101,47 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const topUp = resolveTopUpCharge(amountCents)
+    const topUp = resolveTopUpCharge(amountCents, {
+      discountPercent: plan?.discountPercent,
+    })
     const currency = normalizeCurrencyCode(process.env.STRIPE_DEPOSIT_DEFAULT_CURRENCY || "usd")
     const origin = resolveRequestOriginFromRequest(request)
 
+    const monthlyTokenCycleStart = plan ? resolveCurrentMonthlyTokenCycleStartIso() : null
+    const monthlyTokenExpiry = plan ? resolveMonthlyTokenExpiryIso() : null
+
     const metadata = sanitizeDepositMetadata({
       source: "dryapi-dashboard-top-up",
+      pricingMode: plan ? "saas-tier-discount" : "standard-top-up",
+      planSlug: plan?.slug ?? null,
+      planLabel: plan?.label ?? null,
+      planDiscountPercent: plan?.discountPercent ?? 0,
       requestedAmountCents: topUp.requestedAmountCents,
       chargeAmountCents: topUp.chargeAmountCents,
       discountCents: topUp.discountCents,
+      appliedDiscountPercent: topUp.appliedDiscountPercent,
       creditsGranted: topUp.creditsGranted,
+      monthlyTokensGranted: plan?.monthlyTokens ?? null,
+      monthlyTokenCycleStart,
+      monthlyTokenExpiresAt: monthlyTokenExpiry,
     })
+
+    const discountDescription = topUp.discountCents > 0
+      ? ` (${topUp.appliedDiscountPercent}% off applied)`
+      : ""
 
     const sessionParams = buildStripeDepositCheckoutParams({
       amountCents: topUp.chargeAmountCents,
       currency,
-      successUrl: `${origin}/dashboard/billing?checkout=success`,
-      cancelUrl: `${origin}/dashboard/billing?checkout=canceled`,
-      description: `${topUp.creditsGranted.toFixed(2)} credits top-up${topUp.discountCents > 0 ? " (5% off applied)" : ""}`,
+      successUrl: buildBrandedCheckoutSuccessUrl({
+        origin,
+        flow: "topup",
+      }),
+      cancelUrl: buildBrandedCheckoutCancelUrl({
+        origin,
+        flow: "topup",
+      }),
+      description: `${topUp.creditsGranted.toFixed(2)} credits top-up${discountDescription}`,
       customerEmail: session.email || undefined,
       metadata,
     })

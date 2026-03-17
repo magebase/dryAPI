@@ -1,16 +1,12 @@
+import { defaultEmailBranding, type EmailBranding } from "@/emails/brand"
 import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components"
+  EmailCallout,
+  EmailDataList,
+  EmailLayout,
+} from "@/emails/email-ui"
 
 type ChatEscalationEmailProps = {
+  branding?: EmailBranding
   question: string
   queue?: string
   pagePath: string
@@ -22,6 +18,7 @@ type ChatEscalationEmailProps = {
 }
 
 export function ChatEscalationEmail({
+  branding = defaultEmailBranding,
   question,
   queue,
   pagePath,
@@ -32,83 +29,26 @@ export function ChatEscalationEmail({
   submittedAt,
 }: ChatEscalationEmailProps) {
   return (
-    <Html>
-      <Head />
-      <Preview>Chatbot escalation requires follow-up</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={heading}>Chatbot Escalation</Heading>
-          <Section>
-            <Text style={label}>Submitted</Text>
-            <Text style={value}>{submittedAt}</Text>
-            <Text style={label}>Page</Text>
-            <Text style={value}>{pagePath}</Text>
-            <Text style={label}>Visitor</Text>
-            <Text style={value}>{visitorId}</Text>
-            <Text style={label}>Queue</Text>
-            <Text style={value}>{queue || "general"}</Text>
-            <Text style={label}>Visitor Email</Text>
-            <Text style={value}>{visitorEmail || "Not provided"}</Text>
-            <Text style={label}>Visitor Mobile</Text>
-            <Text style={value}>{visitorPhone || "Not provided"}</Text>
-          </Section>
-          <Hr style={separator} />
-          <Section>
-            <Text style={label}>Latest Question</Text>
-            <Text style={value}>{question}</Text>
-            <Text style={label}>Conversation Transcript</Text>
-            <Text style={transcript}>{conversation}</Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+    <EmailLayout
+      branding={branding}
+      preview="Chatbot escalation requires follow-up"
+      eyebrow="Internal Chat Escalation"
+      title="Chatbot escalation"
+      summary="A visitor requested follow-up from the chat widget. Review the details and latest transcript below."
+      kind="internal"
+    >
+      <EmailDataList
+        items={[
+          { label: "Submitted", value: submittedAt },
+          { label: "Page", value: pagePath },
+          { label: "Visitor", value: visitorId },
+          { label: "Queue", value: queue || "general" },
+          { label: "Visitor email", value: visitorEmail || "Not provided" },
+          { label: "Visitor mobile", value: visitorPhone || "Not provided" },
+          { label: "Latest question", value: question },
+        ]}
+      />
+      <EmailCallout title="Conversation transcript">{conversation}</EmailCallout>
+    </EmailLayout>
   )
-}
-
-const main = {
-  backgroundColor: "#f4f4f5",
-  fontFamily: "Arial, sans-serif",
-  padding: "30px 12px",
-}
-
-const container = {
-  backgroundColor: "#ffffff",
-  borderRadius: "8px",
-  margin: "0 auto",
-  maxWidth: "680px",
-  padding: "24px",
-}
-
-const heading = {
-  color: "#111827",
-  fontSize: "24px",
-  marginBottom: "16px",
-}
-
-const label = {
-  color: "#6b7280",
-  fontSize: "12px",
-  letterSpacing: "0.08em",
-  marginBottom: "4px",
-  textTransform: "uppercase" as const,
-}
-
-const value = {
-  color: "#111827",
-  fontSize: "15px",
-  lineHeight: "1.6",
-  marginBottom: "12px",
-}
-
-const transcript = {
-  color: "#111827",
-  fontSize: "13px",
-  lineHeight: "1.6",
-  marginBottom: "4px",
-  whiteSpace: "pre-line" as const,
-}
-
-const separator = {
-  borderColor: "#e5e7eb",
-  margin: "18px 0",
 }

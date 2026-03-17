@@ -42,20 +42,39 @@ export function parseAutoTopUpThresholdToCents(input: number | string | undefine
   return parseDepositAmountToCents(input)
 }
 
-export function resolveTopUpCharge(inputAmountCents: number): {
+export function resolveTopUpCharge(
+  inputAmountCents: number,
+  options?: {
+    discountPercent?: number
+  }
+): {
   requestedAmountCents: number
   chargeAmountCents: number
   discountCents: number
+  appliedDiscountPercent: number
   creditsGranted: number
 } {
   const requestedAmountCents = assertPositiveAmount(inputAmountCents)
-  const discountCents = requestedAmountCents === TOP_UP_DISCOUNT_TARGET_CENTS ? TOP_UP_DISCOUNT_CENTS : 0
+
+  const defaultDiscountCents = requestedAmountCents === TOP_UP_DISCOUNT_TARGET_CENTS ? TOP_UP_DISCOUNT_CENTS : 0
+  const optionalDiscountPercent = Math.max(Number(options?.discountPercent || 0), 0)
+  const optionalDiscountCents = Math.round((requestedAmountCents * optionalDiscountPercent) / 100)
+
+  const discountCents = Math.min(
+    requestedAmountCents,
+    Math.max(defaultDiscountCents, optionalDiscountCents),
+  )
+
   const chargeAmountCents = requestedAmountCents - discountCents
+  const appliedDiscountPercent = requestedAmountCents > 0
+    ? Number(((discountCents / requestedAmountCents) * 100).toFixed(2))
+    : 0
 
   return {
     requestedAmountCents,
     chargeAmountCents,
     discountCents,
+    appliedDiscountPercent,
     creditsGranted: Number((requestedAmountCents / 100).toFixed(2)),
   }
 }

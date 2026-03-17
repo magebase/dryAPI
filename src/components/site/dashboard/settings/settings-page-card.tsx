@@ -12,7 +12,7 @@ type SettingsPageCardProps = {
 
 export function SettingsPageCard({ title, description, icon: Icon, children }: SettingsPageCardProps) {
   return (
-    <Card className="border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+    <Card className="animate-fade-in border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
       <CardHeader className="gap-2 border-b border-zinc-200/70 py-6 dark:border-zinc-700/70">
         <CardTitle className="inline-flex items-center gap-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
           <Icon className="size-5" />

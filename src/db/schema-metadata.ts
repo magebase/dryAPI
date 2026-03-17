@@ -29,3 +29,28 @@ export const deapiPricingPermutations = sqliteTable("deapi_pricing_permutations"
   scrapedAt: text("scraped_at").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 })
+
+export const dashboardSettingsProfiles = sqliteTable("dashboard_settings_profiles", {
+  userEmail: text("user_email").primaryKey(),
+  generalJson: text("general_json").notNull().default("{}"),
+  securityJson: text("security_json").notNull().default("{}"),
+  webhooksJson: text("webhooks_json").notNull().default("{}"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+})
+
+export const dashboardApiKeys = sqliteTable("dashboard_api_keys", {
+  keyId: text("key_id").primaryKey(),
+  userEmail: text("user_email").notNull(),
+  name: text("name"),
+  keyStart: text("key_start").notNull(),
+  keyHash: text("key_hash").notNull(),
+  permissionsJson: text("permissions_json").notNull().default("[]"),
+  rolesJson: text("roles_json").notNull().default("[]"),
+  metaJson: text("meta_json").notNull().default("{}"),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+})

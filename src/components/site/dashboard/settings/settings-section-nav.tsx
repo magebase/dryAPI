@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import type { ComponentType } from "react"
-import { BellRing, KeyRound, Settings2, ShieldCheck, UserRound } from "lucide-react"
+import { useEffect, useMemo, useState, type ComponentType } from "react"
+import { BellRing, Building2, KeyRound, Settings2, Shield, ShieldCheck, UserRound } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -18,6 +18,11 @@ const settingsNavItems: SettingsNavItem[] = [
     href: "/dashboard/settings/general",
     label: "General",
     icon: Settings2,
+  },
+  {
+    href: "/dashboard/settings/organization",
+    label: "Workspace",
+    icon: Building2,
   },
   {
     href: "/dashboard/settings/api-keys",
@@ -41,12 +46,56 @@ const settingsNavItems: SettingsNavItem[] = [
   },
 ]
 
+type SessionUser = {
+  role?: string | null
+}
+
 function isActiveRoute(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
 export function SettingsSectionNav() {
   const pathname = usePathname() ?? ""
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadSession() {
+      const response = await fetch("/api/auth/get-session", {
+        cache: "no-store",
+        credentials: "include",
+      }).catch(() => null)
+
+      if (!active || !response?.ok) {
+        return
+      }
+
+      const payload = (await response.json().catch(() => null)) as { user?: SessionUser | null } | null
+
+      if (active) {
+        setSessionUser(payload?.user ?? null)
+      }
+    }
+
+    void loadSession()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const navItems = useMemo(() => {
+    const items = [...settingsNavItems]
+    if ((sessionUser?.role || "").trim().toLowerCase() === "admin") {
+      items.push({
+        href: "/dashboard/settings/admin",
+        label: "Admin",
+        icon: Shield,
+      })
+    }
+    return items
+  }, [sessionUser?.role])
 
   return (
     <aside className="h-fit rounded-xl border border-zinc-200/80 bg-white/90 p-2 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/80">
@@ -54,7 +103,7 @@ export function SettingsSectionNav() {
         Settings
       </p>
       <nav className="space-y-1">
-        {settingsNavItems.map((item) => {
+        {navItems.map((item) => {
           const active = isActiveRoute(pathname, item.href)
           const Icon = item.icon
 

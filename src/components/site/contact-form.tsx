@@ -150,16 +150,16 @@ export function ContactForm({
     <section className="space-y-6">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-primary" data-tina-field={projectEnquiryLabel.field}>{projectEnquiryLabel.value}</p>
-        <h2 className="mt-2 font-display text-3xl uppercase tracking-[0.08em] text-white" data-tina-field={headingField}>{heading}</h2>
-        <p className="mt-2 text-slate-300" data-tina-field={descriptionField}>{description}</p>
+        <h2 className="text-site-strong mt-2 font-display text-3xl uppercase tracking-[0.08em]" data-tina-field={headingField}>{heading}</h2>
+        <p className="text-site-muted mt-2" data-tina-field={descriptionField}>{description}</p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label className="text-slate-300" htmlFor="name" data-tina-field={nameLabel.field}>{nameLabel.value}</Label>
+            <Label className="text-site-muted" htmlFor="name" data-tina-field={nameLabel.field}>{nameLabel.value}</Label>
             <Input
-              className="h-10 border-white/20 bg-[#0e1826] text-slate-100"
+              className="text-site-strong h-10 border-slate-300 bg-[var(--site-surface-0)]"
               id="name"
               name="name"
               onChange={(event) =>
@@ -172,9 +172,9 @@ export function ContactForm({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300" htmlFor="email" data-tina-field={emailLabel.field}>{emailLabel.value}</Label>
+            <Label className="text-site-muted" htmlFor="email" data-tina-field={emailLabel.field}>{emailLabel.value}</Label>
             <Input
-              className="h-10 border-white/20 bg-[#0e1826] text-slate-100"
+              className="text-site-strong h-10 border-slate-300 bg-[var(--site-surface-0)]"
               id="email"
               name="email"
               onChange={(event) =>
@@ -189,9 +189,9 @@ export function ContactForm({
         </div>
 
         <div className="space-y-2">
-          <Label className="text-slate-300" htmlFor="company" data-tina-field={companyLabel.field}>{companyLabel.value}</Label>
+          <Label className="text-site-muted" htmlFor="company" data-tina-field={companyLabel.field}>{companyLabel.value}</Label>
           <Input
-            className="h-10 border-white/20 bg-[#0e1826] text-slate-100"
+            className="text-site-strong h-10 border-slate-300 bg-[var(--site-surface-0)]"
             id="company"
             name="company"
             onChange={(event) =>
@@ -203,9 +203,9 @@ export function ContactForm({
         </div>
 
         <div className="space-y-2">
-          <Label className="text-slate-300" htmlFor="message" data-tina-field={messageLabel.field}>{messageLabel.value}</Label>
+          <Label className="text-site-muted" htmlFor="message" data-tina-field={messageLabel.field}>{messageLabel.value}</Label>
           <Textarea
-            className="border-white/20 bg-[#0e1826] text-slate-100"
+            className="text-site-strong border-slate-300 bg-[var(--site-surface-0)]"
             id="message"
             name="message"
             onChange={(event) =>
@@ -234,7 +234,7 @@ export function ContactForm({
         />
 
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm uppercase tracking-[0.14em] text-slate-400">{responseTime}</p>
+          <p className="text-site-soft text-sm uppercase tracking-[0.14em]">{responseTime}</p>
           <Button
             className="rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground shadow-lg transition hover:brightness-110"
             disabled={isSubmitting}
@@ -243,7 +243,7 @@ export function ContactForm({
             {isSubmitting ? submitBusyLabel.value : submitIdleLabel.value}
           </Button>
         </div>
-        {statusMessage ? <p className="text-sm text-slate-200">{statusMessage}</p> : null}
+        {statusMessage ? <p className="text-site-muted text-sm">{statusMessage}</p> : null}
       </form>
     </section>
   )

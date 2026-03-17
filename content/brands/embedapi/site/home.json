@@ -1,0 +1,12 @@
+{
+  "seoTitle": "Embedding API Platform for Retrieval Teams | embedAPI",
+  "seoDescription": "Ship embedding, reranking, and retrieval workloads behind one stable API with usage controls and billing.",
+  "hero": {
+    "kicker": "Embedding APIs for production search",
+    "heading": "One API for embeddings, reranking, and retrieval",
+    "subheading": "Deploy semantic search features quickly with predictable latency, shared auth, and cost controls."
+  },
+  "capabilitySection": {
+    "title": "Built for retrieval and vector workflows"
+  }
+}

@@ -12,6 +12,8 @@ const PASSWORD_POLICY_MESSAGE =
 const REGISTER_ERROR_TOAST_ID = "register-error";
 const REGISTER_SUCCESS_TOAST_ID = "register-success";
 
+type SocialProvider = "google" | "github";
+
 function getPasswordPolicyError(password: string): string | null {
   if (password.length < 8) {
     return "Password must be at least 8 characters long.";
@@ -51,6 +53,7 @@ export default function RegisterPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialProviderPending, setSocialProviderPending] = useState<SocialProvider | null>(null);
 
   useEffect(() => {
     if (!error) {
@@ -205,6 +208,66 @@ export default function RegisterPage() {
     }
   }
 
+  async function handleSocialSignUp(provider: SocialProvider) {
+    const traceId = createAuthTraceId(undefined);
+
+    if (isSubmitting || socialProviderPending) {
+      return;
+    }
+
+    setError(null);
+    setSocialProviderPending(provider);
+
+    logClientAuthEvent("log", "register.social.start", {
+      traceId,
+      provider,
+      callbackUrl,
+    });
+
+    try {
+      const response = await fetch("/api/auth/sign-in/social", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          provider,
+          callbackURL: callbackUrl,
+          newUserCallbackURL: callbackUrl,
+          errorCallbackURL: "/register",
+          requestSignUp: true,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { url?: string | null; message?: string; error?: string }
+        | null;
+
+      if (!response.ok || !payload?.url) {
+        logClientAuthEvent("warn", "register.social.non-ok", {
+          traceId,
+          provider,
+          status: response.status,
+        });
+        setError(
+          resolveAuthErrorMessage(payload, `Unable to continue with ${provider}.`),
+        );
+        return;
+      }
+
+      window.location.assign(payload.url);
+    } catch {
+      logClientAuthEvent("error", "register.social.error", {
+        traceId,
+        provider,
+      });
+      setError(`Unable to continue with ${provider}.`);
+    } finally {
+      setSocialProviderPending(null);
+    }
+  }
+
   return (
     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
@@ -215,7 +278,12 @@ export default function RegisterPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 font-manrope">
+        <button
+          type="button"
+          disabled={Boolean(socialProviderPending)}
+          onClick={() => void handleSocialSignUp("google")}
+          className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 font-manrope disabled:cursor-not-allowed disabled:opacity-60"
+        >
           <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -234,13 +302,18 @@ export default function RegisterPage() {
               fill="#EA4335"
             />
           </svg>
-          Google
+          {socialProviderPending === "google" ? "Connecting..." : "Google"}
         </button>
-        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 font-manrope">
+        <button
+          type="button"
+          disabled={Boolean(socialProviderPending)}
+          onClick={() => void handleSocialSignUp("github")}
+          className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 font-manrope disabled:cursor-not-allowed disabled:opacity-60"
+        >
           <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
             <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
           </svg>
-          GitHub
+          {socialProviderPending === "github" ? "Connecting..." : "GitHub"}
         </button>
       </div>
 

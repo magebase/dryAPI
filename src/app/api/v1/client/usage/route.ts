@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { requireApiTokenIfConfigured } from "@/app/api/v1/client/_shared"
-import { env } from "@/env/server"
-import { getUnkeyClient } from "@/lib/unkey"
+import {
+  countActiveDashboardApiKeys,
+  getPlatformDailyRequestSeries,
+  getPlatformRequests24h,
+} from "@/lib/dashboard-api-keys-store"
 
 export const runtime = "nodejs"
 
@@ -148,85 +151,20 @@ function readPath(payload: unknown, path: readonly string[]): unknown {
   return current
 }
 
-function readFirstNumber(payload: unknown, paths: ReadonlyArray<readonly string[]>): number | null {
-  for (const path of paths) {
-    const value = toFiniteNumber(readPath(payload, path))
-    if (value !== null) {
-      return value
-    }
-  }
-
-  return null
-}
-
-function readKeysArrayLength(payload: unknown): number | null {
-  const keys = readPath(payload, ["keys"])
-  if (!Array.isArray(keys)) {
-    return null
-  }
-
-  return keys.filter((entry) => {
-    if (!entry || typeof entry !== "object") {
-      return false
-    }
-
-    const enabled = (entry as Record<string, unknown>).enabled
-    return enabled !== false
-  }).length
-}
-
 async function getUsageStats(): Promise<UsageStats> {
-  const client = getUnkeyClient()
   const generatedAt = new Date().toISOString()
-
-  if (!client) {
-    return {
-      requests24h: null,
-      p95LatencyMs: null,
-      activeApiKeys: null,
-      daily: normalizeDailyHistory(null, getUsageCostPerRequestUsd()),
-      rateLimitEvents24h: null,
-      generatedAt,
-    }
-  }
-
-  const analyticsQuery =
-    "SELECT COUNT(*) as total_24h FROM key_verifications_v1 WHERE time >= now() - INTERVAL 24 HOUR"
-  const dailyQuery =
-    "SELECT formatDateTime(time, '%Y-%m-%d') as day, COUNT(*) as requests FROM key_verifications_v1 WHERE time >= now() - INTERVAL 14 DAY GROUP BY day ORDER BY day ASC"
-  const rateLimitQuery =
-    "SELECT COUNT(*) as rate_limited_24h FROM key_verifications_v1 WHERE time >= now() - INTERVAL 24 HOUR AND code = 'RATE_LIMITED'"
-
-  const apiId = env.UNKEY_API_ID || "dryapi"
   const costPerRequestUsd = getUsageCostPerRequestUsd()
 
-  const [analyticsResult, dailyResult, keysResult, rateLimitResult] = await Promise.allSettled([
-    client.analytics.getVerifications({ query: analyticsQuery }),
-    client.analytics.getVerifications({ query: dailyQuery }),
-    client.apis.listKeys({ apiId, limit: 200 }),
-    client.analytics.getVerifications({ query: rateLimitQuery }),
+  const [requests24h, activeApiKeys, dailySeries] = await Promise.all([
+    getPlatformRequests24h(),
+    countActiveDashboardApiKeys(),
+    getPlatformDailyRequestSeries(HISTORY_DAYS),
   ])
 
-  const usagePayload = analyticsResult.status === "fulfilled" ? analyticsResult.value : null
-  const dailyPayload = dailyResult.status === "fulfilled" ? dailyResult.value : null
-  const keysPayload = keysResult.status === "fulfilled" ? keysResult.value : null
-  const rateLimitPayload = rateLimitResult.status === "fulfilled" ? rateLimitResult.value : null
-
-  const requests24h = readFirstNumber(usagePayload, [
-    ["total_24h"],
-    ["result", "total_24h"],
-    ["rows", "0", "total_24h"],
-    ["rows", "0", "count"],
-  ])
-
-  const activeApiKeys = readKeysArrayLength(keysPayload)
-  const rateLimitEvents24h = readFirstNumber(rateLimitPayload, [
-    ["rate_limited_24h"],
-    ["result", "rate_limited_24h"],
-    ["rows", "0", "rate_limited_24h"],
-    ["rows", "0", "count"],
-  ])
-
+  const dailyPayload = (dailySeries ?? []).map((row) => ({
+    day: row.day,
+    requests: row.requests,
+  }))
   const daily = normalizeDailyHistory(dailyPayload, costPerRequestUsd)
 
   return {
@@ -234,7 +172,7 @@ async function getUsageStats(): Promise<UsageStats> {
     p95LatencyMs: null,
     activeApiKeys,
     daily,
-    rateLimitEvents24h,
+    rateLimitEvents24h: null,
     generatedAt,
   }
 }

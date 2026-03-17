@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { zfd } from "zod-form-data"
 import { ZodError, z } from "zod"
 
+import { defaultEmailBranding, resolveCurrentEmailBranding } from "@/emails/brand"
 import { ContactEmail } from "@/emails/contact-email"
 import { QuoteEmail } from "@/emails/quote-email"
 import { sendBrevoReactEmail } from "@/lib/brevo-email"
@@ -313,6 +314,7 @@ export async function POST(request: NextRequest) {
     let emailResponse: Awaited<ReturnType<typeof sendBrevoReactEmail>>
     try {
       const attachments = await toBrevoAttachments(files)
+      const emailBranding = await resolveCurrentEmailBranding().catch(() => defaultEmailBranding)
 
       emailResponse = await sendBrevoReactEmail({
         apiKey: brevoApiKey,
@@ -321,13 +323,15 @@ export async function POST(request: NextRequest) {
           name: brevoFromName,
         },
         to: [{ email: recipient }],
-        subject: `${isQuoteSubmission ? "Quote request" : "Website inquiry"} (${enquiryQueue}) from ${submission.name}`,
+        subject: `${emailBranding.mark} ${isQuoteSubmission ? "quote request" : "website inquiry"} (${enquiryQueue}) from ${submission.name}`,
         react: isQuoteSubmission
           ? QuoteEmail({
+              branding: emailBranding,
               ...submission,
               submittedAt: new Date().toISOString(),
             })
           : ContactEmail({
+              branding: emailBranding,
               ...submission,
               submittedAt: new Date().toISOString(),
             }),

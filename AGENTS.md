@@ -80,6 +80,22 @@ Compatibility requirements:
 - Cloudflare build: `pnpm cf:build`
 - Cloudflare deploy: `pnpm cf:deploy`
 
+## Utility Libraries and i18n
+
+- Use `lodash` for focused data/object utilities when native JS is verbose or error-prone.
+- Prefer path imports to keep bundle impact low, for example:
+  - `import get from "lodash/get"`
+  - `import uniqBy from "lodash/uniqBy"`
+- Avoid bringing in full-lodash helpers for simple native operations (`map`, `filter`, `reduce`, `Object.keys`, optional chaining).
+- Use `date-fns` for date parsing, formatting, and arithmetic.
+- Keep date handling explicit and deterministic:
+  - Parse inputs first (`parseISO`) before formatting.
+  - Use clear formatting tokens (`format(date, "yyyy-MM-dd HH:mm")`).
+  - Use helper functions like `addDays`, `subHours`, `differenceInMinutes` instead of manual millisecond math.
+- For localization and number/date internationalization behavior, follow MDN guidance:
+  - `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Internationalization`
+- Prefer built-in `Intl` APIs for locale-aware formatting in UI and API responses, and use `date-fns` for non-locale date math/composition.
+
 ## Working Rules
 
 - Favor small, testable, low-regression changes over broad rewrites.
@@ -105,6 +121,54 @@ Compatibility requirements:
   - Prioritize nav items, section headers, CTA rows, metadata chips, status blocks, and feature lists.
   - Prefer `lucide-react` icons and keep sizing consistent (`size-4` inline, `size-5` for emphasis).
   - Pair icons with text labels (avoid ambiguous icon-only affordances unless accessibility labels are explicit).
+- For field-level value transfer actions (for example API keys, slugs, IDs):
+  - Do not render visible `Copy` text on buttons.
+  - Use an icon control (`Copy` icon) with accessible labeling (`aria-label`).
+  - On success, animate to a green success check icon, then animate back to the default icon after 5 seconds.
+  - Secret values generated in the UI must never be visually rendered in plaintext.
+  - For API key and webhook secret fields, use disabled password inputs only (`type="password"`), with no reveal/toggle control.
+  - These secret password fields must always be non-editable (`disabled`) and paired with an icon-only copy action.
+  - Copy actions must copy from the in-memory secret value while keeping the visible field masked at all times.
+
+### CSR Fetching and Loading State Standards (Strict)
+
+- Any UI that depends on client-side fetches must render ShadCN `Skeleton` placeholders while data is loading.
+- Skeleton visuals must be neutral gray (not accent/brand blue or other brand colors).
+- Use the shared wave-pulse skeleton treatment (`.skeleton-wave-pulse`) so loading states are consistent across dashboard surfaces.
+- Skeletons must match the final loaded UI shape exactly:
+  - Same container geometry, spacing, and responsive breakpoints.
+  - Same card/list row structure, including avatar/icon/title/metadata/action placeholders where applicable.
+  - No layout jump between loading and loaded states (prevent cumulative layout shift).
+- Do not render mock data, fake values, seeded placeholders, or synthetic records in place of real fetched data.
+- During loading, prefer skeleton-only content regions instead of temporary fake text like sample names, prices, or counts.
+- Keep state handling explicit for CSR views:
+  - `loading`: exact-shape skeletons only.
+  - `error`: error state UI with actionable retry.
+  - `empty`: real empty-state messaging when fetch succeeds with no data.
+  - `success`: real fetched data only.
+- For collection views, use a deterministic skeleton count that mirrors expected viewport layout (not random counts).
+- For pagination/infinite loading, append row/card skeletons in the same shape as incoming items.
+- Keep accessibility intact during CSR fetches:
+  - Mark loading regions with `aria-busy` where appropriate.
+  - Ensure skeletons do not remove keyboard focus visibility or trap interaction.
+- Prefer reusable `*Skeleton` companion components colocated with each major CSR component/page so loading and loaded markup stay in sync.
+- Validate both desktop and mobile loading states whenever adding or changing client-side fetched UI.
+
+### Page Transition and Element Animation Standards
+
+- Use CSS-only `@keyframes` entry animations for dashboard and app pages. Avoid JS-driven animation libraries for simple enter effects.
+- Register custom animations in the Tailwind v4 `@theme inline` block so they are available as `animate-*` utilities (`--animate-*` tokens).
+- Three canonical animation tiers for dashboard UI:
+  - `animate-page-in`: applied to the `<main>` page content wrapper in `DashboardShell`; triggers on every route navigation automatically (no JS needed); fast fade + subtle upward slide (200–280ms).
+  - `animate-fade-in`: applied to section headings, banners, and standalone cards that appear above-the-fold; medium fade entry (240ms).
+  - `animate-slide-up`: applied to individual cards and list items that need staggered entry; use CSS `animation-delay` via `[style]` or Tailwind `delay-*` utilities for stagger effect.
+- Keep animation durations short and decisive: entry animations should complete within 300ms. Do not use slow drift-in animations for interactive UI.
+- Use `ease-out` or `cubic-bezier(0.22, 1, 0.36, 1)` for snappy, spring-like entries.
+- Stagger delays for grid cards: use `50ms` increments per item (`delay-0`, `delay-[50ms]`, `delay-[100ms]`, `delay-[150ms]`).
+- All animation utility classes must declare `animation-fill-mode: both` so elements start invisible before animation fires.
+- Always add reduced-motion overrides in the `@media (prefers-reduced-motion: reduce)` block.
+- Do not animate on every re-render of CSR components; restrict entry animations to the page-level SSR wrapper and static section containers. CSR components use skeleton transitions, not fly-in animations.
+- Do not apply `animate-page-in` to individual child elements within a page that already has `animate-page-in`; choose one or the other per nesting level.
 
 ### Public Copy Guardrails (Strict)
 
@@ -116,6 +180,105 @@ Compatibility requirements:
   - "Full row context is shown here for SEO and implementation clarity. Prices are listed in USD per scraped permutation."
 - If context is only useful to developers/agents, keep it in code comments, docs, commit messages, or internal markdown, not in rendered page content.
 - Prefer concise benefit-first wording that answers user intent; remove any sentence that does not add customer value.
+
+## Writing and Markdown Standards (Strict)
+
+Apply these standards to all AI-authored content in this repo, including blogs, markdown docs, articles, and marketing pages.
+
+### Writing Quality Bar
+
+- Write for expert-but-busy readers: high signal, low fluff, immediate value.
+- Lead with outcomes, then explain method, then provide evidence or examples.
+- Prefer concrete nouns, specific verbs, and measurable claims over abstract language.
+- Keep tone confident and precise; avoid hype, filler, and vague promises.
+- Every section should answer one clear user intent question.
+- Remove lines that do not change a decision, clarify a concept, or reduce risk.
+
+### Voice and Tone by Surface
+
+- Blog posts:
+  - Educational, practical, and credibility-first.
+  - Use clear scenarios, tradeoffs, and implementation implications.
+  - Avoid generic thought-leadership language without operational detail.
+- Docs and technical markdown articles:
+  - Instructional, deterministic, and unambiguous.
+  - Use exact terms, stable naming, and explicit constraints.
+  - Optimize for successful first-run execution, not persuasive copy.
+- Marketing pages:
+  - Benefit-first, concise, and conversion-focused.
+  - Pair each claim with proof signals (capability detail, reliability statement, or measurable outcome).
+  - Keep language clear enough for non-specialists without losing technical credibility.
+
+### Structure Blueprints
+
+- Blog/article default structure:
+  1. Problem framing with stakes.
+  2. What good looks like (decision criteria or target state).
+  3. Practical framework or step-by-step method.
+  4. Real constraints, tradeoffs, and failure modes.
+  5. Actionable summary with next-step checklist.
+- Docs markdown default structure:
+  1. Purpose and scope.
+  2. Prerequisites and assumptions.
+  3. Step sequence in strict order.
+  4. Validation and expected outputs.
+  5. Error handling and recovery paths.
+  6. Related links and next tasks.
+- Marketing page section flow:
+  1. Core value proposition.
+  2. Capability proof blocks.
+  3. Integration/API evidence.
+  4. Trust/compliance proof.
+  5. CTA with clear action.
+
+### Markdown and MDX Generation Rules
+
+- Use exactly one H1 per document.
+- Do not skip heading levels (`##` follows `#`, `###` follows `##`).
+- Keep headings descriptive and specific; avoid generic titles like "Overview" unless necessary.
+- Use short paragraphs (2-4 sentences) for scanability.
+- Use bullet lists for non-sequential points and numbered lists for procedures.
+- Keep list items parallel in grammar and scope.
+- Use tables only for true comparisons (features, limits, prices, or options).
+- Include language identifiers on fenced code blocks (for example `ts`, `bash`, `json`).
+- Keep code examples executable and minimal; avoid pseudo-code unless explicitly labeled.
+- Wrap file paths, env vars, commands, and literals in inline code formatting.
+- Prefer relative internal links for repo/docs content; use stable external sources when needed.
+- For MDX components, ensure surrounding text still reads clearly without visual-only assumptions.
+
+### Evidence and Accuracy Rules
+
+- Do not present estimates, assumptions, or roadmap ideas as facts.
+- If a claim depends on repo behavior, verify it against current code or config first.
+- When numbers are shown (pricing, limits, throughput, token units), ensure unit labels are explicit and consistent.
+- Preserve billing unit conventions used by the platform (credit token vs model token vs Stripe minor units).
+- Never invent customer logos, certifications, benchmark numbers, or compliance status.
+- Prefer a cautious statement over an unverified assertion.
+
+### SEO and Discoverability Rules
+
+- Write for user intent first, SEO second.
+- Place primary intent in title, intro, and at least one section heading naturally.
+- Use descriptive meta title and description language without keyword stuffing.
+- Avoid repetitive phrase stuffing and templated keyword spam.
+- Keep slugs short, readable, and semantically aligned with page intent.
+
+### Editorial QA Checklist (Required)
+
+- The first screen communicates who this is for, what it solves, and why it matters.
+- Headings form a coherent outline that can be skimmed without body text.
+- Claims are specific, defensible, and free from internal/process commentary.
+- Steps are executable in order; expected results are stated.
+- Markdown is valid, readable in raw form, and renders cleanly in MDX/Fumadocs.
+- Copy is concise, non-repetitive, and free of AI-generic phrasing.
+
+### Forbidden Patterns
+
+- Empty intensity phrases ("game-changing", "revolutionary", "next-gen") without evidence.
+- Mechanical repetition of the same sentence pattern across sections.
+- Long introductions that delay practical content.
+- Public-facing references to "SEO intent", "keyword targets", "AI-generated", or implementation commentary.
+- Placeholder text, fake metrics, fake testimonials, or synthetic references.
 
 ## Reference Theme Prompt (ZeroDrift-Inspired Compliance Landing)
 
@@ -319,6 +482,106 @@ Final acceptance checklist for this style:
 If a task asks for "this exact style" or "same theme", prioritize this prompt over generic design instructions and preserve its composition, color logic, spacing rhythm, and restrained enterprise tone.
 ```
 
+## React Email Guidelines
+
+Use these rules for all transactional, lifecycle, internal alert, and marketing/campaign emails in this repo.
+
+### Architecture and Reuse
+
+- Use React Email components with a shared branded layout and shared primitives. Do not build ad hoc one-off email markup per flow when an existing shared block can be reused.
+- Keep email templates under `src/emails/**` and separate:
+  - brand/theme resolution
+  - shared layout/primitives
+  - flow-specific templates
+- Every template must work as a standalone render with explicit props. Do not make templates depend on browser APIs, client hooks, or runtime-only UI state.
+- Brand identity must come from the existing brand system and site content:
+  - `src/lib/brand-catalog.ts`
+  - `src/lib/site-content-loader.ts`
+  - `content/site/**`
+  - `content/brands/**`
+- Do not hardcode `dryAPI` into reusable templates when the brand can be derived from current brand/site config.
+
+### Deliverability and Rendering
+
+- Always provide meaningful preview text with `Preview`.
+- Always generate both HTML and plain-text email bodies for sends.
+- Keep layouts email-safe:
+  - single-column primary structure
+  - width around 600-640px
+  - inline styles only where needed for compatibility
+  - no client-side JavaScript
+- Prefer light-mode email designs with strong contrast and restrained accents. Do not rely on CSS features with poor email client support.
+- Primary CTAs must be obvious and tappable. Keep one primary CTA per email unless the email is explicitly comparison-oriented.
+- Include raw URL fallbacks for critical account actions such as verification or password reset.
+
+### Transactional Email Rules
+
+- Transactional emails must be concise, deterministic, and action-first.
+- Each transactional email should do one job clearly:
+  - verify identity
+  - reset password
+  - confirm billing action
+  - alert on usage/security state
+  - confirm support/contact flow state
+- Do not bury required actions below long marketing copy.
+- Use precise subjects and body copy. Avoid hype in transactional flows.
+- Include support contact details when a user may need help completing the action.
+- Do not require unsubscribe links in strictly transactional emails.
+
+### Marketing and Campaign Email Rules
+
+- Marketing emails must still be brand-safe, high-signal, and technically credible.
+- Required for marketing/campaign emails:
+  - unsubscribe link
+  - optional manage-preferences link when available
+  - clear primary CTA
+  - benefit-first headline
+- Keep campaigns focused on one theme per send:
+  - launch
+  - newsletter digest
+  - feature announcement
+  - re-engagement
+  - upgrade offer
+- Avoid deceptive urgency, vague claims, or copy that reads like generic SaaS spam.
+- Use short sections, scannable bullets, and proof-oriented copy rather than long prose blocks.
+
+### Internal Alert Emails
+
+- Internal alerts such as contact, quote, and chat escalations should use structured label/value blocks for fast scanning.
+- Put the most operationally useful facts first:
+  - queue
+  - sender/contact details
+  - submitted time
+  - page/source
+  - latest message or transcript excerpt
+- Internal emails should still use the shared brand layout, but copy should stay operational, not promotional.
+
+### Security and Privacy
+
+- Never render secrets in plaintext in emails.
+- Never email full API keys, bearer tokens, passwords, webhook secrets, or session tokens.
+- If a flow references a sensitive value, show only masked identifiers or last-4 style hints where necessary.
+- Keep PII limited to what the recipient needs for the action.
+- Avoid copying large raw payloads or verbose transcripts into customer-facing emails.
+
+### Content and CTA Standards
+
+- Use plain-language CTA labels such as `Verify email`, `Reset password`, `Open billing`, `Read the launch note`, or `Manage usage`.
+- Headings and supporting copy must reflect end-user value, not implementation commentary.
+- Do not include internal notes, SEO commentary, or agent-facing instructions in visible email copy.
+- Keep subjects and preview text aligned with the actual body action.
+
+### Testing and Verification
+
+- For meaningful email changes, verify:
+  - branded content resolves correctly for default and non-default brands
+  - HTML render succeeds
+  - plain-text render is present and readable
+  - critical action links are absolute and correct
+  - mobile-friendly spacing remains readable
+- Prefer lightweight render tests for shared branding and template output over brittle snapshot spam.
+- When updating an active send path, verify the caller passes explicit branding instead of relying on hardcoded brand strings.
+
 ## Worker and Inference Guidelines
 
 - Validate and sanitize all untrusted request input at API boundaries.
@@ -485,7 +748,7 @@ Additional gateway and docs guidance:
   - Use checkpoints or high-water marks for batch migration jobs.
   - Verify checksums/count parity between source and destination before deletion.
 
-# Cloudflare D1 Architecture and Separation of Concerns
+## Cloudflare D1 Architecture and Separation of Concerns
 
 This document defines how this repository uses Cloudflare D1 for scale, performance, and reliability.
 
@@ -610,12 +873,49 @@ Design around conservative write throughput per database and keep sustained writ
 
 ## Testing and Verification Standards
 
-- Minimum checks after meaningful code changes:
-  - `pnpm lint`
-  - `pnpm test`
-- For UI/layout tasks, verify homepage at common mobile and desktop breakpoints.
-- For API/gateway changes, verify status code behavior and error contracts.
-- For billing changes, test webhook idempotency and balance reconciliation.
+- Principle: follow a test pyramid — many fast unit tests, a moderate number of integration tests, and a small number of end-to-end (E2E) tests. Tests must be automated, deterministic, and run in CI.
+
+- Test Pyramid (recommended):
+  - **Unit tests (heaviest):** Fast, isolated, and numerous. Cover pure functions, components, and utility logic. Run with `vitest`/`pnpm test`; colocate tests next to code.
+  - **Integration tests (middle):** Exercise interactions between modules, DB, workers, and API layers while keeping external dependencies mocked or using dedicated test fixtures. Use separate integration test jobs and dedicated commands where appropriate.
+  - **End-to-end (E2E) tests (thin):** Focus on critical user flows (auth, billing/checkout, inference dispatch). Keep these few, reliable, and expensive — run them on gated CI pipelines or nightly schedules (Playwright recommended).
+
+- Minimum local/PR checks:
+  - Run `pnpm lint` and `pnpm test` before opening a PR.
+  - Run relevant integration/E2E commands for the areas you changed (see the Cloudflare integration test command in this doc for worker tests).
+  - For UI/layout tasks, verify homepage at common mobile and desktop breakpoints and inspect visual artifacts where available.
+  - For API/gateway changes, verify status code behavior and error contracts.
+  - For billing changes, test webhook idempotency and balance reconciliation.
+
+- Agent testing responsibilities (required):
+  - Agents must run the test suite and add or update tests whenever they make changes (new features, bug fixes, or refactors).
+  - For bug fixes, include a regression test that reproduces the bug and verifies the fix.
+  - For new features, include unit tests and any necessary integration tests that validate the feature contract.
+  - If a test cannot be added (for example an external provider integration that cannot be reliably mocked), document why and provide a validated manual test plan in the PR.
+  - Update or remove tests only with explicit justification in the PR; do not update snapshots blindly.
+
+- Best practices:
+  - Keep unit tests fast and independent of network or ephemeral services.
+  - Use fixtures, factories, and deterministic seeds for integration tests.
+  - Mock external APIs in unit tests; use recorded fixtures or dedicated test environments for integration flows.
+  - Avoid flakiness: mark, triage, and fix flaky tests quickly; do not let flaky tests silently block the pipeline.
+  - Prefer small, focused tests over large monolithic assertions.
+  - Co-locate tests with the code they exercise to make maintenance easier.
+  - Enforce tests and linting on CI; do not merge failing pipelines.
+  - Aim for clear, maintainable assertions and failure messages.
+
+- CI and performance:
+  - Partition long-running integration and E2E suites into separate CI jobs (optional gating).
+  - Parallelize tests where safe; keep CI run times practical.
+  - Add smoke checks to catch regressions quickly in PR pipelines.
+
+- Commands and verification:
+  - Quick local checks: `pnpm lint && pnpm test`
+  - Cloudflare worker integration: run the recommended integration test command when touching worker code (see the 'Cloudflare API integration test command' section).
+  - For E2E Playwright flows, use the project's Playwright scripts and review video/artifacts when failures occur.
+
+- PR acceptance:
+  - Pull requests must include the test commands used, a short test plan, and evidence that tests pass locally and on CI.
 
 ## Guardrails
 

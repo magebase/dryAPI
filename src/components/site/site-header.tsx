@@ -1,111 +1,125 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Menu, X } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { tinaField } from "tinacms/dist/react"
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { tinaField } from "tinacms/dist/react";
 
-import { DryApiLogo } from "@/components/site/dryapi-logo"
-import { QuoteAwareLink } from "@/components/site/quote-aware-link"
-import type { SiteConfig } from "@/lib/site-content-schema"
+import { DryApiLogo } from "@/components/site/dryapi-logo";
+import { QuoteAwareLink } from "@/components/site/quote-aware-link";
+import type { SiteConfig } from "@/lib/site-content-schema";
 
 function isCurrentPath(target: string, currentPath: string) {
   if (target === "/") {
-    return currentPath === "/"
+    return currentPath === "/";
   }
 
-  return currentPath === target || currentPath.startsWith(`${target}/`)
+  return currentPath === target || currentPath.startsWith(`${target}/`);
 }
 
-export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: string }) {
-  const headerRef = useRef<HTMLElement | null>(null)
-  const [hasScrolled, setHasScrolled] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
-  const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null)
-  const isMobileMenuOpen = mobileMenuPath === pathname
-  const utilityCtaLabel = site.header.phone.label.replace(/\s+/g, " ").trim()
+export function SiteHeader({
+  site,
+  pathname,
+}: {
+  site: SiteConfig;
+  pathname: string;
+}) {
+  const headerRef = useRef<HTMLElement | null>(null);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null);
+  const isMobileMenuOpen = mobileMenuPath === pathname;
+  const utilityCtaLabel = site.header.phone.label.replace(/\s+/g, " ").trim();
 
   useEffect(() => {
     const handleScroll = () => {
-      const y = window.scrollY
-      setHasScrolled(y > 18)
+      const y = window.scrollY;
+      setHasScrolled(y > 18);
       setScrollProgress((current) => {
-        const next = Math.min(1, Math.max(0, y / 260))
-        return Math.abs(next - current) > 0.01 ? next : current
-      })
-    }
+        const next = Math.min(1, Math.max(0, y / 260));
+        return Math.abs(next - current) > 0.01 ? next : current;
+      });
+    };
 
     const syncHeaderHeight = () => {
       if (!headerRef.current) {
-        return
+        return;
       }
 
-      document.documentElement.style.setProperty("--site-header-height", `${headerRef.current.offsetHeight}px`)
-    }
+      document.documentElement.style.setProperty(
+        "--site-header-height",
+        `${headerRef.current.offsetHeight}px`,
+      );
+    };
 
-    handleScroll()
-    syncHeaderHeight()
+    handleScroll();
+    syncHeaderHeight();
 
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    window.addEventListener("resize", syncHeaderHeight)
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", syncHeaderHeight);
 
-    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(syncHeaderHeight) : null
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(syncHeaderHeight)
+        : null;
     if (resizeObserver && headerRef.current) {
-      resizeObserver.observe(headerRef.current)
+      resizeObserver.observe(headerRef.current);
     }
 
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", syncHeaderHeight)
-      resizeObserver?.disconnect()
-    }
-  }, [])
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", syncHeaderHeight);
+      resizeObserver?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
-      document.body.style.removeProperty("overflow")
-      return
+      document.body.style.removeProperty("overflow");
+      return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setMobileMenuPath(null)
+        setMobileMenuPath(null);
       }
-    }
+    };
 
-    document.body.style.overflow = "hidden"
-    window.addEventListener("keydown", handleKeyDown)
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.removeProperty("overflow")
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [isMobileMenuOpen])
+      document.body.style.removeProperty("overflow");
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   const headerMotionStyle = {
-    transform: `translateY(${(-8 * scrollProgress).toFixed(2)}px)`,
-  }
+    transform: `translateY(${(-4 * scrollProgress).toFixed(2)}px)`,
+  };
   const announcementStyle = {
     opacity: 1 - scrollProgress * 0.3,
-    transform: `translateY(${(-4 * scrollProgress).toFixed(2)}px)`,
-  }
+    transform: `translateY(${(-1 * scrollProgress).toFixed(2)}px)`,
+  };
   const navMotionStyle = {
     transform: `scale(${(1 - scrollProgress * 0.025).toFixed(3)})`,
-  }
+  };
 
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow,transform] duration-500 ease-out ${
+      className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow,transform] duration-500 animate-in slide-in-from-top-24 ease-out ${
         hasScrolled
-          ? "border-b border-white/10 bg-[#09111b]/94 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+          ? "border-b border-[color:var(--border)] bg-[var(--site-surface-0)]/94 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
           : "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
       }`}
       style={headerMotionStyle}
     >
       <div
-        className={`hidden md:block text-center text-[12px] text-slate-200 transition-[background-color,border-color,opacity,transform] duration-500 ease-out ${
-          hasScrolled ? "border-b border-white/10 bg-[#0d1929]" : "border-b border-transparent bg-transparent"
+        className={`hidden text-center text-[12px] transition-[background-color,border-color,opacity,transform] duration-500 ease-out md:block ${
+          hasScrolled
+            ? "border-b border-[color:var(--border)] bg-[var(--site-surface-0)] text-site-muted"
+            : "border-b border-transparent bg-transparent text-site-inverse-muted"
         }`}
         style={announcementStyle}
       >
@@ -122,7 +136,11 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
           hasScrolled ? "py-2.5 md:py-3" : "py-3 md:py-4"
         }`}
       >
-        <Link className="flex items-center text-white" href="/" style={navMotionStyle}>
+        <Link
+          className={`flex items-center ${hasScrolled ? "text-site-strong" : "text-site-inverse"}`}
+          href="/"
+          style={navMotionStyle}
+        >
           <DryApiLogo
             mark={site.brand.mark}
             markDataTinaField={tinaField(site.brand, "mark")}
@@ -130,19 +148,26 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             nameClassName="text-[11px]"
             nameDataTinaField={tinaField(site.brand, "name")}
             size="lg"
-            tone="dark"
+            tone={hasScrolled ? "dark" : "light"}
           />
         </Link>
 
-        <nav className="hidden items-center gap-4 xl:flex" style={navMotionStyle}>
+        <nav
+          className="hidden items-center gap-4 xl:flex"
+          style={navMotionStyle}
+        >
           {site.header.primaryLinks.map((link) => (
             <Link
               key={`${link.href}-${link.label}`}
               data-tina-field={tinaField(link)}
               className={`rounded-sm px-2 py-1.5 text-[11px] font-medium uppercase tracking-[0.13em] transition ${
                 isCurrentPath(link.href, pathname)
-                  ? "border border-primary/45 bg-primary/15 text-primary"
-                  : "text-slate-300 hover:bg-white/5 hover:text-white"
+                  ? hasScrolled
+                    ? "border border-primary/45 bg-primary/15 text-primary"
+                    : "border border-white/36 bg-white/10 text-site-inverse"
+                  : hasScrolled
+                    ? "text-site-muted hover:bg-white/5 hover:text-[color:var(--site-text-strong)]"
+                    : "text-site-inverse-muted hover:bg-white/10 hover:text-[color:var(--site-text-inverse)]"
               }`}
               href={link.href}
             >
@@ -153,7 +178,11 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
 
         <div className="hidden items-center gap-2 xl:flex">
           <Link
-            className="inline-flex items-center gap-2 rounded-sm border border-primary/45 bg-primary/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary transition hover:border-accent/70 hover:text-white"
+            className={`inline-flex items-center gap-2 rounded-sm px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
+              hasScrolled
+                ? "border border-primary/45 bg-primary/10 text-primary hover:border-accent/70 hover:text-[color:var(--site-text-strong)]"
+                : "border border-white/34 bg-white/8 text-site-inverse hover:border-white/48 hover:text-[color:var(--site-text-inverse)]"
+            }`}
             data-tina-field={tinaField(site.header, "phone")}
             href={site.header.phone.href}
           >
@@ -172,7 +201,11 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
         <div className="flex items-center gap-2 xl:hidden">
           <Link
             aria-label={utilityCtaLabel}
-            className="inline-flex items-center justify-center rounded-sm border border-white/15 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-200 transition hover:border-white hover:text-white"
+            className={`inline-flex items-center justify-center rounded-sm px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
+              hasScrolled
+                ? "border border-[color:var(--border)] text-site-muted hover:border-primary/40 hover:text-[color:var(--site-text-strong)]"
+                : "border border-white/32 text-site-inverse hover:border-white/48 hover:text-[color:var(--site-text-inverse)]"
+            }`}
             data-tina-field={tinaField(site.header, "phone")}
             href={site.header.phone.href}
           >
@@ -183,12 +216,22 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
             aria-controls="site-mobile-menu"
             aria-expanded={isMobileMenuOpen}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            className="inline-flex items-center justify-center rounded-sm border border-white/20 p-2 text-slate-100 transition hover:border-white hover:text-white"
+            className={`inline-flex items-center justify-center rounded-sm p-2 transition ${
+              hasScrolled
+                ? "border border-[color:var(--border)] text-site-strong hover:border-primary/40"
+                : "border border-white/32 text-site-inverse hover:border-white/48"
+            }`}
             onClick={() => {
-              setMobileMenuPath((currentPath) => (currentPath === pathname ? null : pathname))
+              setMobileMenuPath((currentPath) =>
+                currentPath === pathname ? null : pathname,
+              );
             }}
           >
-            {isMobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+            {isMobileMenuOpen ? (
+              <X className="size-4" />
+            ) : (
+              <Menu className="size-4" />
+            )}
           </button>
         </div>
       </div>
@@ -196,10 +239,12 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
       <div
         id="site-mobile-menu"
         className={`xl:hidden overflow-hidden transition-[max-height,opacity,border-color] duration-300 ease-out ${
-          isMobileMenuOpen ? "max-h-[75vh] border-t border-white/10 opacity-100" : "max-h-0 border-t border-transparent opacity-0"
+          isMobileMenuOpen
+            ? "max-h-[75vh] border-t border-[color:var(--border)] opacity-100"
+            : "max-h-0 border-t border-transparent opacity-0"
         }`}
       >
-        <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="mx-auto max-w-7xl bg-[var(--site-surface-0)]/96 px-4 py-4 backdrop-blur-md">
           <nav className="grid gap-2">
             {site.header.primaryLinks.map((link) => (
               <Link
@@ -208,7 +253,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
                 className={`rounded-sm px-3 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition ${
                   isCurrentPath(link.href, pathname)
                     ? "bg-primary/15 text-primary"
-                    : "text-slate-200 hover:bg-white/5 hover:text-white"
+                    : "text-site-muted hover:bg-white/5 hover:text-[color:var(--site-text-strong)]"
                 }`}
                 href={link.href}
                 onClick={() => setMobileMenuPath(null)}
@@ -220,7 +265,7 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <Link
-              className="inline-flex items-center justify-center gap-2 rounded-sm border border-primary/45 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:border-accent/70 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-sm border border-primary/45 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:border-accent/70 hover:text-[color:var(--site-text-strong)]"
               data-tina-field={tinaField(site.header, "phone")}
               href={site.header.phone.href}
               onClick={() => setMobileMenuPath(null)}
@@ -241,5 +286,5 @@ export function SiteHeader({ site, pathname }: { site: SiteConfig; pathname: str
         </div>
       </div>
     </header>
-  )
+  );
 }

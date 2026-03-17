@@ -1,16 +1,8 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components"
+import { defaultEmailBranding, type EmailBranding } from "@/emails/brand"
+import { EmailCallout, EmailDataList, EmailLayout } from "@/emails/email-ui"
 
 type ContactEmailProps = {
+  branding?: EmailBranding
   submissionType?: "contact" | "quote"
   name: string
   email: string
@@ -24,6 +16,7 @@ type ContactEmailProps = {
 }
 
 export function ContactEmail({
+  branding = defaultEmailBranding,
   submissionType,
   name,
   email,
@@ -35,80 +28,31 @@ export function ContactEmail({
   message,
   submittedAt,
 }: ContactEmailProps) {
+  const isQuoteSubmission = submissionType === "quote"
+
   return (
-    <Html>
-      <Head />
-      <Preview>{submissionType === "quote" ? "New quote request" : "New website inquiry"} from {name}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={heading}>{submissionType === "quote" ? "New Quote Request" : "New Website Inquiry"}</Heading>
-          <Section>
-            <Text style={label}>Submission Type</Text>
-            <Text style={value}>{submissionType === "quote" ? "Quote" : "Contact"}</Text>
-            <Text style={label}>Name</Text>
-            <Text style={value}>{name}</Text>
-            <Text style={label}>Email</Text>
-            <Text style={value}>{email}</Text>
-            <Text style={label}>Company</Text>
-            <Text style={value}>{company || "Not provided"}</Text>
-            <Text style={label}>Phone</Text>
-            <Text style={value}>{phone || "Not provided"}</Text>
-            <Text style={label}>State</Text>
-            <Text style={value}>{state || "Not provided"}</Text>
-            <Text style={label}>Enquiry Type</Text>
-            <Text style={value}>{enquiryType || "Not provided"}</Text>
-            <Text style={label}>Preferred Contact</Text>
-            <Text style={value}>{preferredContactMethod || "Not provided"}</Text>
-            <Text style={label}>Submitted</Text>
-            <Text style={value}>{submittedAt}</Text>
-          </Section>
-          <Hr style={separator} />
-          <Section>
-            <Text style={label}>Message</Text>
-            <Text style={value}>{message}</Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+    <EmailLayout
+      branding={branding}
+      preview={`${isQuoteSubmission ? "New quote request" : "New website inquiry"} from ${name}`}
+      eyebrow={isQuoteSubmission ? "Internal Quote Alert" : "Internal Contact Alert"}
+      title={isQuoteSubmission ? "New quote request" : "New website inquiry"}
+      summary="Review the submission details below and follow up directly with the sender."
+      kind="internal"
+    >
+      <EmailDataList
+        items={[
+          { label: "Submission type", value: isQuoteSubmission ? "Quote" : "Contact" },
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Company", value: company || "Not provided" },
+          { label: "Phone", value: phone || "Not provided" },
+          { label: "State", value: state || "Not provided" },
+          { label: "Enquiry type", value: enquiryType || "Not provided" },
+          { label: "Preferred contact", value: preferredContactMethod || "Not provided" },
+          { label: "Submitted", value: submittedAt },
+        ]}
+      />
+      <EmailCallout title="Message">{message}</EmailCallout>
+    </EmailLayout>
   )
-}
-
-const main = {
-  backgroundColor: "#f4f4f5",
-  fontFamily: "Arial, sans-serif",
-  padding: "30px 12px",
-}
-
-const container = {
-  backgroundColor: "#ffffff",
-  borderRadius: "8px",
-  margin: "0 auto",
-  maxWidth: "640px",
-  padding: "24px",
-}
-
-const heading = {
-  color: "#111827",
-  fontSize: "24px",
-  marginBottom: "16px",
-}
-
-const label = {
-  color: "#6b7280",
-  fontSize: "12px",
-  letterSpacing: "0.08em",
-  marginBottom: "4px",
-  textTransform: "uppercase" as const,
-}
-
-const value = {
-  color: "#111827",
-  fontSize: "15px",
-  lineHeight: "1.6",
-  marginBottom: "12px",
-}
-
-const separator = {
-  borderColor: "#e5e7eb",
-  margin: "18px 0",
 }

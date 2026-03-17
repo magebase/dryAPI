@@ -7,6 +7,7 @@ import {
 	logServerAuthEvent,
 	summarizeCookieHeader,
 } from "@/lib/auth-debug"
+import { resolveConfiguredBalance } from "@/lib/configured-balance"
 
 export const runtime = "nodejs"
 
@@ -19,6 +20,31 @@ const AUTH_COOKIES_TO_CLEAR = [
 	"better-auth.dont_remember",
 	"better-auth.csrf_token",
 ] as const
+
+function isDeleteUserPath(pathname: string): boolean {
+	return pathname === "/api/auth/delete-user" || pathname === "/api/auth/delete-user/"
+}
+
+function buildDeleteUserBlockedResponse(balance: number): Response {
+	return new Response(
+		JSON.stringify({
+			error: {
+				code: "negative_balance_blocks_deletion",
+				message: "Account deletion is blocked while your credit balance is below 0.00.",
+				details: {
+					balance,
+				},
+			},
+		}),
+		{
+			status: 409,
+			headers: {
+				"content-type": "application/json; charset=utf-8",
+				"cache-control": "no-store",
+			},
+		},
+	)
+}
 
 function shouldLogAuthPath(pathname: string): boolean {
 	return (
@@ -104,6 +130,19 @@ async function buildStableGetSessionResponse(response: Response): Promise<{
 	}
 }
 
+function buildRecoveredGetSessionResponse(): Response {
+	const headers = new Headers({
+		"content-type": "application/json; charset=utf-8",
+		"cache-control": "no-store",
+	})
+	appendCookieClears(headers)
+
+	return new Response(JSON.stringify({ user: null, session: null }), {
+		status: 200,
+		headers,
+	})
+}
+
 function appendCookieClears(headers: Headers): void {
 	for (const cookieName of AUTH_COOKIES_TO_CLEAR) {
 		headers.append(
@@ -132,16 +171,7 @@ async function runAuthHandler(
 		})
 
 		if (pathname.startsWith("/api/auth/get-session")) {
-			const headers = new Headers({
-				"content-type": "application/json; charset=utf-8",
-				"cache-control": "no-store",
-			})
-			appendCookieClears(headers)
-
-			return new Response(JSON.stringify({ user: null, session: null }), {
-				status: 200,
-				headers,
-			})
+			return buildRecoveredGetSessionResponse()
 		}
 
 		return new Response(
@@ -158,59 +188,104 @@ async function runAuthHandler(
 }
 
 export async function GET(request: Request): Promise<Response> {
-	const requestUrl = new URL(request.url)
-	const traceId = createAuthTraceId(request.headers.get("x-request-id"))
-	const shouldLog = shouldLogAuthPath(requestUrl.pathname)
-	const isGetSessionPath = requestUrl.pathname.startsWith("/api/auth/get-session")
-
-	if (shouldLog) {
-		logServerAuthEvent("log", "api.auth.request", {
-			traceId,
-			method: "GET",
-			pathname: requestUrl.pathname,
-			search: requestUrl.search,
-			cookie: summarizeCookieHeader(request.headers.get("cookie")),
-		})
+	let requestUrl: URL
+	try {
+		requestUrl = new URL(request.url)
+	} catch {
+		requestUrl = new URL("http://localhost/api/auth/get-session")
 	}
 
-	const authResponse = await runAuthHandler(request, "GET", traceId, requestUrl.pathname)
+	const traceId = createAuthTraceId(request.headers.get("x-request-id"))
+	const pathname = requestUrl.pathname
+	const shouldLog = shouldLogAuthPath(pathname)
+	const isGetSessionPath = pathname.startsWith("/api/auth/get-session")
 
-	const stableGetSession = isGetSessionPath
-		? await buildStableGetSessionResponse(authResponse)
-		: null
-
-	const response = stableGetSession?.response ?? authResponse
-
-	if (shouldLog) {
-		logServerAuthEvent("log", "api.auth.response", {
-			traceId,
-			method: "GET",
-			pathname: requestUrl.pathname,
-			status: response.status,
-			sourceStatus: stableGetSession?.sourceStatus ?? response.status,
-			recovered: stableGetSession?.recovered ?? false,
-			setCookieCount: countSetCookieHeaders(response.headers.get("set-cookie")),
-		})
-
-		if (isGetSessionPath) {
-			const payload = stableGetSession?.payload ?? normalizeAuthSessionPayload(await parseJsonBodySafely(response))
-			logServerAuthEvent("log", "api.auth.get-session.payload", {
+	try {
+		if (shouldLog) {
+			logServerAuthEvent("log", "api.auth.request", {
 				traceId,
+				method: "GET",
+				pathname,
+				search: requestUrl.search,
+				cookie: summarizeCookieHeader(request.headers.get("cookie")),
+			})
+		}
+
+		const authResponse = await runAuthHandler(request, "GET", traceId, pathname)
+
+		const stableGetSession = isGetSessionPath
+			? await buildStableGetSessionResponse(authResponse)
+			: null
+
+		const response = stableGetSession?.response ?? authResponse
+
+		if (shouldLog) {
+			logServerAuthEvent("log", "api.auth.response", {
+				traceId,
+				method: "GET",
+				pathname,
 				status: response.status,
 				sourceStatus: stableGetSession?.sourceStatus ?? response.status,
 				recovered: stableGetSession?.recovered ?? false,
-				...summarizeAuthSessionPayload(payload),
+				setCookieCount: countSetCookieHeaders(response.headers.get("set-cookie")),
 			})
-		}
-	}
 
-	return response
+			if (isGetSessionPath) {
+				const payload = stableGetSession?.payload ?? normalizeAuthSessionPayload(await parseJsonBodySafely(response))
+				logServerAuthEvent("log", "api.auth.get-session.payload", {
+					traceId,
+					status: response.status,
+					sourceStatus: stableGetSession?.sourceStatus ?? response.status,
+					recovered: stableGetSession?.recovered ?? false,
+					...summarizeAuthSessionPayload(payload),
+				})
+			}
+		}
+
+		return response
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "unknown-error"
+
+		logServerAuthEvent("error", "api.auth.get.unhandled", {
+			traceId,
+			pathname,
+			message,
+		})
+
+		if (isGetSessionPath) {
+			return buildRecoveredGetSessionResponse()
+		}
+
+		return new Response(
+			JSON.stringify({ error: "Authentication handler failed" }),
+			{
+				status: 500,
+				headers: {
+					"content-type": "application/json; charset=utf-8",
+					"cache-control": "no-store",
+				},
+			},
+		)
+	}
 }
 
 export async function POST(request: Request): Promise<Response> {
 	const requestUrl = new URL(request.url)
 	const traceId = createAuthTraceId(request.headers.get("x-request-id"))
 	const shouldLog = shouldLogAuthPath(requestUrl.pathname)
+
+	if (isDeleteUserPath(requestUrl.pathname)) {
+		const balance = resolveConfiguredBalance()
+		if (balance < 0) {
+			logServerAuthEvent("warn", "api.auth.delete-user.blocked", {
+				traceId,
+				pathname: requestUrl.pathname,
+				balance,
+			})
+
+			return buildDeleteUserBlockedResponse(balance)
+		}
+	}
 
 	if (shouldLog) {
 		logServerAuthEvent("log", "api.auth.request", {

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://genfix.com.au").replace(/\/+$/, "")
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://dryapi.dev").replace(/\/+$/, "")
 
 export default function robots(): MetadataRoute.Robots {
   return {

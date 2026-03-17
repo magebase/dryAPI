@@ -31,7 +31,7 @@ function isBlogPostPath(slug: string[]) {
 }
 
 function normalizeSiteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://genfix.com.au").replace(/\/+$/, "")
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://dryapi.dev").replace(/\/+$/, "")
 }
 
 function normalizeCanonicalPath(slug: string, canonicalPath: string | undefined) {

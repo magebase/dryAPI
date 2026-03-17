@@ -7,6 +7,7 @@ import { getRunpodBatchQueuePolicy, isRunpodBatchQueueEnabled, type RunpodBatchQ
 import { deliverWebhookForJobStatus } from './lib/webhooks'
 import { isObjectRecord, safeParseJson } from './lib/validation'
 import { ApiQuotaDurableObject } from './durable/api-quota'
+import { CreditShardDurableObject } from './durable/credit-shard'
 import { registerOpenApiJsonRoute } from './routes/openapi-json'
 import { registerV1Routes } from './routes/v1'
 import type { AppContext, WorkerEnv } from './types'
@@ -177,4 +178,4 @@ const worker = {
 }
 
 export default worker
-export { ApiQuotaDurableObject }
+export { ApiQuotaDurableObject, CreditShardDurableObject }

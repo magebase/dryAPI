@@ -32,8 +32,8 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
   );
 
   return (
-    <footer className="relative border-t border-white/10 bg-background]">
-      <div className="relative border-b border-white/10">
+    <footer className="relative border-t border-[color:var(--border)] bg-[var(--site-surface-0)]">
+      <div className="relative border-b border-[color:var(--border)]">
         <div
           className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5"
           data-aos="fade-up"
@@ -41,7 +41,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
           data-aos-duration="420"
         >
           <p
-            className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-100"
+            className="text-site-strong text-xs font-semibold uppercase tracking-[0.16em]"
             data-tina-field={supportPrompt.field}
           >
             {supportPrompt.value}
@@ -57,7 +57,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
               {quoteLabel}
             </QuoteAwareLink>
             <QuoteAwareLink
-              className="inline-flex w-full items-center justify-center rounded-sm border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-200 transition hover:border-white hover:text-white"
+              className="inline-flex w-full items-center justify-center rounded-sm border border-[color:var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-site-muted transition hover:border-primary/45 hover:text-[color:var(--site-text-strong)]"
               data-tina-field={tinaField(site.footer, "contactLinks")}
               href={quickContactHref}
             >
@@ -91,7 +91,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
                 data-tina-field={tinaField(item)}
               >
                 <QuoteAwareLink
-                  className="transition hover:text-white"
+                  className="transition hover:text-[color:var(--site-text-strong)]"
                   href={item.href}
                 >
                   {item.label}
@@ -107,7 +107,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
                 <QuoteAwareLink
                   key={`social-${item.href}-${item.label}-${index}`}
                   aria-label={item.label}
-                  className="rounded-sm border border-white/20 p-2 text-slate-300 transition hover:border-primary hover:text-primary"
+                  className="rounded-sm border border-[color:var(--border)] p-2 text-site-muted transition hover:border-primary hover:text-primary"
                   data-tina-field={tinaField(item)}
                   href={item.href}
                 >
@@ -125,7 +125,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
               key={`column-${column.title}-${columnIndex}`}
               delay={columnIndex * 0.08}
             >
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100">
+              <h3 className="text-site-strong mb-4 text-xs font-semibold uppercase tracking-[0.2em]">
                 <span data-tina-field={tinaField(column, "title")}>
                   {column.title}
                 </span>
@@ -137,7 +137,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
                     data-tina-field={tinaField(link)}
                   >
                     <QuoteAwareLink
-                      className="transition hover:text-white"
+                      className="transition hover:text-[color:var(--site-text-strong)]"
                       href={link.href}
                     >
                       {link.label}
@@ -150,12 +150,12 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
         </div>
       </div>
 
-      <div className="border-t border-white/10 py-4">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 text-xs text-slate-400">
+      <div className="border-t border-[color:var(--border)] py-4">
+        <div className="text-site-soft mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 text-xs">
           {site.footer.legalLinks.map((link, index) => (
             <QuoteAwareLink
               key={`legal-${link.href}-${link.label}-${index}`}
-              className="transition hover:text-white"
+              className="transition hover:text-[color:var(--site-text-strong)]"
               data-aos="fade-up"
               data-aos-delay={String(index * 45)}
               data-aos-duration="360"

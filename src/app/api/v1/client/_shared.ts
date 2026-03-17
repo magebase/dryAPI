@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { resolveConfiguredBalance } from "@/lib/configured-balance"
+
 const BEARER_TOKEN_ENV_KEYS = ["DASHBOARD_API_KEY", "DEAPI_API_KEY", "API_KEY", "INTERNAL_API_KEY"] as const
-const BALANCE_ENV_KEYS = ["DASHBOARD_AVAILABLE_CREDITS", "DEAPI_AVAILABLE_CREDITS", "DEAPI_BALANCE", "API_CREDITS_BALANCE"]
 
 function resolveExpectedBearerToken(): string | null {
   for (const key of BEARER_TOKEN_ENV_KEYS) {
@@ -24,19 +25,6 @@ function getBearerToken(request: NextRequest): string | null {
   return token || null
 }
 
-function parseFiniteNumber(value: string | undefined): number | null {
-  if (!value) {
-    return null
-  }
-
-  const parsed = Number(value)
-  if (!Number.isFinite(parsed)) {
-    return null
-  }
-
-  return parsed
-}
-
 export function requireApiTokenIfConfigured(request: NextRequest): NextResponse | null {
   const expected = resolveExpectedBearerToken()
   if (!expected) {
@@ -57,17 +45,6 @@ export function requireApiTokenIfConfigured(request: NextRequest): NextResponse 
     },
     { status: 401 }
   )
-}
-
-export function resolveConfiguredBalance(): number {
-  for (const key of BALANCE_ENV_KEYS) {
-    const parsed = parseFiniteNumber(process.env[key])
-    if (parsed !== null) {
-      return parsed
-    }
-  }
-
-  return 0
 }
 
 export function parsePositiveInt(value: string | null, fallback: number, max: number): number {

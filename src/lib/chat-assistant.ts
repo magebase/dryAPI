@@ -12,7 +12,7 @@ export type ChatAnswer = {
 }
 
 const QUOTE_INTENT_PATTERN =
-  /\b(quote|pricing|price|cost|budget|estimate|proposal|book|hire|rental|rent|sales|buy|purchase|next step)\b/i
+  /\b(quote|pricing|price|cost|budget|estimate|proposal|plan|plans|subscription|enterprise|credits?|billing|trial|get started|contact sales)\b/i
 
 const ESCALATION_INTENT_PATTERN =
   /\b(human|person|team member|call me|phone me|email me|sms me|text me|someone else|not helpful|can'?t answer|cannot answer)\b/i
@@ -48,7 +48,7 @@ export function buildFallbackSalesAnswer(question: string): ChatAnswer {
   if (quoteIntent) {
     return {
       answer:
-        "Great timing. I can help you line up the right generator option and service scope. Tap the Quote button and share your site details so the team can price it accurately.",
+        "Great timing. I can help scope the right dryAPI plan and usage budget. Tap the quote button and share expected model mix, monthly volume, and latency targets so the team can price it accurately.",
       showQuoteButton: true,
       shouldEscalate: false,
     }
@@ -56,7 +56,7 @@ export function buildFallbackSalesAnswer(question: string): ChatAnswer {
 
   return {
     answer:
-      "I can help with generator hire, sales, service, maintenance planning, and emergency backup options across Brisbane. Tell me your site type, required runtime, and timeline, and I will recommend the best next step.",
+      "I can help with dryAPI model routing, OpenAI-compatible endpoints, credits and billing, rate limits, and integration guidance. Share what you are building and I can suggest the best next step.",
     showQuoteButton: false,
     shouldEscalate: false,
   }

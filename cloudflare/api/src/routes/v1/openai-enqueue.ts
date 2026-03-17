@@ -2,6 +2,12 @@ import { hashJson, readCachedJson, writeCachedJson } from '../../lib/cache'
 import { getCurrentPricingQuote, persistRunpodEnqueue, registerJobWebhook } from '../../lib/db'
 import { jsonError, jsonUpstreamError } from '../../lib/errors'
 import { getRunpodBatchQueuePolicy, isRunpodBatchQueueEnabled } from '../../lib/runpod-batch-queue'
+import {
+  type CreditReservation,
+  refundCredits,
+  reserveCredits,
+  resolveCreditUserId,
+} from '../../lib/credit-ledger'
 import { applyPriceMultiplier, computePayloadPriceMultiplier } from '../../lib/pricing'
 import { dispatchSignedWebhook, toWebhookEvent } from '../../lib/webhooks'
 import {
@@ -92,6 +98,24 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
 
   const webhookUrl = typeof payload.webhook_url === 'string' ? payload.webhook_url : null
   const shouldUseQueueFirst = queueBatchEnabled && typeof c.env.RUNPOD_BATCH_QUEUE?.send === 'function'
+  let creditReservation: CreditReservation | null = null
+
+  const explicitUserId = typeof payload.user === 'string' ? payload.user : null
+  const creditUserId = await resolveCreditUserId({
+    c,
+    explicitUserId,
+  })
+  const reserveResult = await reserveCredits({
+    c,
+    userId: creditUserId,
+    amount: quotedPriceUsd,
+  })
+
+  if (!reserveResult.ok) {
+    return reserveResult.response
+  }
+
+  creditReservation = reserveResult.reservation
 
   if (shouldUseQueueFirst) {
     const clientJobId = crypto.randomUUID()
@@ -112,6 +136,13 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     try {
       await c.env.RUNPOD_BATCH_QUEUE!.send(queueMessage)
     } catch (error) {
+      if (creditReservation) {
+        await refundCredits({
+          c,
+          reservation: creditReservation,
+        })
+      }
+
       return jsonError(c, 500, 'queue_dispatch_failed', error instanceof Error ? error.message : 'Failed to enqueue request')
     }
 
@@ -213,6 +244,11 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       'x-dryapi-batch-window-seconds': String(queueBatchPolicy.batchWindowSeconds),
       'x-dryapi-max-batch-size': String(queueBatchPolicy.maxBatchSize),
       'x-dryapi-batch-queue-enabled': queueBatchEnabled ? '1' : '0',
+      ...(creditReservation
+        ? {
+            'x-dryapi-credit-balance': String(creditReservation.balanceAfter),
+          }
+        : {}),
     })
   }
 
@@ -226,10 +262,24 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       body: { input: payload },
     })
   } catch (error) {
+    if (creditReservation) {
+      await refundCredits({
+        c,
+        reservation: creditReservation,
+      })
+    }
+
     return jsonError(c, 500, 'runpod_configuration_error', error instanceof Error ? error.message : 'RunPod configuration is invalid')
   }
 
   if (!upstream.ok) {
+    if (creditReservation) {
+      await refundCredits({
+        c,
+        reservation: creditReservation,
+      })
+    }
+
     return jsonUpstreamError(c, upstream)
   }
 
@@ -326,5 +376,10 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     'x-dryapi-batch-window-seconds': String(queueBatchPolicy.batchWindowSeconds),
     'x-dryapi-max-batch-size': String(queueBatchPolicy.maxBatchSize),
     'x-dryapi-batch-queue-enabled': queueBatchEnabled ? '1' : '0',
+    ...(creditReservation
+      ? {
+          'x-dryapi-credit-balance': String(creditReservation.balanceAfter),
+        }
+      : {}),
   })
 }

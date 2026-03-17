@@ -64,7 +64,7 @@ const manrope = Manrope({
 
 export const dynamic = "force-static";
 
-const FALLBACK_SITE_URL = "https://genfix.com.au";
+const FALLBACK_SITE_URL = "https://dryapi.dev";
 
 function normalizeSiteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? FALLBACK_SITE_URL).replace(

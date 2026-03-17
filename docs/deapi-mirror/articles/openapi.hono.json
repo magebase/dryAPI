@@ -212,6 +212,37 @@
         }
       }
     },
+    "/v1/client/balance": {
+      "get": {
+        "operationId": "getClientBalance",
+        "tags": [
+          "Client"
+        ],
+        "summary": "Get current available credits",
+        "description": "Returns available credits for the authenticated caller identity routed through the credit shard durable object ledger.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current available credit balance.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "user_id": "user_42",
+                  "available_credits": 127.5
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer API key."
+          }
+        }
+      }
+    },
     "/v1/images/generations": {
       "post": {
         "operationId": "createImageGeneration",

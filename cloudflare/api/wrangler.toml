@@ -7,6 +7,10 @@ workers_dev = true
 name = "API_KEY_QUOTA_DO"
 class_name = "ApiQuotaDurableObject"
 
+[[durable_objects.bindings]]
+name = "CREDIT_LEDGER_DO"
+class_name = "CreditShardDurableObject"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "dryapi-api-analytics"
@@ -31,6 +35,10 @@ simple = { limit = 500, period = 60 }
 tag = "v1_api_key_quota_do"
 new_sqlite_classes = ["ApiQuotaDurableObject"]
 
+[[migrations]]
+tag = "v2_credit_ledger_do"
+new_sqlite_classes = ["CreditShardDurableObject"]
+
 [vars]
 # Public API key required by clients (set in your deploy secrets)
 # Example: API_KEY = "sk-prod-..."
@@ -45,6 +53,8 @@ INTERNAL_API_KEY = ""
 EDGE_IP_LIMIT_PER_MINUTE = "500"
 API_KEY_LIMIT_PER_MINUTE = "300"
 API_KEY_LIMIT_PER_DAY = "20000"
+CREDIT_LEDGER_FLUSH_INTERVAL_SECONDS = "10"
+CREDIT_LEDGER_FLUSH_MAX_PENDING_USERS = "128"
 
 # RunPod direct dispatch settings (optional)
 # If these are unset, the gateway falls back to proxying requests to ORIGIN_URL.
@@ -109,6 +119,10 @@ workers_dev = true
 name = "API_KEY_QUOTA_DO"
 class_name = "ApiQuotaDurableObject"
 
+[[env.test.durable_objects.bindings]]
+name = "CREDIT_LEDGER_DO"
+class_name = "CreditShardDurableObject"
+
 [[env.test.d1_databases]]
 binding = "DB"
 database_name = "dryapi-api-analytics-test"
@@ -135,6 +149,8 @@ INTERNAL_API_KEY = ""
 EDGE_IP_LIMIT_PER_MINUTE = "500"
 API_KEY_LIMIT_PER_MINUTE = "300"
 API_KEY_LIMIT_PER_DAY = "20000"
+CREDIT_LEDGER_FLUSH_INTERVAL_SECONDS = "1"
+CREDIT_LEDGER_FLUSH_MAX_PENDING_USERS = "16"
 RUNPOD_API_KEY = ""
 RUNPOD_API_BASE_URL = "https://api.runpod.ai/v2"
 RUNPOD_ENDPOINT_ID_CHAT = ""
@@ -158,6 +174,10 @@ workers_dev = true
 [[env.dev.durable_objects.bindings]]
 name = "API_KEY_QUOTA_DO"
 class_name = "ApiQuotaDurableObject"
+
+[[env.dev.durable_objects.bindings]]
+name = "CREDIT_LEDGER_DO"
+class_name = "CreditShardDurableObject"
 
 [[env.dev.d1_databases]]
 binding = "DB"
@@ -185,6 +205,8 @@ INTERNAL_API_KEY = ""
 EDGE_IP_LIMIT_PER_MINUTE = "500"
 API_KEY_LIMIT_PER_MINUTE = "300"
 API_KEY_LIMIT_PER_DAY = "20000"
+CREDIT_LEDGER_FLUSH_INTERVAL_SECONDS = "10"
+CREDIT_LEDGER_FLUSH_MAX_PENDING_USERS = "128"
 RUNPOD_API_KEY = ""
 RUNPOD_API_BASE_URL = "https://api.runpod.ai/v2"
 RUNPOD_ENDPOINT_ID_CHAT = ""

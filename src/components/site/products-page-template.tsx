@@ -130,8 +130,8 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
   const faqHeading = resolveSiteUiText(site, "productsPage.faqHeading", "Frequently Asked Questions")
 
   return (
-    <main className="overflow-x-clip bg-[#0b1421] text-slate-100">
-      <section className="relative isolate border-b border-white/10">
+    <main className="overflow-x-clip bg-[var(--site-surface-0)] text-slate-900">
+      <section className="relative isolate border-b border-slate-200">
         <Image
           alt={page.hero.heading}
           className="absolute inset-0 h-full w-full object-cover opacity-35"
@@ -147,10 +147,10 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           <p className="text-xs uppercase tracking-[0.26em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
-          <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
+          <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-slate-900 sm:text-4xl md:text-6xl">
             <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
           </h1>
-          <p className="mt-5 max-w-2xl text-sm text-slate-300 sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
+          <p className="mt-5 max-w-2xl text-sm text-slate-600 sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
             {page.hero.body}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -170,7 +170,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           {heroGalleryImages.length > 0 ? (
             <div className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3" data-tina-field={tinaField(page.hero, "galleryImages")}>
               {heroGalleryImages.slice(0, 6).map((image) => (
-                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
+                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-slate-300`}>
                   <Image
                     alt={image.alt || `${page.hero.heading} gallery image`}
                     className="h-24 w-full object-cover"
@@ -186,16 +186,16 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
         </Reveal>
       </section>
 
-      <Reveal className="border-b border-white/10 bg-[linear-gradient(180deg,#101a2b,#132034)]">
+      <Reveal className="border-b border-slate-200 bg-[linear-gradient(180deg,#101a2b,#132034)]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:py-20">
           <div className="space-y-5">
             <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={expertsKicker.field}>{expertsKicker.value}</p>
-            <h2 className="max-w-xl font-display text-3xl uppercase leading-tight tracking-[0.03em] text-white md:text-4xl">
+            <h2 className="max-w-xl font-display text-3xl uppercase leading-tight tracking-[0.03em] text-slate-900 md:text-4xl">
               <KeywordGradientText dataTinaField={expertsHeading.field} text={expertsHeading.value} />
             </h2>
-            <p className="max-w-xl text-slate-300" data-tina-field={expertsBody.field}>{expertsBody.value}</p>
+            <p className="max-w-xl text-slate-600" data-tina-field={expertsBody.field}>{expertsBody.value}</p>
           </div>
-          <div className={`${getGradientVariant(1)} relative overflow-hidden rounded-sm border border-white/10 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}>
+          <div className={`${getGradientVariant(1)} relative overflow-hidden rounded-sm border border-slate-200 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}>
             <Image
               alt="Industrial generator fleet"
               className="h-full w-full object-cover"
@@ -208,7 +208,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
         </div>
       </Reveal>
 
-      <section className="border-b border-white/10 bg-[#1a2535]">
+      <section className="border-b border-slate-200 bg-[var(--site-surface-1)]">
         <div className="mx-auto max-w-7xl px-4 py-14 lg:py-16">
           <Reveal className="mb-8">
             <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={rangeKicker.field}>{rangeKicker.value}</p>
@@ -221,20 +221,20 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
               return (
                 <Reveal
                   key={feature.id}
-                  className="grid gap-8 border-t border-white/10 pt-8 first:border-t-0 first:pt-0 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:pt-10"
+                  className="grid gap-8 border-t border-slate-200 pt-8 first:border-t-0 first:pt-0 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:pt-10"
                 >
                   <div className={reverse ? "lg:order-2" : ""}>
                     <h3
-                      className="max-w-lg font-display text-3xl uppercase tracking-[0.03em] text-white md:text-4xl"
+                      className="max-w-lg font-display text-3xl uppercase tracking-[0.03em] text-slate-900 md:text-4xl"
                     >
                       <KeywordGradientText dataTinaField={feature.titleField} text={feature.title} />
                     </h3>
-                    <p className="mt-4 max-w-xl text-slate-300" data-tina-field={feature.descriptionField}>{feature.description}</p>
-                    <ul className="mt-6 space-y-2 text-xs uppercase tracking-[0.16em] text-slate-300">
+                    <p className="mt-4 max-w-xl text-slate-600" data-tina-field={feature.descriptionField}>{feature.description}</p>
+                    <ul className="mt-6 space-y-2 text-xs uppercase tracking-[0.16em] text-slate-600">
                       {(feature.specs.length > 0 ? feature.specs : [feature.title.toUpperCase()])
                         .slice(0, 4)
                         .map((spec) => (
-                          <li key={`${feature.id}-${spec}`} className="border-b border-white/20 pb-2">
+                          <li key={`${feature.id}-${spec}`} className="border-b border-slate-300 pb-2">
                             {spec}
                           </li>
                         ))}
@@ -250,7 +250,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                   </div>
 
                   <div className={reverse ? "lg:order-1" : ""}>
-                    <div className={`${getGradientVariant(index + 1)} relative overflow-hidden rounded-sm border border-white/10 p-4`}>
+                    <div className={`${getGradientVariant(index + 1)} relative overflow-hidden rounded-sm border border-slate-200 p-4`}>
                       <Image
                         alt={feature.title}
                         className="h-full w-full object-cover"
@@ -265,7 +265,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                             <Image
                               key={`${feature.id}-${image.id}`}
                               alt={image.alt || feature.title}
-                              className="h-16 w-full rounded-sm border border-white/15 object-cover"
+                              className="h-16 w-full rounded-sm border border-slate-200 object-cover"
                               height={120}
                               src={image.src}
                               width={180}
@@ -282,13 +282,13 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
         </div>
       </section>
 
-      <Reveal className="border-b border-white/10 bg-[linear-gradient(90deg,#1a2433_0%,#1a2433_52%,#111a29_52%,#111a29_100%)]">
+      <Reveal className="border-b border-slate-200 bg-[linear-gradient(90deg,#1a2433_0%,#1a2433_52%,#111a29_52%,#111a29_100%)]">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:py-14 lg:grid-cols-2 lg:py-20">
           <div>
-            <h2 className="font-display text-3xl uppercase tracking-[0.04em] text-white md:text-4xl">
+            <h2 className="font-display text-3xl uppercase tracking-[0.04em] text-slate-900 md:text-4xl">
               <KeywordGradientText dataTinaField={packagesHeading.field} text={packagesHeading.value} />
             </h2>
-            <p className="mt-4 max-w-xl text-slate-300" data-tina-field={packagesBody.field}>{packagesBody.value}</p>
+            <p className="mt-4 max-w-xl text-slate-600" data-tina-field={packagesBody.field}>{packagesBody.value}</p>
             <QuoteAwareLink
               className="mt-7 inline-flex w-full justify-center rounded-sm border border-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition hover:bg-primary hover:text-primary-foreground sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}
@@ -300,30 +300,30 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
             </QuoteAwareLink>
           </div>
 
-          <div className={`${getGradientVariant(3)} rounded-sm border border-white/10 p-6`}>
+          <div className={`${getGradientVariant(3)} rounded-sm border border-slate-200 p-6`}>
             <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={packagesPanelKicker.field}>{packagesPanelKicker.value}</p>
-            <p className="mt-5 text-slate-300" data-tina-field={packagesPanelBody.field}>{packagesPanelBody.value}</p>
+            <p className="mt-5 text-slate-600" data-tina-field={packagesPanelBody.field}>{packagesPanelBody.value}</p>
           </div>
         </div>
       </Reveal>
 
-      <section className="bg-[#1a2432] py-12 md:py-14 lg:py-20">
+      <section className="bg-[var(--site-surface-1)] py-12 md:py-14 lg:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <Reveal className="border-b border-white/10 pb-6">
-            <h2 className="font-display text-3xl uppercase tracking-[0.03em] text-white">
+          <Reveal className="border-b border-slate-200 pb-6">
+            <h2 className="font-display text-3xl uppercase tracking-[0.03em] text-slate-900">
               <KeywordGradientText dataTinaField={faqHeading.field} text={faqHeading.value} />
             </h2>
           </Reveal>
 
-          <div className="mt-4 divide-y divide-white/10 border-b border-white/10">
+          <div className="mt-4 divide-y divide-white/10 border-b border-slate-200">
             {faqItems.map((item, index) => (
               <Reveal key={`${item.question}-${index}`} className="py-3" id={`product-faq-${index + 1}`}>
                 <details className="group">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold uppercase tracking-[0.13em] text-slate-100">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold uppercase tracking-[0.13em] text-slate-900">
                     <span data-tina-field={item.questionField}>{item.question}</span>
                     <span className="text-lg leading-none text-primary transition group-open:rotate-45">+</span>
                   </summary>
-                  <p className="mt-3 max-w-4xl text-sm text-slate-300" data-tina-field={item.answerField}>{item.answer}</p>
+                  <p className="mt-3 max-w-4xl text-sm text-slate-600" data-tina-field={item.answerField}>{item.answer}</p>
                 </details>
               </Reveal>
             ))}

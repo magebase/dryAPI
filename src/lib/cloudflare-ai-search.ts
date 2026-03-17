@@ -39,6 +39,60 @@ function parsePositiveInt(value: string | undefined, fallback: number, max: numb
   return Math.min(parsed, max);
 }
 
+function toSafeUrl(value: string): URL | null {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeSourceFilter(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const directUrl = toSafeUrl(trimmed);
+  if (directUrl) {
+    return directUrl.toString().replace(/\/+$/, "");
+  }
+
+  const httpsUrl = toSafeUrl(`https://${trimmed}`);
+  if (httpsUrl) {
+    return httpsUrl.toString().replace(/\/+$/, "");
+  }
+
+  return trimmed;
+}
+
+function buildSourceVariants(source: string | null): Array<string | null> {
+  if (!source) {
+    return [null];
+  }
+
+  const normalized = normalizeSourceFilter(source);
+  if (!normalized) {
+    return [null];
+  }
+
+  const variants = new Set<string | null>([normalized]);
+  const parsed = toSafeUrl(normalized);
+
+  if (parsed) {
+    variants.add(parsed.hostname);
+    variants.add(parsed.origin);
+  }
+
+  // Final fallback: query without source restriction when prior variants miss.
+  variants.add(null);
+  return Array.from(variants);
+}
+
 function toRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -92,7 +146,7 @@ function resolveConfig(env: NodeJS.ProcessEnv): AiSearchConfig | null {
     accountId,
     apiToken,
     index,
-    source: nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE),
+    source: normalizeSourceFilter(nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE)),
     endpoint: nonEmpty(env.CLOUDFLARE_AI_SEARCH_ENDPOINT),
     timeoutMs: parsePositiveInt(env.CLOUDFLARE_AI_SEARCH_TIMEOUT_MS, 2500, 20_000),
     maxResults: parsePositiveInt(env.CLOUDFLARE_AI_SEARCH_MAX_RESULTS, 4, 12),
@@ -114,24 +168,31 @@ function buildEndpointCandidates(config: AiSearchConfig): string[] {
 }
 
 function buildPayloadCandidates(config: AiSearchConfig, query: string): Array<Record<string, unknown>> {
-  const withSource = config.source ? { source: config.source } : {};
-  return [
-    {
-      query,
-      max_results: config.maxResults,
-      ...withSource,
-    },
-    {
-      query,
-      top_k: config.maxResults,
-      ...withSource,
-    },
-    {
-      q: query,
-      topK: config.maxResults,
-      ...withSource,
-    },
-  ];
+  const sources = buildSourceVariants(config.source);
+  const payloads: Array<Record<string, unknown>> = [];
+
+  for (const source of sources) {
+    const withSource = source ? { source } : {};
+    payloads.push(
+      {
+        query,
+        max_results: config.maxResults,
+        ...withSource,
+      },
+      {
+        query,
+        top_k: config.maxResults,
+        ...withSource,
+      },
+      {
+        q: query,
+        topK: config.maxResults,
+        ...withSource,
+      },
+    );
+  }
+
+  return payloads;
 }
 
 function parseResultArray(payload: unknown): unknown[] {
@@ -181,12 +242,14 @@ function normalizeResult(entry: unknown): AiSearchResult | null {
     readString(metadata?.url) ||
     readString(document?.url);
 
+  const safeUrl = url ? toSafeUrl(url) : null;
+
   const title =
     readString(row.title) ||
     readString(row.name) ||
     readString(metadata?.title) ||
     readString(document?.title) ||
-    (url ? new URL(url).hostname : "Source");
+    (safeUrl ? safeUrl.hostname : "Source");
 
   const snippet =
     readString(row.snippet) ||

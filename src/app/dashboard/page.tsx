@@ -566,7 +566,7 @@ export default async function DashboardOverviewPage() {
         usageStats.p95LatencyMs !== null
           ? `p95 ${Math.round(usageStats.p95LatencyMs)}ms`
           : usageStats.requests24h !== null
-            ? "Live from /api/v1/usage"
+            ? ""
             : describeEndpointIssue(usage.status),
       icon: Zap,
     },
@@ -574,9 +574,7 @@ export default async function DashboardOverviewPage() {
       label: "Active API Keys",
       value: formatWholeNumber(usageStats.activeApiKeys),
       trend:
-        usageStats.activeApiKeys !== null
-          ? "Live from /api/v1/usage"
-          : "Not reported by usage feed",
+        usageStats.activeApiKeys !== null ? "" : "Not reported by usage feed",
       icon: KeyRound,
     },
     {
@@ -589,7 +587,7 @@ export default async function DashboardOverviewPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6">
-      <Card className="border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+      <Card className="animate-fade-in border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
         <CardHeader className="gap-3 border-b border-zinc-200/70 py-6 dark:border-zinc-700/70">
           <CardTitle className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
             Command Center
@@ -613,10 +611,11 @@ export default async function DashboardOverviewPage() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {overviewStats.map((stat) => (
+        {overviewStats.map((stat, i) => (
           <Card
             key={stat.label}
-            className="gap-3 border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80"
+            style={{ animationDelay: `${i * 50}ms` }}
+            className="animate-slide-up gap-3 border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80"
           >
             <CardHeader className="gap-2 px-5">
               <CardDescription className="text-xs uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
@@ -644,7 +643,7 @@ export default async function DashboardOverviewPage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
-        <Card className="gap-4 border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+        <Card className="animate-slide-up gap-4 border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
           <CardHeader className="gap-2 px-5">
             <CardTitle className="text-lg text-zinc-900 dark:text-zinc-100">
               Recent Activity
@@ -675,7 +674,10 @@ export default async function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="gap-4 border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
+        <Card
+          style={{ animationDelay: "50ms" }}
+          className="animate-slide-up gap-4 border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80"
+        >
           <CardHeader className="gap-2 px-5">
             <CardTitle className="text-lg text-zinc-900 dark:text-zinc-100">
               Reliability Snapshot

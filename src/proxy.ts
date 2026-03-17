@@ -393,39 +393,6 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (request.nextUrl.pathname === "/") {
-    if (isPrefetchRequest(request) || isRscRequest(request)) {
-      return NextResponse.next()
-    }
-
-    const sessionToken = readSessionToken(request)
-    if (!sessionToken) {
-      return NextResponse.next()
-    }
-
-    const authenticated = await isDashboardUserAuthenticated(request, traceId, sessionToken)
-
-    logServerAuthEvent("log", "middleware.home-page.decision", {
-      traceId,
-      pathname: request.nextUrl.pathname,
-      authenticated,
-    })
-
-    if (authenticated) {
-      const dashboardUrl = request.nextUrl.clone()
-      dashboardUrl.pathname = "/dashboard"
-      dashboardUrl.search = ""
-
-      logServerAuthEvent("log", "middleware.home-page.redirect-dashboard", {
-        traceId,
-        fromPath: request.nextUrl.pathname,
-        toPath: dashboardUrl.pathname,
-      })
-
-      return NextResponse.redirect(dashboardUrl, 307)
-    }
-  }
-
   const hostname = normalizeHostname(request.headers.get("x-forwarded-host") || request.headers.get("host"))
 
   if (isCrmHostname(hostname) && !isBypassRewritePath(request.nextUrl.pathname)) {

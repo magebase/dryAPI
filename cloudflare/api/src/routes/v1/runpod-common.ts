@@ -1,4 +1,10 @@
 import { readCachedJson, writeCachedJson } from '../../lib/cache'
+import {
+  type CreditReservation,
+  refundCredits,
+  reserveCredits,
+  resolveCreditUserId,
+} from '../../lib/credit-ledger'
 import { getCurrentPricingQuote, persistRunpodEnqueue, persistRunpodStatus, registerJobWebhook } from '../../lib/db'
 import { jsonError, jsonUpstreamError } from '../../lib/errors'
 import { applyPriceMultiplier, computePayloadPriceMultiplier } from '../../lib/pricing'
@@ -57,6 +63,7 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
   let quotedPriceUsd: number | null = null
   let priceKey: string | null = null
   let pricingSource: 'snapshot' | 'fallback' | null = null
+  let creditReservation: CreditReservation | null = null
 
   if (options.cacheKey) {
     const cached = await readCachedJson<unknown>(c, options.cacheKey)
@@ -94,6 +101,25 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
     pricingHeaderSource = pricingQuote.source
     priceKey = pricingQuote.priceKey
     pricingSource = pricingQuote.source
+
+    const explicitUserId = isObjectRecord(options.body) && typeof options.body.user === 'string'
+      ? options.body.user
+      : null
+    const creditUserId = await resolveCreditUserId({
+      c,
+      explicitUserId,
+    })
+    const reserveResult = await reserveCredits({
+      c,
+      userId: creditUserId,
+      amount: quotedPriceUsd,
+    })
+
+    if (!reserveResult.ok) {
+      return reserveResult.response
+    }
+
+    creditReservation = reserveResult.reservation
   }
 
   let upstream: Response
@@ -106,10 +132,24 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
       body: options.body,
     })
   } catch (error) {
+    if (creditReservation) {
+      await refundCredits({
+        c,
+        reservation: creditReservation,
+      })
+    }
+
     return jsonError(c, 500, 'runpod_configuration_error', error instanceof Error ? error.message : 'RunPod configuration is invalid')
   }
 
   if (!upstream.ok) {
+    if (creditReservation) {
+      await refundCredits({
+        c,
+        reservation: creditReservation,
+      })
+    }
+
     return jsonUpstreamError(c, upstream)
   }
 
@@ -235,6 +275,9 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
     }
     if (pricingHeaderSource) {
       headers.set('x-dryapi-price-source', pricingHeaderSource)
+    }
+    if (creditReservation) {
+      headers.set('x-dryapi-credit-balance', String(creditReservation.balanceAfter))
     }
 
     return new Response(upstream.body, {

@@ -1,59 +1,70 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { getUnkeyClient } from "@/lib/unkey"
-import { env } from "@/env/server"
+import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing"
+import { createDashboardApiKey, listDashboardApiKeysForRequest } from "@/lib/dashboard-api-keys-store"
 
 export const runtime = "nodejs"
 
 export async function GET(request: NextRequest) {
-  const client = getUnkeyClient()
-  if (!client) {
+  const session = await getDashboardSessionSnapshot(request)
+  if (!session.authenticated || !session.email) {
     return NextResponse.json(
-      { error: "unkey_not_configured", message: "UNKEY_ROOT_KEY is not set" },
-      { status: 501 },
+      {
+        error: "unauthorized",
+        message: "Sign in to manage API keys.",
+      },
+      { status: 401 },
     )
   }
 
-  const apiId = env.UNKEY_API_ID || "dryapi"
-
   try {
-    const res = await client.apis.listKeys({ apiId, limit: 200 })
-    return NextResponse.json(res)
-  } catch (err: any) {
-    return NextResponse.json({ error: "unkey_error", detail: err?.message ?? String(err) }, { status: 500 })
+    const data = await listDashboardApiKeysForRequest(request, session.email)
+    return NextResponse.json({ data })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: "api_keys_list_failed", detail: message }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const client = getUnkeyClient()
-  if (!client) {
+  const session = await getDashboardSessionSnapshot(request)
+  if (!session.authenticated || !session.email) {
     return NextResponse.json(
-      { error: "unkey_not_configured", message: "UNKEY_ROOT_KEY is not set" },
-      { status: 501 },
+      {
+        error: "unauthorized",
+        message: "Sign in to create API keys.",
+      },
+      { status: 401 },
     )
   }
-
-  const apiId = env.UNKEY_API_ID || "dryapi"
 
   const body = await request.json().catch(() => ({}))
   const name = typeof body.name === "string" ? body.name : undefined
   const prefix = typeof body.prefix === "string" ? body.prefix : undefined
   const permissions = Array.isArray(body.permissions) ? body.permissions : undefined
   const roles = Array.isArray(body.roles) ? body.roles : undefined
+  const expires = typeof body.expires === "number" ? body.expires : undefined
+  const meta = body.meta && typeof body.meta === "object" && !Array.isArray(body.meta) ? body.meta : undefined
 
   try {
-    const created = await client.keys.createKey({
-      apiId,
+    const created = await createDashboardApiKey(request, {
+      userEmail: session.email,
       name,
       prefix,
       permissions,
       roles,
-      enabled: true,
-      recoverable: true,
+      expires,
+      meta,
     })
 
-    return NextResponse.json(created)
-  } catch (err: any) {
-    return NextResponse.json({ error: "unkey_error", detail: err?.message ?? String(err) }, { status: 500 })
+    return NextResponse.json({
+      data: {
+        ...created.record,
+        key: created.key,
+      },
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: "api_key_create_failed", detail: message }, { status: 500 })
   }
 }

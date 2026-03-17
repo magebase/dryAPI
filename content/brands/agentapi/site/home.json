@@ -1,0 +1,12 @@
+{
+  "seoTitle": "AI Agent API Platform for Orchestration Teams | agentAPI",
+  "seoDescription": "Launch reliable agent workflows with shared auth, rate limits, billing controls, and OpenAI-compatible contracts.",
+  "hero": {
+    "kicker": "Agent-first API infrastructure",
+    "heading": "Build and ship AI agents with one API",
+    "subheading": "Route model calls, tool invocations, and execution controls through a single production-ready gateway."
+  },
+  "capabilitySection": {
+    "title": "Everything needed for multi-agent operations"
+  }
+}

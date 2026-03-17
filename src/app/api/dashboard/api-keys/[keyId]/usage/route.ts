@@ -1,18 +1,36 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { getUnkeyClient } from "@/lib/unkey"
+import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing"
+import { getDashboardApiKeyUsageSummary } from "@/lib/dashboard-api-keys-store"
 
 export const runtime = "nodejs"
 
-export async function GET(request: NextRequest, { params }: { params: { keyId: string } }) {
-  const client = getUnkeyClient()
-  if (!client) return NextResponse.json({ error: "unkey_not_configured" }, { status: 501 })
+type KeyUsageRouteContext = {
+  params: Promise<{
+    keyId: string
+  }>
+}
+
+export async function GET(request: NextRequest, context: KeyUsageRouteContext) {
+  const { keyId } = await context.params
+  const session = await getDashboardSessionSnapshot(request)
+  if (!session.authenticated || !session.email) {
+    return NextResponse.json({ error: "unauthorized", message: "Sign in to view API key usage." }, { status: 401 })
+  }
 
   try {
-    const q = `SELECT MAX(time) as last_used, COUNT(*) as total_24h FROM key_verifications_v1 WHERE keyId = '${params.keyId}' AND time >= now() - INTERVAL 24 HOUR`
-    const res = await client.analytics.getVerifications({ query: q })
-    return NextResponse.json(res)
-  } catch (err: any) {
-    return NextResponse.json({ error: "unkey_error", detail: err?.message ?? String(err) }, { status: 500 })
+    const summary = await getDashboardApiKeyUsageSummary({
+      userEmail: session.email,
+      keyId,
+    })
+
+    if (!summary) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ data: summary })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: "api_key_usage_failed", detail: message }, { status: 500 })
   }
 }

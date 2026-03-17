@@ -39,8 +39,8 @@ export function RoutePageTemplate({
   const formDescription = resolveSiteUiText(site, "routePage.contactFormDescription", "Share your scope and required dates.")
 
   return (
-    <main className="overflow-x-clip bg-[#101a28] pb-16 md:pb-20">
-      <section className="relative isolate overflow-hidden border-b border-white/10">
+    <main className="text-site-strong overflow-x-clip bg-[var(--site-surface-1)] pb-16 md:pb-20" data-route-page={page.slug}>
+      <section className="relative isolate overflow-hidden border-b border-slate-200" data-route-hero>
         <Image
           alt={page.hero.heading}
           className="absolute inset-0 h-full w-full object-cover opacity-24"
@@ -56,10 +56,10 @@ export function RoutePageTemplate({
           <p className="text-sm uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
-          <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
+          <h1 className="text-site-inverse mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] sm:text-4xl md:text-6xl">
             <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
           </h1>
-          <p className="mt-5 max-w-2xl text-sm text-slate-300 sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
+          <p className="text-site-inverse-muted mt-5 max-w-2xl text-sm sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
             {page.hero.body}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -72,6 +72,7 @@ export function RoutePageTemplate({
                     : "border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 }`}
                 data-tina-field={tinaField(action)}
+                data-route-hero-action={String(index)}
                 href={action.href}
               >
                 {action.label}
@@ -82,7 +83,7 @@ export function RoutePageTemplate({
           {heroGalleryImages.length > 0 ? (
             <div className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3" data-tina-field={tinaField(page.hero, "galleryImages")}>
               {heroGalleryImages.slice(0, 6).map((image) => (
-                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
+                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-slate-300`}>
                   <Image
                     alt={image.alt || `${page.hero.heading} gallery image`}
                     className="h-28 w-full object-cover"
@@ -92,7 +93,7 @@ export function RoutePageTemplate({
                     width={460}
                   />
                   {image.caption ? (
-                    <p className="px-3 py-2 text-[11px] uppercase tracking-[0.14em] text-slate-200" data-tina-field={tinaField(image, "caption")}>
+                    <p className="text-site-muted px-3 py-2 text-[11px] uppercase tracking-[0.14em]" data-tina-field={tinaField(image, "caption")}>
                       {image.caption}
                     </p>
                   ) : null}
@@ -111,19 +112,23 @@ export function RoutePageTemplate({
         const galleryImages = section.galleryImages?.filter((image) => image.src.trim().length > 0) ?? []
 
         return (
-          <section key={section.id} className="border-b border-white/10 py-10 even:bg-[#132033] md:py-14">
+          <section
+            key={section.id}
+            className="border-b border-slate-200 py-10 even:bg-[var(--site-surface-1)] md:py-14"
+            data-route-section={section.id}
+          >
             <Reveal as="div" className="mx-auto max-w-7xl px-4">
-              <h2 className="text-2xl font-semibold uppercase tracking-[0.12em] text-white md:text-3xl">
+              <h2 className="text-site-strong text-2xl font-semibold uppercase tracking-[0.12em] md:text-3xl">
                 <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
               </h2>
-              <p className="mt-3 max-w-3xl text-slate-300 md:text-base" data-tina-field={tinaField(section, "body")}>
+              <p className="text-site-muted mt-3 max-w-3xl md:text-base" data-tina-field={tinaField(section, "body")}>
                 {section.body}
               </p>
 
               {galleryImages.length > 0 ? (
                 <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-tina-field={tinaField(section, "galleryImages")}>
                   {galleryImages.slice(0, 6).map((image) => (
-                    <div key={image.id} className={`${getGradientVariant(1)} overflow-hidden rounded-sm border border-white/15`}>
+                    <div key={image.id} className={`${getGradientVariant(1)} overflow-hidden rounded-sm border border-slate-200`}>
                       <Image
                         alt={image.alt || `${section.title} image`}
                         className="h-36 w-full object-cover"
@@ -133,7 +138,7 @@ export function RoutePageTemplate({
                         width={520}
                       />
                       {image.caption ? (
-                        <p className="px-3 py-2 text-[11px] uppercase tracking-[0.14em] text-slate-300" data-tina-field={tinaField(image, "caption")}>
+                        <p className="text-site-muted px-3 py-2 text-[11px] uppercase tracking-[0.14em]" data-tina-field={tinaField(image, "caption")}>
                           {image.caption}
                         </p>
                       ) : null}
@@ -146,10 +151,11 @@ export function RoutePageTemplate({
                 {section.cards.map((card, index) => (
                   <Reveal
                     as="article"
-                    className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-primary/45`}
+                    className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-slate-200 shadow-[0_12px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-primary/45`}
                     delay={index * 0.08}
                     y={0}
                     key={card.id}
+                    data-route-card={card.id}
                     data-tina-field={tinaField(card)}
                   >
                     {card.image ? (
@@ -163,14 +169,15 @@ export function RoutePageTemplate({
                       />
                     ) : null}
                     <div className="p-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">
+                      <h3 className="text-site-strong text-sm font-semibold uppercase tracking-[0.16em]">
                         <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                       </h3>
-                      <p className="mt-3 text-sm text-slate-400" data-tina-field={tinaField(card, "description")}>
+                      <p className="text-site-muted mt-3 text-sm" data-tina-field={tinaField(card, "description")}>
                         {card.description}
                       </p>
                       <QuoteAwareLink
                         className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.16em] text-primary"
+                        data-route-card-cta={card.id}
                         data-tina-field={tinaField(card, "ctaLabel")}
                         href={card.href}
                       >
@@ -186,13 +193,13 @@ export function RoutePageTemplate({
       })}
 
       <Reveal as="section" className="mx-auto mt-10 max-w-7xl px-4 md:mt-14">
-        <div className={`${getGradientVariant(2)} rounded-md border border-white/10 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
+        <div className={`${getGradientVariant(2)} rounded-md border border-slate-200 px-6 py-6 md:flex md:items-center md:justify-between md:gap-8`}>
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-primary" data-tina-field={ctaKicker.field}>{ctaKicker.value}</p>
-            <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
+            <h2 className="text-site-strong mt-2 font-display text-2xl uppercase tracking-[0.06em]">
               <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
-            <p className="mt-2 text-sm text-slate-300 md:text-base" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
+            <p className="text-site-muted mt-2 text-sm md:text-base" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
@@ -203,7 +210,7 @@ export function RoutePageTemplate({
               {quoteLabel}
             </QuoteAwareLink>
             <QuoteAwareLink
-              className="inline-flex w-full justify-center rounded-sm border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-200 transition hover:border-white hover:text-white sm:w-auto"
+              className="text-site-muted inline-flex w-full justify-center rounded-sm border border-[color:var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition hover:border-primary/40 hover:text-[color:var(--site-text-strong)] sm:w-auto"
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
               href={productsHref}
             >
@@ -215,16 +222,16 @@ export function RoutePageTemplate({
 
       {page.contactPanel ? (
         <section className="mx-auto mt-12 grid max-w-7xl gap-6 px-4 lg:mt-14 lg:grid-cols-2 lg:gap-8">
-          <Reveal as="div" className={`${getGradientVariant(3)} rounded-md border border-white/10 p-6`}>
-            <h3 className="text-2xl font-semibold uppercase tracking-[0.08em] text-white">
+          <Reveal as="div" className={`${getGradientVariant(3)} rounded-md border border-slate-200 p-6`}>
+            <h3 className="text-site-strong text-2xl font-semibold uppercase tracking-[0.08em]">
               <KeywordGradientText dataTinaField={tinaField(page.contactPanel, "heading")} text={page.contactPanel.heading} />
             </h3>
-            <p className="mt-3 text-slate-300" data-tina-field={tinaField(page.contactPanel, "body")}>{page.contactPanel.body}</p>
+            <p className="text-site-muted mt-3" data-tina-field={tinaField(page.contactPanel, "body")}>{page.contactPanel.body}</p>
             <p className="mt-3 text-sm uppercase tracking-[0.15em] text-primary" data-tina-field={tinaField(page.contactPanel, "responseTime")}>
               {page.contactPanel.responseTime}
             </p>
           </Reveal>
-          <Reveal as="div" className={`${getGradientVariant(4)} rounded-md border border-white/10 p-6`} delay={0.1}>
+          <Reveal as="div" className={`${getGradientVariant(4)} rounded-md border border-slate-200 p-6`} delay={0.1}>
             <ContactForm
               description={formDescription.value}
               descriptionField={formDescription.field}

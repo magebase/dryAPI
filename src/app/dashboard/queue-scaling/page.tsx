@@ -1,8 +1,10 @@
 import { headers } from 'next/headers'
+import { notFound } from 'next/navigation'
 
 import { QueueScalingLivePanel, type QueueScalingPayload } from '@/components/site/dashboard/queue-scaling-live-panel'
 
 export const dynamic = 'force-dynamic'
+const QUEUE_SCALING_DASHBOARD_ENABLED = false
 
 type HeaderStore = {
   get(name: string): string | null
@@ -44,6 +46,10 @@ async function getQueueScalingData(): Promise<QueueScalingPayload> {
 }
 
 export default async function QueueScalingPage() {
+  if (!QUEUE_SCALING_DASHBOARD_ENABLED) {
+    notFound()
+  }
+
   const payload = await getQueueScalingData()
   return <QueueScalingLivePanel initialPayload={payload} />
 }

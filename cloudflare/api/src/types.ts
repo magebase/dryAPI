@@ -15,6 +15,15 @@ export type ApiKeyQuotaDurableObjectNamespace = {
   get: (id: DurableObjectIdLike) => ApiKeyQuotaDurableObjectStub
 }
 
+export type CreditLedgerDurableObjectStub = {
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+}
+
+export type CreditLedgerDurableObjectNamespace = {
+  idFromName: (name: string) => DurableObjectIdLike
+  get: (id: DurableObjectIdLike) => CreditLedgerDurableObjectStub
+}
+
 export type CloudflareQueueBinding = {
   send: (message: unknown) => Promise<void>
 }
@@ -33,6 +42,9 @@ export type WorkerBindings = {
   API_KEY_QUOTA_DO?: ApiKeyQuotaDurableObjectNamespace
   API_KEY_LIMIT_PER_MINUTE?: string
   API_KEY_LIMIT_PER_DAY?: string
+  CREDIT_LEDGER_DO?: CreditLedgerDurableObjectNamespace
+  CREDIT_LEDGER_FLUSH_INTERVAL_SECONDS?: string
+  CREDIT_LEDGER_FLUSH_MAX_PENDING_USERS?: string
   RUNPOD_API_KEY?: string
   RUNPOD_API_BASE_URL?: string
   RUNPOD_DEFAULT_MODE?: string

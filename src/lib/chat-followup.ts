@@ -69,7 +69,7 @@ export function buildEscalationFollowupNote({
   hasVisitorContact: boolean
 }): string {
   if (!escalated) {
-    return "I could not alert the team automatically just now. Please use the quote form so we can contact you promptly."
+    return "I could not alert the team automatically just now. Please use the contact form so we can follow up promptly."
   }
 
   if (hasVisitorContact) {

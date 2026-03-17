@@ -81,8 +81,8 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
   const explorePrefix = resolveSiteUiText(site, "blogList.explorePrefix", "Explore")
 
   return (
-    <main className="overflow-x-clip bg-[#0f1a2a] pb-16 text-slate-100 md:pb-20">
-      <section className="relative isolate overflow-hidden border-b border-white/10">
+    <main className="overflow-x-clip bg-[var(--site-surface-0)] pb-16 text-slate-900 md:pb-20">
+      <section className="relative isolate overflow-hidden border-b border-slate-200">
         <Image
           alt={page.hero.heading}
           className="absolute inset-0 h-full w-full object-cover opacity-25"
@@ -98,10 +98,10 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
           <p className="text-xs uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
-          <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-white sm:text-4xl md:text-6xl">
+          <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-slate-900 sm:text-4xl md:text-6xl">
             <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
           </h1>
-          <p className="mt-5 max-w-2xl text-sm text-slate-300 sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
+          <p className="mt-5 max-w-2xl text-sm text-slate-600 sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
             {page.hero.body}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -126,7 +126,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
           {heroGalleryImages.length > 0 ? (
             <div className="mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3" data-tina-field={tinaField(page.hero, "galleryImages")}>
               {heroGalleryImages.slice(0, 6).map((image) => (
-                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-white/20`}>
+                <div key={image.id} className={`${getGradientVariant(0)} overflow-hidden rounded-sm border border-slate-300`}>
                   <Image
                     alt={image.alt || `${page.hero.heading} gallery image`}
                     className="h-24 w-full object-cover"
@@ -146,7 +146,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
         <section className="mx-auto mt-10 max-w-7xl px-4">
           <Reveal
             as="article"
-            className={`${getGradientVariant(1)} grid overflow-hidden rounded-md border border-white/10 md:grid-cols-[1.1fr_1fr]`}
+            className={`${getGradientVariant(1)} grid overflow-hidden rounded-md border border-slate-200 md:grid-cols-[1.1fr_1fr]`}
             data-tina-field={tinaField(featuredPost)}
           >
             <Image
@@ -161,19 +161,19 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                 <BookText className="size-3.5" />
                 <span>{featuredLabel.value}</span>
               </p>
-              <h2 className="font-display text-3xl uppercase leading-[1.08] tracking-[0.03em] text-white md:text-4xl">
+              <h2 className="font-display text-3xl uppercase leading-[1.08] tracking-[0.03em] text-slate-900 md:text-4xl">
                 <KeywordGradientText dataTinaField={tinaField(featuredPost, "title")} text={featuredPost.title} />
               </h2>
-              <p className="inline-flex items-center gap-1.5 text-sm uppercase tracking-[0.16em] text-slate-300" data-tina-field={tinaField(featuredPost, "publishedAt")}>
+              <p className="inline-flex items-center gap-1.5 text-sm uppercase tracking-[0.16em] text-slate-600" data-tina-field={tinaField(featuredPost, "publishedAt")}>
                 <BookText className="size-4" />
                 <span>{formatPublishedDate(featuredPost.publishedAt)} · {estimateReadTime(featuredPost)}{" "}</span>
                 <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
               </p>
-              <p className="text-xs uppercase tracking-[0.14em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
                 <span data-tina-field={tinaField(featuredPost.author, "name")}>{featuredPost.author.name}</span> ·{" "}
                 <span data-tina-field={tinaField(featuredPost.author, "role")}>{featuredPost.author.role}</span>
               </p>
-              <p className="text-sm text-slate-300 md:text-base" data-tina-field={tinaField(featuredPost, "excerpt")}>
+              <p className="text-sm text-slate-600 md:text-base" data-tina-field={tinaField(featuredPost, "excerpt")}>
                 {featuredPost.excerpt}
               </p>
               <QuoteAwareLink
@@ -195,7 +195,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
             <Reveal
               as="article"
               key={post.slug}
-              className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.25)]`}
+              className={`${getGradientVariant(index)} overflow-hidden rounded-md border border-slate-200 shadow-[0_14px_30px_rgba(0,0,0,0.25)]`}
               delay={index * 0.08}
               data-tina-field={tinaField(post)}
             >
@@ -208,23 +208,23 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               />
 
               <div className="space-y-4 px-5 py-5">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400" data-tina-field={tinaField(post, "publishedAt")}>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500" data-tina-field={tinaField(post, "publishedAt")}>
                   {formatPublishedDate(post.publishedAt)} · {estimateReadTime(post)}{" "}
                   <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
                 </p>
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
                   <span data-tina-field={tinaField(post.author, "name")}>{post.author.name}</span>
                 </p>
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-slate-900">
                   <KeywordGradientText dataTinaField={tinaField(post, "title")} text={post.title} />
                 </h2>
-                <p className="text-sm text-slate-300" data-tina-field={tinaField(post, "excerpt")}>{post.excerpt}</p>
+                <p className="text-sm text-slate-600" data-tina-field={tinaField(post, "excerpt")}>{post.excerpt}</p>
 
                 <div className="flex flex-wrap gap-2" data-tina-field={tinaField(post, "tags")}>
                   {post.tags.slice(0, 3).map((tag) => (
                     <span
                       key={`${post.slug}-${tag}`}
-                      className="rounded-sm border border-white/15 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-300"
+                      className="rounded-sm border border-slate-200 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-600"
                     >
                       {tag}
                     </span>
@@ -247,18 +247,18 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
 
       {page.sections.map((section) => (
         <section key={section.id} className="mx-auto mt-12 max-w-7xl px-4">
-          <Reveal as="div" className={`${getGradientVariant(2)} rounded-md border border-white/10 px-6 py-7`}>
-            <h2 className="text-2xl font-semibold uppercase tracking-[0.1em] text-white md:text-3xl">
+          <Reveal as="div" className={`${getGradientVariant(2)} rounded-md border border-slate-200 px-6 py-7`}>
+            <h2 className="text-2xl font-semibold uppercase tracking-[0.1em] text-slate-900 md:text-3xl">
               <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
             </h2>
-            <p className="mt-3 max-w-3xl text-slate-300" data-tina-field={tinaField(section, "body")}>{section.body}</p>
+            <p className="mt-3 max-w-3xl text-slate-600" data-tina-field={tinaField(section, "body")}>{section.body}</p>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {section.cards.map((card, index) => (
                 <Reveal
                   as="article"
                   key={card.id}
-                  className={`${getGradientVariant(index + 1)} overflow-hidden rounded-md border border-white/10`}
+                  className={`${getGradientVariant(index + 1)} overflow-hidden rounded-md border border-slate-200`}
                   delay={index * 0.08}
                   data-tina-field={tinaField(card)}
                 >
@@ -273,10 +273,10 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                     />
                   ) : null}
                   <div className="p-5">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-900">
                       <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                     </h3>
-                    <p className="mt-3 text-sm text-slate-300" data-tina-field={tinaField(card, "description")}>
+                    <p className="mt-3 text-sm text-slate-600" data-tina-field={tinaField(card, "description")}>
                       {card.description}
                     </p>
                     <QuoteAwareLink
@@ -297,16 +297,16 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
       ))}
 
       <section className="mx-auto mt-12 max-w-7xl px-4">
-        <Reveal className={`${getGradientVariant(3)} rounded-md border border-white/10 px-5 py-5 md:flex md:items-center md:justify-between md:gap-8 md:px-6 md:py-6`}>
+        <Reveal className={`${getGradientVariant(3)} rounded-md border border-slate-200 px-5 py-5 md:flex md:items-center md:justify-between md:gap-8 md:px-6 md:py-6`}>
           <div>
             <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-primary" data-tina-field={ctaKicker.field}>
               <MessageSquare className="size-4" />
               <span>{ctaKicker.value}</span>
             </p>
-            <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white">
+            <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-slate-900">
               <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
-            <p className="mt-2 text-sm text-slate-300" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
+            <p className="mt-2 text-sm text-slate-600" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
           </div>
           <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
             <QuoteAwareLink
@@ -320,7 +320,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               <ArrowRight className="size-4" />
             </QuoteAwareLink>
             <QuoteAwareLink
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-200 transition hover:border-white hover:text-white sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-700 transition hover:border-white hover:text-slate-900 sm:w-auto"
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
               href={productsLink?.href ?? "/products"}
             >

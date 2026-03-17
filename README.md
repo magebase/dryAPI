@@ -89,6 +89,28 @@ Schemas and loaders:
 - `src/lib/site-content-schema.ts`
 - `src/lib/site-content-loader.ts`
 
+## Multi-Brand Instances (Shared Models)
+
+This repo now supports brand-specific marketing/content instances while keeping one shared model catalog for all brands.
+
+- Brand catalog: `content/site/brands.json`
+- Default brand content: `content/site/**`, `content/pages/**`, `content/blog/**`
+- Brand overrides: `content/brands/<brand-key>/{site,pages,blog}/**`
+
+Runtime behavior:
+
+- Set `SITE_BRAND_KEY=<brand-key>` (or `DRYAPI_BRAND_KEY`) to load that brand's overrides.
+- If a brand-specific file is missing, loaders fall back to default content.
+- All brands still read the same pricing/model snapshot via `sharedModels.sourceSnapshotPath` in `content/site/brands.json`.
+
+Useful commands:
+
+```bash
+pnpm brand:scaffold -- --brand embedapi
+SITE_BRAND_KEY=embedapi pnpm dev:next
+pnpm seo:models:generate -- --brand embedapi --dry-run --max-new-posts 3
+```
+
 ## Implemented Route Map
 
 - `/`
@@ -227,25 +249,25 @@ Set real D1 database IDs before deploy:
 "d1_databases": [
   {
     "binding": "AUTH_DB",
-    "database_name": "genfix-auth-db",
+    "database_name": "dryapi-auth-db",
     "database_id": "<auth-db-id>",
     "migrations_dir": "drizzle/migrations/auth"
   },
   {
     "binding": "BILLING_DB",
-    "database_name": "genfix-billing-db",
+    "database_name": "dryapi-billing-db",
     "database_id": "<billing-db-id>",
     "migrations_dir": "drizzle/migrations/billing"
   },
   {
     "binding": "ANALYTICS_DB",
-    "database_name": "genfix-analytics-db",
+    "database_name": "dryapi-analytics-db",
     "database_id": "<analytics-db-id>",
     "migrations_dir": "drizzle/migrations/analytics"
   },
   {
     "binding": "METADATA_DB",
-    "database_name": "genfix-metadata-db",
+    "database_name": "dryapi-metadata-db",
     "database_id": "<metadata-db-id>",
     "migrations_dir": "drizzle/migrations/metadata"
   }
@@ -308,6 +330,8 @@ Optional Cloudflare AI Search tuning:
 - `CLOUDFLARE_AI_SEARCH_ENDPOINT`
 - `CLOUDFLARE_AI_SEARCH_TIMEOUT_MS`
 - `CLOUDFLARE_AI_SEARCH_MAX_RESULTS`
+
+`CLOUDFLARE_AI_SEARCH_SOURCE` should be a full origin or domain for your site (for example `https://dryapi.dev` or `dryapi.dev`). The sync/runtime code normalizes domain-only values to `https://...`.
 
 Recommended routing vars for contact/quote/chat queues:
 
