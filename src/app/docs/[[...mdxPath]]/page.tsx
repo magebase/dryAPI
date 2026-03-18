@@ -9,7 +9,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata(props: { params: Promise<{ mdxPath?: string[] }> }) {
   const params = await props.params
-  return generateDocsMetadata(params.mdxPath, DEFAULT_LOCALE)
+  return await generateDocsMetadata(params.mdxPath, DEFAULT_LOCALE)
 }
 
 export default async function DocsPageRoute(props: { params: Promise<{ mdxPath?: string[] }> }) {

@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { describe, expect, it } from 'vitest'
 
-import { authHeaders, expectErrorCode, jsonBody, uniqueId } from './helpers'
+import { authHeaders, createHttpClient, expectErrorCode, jsonBody, uniqueId } from './helpers'
 
-test.describe('OpenAI-compatible surface routes', () => {
-  test.describe.configure({ mode: 'parallel' })
+const request = createHttpClient()
 
-  test('queues chat completions and returns envelope metadata', async ({ request }) => {
+describe('OpenAI-compatible surface routes', () => {
+  it('queues chat completions and returns envelope metadata', async () => {
     const response = await request.post('/v1/chat/completions', {
       headers: authHeaders(),
       data: {
@@ -31,7 +31,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(typeof payload.runpod?.id).toBe('string')
   })
 
-  test('queues image generations', async ({ request }) => {
+  it('queues image generations', async () => {
     const response = await request.post('/v1/images/generations', {
       headers: authHeaders(),
       data: {
@@ -48,7 +48,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(payload.surface).toBe('images')
   })
 
-  test('queues audio transcriptions', async ({ request }) => {
+  it('queues audio transcriptions', async () => {
     const response = await request.post('/v1/audio/transcriptions', {
       headers: authHeaders(),
       data: {
@@ -65,7 +65,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(payload.surface).toBe('transcribe')
   })
 
-  test('queues embeddings with single input', async ({ request }) => {
+  it('queues embeddings with single input', async () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
@@ -81,7 +81,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(payload.surface).toBe('embeddings')
   })
 
-  test('queues embeddings with batched input', async ({ request }) => {
+  it('queues embeddings with batched input', async () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
@@ -97,7 +97,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(typeof payload.runpod?.id).toBe('string')
   })
 
-  test('returns validation error for empty chat messages array', async ({ request }) => {
+  it('returns validation error for empty chat messages array', async () => {
     const response = await request.post('/v1/chat/completions', {
       headers: authHeaders(),
       data: {
@@ -108,7 +108,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('returns validation error for missing image prompt', async ({ request }) => {
+  it('returns validation error for missing image prompt', async () => {
     const response = await request.post('/v1/images/generations', {
       headers: authHeaders(),
       data: {
@@ -119,7 +119,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('returns validation error for invalid audio URL', async ({ request }) => {
+  it('returns validation error for invalid audio URL', async () => {
     const response = await request.post('/v1/audio/transcriptions', {
       headers: authHeaders(),
       data: {
@@ -130,7 +130,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('returns validation error for empty embeddings input array', async ({ request }) => {
+  it('returns validation error for empty embeddings input array', async () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
@@ -141,7 +141,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('returns cache hit header on repeated chat payload', async ({ request }) => {
+  it('returns cache hit header on repeated chat payload', async () => {
     const payload = {
       model: 'Llama3_8B_Instruct',
       messages: [{ role: 'user', content: 'repeat this payload for caching check' }],
@@ -161,7 +161,7 @@ test.describe('OpenAI-compatible surface routes', () => {
     expect(second.headers()['x-cache']).toBe('hit')
   })
 
-  test('maps upstream failures to standardized upstream_error payloads', async ({ request }) => {
+  it('maps upstream failures to standardized upstream_error payloads', async () => {
     const response = await request.post('/v1/chat/completions', {
       headers: authHeaders(),
       data: {

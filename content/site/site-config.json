@@ -11,16 +11,16 @@
   "header": {
     "primaryLinks": [
       {
-        "label": "Home",
-        "href": "/"
-      },
-      {
         "label": "Models",
         "href": "/models"
       },
       {
         "label": "Pricing",
         "href": "/pricing"
+      },
+      {
+        "label": "Plans",
+        "href": "/plans"
       },
       {
         "label": "Playground",
@@ -33,10 +33,6 @@
       {
         "label": "Blog",
         "href": "/blog"
-      },
-      {
-        "label": "Contact",
-        "href": "/contact-sales"
       }
     ],
     "phone": {

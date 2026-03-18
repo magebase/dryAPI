@@ -3,6 +3,7 @@ import "server-only"
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 
 import { invokeAuthHandler } from "@/lib/auth-handler-proxy"
+import { sendApiKeyCreatedNotification } from "@/lib/dashboard-api-key-emails"
 import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
 
 type D1PreparedResult<T> = {
@@ -106,12 +107,12 @@ function sanitizeMeta(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
-function encodePermissions(permissions: string[] | undefined): Record<string, string[]> | undefined {
+export function encodePermissions(permissions: string[] | undefined): Record<string, string[]> | undefined {
   const sanitized = sanitizeStringArray(permissions)
   return sanitized.length > 0 ? { legacy: sanitized } : undefined
 }
 
-function decodePermissions(value: unknown): string[] {
+export function decodePermissions(value: unknown): string[] {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return []
   }
@@ -284,7 +285,7 @@ function canReadWithPermission(permission: string, method: string): boolean {
   return false
 }
 
-function permissionMatchesPath(permission: string, path: string, method: string): boolean {
+export function permissionMatchesPath(permission: string, path: string, method: string): boolean {
   if (permission === "all" || permission === "*") return true
   if (canReadWithPermission(permission, method)) return true
 
@@ -348,9 +349,22 @@ export async function createDashboardApiKey(
     throw new Error("Failed to create API key with Better Auth")
   }
 
+  const record = mapApiKeyRecord(data, input.userEmail)
+
+  await sendApiKeyCreatedNotification({
+    request,
+    userEmail: input.userEmail,
+    keyName: record.name,
+    createdAt: record.createdAt,
+    permissions: record.permissions,
+    key: data.key,
+  }).catch((error) => {
+    console.error("[api-keys] Failed to send API key created email", error)
+  })
+
   return {
     key: data.key,
-    record: mapApiKeyRecord(data, input.userEmail),
+    record,
   }
 }
 

@@ -306,14 +306,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
             </Link>
 
             <Link
-              href="/pricing"
+              href="/plans"
               prefetch={false}
               onClick={() => setMobileSidebarOpen(false)}
-              className={getNavItemClass(pathname === "/pricing")}
+              className={getNavItemClass(pathname === "/plans")}
             >
               <BadgeDollarSign className="size-4" />
               <span className="flex-1 whitespace-nowrap text-sm font-medium leading-none">
-                Pricing
+                Plans
               </span>
             </Link>
 

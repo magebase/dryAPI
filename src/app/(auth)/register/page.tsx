@@ -47,7 +47,7 @@ export default function RegisterPage() {
   const searchParams = useSearchParams();
 
   const callbackUrl = useMemo(
-    () => searchParams.get("callbackURL") || "/",
+    () => searchParams?.get("callbackURL") || "/",
     [searchParams],
   );
 

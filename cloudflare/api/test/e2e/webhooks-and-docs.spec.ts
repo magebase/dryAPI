@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { describe, expect, it } from 'vitest'
 
-import { authHeaders, expectErrorCode, jsonBody } from './helpers'
+import { authHeaders, createHttpClient, expectErrorCode, jsonBody } from './helpers'
 
-test.describe('Webhooks and docs fidelity', () => {
-  test.describe.configure({ mode: 'parallel' })
+const request = createHttpClient()
 
-  test('rejects non-https webhook destinations', async ({ request }) => {
+describe('Webhooks and docs fidelity', () => {
+  it('rejects non-https webhook destinations', async () => {
     const response = await request.post('/v1/webhooks/test', {
       headers: authHeaders(),
       data: {
@@ -16,7 +16,7 @@ test.describe('Webhooks and docs fidelity', () => {
     await expectErrorCode(response, 400, 'invalid_webhook_url')
   })
 
-  test('accepts https webhook test dispatch payload', async ({ request }) => {
+  it('accepts https webhook test dispatch payload', async () => {
     const response = await request.post('/v1/webhooks/test', {
       headers: authHeaders(),
       data: {
@@ -35,7 +35,7 @@ test.describe('Webhooks and docs fidelity', () => {
     expect(String(payload.job_id ?? '')).toContain('test_')
   })
 
-  test('enforces auth on webhook test route', async ({ request }) => {
+  it('enforces auth on webhook test route', async () => {
     const response = await request.post('/v1/webhooks/test', {
       headers: {
         'content-type': 'application/json',
@@ -48,7 +48,7 @@ test.describe('Webhooks and docs fidelity', () => {
     await expectErrorCode(response, 401, 'unauthorized')
   })
 
-  test('documents required top-level tags in OpenAPI output', async ({ request }) => {
+  it('documents required top-level tags in OpenAPI output', async () => {
     const response = await request.get('/openapi.json')
     expect(response.status()).toBe(200)
 
@@ -61,7 +61,7 @@ test.describe('Webhooks and docs fidelity', () => {
     expect(tagNames.has('Webhooks')).toBe(true)
   })
 
-  test('documents chat completion request schema', async ({ request }) => {
+  it('documents chat completion request schema', async () => {
     const response = await request.get('/openapi.json')
     expect(response.status()).toBe(200)
 
@@ -93,7 +93,7 @@ test.describe('Webhooks and docs fidelity', () => {
     expect(Array.isArray(schema?.required)).toBe(true)
   })
 
-  test('documents websocket upgrade response for jobs ws route', async ({ request }) => {
+  it('documents websocket upgrade response for jobs ws route', async () => {
     const response = await request.get('/openapi.json')
     expect(response.status()).toBe(200)
 
@@ -112,7 +112,7 @@ test.describe('Webhooks and docs fidelity', () => {
     expect(responses?.['426']).toBeDefined()
   })
 
-  test('documents bearer auth requirement for OpenAI-compatible routes', async ({ request }) => {
+  it('documents bearer auth requirement for OpenAI-compatible routes', async () => {
     const response = await request.get('/openapi.json')
     expect(response.status()).toBe(200)
 

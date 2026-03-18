@@ -13,7 +13,7 @@ const dryApiFetch: CodeUsageGenerator = {
   lang: "js",
   generate(url, data, { mediaAdapters }) {
     const endpoint = url.startsWith("/") ? url : `/${url}`
-    const mediaType = data.bodyType ?? "application/json"
+    const mediaType = data.bodyMediaType ?? "application/json"
     const adapter = mediaAdapters[mediaType]
     const encodedBody = adapter ? adapter.encode({ body: data.body ?? {} }) : JSON.stringify(data.body ?? {})
     const bodyText = typeof encodedBody === "string" ? encodedBody : "{}"

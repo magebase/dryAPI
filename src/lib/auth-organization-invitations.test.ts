@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-const sendBrevoReactEmailMock = vi.fn().mockResolvedValue({ messageId: "msg_123" })
+const { sendBrevoReactEmailMock } = vi.hoisted(() => ({
+  sendBrevoReactEmailMock: vi.fn().mockResolvedValue({ messageId: "msg_123" }),
+}))
 
 vi.mock("@/lib/brevo-email", () => ({
   sendBrevoReactEmail: sendBrevoReactEmailMock,

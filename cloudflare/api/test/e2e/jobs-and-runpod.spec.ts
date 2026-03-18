@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { describe, expect, it } from 'vitest'
 
-import { authHeaders, createRunpodJob, expectErrorCode, jsonBody, uniqueId } from './helpers'
+import { authHeaders, createHttpClient, createRunpodJob, expectErrorCode, jsonBody, uniqueId } from './helpers'
 
-test.describe('Jobs and RunPod operational routes', () => {
-  test.describe.configure({ mode: 'parallel' })
+const request = createHttpClient()
 
-  test('submits async RunPod job via /run', async ({ request }) => {
+describe('Jobs and RunPod operational routes', () => {
+  it('submits async RunPod job via /run', async () => {
     const response = await request.post('/v1/runpod/chat/run', {
       headers: authHeaders(),
       data: {
@@ -22,7 +22,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(payload.status).toBe('IN_QUEUE')
   })
 
-  test('submits sync RunPod job via /runsync', async ({ request }) => {
+  it('submits sync RunPod job via /runsync', async () => {
     const response = await request.post('/v1/runpod/embeddings/runsync', {
       headers: authHeaders(),
       data: {
@@ -38,7 +38,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(payload.status).toBe('COMPLETED')
   })
 
-  test('resolves job status through /v1/jobs/:surface/:jobId', async ({ request }) => {
+  it('resolves job status through /v1/jobs/:surface/:jobId', async () => {
     const jobId = await createRunpodJob(request, 'chat', {
       job_id: uniqueId('status'),
       prompt: 'status route test',
@@ -54,7 +54,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(typeof payload.status).toBe('string')
   })
 
-  test('returns upstream_error for unknown jobs', async ({ request }) => {
+  it('returns upstream_error for unknown jobs', async () => {
     const response = await request.get('/v1/jobs/chat/nonexistent_job_123', {
       headers: authHeaders(),
     })
@@ -62,7 +62,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     await expectErrorCode(response, 404, 'upstream_error')
   })
 
-  test('returns download links when status payload contains media URLs', async ({ request }) => {
+  it('returns download links when status payload contains media URLs', async () => {
     const jobId = await createRunpodJob(request, 'images', {
       job_id: uniqueId('links'),
       include_link: true,
@@ -80,7 +80,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect((payload.links ?? [])[0]).toContain('https://')
   })
 
-  test('falls back to text attachment for download format=txt', async ({ request }) => {
+  it('falls back to text attachment for download format=txt', async () => {
     const jobId = await createRunpodJob(request, 'chat', {
       job_id: uniqueId('txt'),
       prompt: 'txt fallback test',
@@ -95,7 +95,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(response.headers()['content-disposition']).toContain(`${jobId}.txt`)
   })
 
-  test('proxies direct RunPod status route', async ({ request }) => {
+  it('proxies direct RunPod status route', async () => {
     const jobId = await createRunpodJob(request, 'chat', {
       job_id: uniqueId('runpodstatus'),
       prompt: 'runpod status route test',
@@ -110,7 +110,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(payload.id).toBe(jobId)
   })
 
-  test('proxies direct RunPod stream route', async ({ request }) => {
+  it('proxies direct RunPod stream route', async () => {
     const jobId = await createRunpodJob(request, 'chat', {
       job_id: uniqueId('stream'),
       prompt: 'stream route test',
@@ -125,7 +125,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(typeof payload.output?.chunk).toBe('string')
   })
 
-  test('proxies direct RunPod cancel route', async ({ request }) => {
+  it('proxies direct RunPod cancel route', async () => {
     const jobId = await createRunpodJob(request, 'images', {
       job_id: uniqueId('cancel'),
       prompt: 'cancel route test',
@@ -140,7 +140,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(payload.status).toBe('CANCELLED')
   })
 
-  test('proxies direct RunPod retry route', async ({ request }) => {
+  it('proxies direct RunPod retry route', async () => {
     const jobId = await createRunpodJob(request, 'images', {
       job_id: uniqueId('retry'),
       prompt: 'retry route test',
@@ -155,7 +155,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(payload.status).toBe('IN_QUEUE')
   })
 
-  test('proxies direct RunPod purge queue route', async ({ request }) => {
+  it('proxies direct RunPod purge queue route', async () => {
     const response = await request.post('/v1/runpod/chat/purge-queue', {
       headers: authHeaders(),
     })
@@ -166,7 +166,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(typeof payload.purged).toBe('number')
   })
 
-  test('proxies direct RunPod health route', async ({ request }) => {
+  it('proxies direct RunPod health route', async () => {
     const response = await request.get('/v1/runpod/transcribe/health', {
       headers: authHeaders(),
     })
@@ -176,7 +176,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(payload.status).toBe('healthy')
   })
 
-  test('rejects invalid endpointId query values', async ({ request }) => {
+  it('rejects invalid endpointId query values', async () => {
     const response = await request.get('/v1/runpod/chat/health?endpointId=', {
       headers: authHeaders(),
     })
@@ -184,7 +184,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('rejects invalid download format query values', async ({ request }) => {
+  it('rejects invalid download format query values', async () => {
     const jobId = await createRunpodJob(request, 'chat', {
       job_id: uniqueId('downloadfmt'),
       prompt: 'download format validation test',
@@ -197,7 +197,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('maps upstream errors on run routes with standardized code', async ({ request }) => {
+  it('maps upstream errors on run routes with standardized code', async () => {
     const response = await request.post('/v1/runpod/chat/run', {
       headers: authHeaders(),
       data: {
@@ -210,7 +210,7 @@ test.describe('Jobs and RunPod operational routes', () => {
     await expectErrorCode(response, 502, 'upstream_error')
   })
 
-  test('rejects unauthorized requests on jobs routes', async ({ request }) => {
+  it('rejects unauthorized requests on jobs routes', async () => {
     const response = await request.get('/v1/jobs/chat/some_job_id', {
       headers: {
         authorization: 'Bearer invalid-token',

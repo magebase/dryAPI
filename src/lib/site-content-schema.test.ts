@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import blogPost from "../../content/blog/generator-maintenance-basics.json"
+import blogPost from "../../content/blog/ai-api-auth-billing-and-security-checklist.json"
 import homeContent from "../../content/site/home.json"
 import siteConfig from "../../content/site/site-config.json"
-import contactPage from "../../content/pages/contact.json"
+import contactPage from "../../content/pages/about.json"
 import {
   blogPostSchema,
   homeContentSchema,

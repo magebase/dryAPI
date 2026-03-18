@@ -56,6 +56,7 @@ describe("stripe deposit checkout helpers", () => {
       customerEmail: "ops@example.com",
       metadata: {
         source: "genfix",
+        dryapi_brand_key: "dryapi",
       },
     })
 
@@ -64,6 +65,7 @@ describe("stripe deposit checkout helpers", () => {
     expect(payload.get("line_items[0][price_data][currency]")).toBe("aud")
     expect(payload.get("customer_email")).toBe("ops@example.com")
     expect(payload.get("metadata[source]")).toBe("genfix")
+    expect(payload.get("metadata[dryapi_brand_key]")).toBe("dryapi")
   })
 
   it("keeps default top-up discount behavior when no plan discount is supplied", () => {

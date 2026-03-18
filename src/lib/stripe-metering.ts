@@ -115,6 +115,19 @@ function stringifyDimensionValue(value: StripeMeterMetadataValue): string {
   return String(value).trim().slice(0, 120)
 }
 
+function resolveStripeBrandKey(inputMetadata: Record<string, StripeMeterMetadataValue> | undefined): string {
+  const explicit = inputMetadata?.dryapi_brand_key
+  if (explicit !== undefined && explicit !== null) {
+    const normalized = String(explicit).trim().toLowerCase()
+    if (normalized) {
+      return normalized.slice(0, 40)
+    }
+  }
+
+  const fromEnv = (process.env.SITE_BRAND_KEY || process.env.DRYAPI_BRAND_KEY || "dryapi").trim().toLowerCase()
+  return (fromEnv || "dryapi").slice(0, 40)
+}
+
 function buildIdentifier(input: {
   providedIdentifier?: string
   projectKey: string
@@ -158,6 +171,7 @@ export async function recordStripeMeterUsage(input: RecordStripeMeterUsageInput)
   params.set("payload[value]", String(value))
   params.set("payload[stripe_customer_id]", config.customerId)
   params.set("payload[project_key]", config.projectKey)
+  params.set("payload[dryapi_brand_key]", resolveStripeBrandKey(input.metadata))
   params.set("timestamp", String(timestamp))
   params.set("identifier", identifier)
 

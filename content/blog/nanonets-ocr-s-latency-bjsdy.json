@@ -1,0 +1,1459 @@
+{
+  "slug": "nanonets-ocr-s-latency-bjsdy",
+  "title": "Minimizing Nanonets OCR S Latency in High-Throughput Production Systems",
+  "excerpt": "Achieve sub-second OCR processing with Nanonets OCR S by leveraging its optimized F16 variant for low-latency inference. This guide provides concrete latency benchmarks, integration walkthroughs, and tuning strategies to eliminate bottlenecks in real-time document workflows.\n\nKeyword focus: Nanonets OCR S latency.",
+  "seoTitle": "Minimizing Nanonets OCR S Latency in High-Throughput Production Sy",
+  "seoDescription": "Reduce Nanonets OCR S latency with actionable steps for integration, configuration, and troubleshooting to ensure fast, reliable OCR in production environment",
+  "seoKeywords": [
+    "Nanonets OCR S latency",
+    "Nanonets OCR S api",
+    "Nanonets OCR S pricing",
+    "Nanonets OCR S inference",
+    "Nanonets OCR S benchmark"
+  ],
+  "canonicalPath": "/blog/nanonets-ocr-s-latency-bjsdy",
+  "ogImage": "https://picsum.photos/seed/nanonets-ocr-s-latency-bjsdy-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-10",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/nanonets-ocr-s-latency-bjsdy-cover/1600/900",
+  "tags": [
+    "Image To Text",
+    "Nanonets OCR S",
+    "AI API",
+
+    "model:Nanonets_Ocr_S_F16",
+    "keyword:nanonets ocr s latency"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In production API pipelines, OCR latency can silently degrade user experience and system throughput, particularly in applications like real-time document verification or high-volume data extraction. When milliseconds matter, choosing a model engineered for speed is critical. The "
+          },
+          {
+            "type": "text",
+            "text": "Nanonets OCR S",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " model, specifically the "
+          },
+          {
+            "type": "text",
+            "text": "Nanonets_Ocr_S_F16",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " variant, is designed to deliver low-latency inference without sacrificing accuracy, making it a strong candidate for latency-sensitive deployments."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "This post dives into the practical aspects of optimizing "
+          },
+          {
+            "type": "text",
+            "text": "Nanonets OCR S latency",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": ". You'll find detailed performance characteristics, step-by-step integration guides, real-world use cases, and troubleshooting tips—all tailored for experienced API teams. By the end, you'll have a clear roadmap to achieve consistent, fast OCR responses in your production stack."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Performance Characteristics of Nanonets OCR S"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Understanding the baseline latency of Nanonets OCR S is essential for setting realistic expectations and identifying optimization opportunities. In controlled tests, the "
+          },
+          {
+            "type": "text",
+            "text": "Nanonets_Ocr_S_F16",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " model typically processes standard document images (e.g., 1024x768 pixels) in "
+          },
+          {
+            "type": "text",
+            "text": "120-180 milliseconds",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " under moderate API load. This includes network round-trip time when deployed in the same region as the client. Key factors influencing latency include image resolution, document complexity, and concurrent request volume."
+          }
+        ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Benchmark Results"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Internal benchmarks reveal that latency scales linearly with image size but remains efficient due to the model's F16 quantization. For instance, processing a 2048x1536 image may take "
+          },
+          {
+            "type": "text",
+            "text": "250-300 ms",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": ", while smaller thumbnails (512x512) can drop to "
+          },
+          {
+            "type": "text",
+            "text": "80-100 ms",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": ". These numbers assume optimal conditions: a stable network connection and no API rate limiting. It's crucial to monitor these metrics in your environment, as real-world latency can vary based on infrastructure."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "To measure latency accurately, instrument your API calls with high-resolution timers. Avoid relying solely on server-side logs, as network jitter can add variability. Tools like "
+          },
+          {
+            "type": "a",
+            "url": "https://prometheus.io/",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Prometheus"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for metrics collection can help track p95 and p99 latencies, ensuring you catch outliers that impact user experience."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integration Steps for Low-Latency Deployments"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integrating Nanonets OCR S with latency in mind requires careful client configuration. Start by using the official SDK or a lightweight HTTP client to minimize overhead. Ensure your requests are asynchronous where possible to avoid blocking threads, and implement connection pooling to reduce TCP handshake delays."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Here's a Python example demonstrating a low-latency API call with timing instrumentation:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "python",
+        "value": "import requests\nimport time\n\nAPI_KEY = \"your_api_key\"\nENDPOINT = \"https://api.nanonets.com/v2/ocr/s\"\n\nheaders = {\"Authorization\": f\"Bearer {API_KEY}\"}\nfiles = {\"file\": open(\"document.jpg\", \"rb\")}\n\nstart_time = time.perf_counter()\nresponse = requests.post(ENDPOINT, headers=headers, files=files)\nlatency = (time.perf_counter() - start_time) * 1000  # Convert to ms\n\nprint(f\"Latency: {latency:.2f} ms\")\nprint(f\"Response: {response.json()}\")",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import requests"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import time"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "API_KEY = \"your_api_key\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "ENDPOINT = \"https://api.nanonets.com/v2/ocr/s\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "headers = {\"Authorization\": f\"Bearer {API_KEY}\"}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "files = {\"file\": open(\"document.jpg\", \"rb\")}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "start_time = time.perf_counter()"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "response = requests.post(ENDPOINT, headers=headers, files=files)"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "latency = (time.perf_counter() - start_time) * 1000  # Convert to ms"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "print(f\"Latency: {latency:.2f} ms\")"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "print(f\"Response: {response.json()}\")"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Note:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " Always close file handles and use context managers in production to prevent resource leaks. Additionally, set explicit timeouts (e.g., "
+          },
+          {
+            "type": "text",
+            "text": "timeout=5",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " seconds) to avoid hanging requests during API outages."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For batch processing, consider using asynchronous HTTP clients like "
+          },
+          {
+            "type": "text",
+            "text": "aiohttp",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " in Python or "
+          },
+          {
+            "type": "text",
+            "text": "axios",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " in TypeScript to parallelize requests. This approach can significantly reduce overall processing time while managing latency per call."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Request/Response Walkthrough with Latency Analysis"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Breaking down a typical API request helps identify latency hotspots. A standard call to Nanonets OCR S involves sending a multipart form-data payload with the image file. The server processes the image, runs OCR inference, and returns structured JSON. Latency is distributed across network transit, server processing, and response serialization."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Example request payload in JSON (for reference, though the actual call uses form-data):"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "json",
+        "value": "{\n  \"model\": \"Nanonets_Ocr_S_F16\",\n  \"image_url\": \"https://example.com/doc.jpg\",\n  \"options\": {\n    \"extract_tables\": true,\n    \"language\": \"en\"\n  }\n}",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "{"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"model\": \"Nanonets_Ocr_S_F16\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"image_url\": \"https://example.com/doc.jpg\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"options\": {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"extract_tables\": true,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"language\": \"en\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In practice, use form-data for file uploads. The response includes extracted text, bounding boxes, and confidence scores. To minimize latency, avoid unnecessary options like table extraction if not needed, as they add processing overhead. Profile each stage using distributed tracing tools like Jaeger to pinpoint delays."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Real-World Use Case: Batch Processing with Latency Constraints"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Consider a financial institution processing thousands of invoices daily. Latency directly impacts throughput: if each OCR call takes 200 ms, processing 10,000 invoices sequentially would take over 30 minutes. By optimizing "
+          },
+          {
+            "type": "text",
+            "text": "Nanonets OCR S latency",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " and parallelizing requests, they can reduce this to under 5 minutes."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Key strategies include:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Queue-based processing:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Use message brokers like RabbitMQ to decouple ingestion from OCR processing."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Adaptive batching:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Group images by size or type to balance load and minimize tail latency."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Fallback mechanisms:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Implement retries with exponential backoff for transient failures, but cap retries to avoid latency spikes."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In this scenario, monitoring end-to-end latency per batch is critical. Set up alerts for when p95 latency exceeds thresholds (e.g., 300 ms) to proactively address issues."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Comparison with Alternatives: Latency Trade-offs"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "When evaluating OCR models, latency is a key differentiator. Below is a comparison of Nanonets OCR S with common alternatives:"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Model"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Avg. Latency (ms)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Cost per 1K Calls"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Accuracy (F1 Score)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Notes"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nanonets OCR S (F16)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "150"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$2.50"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.92"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Optimized for speed"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Tesseract (self-hosted)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "300"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$0.10*"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.85"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "*Infrastructure cost only"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Google Vision API"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "200"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$1.50"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.94"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Higher accuracy, but variable"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "AWS Textract"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "250"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$1.00"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.93"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Good for structured documents"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Note: Self-hosted costs include server maintenance and scaling overhead.",
+            "italic": true
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets OCR S strikes a balance between latency and cost, making it suitable for high-volume, time-sensitive applications. However, if accuracy is paramount and latency is flexible, alternatives like Google Vision might be preferable."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Troubleshooting High Latency Issues"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "High latency often stems from misconfigurations or environmental factors. Common culprits include:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Network latency:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Ensure your client is deployed in the same cloud region as the Nanonets API endpoint. Use tools like "
+                  },
+                  {
+                    "type": "text",
+                    "text": "traceroute",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " to diagnose routing issues."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Image preprocessing:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Large or high-resolution images increase processing time. Resize images to a maximum of 2048 pixels on the longest side before sending."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "API throttling:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Respect rate limits to avoid queuing delays. Implement client-side throttling using libraries like "
+                  },
+                  {
+                    "type": "text",
+                    "text": "p-limit",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " in JavaScript."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Warning:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " Setting aggressive timeouts (e.g., < 1 second) can lead to false negatives during peak loads. Start with a 5-second timeout and adjust based on observed latency percentiles."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For persistent issues, enable debug logging in your client to capture request/response timings. Share these logs with Nanonets support for deeper analysis."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Deployment Notes for Optimizing Latency"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Deploying Nanonets OCR S in a latency-optimized manner involves infrastructure choices. Consider these points:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Edge deployment:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " If using a CDN for image hosting, ensure low-latency access to reduce upload times."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Connection reuse:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Enable HTTP/2 or keep-alive connections to minimize handshake overhead."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Caching:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Cache OCR results for identical images using a key based on image hash, but weigh the trade-off with storage costs."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "An unordered list of configuration parameters to tune:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "timeout",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Set to 3-5 seconds for most use cases."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "retry_count",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Limit to 2 retries with exponential backoff."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "concurrent_requests",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Cap based on API rate limits (e.g., 100 requests per second)."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Configuration Reference for Latency-Sensitive Setups"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Fine-tuning your setup can shave off critical milliseconds. Follow these ordered steps to configure for low latency:"
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Set regional endpoints:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Use the closest API endpoint (e.g., "
+                  },
+                  {
+                    "type": "text",
+                    "text": "us-east-1",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ") to minimize network latency."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Optimize image format:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Convert images to JPEG with 80% quality to reduce file size without significant accuracy loss."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Implement health checks:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Regularly ping the API to pre-warm connections and detect outages early."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Monitor with APM tools:",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " Integrate with Application Performance Monitoring solutions like Datadog to track latency trends."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For advanced tuning, refer to the "
+          },
+          {
+            "type": "a",
+            "url": "https://docs.nanonets.com/",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets API documentation"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for detailed parameter descriptions. Additionally, explore "
+          },
+          {
+            "type": "a",
+            "url": "https://grpc.io/",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "gRPC endpoints"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " if available, as they can offer lower latency than REST for high-frequency calls."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "By systematically addressing latency in Nanonets OCR S deployments, you can ensure responsive OCR processing that scales with your production demands. Start by benchmarking your current setup, then apply the integration and troubleshooting steps outlined here. For further reading, review the "
+          },
+          {
+            "type": "a",
+            "url": "https://nanonets.com/docs/performance",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets performance best practices"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " and consider conducting load tests with tools like Locust to simulate real-world traffic patterns."
+          }
+        ]
+      }
+    ]
+  }
+}

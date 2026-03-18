@@ -35,8 +35,8 @@ describe("plan-tier policy", () => {
   });
 
   it("reads plan tier from env with normalization", () => {
-    expect(getPlanTierFromEnv({ NEXT_PUBLIC_PLAN_TIER: "GROWTH" })).toBe("growth");
-    expect(getPlanTierFromEnv({ NEXT_PUBLIC_PLAN_TIER: "invalid" })).toBe("basic");
+    expect(getPlanTierFromEnv({ NODE_ENV: "test", NEXT_PUBLIC_PLAN_TIER: "GROWTH" } as NodeJS.ProcessEnv)).toBe("growth");
+    expect(getPlanTierFromEnv({ NODE_ENV: "test", NEXT_PUBLIC_PLAN_TIER: "invalid" } as NodeJS.ProcessEnv)).toBe("basic");
   });
 
   it("trims clarity project id", () => {
@@ -47,7 +47,7 @@ describe("plan-tier policy", () => {
 
   it("reads clarity project id from env", () => {
     expect(
-      getClarityProjectIdFromEnv({ NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID: "  clarity-id  " })
+      getClarityProjectIdFromEnv({ NODE_ENV: "test", NEXT_PUBLIC_MICROSOFT_CLARITY_PROJECT_ID: "  clarity-id  " } as NodeJS.ProcessEnv)
     ).toBe("clarity-id");
   });
 

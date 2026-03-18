@@ -11,14 +11,17 @@ import {
 
 describe("feature flags", () => {
   it("defaults to enabled for operational features when unset", () => {
-    expect(isAiChatbotEnabledServer({} as NodeJS.ProcessEnv)).toBe(true)
-    expect(isPwaEnabledServer({} as NodeJS.ProcessEnv)).toBe(true)
-    expect(isCrmDashboardEnabled({} as NodeJS.ProcessEnv)).toBe(true)
-    expect(isCrmWorkflowAutomationsEnabled({} as NodeJS.ProcessEnv)).toBe(true)
+    const env = { NODE_ENV: "test" } as NodeJS.ProcessEnv
+
+    expect(isAiChatbotEnabledServer(env)).toBe(true)
+    expect(isPwaEnabledServer(env)).toBe(true)
+    expect(isCrmDashboardEnabled(env)).toBe(true)
+    expect(isCrmWorkflowAutomationsEnabled(env)).toBe(true)
   })
 
   it("supports explicit false values", () => {
     const env = {
+      NODE_ENV: "test",
       FEATURE_AI_CHATBOT_ENABLED: "false",
       FEATURE_PWA_ENABLED: "false",
       FEATURE_CRM_DASHBOARD_ENABLED: "0",
@@ -33,6 +36,7 @@ describe("feature flags", () => {
 
   it("resolves workflow kinds with optional allow and deny lists", () => {
     const env = {
+      NODE_ENV: "test",
       FEATURE_WORKFLOW_ENABLED_KINDS: "lead-scoring-and-tagging,review-aggregation-and-posting,internal-kpi-dashboard-sync",
       FEATURE_WORKFLOW_DISABLED_KINDS: "review-aggregation-and-posting",
     } as NodeJS.ProcessEnv

@@ -33,4 +33,4 @@ for key in "${E2E_KEYS[@]}"; do
   fi
 done
 
-node "$ROOT_DIR/cloudflare/api/test/e2e/mock-runpod-server.mjs"
+tsx "$ROOT_DIR/cloudflare/api/test/e2e/mock-runpod-server.ts"

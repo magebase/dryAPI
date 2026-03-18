@@ -9,6 +9,7 @@ import {
   sanitizeDepositMetadata,
 } from "@/lib/stripe-deposit-checkout"
 import { isStripeDepositsEnabledServer } from "@/lib/feature-flags"
+import { resolveActiveBrand } from "@/lib/brand-catalog"
 import {
   resolveCurrentMonthlyTokenCycleStartIso,
   resolveMonthlyTokenExpiryIso,
@@ -106,11 +107,13 @@ export async function GET(request: NextRequest) {
     })
     const currency = normalizeCurrencyCode(process.env.STRIPE_DEPOSIT_DEFAULT_CURRENCY || "usd")
     const origin = resolveRequestOriginFromRequest(request)
+    const brand = await resolveActiveBrand({ hostname: new URL(origin).hostname })
 
     const monthlyTokenCycleStart = plan ? resolveCurrentMonthlyTokenCycleStartIso() : null
     const monthlyTokenExpiry = plan ? resolveMonthlyTokenExpiryIso() : null
 
     const metadata = sanitizeDepositMetadata({
+      dryapi_brand_key: brand.key,
       source: "dryapi-dashboard-top-up",
       pricingMode: plan ? "saas-tier-discount" : "standard-top-up",
       planSlug: plan?.slug ?? null,

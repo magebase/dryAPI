@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { describe, expect, it } from 'vitest'
 
-import { authHeaders, expectErrorCode, getEnv, jsonBody } from './helpers'
+import { authHeaders, createHttpClient, expectErrorCode, getEnv, jsonBody } from './helpers'
 
-test.describe('Auth and OpenAPI contracts', () => {
-  test.describe.configure({ mode: 'parallel' })
+const request = createHttpClient()
 
-  test('serves public openapi.json', async ({ request }) => {
+describe('Auth and OpenAPI contracts', () => {
+  it('serves public openapi.json', async () => {
     const response = await request.get('/openapi.json')
     expect(response.status()).toBe(200)
 
@@ -15,7 +15,7 @@ test.describe('Auth and OpenAPI contracts', () => {
     expect(payload.paths?.['/v1/jobs/{surface}/{jobId}']).toBeDefined()
   })
 
-  test('includes bearer auth security scheme in openapi document', async ({ request }) => {
+  it('includes bearer auth security scheme in openapi document', async () => {
     const response = await request.get('/openapi.json')
     expect(response.status()).toBe(200)
 
@@ -28,7 +28,7 @@ test.describe('Auth and OpenAPI contracts', () => {
     expect(payload.components?.securitySchemes?.BearerAuth).toBeDefined()
   })
 
-  test('returns CORS preflight for protected endpoints', async ({ request }) => {
+  it('returns CORS preflight for protected endpoints', async () => {
     const response = await request.fetch('/v1/chat/completions', {
       method: 'OPTIONS',
     })
@@ -38,7 +38,7 @@ test.describe('Auth and OpenAPI contracts', () => {
     expect(response.headers()['access-control-allow-methods']).toContain('POST')
   })
 
-  test('rejects missing bearer token', async ({ request }) => {
+  it('rejects missing bearer token', async () => {
     const response = await request.post('/v1/chat/completions', {
       headers: {
         'content-type': 'application/json',
@@ -51,7 +51,7 @@ test.describe('Auth and OpenAPI contracts', () => {
     await expectErrorCode(response, 401, 'unauthorized')
   })
 
-  test('rejects invalid bearer token', async ({ request }) => {
+  it('rejects invalid bearer token', async () => {
     const response = await request.post('/v1/images/generations', {
       headers: authHeaders('wrong-token'),
       data: {
@@ -62,12 +62,12 @@ test.describe('Auth and OpenAPI contracts', () => {
     await expectErrorCode(response, 401, 'unauthorized')
   })
 
-  test('enforces auth on runpod operational routes', async ({ request }) => {
+  it('enforces auth on runpod operational routes', async () => {
     const response = await request.get('/v1/runpod/chat/health')
     await expectErrorCode(response, 401, 'unauthorized')
   })
 
-  test('rejects invalid path enum values before dispatch', async ({ request }) => {
+  it('rejects invalid path enum values before dispatch', async () => {
     const response = await request.get('/v1/jobs/not-a-surface/job_123', {
       headers: authHeaders(),
     })
@@ -75,7 +75,7 @@ test.describe('Auth and OpenAPI contracts', () => {
     expect(response.status()).toBe(400)
   })
 
-  test('requires websocket upgrade header for ws status route', async ({ request }) => {
+  it('requires websocket upgrade header for ws status route', async () => {
     const response = await request.get('/v1/jobs/chat/job_123/ws', {
       headers: authHeaders(),
     })
@@ -83,7 +83,7 @@ test.describe('Auth and OpenAPI contracts', () => {
     await expectErrorCode(response, 426, 'upgrade_required')
   })
 
-  test('returns 404 for unknown route', async ({ request }) => {
+  it('returns 404 for unknown route', async () => {
     const env = getEnv()
     const response = await request.get('/v1/does-not-exist', {
       headers: {

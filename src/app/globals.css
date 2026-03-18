@@ -164,6 +164,20 @@
   --copy-slug-hover-fg: oklch(0.95 0.01 210);
 }
 
+.site-marketing-theme {
+  color-scheme: light;
+  --site-surface-0: #f6fafc;
+  --site-surface-1: #eef5f9;
+  --site-surface-2: #e4eef5;
+  --site-surface-3: #d7e6f0;
+  --site-text-strong: #0f1f2d;
+  --site-text-muted: #3a556b;
+  --site-text-soft: #5f7a8f;
+  --site-text-inverse: #f4fbff;
+  --site-text-inverse-muted: #d7e6f2;
+  --site-text-inverse-soft: #bacbd9;
+}
+
 @layer components {
   .dashboard-copy-slug-button:hover,
   .dashboard-copy-slug-button:focus-visible {

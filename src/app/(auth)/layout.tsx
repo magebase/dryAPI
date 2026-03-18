@@ -1,8 +1,29 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { DryApiLogo } from "@/components/site/dryapi-logo";
+import { buildTakumiMetadata } from "@/lib/og/metadata";
+import { readSiteConfig } from "@/lib/site-content-loader";
 
 export const dynamic = "force-static";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await readSiteConfig();
+
+  return buildTakumiMetadata({
+    title: "Account Access | dryAPI",
+    description: "Secure account access for sign in, account recovery, and onboarding.",
+    canonicalPath: "/login",
+    template: "dashboard",
+    siteName: site.brand.name || site.brand.mark,
+    robots: {
+      index: false,
+      follow: false,
+    },
+    label: "Dashboard",
+    seed: "auth-layout",
+  });
+}
 
 export default function AuthLayout({
   children,
@@ -54,10 +75,10 @@ export default function AuthLayout({
               Documentation
             </Link>
             <Link
-              href="/pricing"
+              href="/plans"
               className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-white/20 transition-all font-semibold text-sm"
             >
-              View Pricing
+              View Plans
             </Link>
           </div>
 

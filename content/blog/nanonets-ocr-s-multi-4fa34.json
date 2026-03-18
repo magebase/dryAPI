@@ -1,0 +1,60 @@
+{
+  "slug": "nanonets-ocr-s-multi-4fa34",
+  "title": "Deploying Nanonets OCR S Multi-Model API in Production Environments",
+  "excerpt": "Technical guidance for API teams on integrating, configuring, and scaling the Nanonets OCR S multi-model API for reliable document processing in high-throughput systems.",
+  "seoTitle": "Deploying Nanonets OCR S Multi-Model API in Production Environment",
+  "seoDescription": "Learn practical steps to integrate the Nanonets OCR S multi-model API, including authentication, error handling, and performance optimization for production d",
+  "seoKeywords": [
+    "Nanonets OCR S multi-model api",
+    "Nanonets OCR S api",
+    "Nanonets OCR S pricing",
+    "Nanonets OCR S inference",
+    "Nanonets OCR S benchmark"
+  ],
+  "canonicalPath": "/blog/nanonets-ocr-s-multi-4fa34",
+  "ogImage": "https://picsum.photos/seed/nanonets-ocr-s-multi-4fa34-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-11",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/nanonets-ocr-s-multi-4fa34-cover/1600/900",
+  "tags": [
+    "Image To Text",
+    "Nanonets OCR S",
+    "AI API",
+
+    "model:Nanonets_Ocr_S_F16",
+    "keyword:nanonets ocr s multi model api"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "invalid_markdown",
+        "value": "For experienced API teams, the Nanonets OCR S multi-model API provides a powerful tool for extracting text and structured data from documents. This guide focuses on actionable integration practices to ensure robust performance in production.\n\n## Integrating Nanonets OCR S Multi-Model API\n\nStart by setting up API calls with proper authentication. The API endpoint for the Nanonets_Ocr_S_F16 model is `https://api.nanonets.com/v2/OCR/Model/Nanonets_Ocr_S_F16/LabelFile`. Use POST requests with multipart/form-data to upload documents.\n\n- **Authentication**: Include the API key in the `Authorization` header as `Bearer YOUR_API_KEY`.\n- **Request Example**:\n  ```bash\n  curl -X POST -H \"Authorization: Bearer YOUR_API_KEY\" -F \"file=@document.pdf\" https://api.nanonets.com/v2/OCR/Model/Nanonets_Ocr_S_F16/LabelFile\n  ```\n- **Response Handling**: Parse the JSON response to access extracted fields like `prediction` and `message`.\n\n## Configuration and Best Practices\n\nOptimize API usage by configuring timeouts, retries, and payload limits. Set a timeout of 30 seconds for requests and implement exponential backoff for retries on 5xx errors.\n\n- **Payload Limits**: Keep file sizes under 10MB to avoid timeouts.\n- **Concurrency**: Use connection pooling to manage multiple simultaneous requests efficiently.\n- **Security**: Rotate API keys periodically and store them in secure vaults like AWS Secrets Manager.\n\n## Error Handling and Monitoring\n\nAnticipate and handle common API errors to maintain system stability. Log all responses for auditing and debugging.\n\n| HTTP Status Code | Description                  | Recommended Action               |\n|------------------|------------------------------|----------------------------------|\n| 200              | Success                      | Process extracted data.          |\n| 400              | Invalid request parameters   | Validate input files and model.  |\n| 401              | Authentication failure       | Check API key validity.          |\n| 429              | Rate limit exceeded          | Implement throttling.            |\n| 500              | Server error                 | Retry with backoff.              |\n\nMonitor API latency and error rates using tools like Grafana. Set alerts for response times exceeding 2 seconds or error rates above 5%.\n\n## Scaling and Performance Tuning\n\nFor high-volume workloads, scale horizontally by distributing requests across multiple workers. Use asynchronous processing with queues like RabbitMQ or Kafka.\n\n- **Load Balancing**: Deploy behind a load balancer to evenly distribute traffic.\n- **Caching**: Cache frequent identical requests to reduce API calls, but ensure data freshness.\n- **Model Selection**: Leverage the multi-model capability to switch between models based on document type for optimal accuracy and speed.",
+        "message": "code inside list item is not supported",
+        "children": [
+          {
+            "type": "text",
+            "text": ""
+          }
+        ],
+        "position": {
+          "start": {
+            "line": 9,
+            "column": 3,
+            "offset": 659
+          },
+          "end": {
+            "line": 11,
+            "column": 6,
+            "offset": 818
+          }
+        }
+      }
+    ]
+  }
+}

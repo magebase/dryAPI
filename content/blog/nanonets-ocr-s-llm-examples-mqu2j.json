@@ -1,0 +1,60 @@
+{
+  "slug": "nanonets-ocr-s-llm-examples-mqu2j",
+  "title": "Nanonets OCR S Llm Examples API Guide",
+  "excerpt": "A practical guide for experienced API teams on implementing Nanonets OCR S using LLM API examples, with code samples and optimization tips for document processing.\n\nKeyword focus: Nanonets OCR S llm api examples.",
+  "seoTitle": "Nanonets OCR S Llm Examples API Guide",
+  "seoDescription": "Explore Nanonets OCR S LLM API examples to build robust OCR systems. Includes setup instructions, code snippets, and best practices for production environment",
+  "seoKeywords": [
+    "Nanonets OCR S llm api examples",
+    "Nanonets OCR S api",
+    "Nanonets OCR S pricing",
+    "Nanonets OCR S inference",
+    "Nanonets OCR S benchmark"
+  ],
+  "canonicalPath": "/blog/nanonets-ocr-s-llm-examples-mqu2j",
+  "ogImage": "https://picsum.photos/seed/nanonets-ocr-s-llm-examples-mqu2j-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-12",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/nanonets-ocr-s-llm-examples-mqu2j-cover/1600/900",
+  "tags": [
+    "Image To Text",
+    "Nanonets OCR S",
+    "AI API",
+
+    "model:Nanonets_Ocr_S_F16",
+    "keyword:nanonets ocr s llm api examples"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "invalid_markdown",
+        "value": "## Introduction\n\nIntegrating high-accuracy OCR into production systems requires reliable API access and efficient workflows. This guide provides **Nanonets OCR S LLM API examples** to help experienced teams deploy and optimize document processing pipelines.\n\n## API Authentication and Setup\n\nStart by configuring your environment. Obtain an API key from the Nanonets portal and include it in request headers. Use HTTPS endpoints and ensure your client handles JSON responses. For example, in Python:\n\n```python\nimport requests\n\nheaders = {'Authorization': 'Bearer YOUR_API_KEY'}\nresponse = requests.post('https://api.nanonets.com/v2/OCR/Model/nanonets_ocr_s_f16', headers=headers, files={'file': open('doc.pdf', 'rb')})\n```\n\n## Nanonets OCR S LLM API Examples in Action\n\nHere are core examples for common tasks. The API supports image and PDF inputs, returning structured text with confidence scores.\n\n### Basic OCR Request\n\n```bash\ncurl -X POST https://api.nanonets.com/v2/OCR/Model/nanonets_ocr_s_f16 \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -F 'file=@invoice.png'\n```\n\n### Parsing the Response\n\nHandle the JSON output to extract text. A typical response:\n\n```json\n{\n  \"result\": [\n    {\n      \"prediction\": [\n        {\n          \"label\": \"text\",\n          \"ocr_text\": \"Invoice #12345\",\n          \"confidence\": 0.98\n        }\n      ]\n    }\n  ]\n}\n```\n\n### Compact API Endpoint Reference\n\n| Endpoint | Method | Purpose |\n|----------|--------|----------|\n| /v2/OCR/Model/nanonets_ocr_s_f16 | POST | Process a single document |\n| /v2/OCR/Models | GET | Retrieve available models |\n| /v2/OCR/Model/{model_id} | GET | Fetch model metadata |\n\n## Performance Optimization Techniques\n\nFor high-volume use, implement asynchronous calls and batch processing. Cache frequent requests and monitor rate limits to avoid throttling. Use connection pooling to reduce latency.\n\n## Error Handling and Resilience\n\nAnticipate issues like invalid files or network failures. Check HTTP status codes and implement retries with backoff. Log errors systematically for debugging and maintain fallbacks for critical operations.",
+        "message": "Unexpected expression model_id.",
+        "children": [
+          {
+            "type": "text",
+            "text": ""
+          }
+        ],
+        "position": {
+          "start": {
+            "line": 54,
+            "column": 17,
+            "offset": 1601
+          },
+          "end": {
+            "line": 54,
+            "column": 27,
+            "offset": 1611
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "apiscore-hub",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-03-10",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+    },
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "apiscore-hub",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "apiscore-hub-opennext-cache",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "AUTH_DB",
+      "database_name": "apiscore-auth-db",
+      "database_id": "00000000-0000-0000-0000-000000001010",
+      "migrations_dir": "drizzle/migrations/auth",
+    },
+    {
+      "binding": "ANALYTICS_DB",
+      "database_name": "apiscore-analytics-db",
+      "database_id": "00000000-0000-0000-0000-000000001020",
+      "migrations_dir": "drizzle/migrations/analytics",
+    },
+  ],
+  "ai": {
+    "binding": "AI",
+  },
+}

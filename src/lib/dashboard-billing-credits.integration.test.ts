@@ -52,7 +52,7 @@ class TestD1PreparedStatement {
     }
   }
 
-  async all<T extends Record<string, unknown>>(): Promise<{ results: T[] }> {
+  async all<T>(): Promise<{ results: T[] }> {
     const normalizedQuery = this.query.toLowerCase()
 
     if (normalizedQuery.includes("from credit_balance_profiles")) {
@@ -68,7 +68,7 @@ class TestD1PreparedStatement {
           {
             balance_credits: row.balanceCredits,
             updated_at: row.updatedAt,
-          } as T,
+          } as unknown as T,
         ],
       }
     }

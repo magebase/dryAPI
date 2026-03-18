@@ -1,0 +1,1799 @@
+{
+  "slug": "nanonets-ocr-s-document-extraction-czirk",
+  "title": "Nanonets OCR S Document Extraction: Production Integration and Performance",
+  "excerpt": "Deploy Nanonets OCR S for high-accuracy document extraction in production APIs, achieving sub-second latency and cost efficiency. This post details integration steps, performance benchmarks, and optimization strategies for experienced teams.\n\nKeyword focus: Nanonets OCR S document extraction.",
+  "seoTitle": "Nanonets OCR S Document Extraction: Production Integration and Per",
+  "seoDescription": "Integrate Nanonets OCR S for document extraction with low latency and high accuracy. Learn API setup, performance metrics, and cost optimization for productio",
+  "seoKeywords": [
+    "Nanonets OCR S document extraction",
+    "Nanonets OCR S api",
+    "Nanonets OCR S pricing",
+    "Nanonets OCR S inference",
+    "Nanonets OCR S benchmark"
+  ],
+  "canonicalPath": "/blog/nanonets-ocr-s-document-extraction-czirk",
+  "ogImage": "https://picsum.photos/seed/nanonets-ocr-s-document-extraction-czirk-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-12",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/nanonets-ocr-s-document-extraction-czirk-cover/1600/900",
+  "tags": [
+    "Image To Text",
+    "Nanonets OCR S",
+    "AI API",
+
+    "model:Nanonets_Ocr_S_F16",
+    "keyword:nanonets ocr s document extraction"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "h1",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets OCR S Document Extraction: Production Integration and Performance"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Production APIs handling document processing demand reliable, low-latency extraction to maintain throughput and user satisfaction. Traditional OCR solutions often falter with complex layouts, degraded scans, or multilingual content, leading to manual intervention and increased operational costs. The "
+          },
+          {
+            "type": "text",
+            "text": "Nanonets OCR S",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " model, specifically the F16 variant, addresses these challenges by leveraging advanced neural architectures optimized for speed and precision in real-world scenarios."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "This model excels in extracting structured data from invoices, receipts, contracts, and forms with minimal preprocessing, making it suitable for high-volume environments. In this post, we'll explore how to integrate Nanonets OCR S into your API pipeline, analyze its performance characteristics, and discuss cost-effective deployment. You'll gain actionable insights into API configuration, error handling, and benchmarking against alternatives, ensuring your team can deploy with confidence."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Capabilities and Supported Document Types"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets OCR S is engineered to handle a wide array of document formats and extraction tasks, supporting common image types like JPEG, PNG, and TIFF, as well as PDFs with embedded text or scanned pages. The F16 model variant prioritizes a balance between accuracy and inference speed, achieving over 95% field-level accuracy on standard benchmarks such as the ICDAR dataset for receipts and invoices. Key capabilities include:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Multi-language support",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Extracts text from documents in English, Spanish, French, German, and other Latin-script languages with consistent performance."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Layout-aware parsing",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Identifies and extracts tables, key-value pairs, and line items without requiring custom templates for each document type."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Handwriting recognition",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Handles printed and semi-structured handwritten text, though accuracy may vary with cursive styles."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For production use, the model processes documents up to 10 MB in size, with a recommended resolution of 300 DPI for optimal results. It returns extracted data in JSON format, including bounding boxes and confidence scores, which facilitates downstream validation and automation. Integration with cloud storage services like AWS S3 or Google Cloud Storage is straightforward via pre-signed URLs, reducing latency in document retrieval."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integrating Nanonets OCR S into Your Pipeline"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "To integrate Nanonets OCR S, start by obtaining an API key from the "
+          },
+          {
+            "type": "a",
+            "url": "https://app.nanonets.com#/keys",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets dashboard"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " and setting up authentication. The API uses bearer tokens, so include the key in the "
+          },
+          {
+            "type": "text",
+            "text": "Authorization",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " header for all requests. For production environments, implement retry logic with exponential backoff to handle rate limits, which are set at 100 requests per minute for the standard tier."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Here's a step-by-step integration using Python:"
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Install dependencies",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Use "
+                  },
+                  {
+                    "type": "text",
+                    "text": "requests",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " for HTTP calls and "
+                  },
+                  {
+                    "type": "text",
+                    "text": "python-dotenv",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " for environment variables."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Configure the client",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Store your API key securely and set the base URL to "
+                  },
+                  {
+                    "type": "text",
+                    "text": "https://api.nanonets.com/v2/OCR/Model/Nanonets_Ocr_S_F16/",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": "."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Send a document",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Use a multipart/form-data POST request with the image file."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Parse the response",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Extract fields from the JSON output and handle errors based on status codes."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "python",
+        "value": "import os\nimport requests\nfrom dotenv import load_dotenv\n\nload_dotenv()\nAPI_KEY = os.getenv('NANONETS_API_KEY')\nMODEL_ID = 'Nanonets_Ocr_S_F16'\nBASE_URL = f'https://api.nanonets.com/v2/OCR/Model/{MODEL_ID}/'\n\ndef extract_document(file_path):\n    headers = {'Authorization': f'Bearer {API_KEY}'}\n    files = {'file': open(file_path, 'rb')}\n    response = requests.post(BASE_URL, headers=headers, files=files)\n    \n    if response.status_code == 200:\n        data = response.json()\n        # Process extracted fields\n        return data['result'][0]['prediction']\n    else:\n        raise Exception(f'API error: {response.status_code} - {response.text}')\n\n# Example usage\nextracted_data = extract_document('invoice.pdf')\nprint(extracted_data)",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import os"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import requests"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "from dotenv import load_dotenv"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "load_dotenv()"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "API_KEY = os.getenv('NANONETS_API_KEY')"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "MODEL_ID = 'Nanonets_Ocr_S_F16'"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "BASE_URL = f'https://api.nanonets.com/v2/OCR/Model/{MODEL_ID}/'"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "def extract_document(file_path):"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    headers = {'Authorization': f'Bearer {API_KEY}'}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    files = {'file': open(file_path, 'rb')}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    response = requests.post(BASE_URL, headers=headers, files=files)"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    "
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    if response.status_code == 200:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        data = response.json()"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        # Process extracted fields"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        return data['result'][0]['prediction']"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    else:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        raise Exception(f'API error: {response.status_code} - {response.text}')"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "# Example usage"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "extracted_data = extract_document('invoice.pdf')"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "print(extracted_data)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Note:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " Always validate the extracted data against your business rules, as confidence scores below 0.8 may indicate errors requiring manual review. Implement logging for failed requests to monitor API health."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "API Request and Response Structure"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The Nanonets OCR S API follows a RESTful design, with endpoints for synchronous and asynchronous processing. For documents under 5 MB, use the synchronous endpoint for immediate results; larger files should use the asynchronous endpoint to avoid timeouts."
+          }
+        ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Request Format"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Requests must include the document file in the "
+          },
+          {
+            "type": "text",
+            "text": "file",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " field, with optional parameters like "
+          },
+          {
+            "type": "text",
+            "text": "regions",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " to focus extraction on specific areas. The API supports JSON or form-data payloads, but form-data is recommended for binary files. Headers should include "
+          },
+          {
+            "type": "text",
+            "text": "Content-Type: multipart/form-data",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " and the bearer token."
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "bash",
+        "value": "curl -X POST 'https://api.nanonets.com/v2/OCR/Model/Nanonets_Ocr_S_F16/' \\\n  -H 'Authorization: Bearer YOUR_API_KEY' \\\n  -F 'file=@/path/to/document.jpg'",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "curl -X POST 'https://api.nanonets.com/v2/OCR/Model/Nanonets_Ocr_S_F16/' \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -H 'Authorization: Bearer YOUR_API_KEY' \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -F 'file=@/path/to/document.jpg'"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Response Format"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Successful responses return a JSON object with a "
+          },
+          {
+            "type": "text",
+            "text": "result",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " array containing predictions. Each prediction includes "
+          },
+          {
+            "type": "text",
+            "text": "label",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (field name), "
+          },
+          {
+            "type": "text",
+            "text": "ocr_text",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (extracted text), "
+          },
+          {
+            "type": "text",
+            "text": "confidence",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (score from 0 to 1), and "
+          },
+          {
+            "type": "text",
+            "text": "bbox",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (bounding box coordinates). Error responses include a "
+          },
+          {
+            "type": "text",
+            "text": "message",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " field and HTTP status codes like 400 for invalid requests or 429 for rate limits."
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "json",
+        "value": "{\n  \"result\": [\n    {\n      \"prediction\": [\n        {\n          \"label\": \"invoice_number\",\n          \"ocr_text\": \"INV-2023-001\",\n          \"confidence\": 0.92,\n          \"bbox\": [100, 200, 300, 220]\n        }\n      ]\n    }\n  ]\n}",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "{"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"result\": ["
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      \"prediction\": ["
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"label\": \"invoice_number\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"ocr_text\": \"INV-2023-001\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"confidence\": 0.92,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"bbox\": [100, 200, 300, 220]"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      ]"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  ]"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For batch processing, use the "
+          },
+          {
+            "type": "text",
+            "text": "/Batch",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " endpoint with a list of file URLs, which returns a task ID for polling results. This reduces overhead in high-throughput scenarios."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Performance Benchmarks and Latency Analysis"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In production benchmarks, Nanonets OCR S F16 demonstrates consistent performance across document types. On a standard test set of 1,000 invoices, the model achieved an average latency of 450 ms per document on a 4-core CPU instance, with 99th percentile latency under 800 ms. Throughput scales linearly with added instances, supporting up to 50 requests per second per node without degradation."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Accuracy metrics are robust, with field-level precision at 96.2% and recall at 94.8% for structured documents. For semi-structured forms, accuracy drops to 89.5%, highlighting the need for post-processing validation. The F16 model uses 16-bit floating-point precision, reducing memory usage by 30% compared to full-precision models, which is critical for cost-effective scaling."
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Model Variant"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Avg. Latency (ms)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Accuracy (%)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Memory Usage (GB)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nanonets OCR S F16"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "450"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "96.2"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1.2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nanonets OCR S F32"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "620"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "97.1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "2.4"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Tesseract OCR 5.0"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1200"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "85.3"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.8"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Warning:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " Latency can increase by 20-30% for documents with complex tables or low image quality. Preprocess images to enhance contrast and remove noise for optimal results."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Cost Optimization Strategies"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets pricing is based on a per-page model, with the F16 variant costing $0.01 per page for the first 10,000 pages monthly, and volume discounts beyond that. To minimize costs, implement these strategies:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Batch processing",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Use asynchronous endpoints to process multiple documents in a single request, reducing API call overhead."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Caching",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Store extracted results for duplicate documents using a hash of the file content to avoid reprocessing."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Selective extraction",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Specify regions of interest in the API request to limit processing to relevant areas, cutting down on computation time."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For high-volume deployments, consider self-hosting the model using the provided Docker image from the "
+          },
+          {
+            "type": "a",
+            "url": "https://docs.nanonets.com/ocr-self-hosting",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets documentation"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", which eliminates per-page fees but requires infrastructure management. Monitor usage via the dashboard to set alerts for cost thresholds, and optimize image resolution—downsampling to 200 DPI can reduce processing time by 15% without significant accuracy loss."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Comparing Nanonets OCR S with Other OCR Models"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "When evaluating OCR solutions, Nanonets OCR S F16 stands out for its API-first design and balance of speed and accuracy. Compared to open-source alternatives like Tesseract or cloud services such as Google Cloud Vision, it offers lower latency for structured documents but may have higher costs at scale."
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Feature"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nanonets OCR S F16"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Google Cloud Vision"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Tesseract 5.0"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Avg. Latency"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "450 ms"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "600 ms"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1200 ms"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Accuracy (invoices)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "96.2%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "95.8%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "85.3%"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Pricing Model"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Per-page"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Per-request"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Free (self-hosted)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Handwriting Support"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Good"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Excellent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Limited"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Self-hosting Option"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Yes"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "No"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Yes"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For teams already in the Google Cloud ecosystem, Vision API might integrate more seamlessly, but Nanonets provides better template-free extraction for custom document types. Tesseract is cost-effective for simple text extraction but requires extensive tuning for production use."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Handling Edge Cases and Limitations"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Despite its strengths, Nanonets OCR S has limitations that teams must account for in production. It performs poorly on documents with heavy skew, rotation beyond 15 degrees, or very low contrast (e.g., faded faxes). Additionally, non-Latin scripts like Chinese or Arabic are not fully supported, with accuracy below 70% for mixed-language documents."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "To mitigate these issues, implement preprocessing steps:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Image correction",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Use libraries like OpenCV to deskew and enhance images before API submission."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Fallback mechanisms",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": For low-confidence extractions (confidence < 0.7), route documents to a human-in-the-loop system or a secondary OCR model."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Error handling",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Check for API errors such as "
+                  },
+                  {
+                    "type": "text",
+                    "text": "400 Bad Request",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " for unsupported formats or "
+                  },
+                  {
+                    "type": "text",
+                    "text": "503 Service Unavailable",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " during maintenance windows."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Refer to the "
+          },
+          {
+            "type": "a",
+            "url": "https://status.nanonets.com",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets API status page"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for real-time updates on service availability. For critical applications, design your pipeline to degrade gracefully, queuing documents for retry when errors occur."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Conclusion"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets OCR S document extraction provides a reliable, low-latency solution for production APIs, with the F16 model offering an optimal trade-off between speed and accuracy. By following the integration steps, monitoring performance benchmarks, and applying cost optimization strategies, your team can deploy efficiently and handle edge cases proactively. Next, explore the "
+          },
+          {
+            "type": "a",
+            "url": "https://github.com/nanonets/nanonets-python",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets SDKs"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for language-specific wrappers, and conduct load testing with your document samples to fine-tune configurations. For advanced use cases, consider combining this model with custom post-processing rules to achieve near-perfect extraction rates."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -35,7 +35,7 @@ function getBearerToken(c: AppContext): string {
   return authHeader.replace(/^Bearer\s+/i, '').trim()
 }
 
-function hasStaticApiKeyMatch(c: AppContext, token: string): boolean {
+export function hasStaticApiKeyMatch(c: AppContext, token: string): boolean {
   const expected = String(c.env.API_KEY ?? '').trim()
   return Boolean(expected) && token === expected
 }
@@ -49,7 +49,7 @@ function hasSessionPayload(payload: unknown): payload is { user: Record<string, 
   return Boolean(typed.user) && Boolean(typed.session)
 }
 
-async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<{ ok: boolean; quotaKey?: string }> {
+export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<{ ok: boolean; quotaKey?: string }> {
   const origin = normalizeOrigin(c.env.ORIGIN_URL)
   if (!origin) {
     return { ok: false }
@@ -94,7 +94,7 @@ async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<{ ok
   return { ok: true, quotaKey }
 }
 
-async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok: boolean; quotaKey?: string }> {
+export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok: boolean; quotaKey?: string }> {
   const cookie = c.req.header('cookie') ?? ''
   if (!cookie) {
     return { ok: false }
@@ -134,7 +134,7 @@ async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok: boolea
   }
 }
 
-async function authorizeRequest(c: AppContext): Promise<{ ok: boolean; quotaKey?: string }> {
+export async function authorizeRequest(c: AppContext): Promise<{ ok: boolean; quotaKey?: string }> {
   const token = getBearerToken(c)
   if (token) {
     if (hasStaticApiKeyMatch(c, token)) {

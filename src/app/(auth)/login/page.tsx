@@ -9,6 +9,7 @@ import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-d
 
 const LOGIN_REGISTERED_TOAST_ID = "login-registered"
 const LOGIN_ERROR_TOAST_ID = "login-error"
+const LOGIN_PASSWORD_RESET_TOAST_ID = "login-password-reset"
 const LOGIN_SUCCESS_TOAST_ID = "login-success"
 
 type SocialProvider = "google" | "github"
@@ -52,10 +53,12 @@ async function hasActiveSession(): Promise<boolean> {
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const serializedSearchParams = searchParams?.toString() || ""
 
-  const registered = searchParams.get("registered") === "1"
-  const requiresVerification = searchParams.get("verify") === "1"
-  const prefillEmail = searchParams.get("email") || ""
+  const registered = searchParams?.get("registered") === "1"
+  const passwordReset = searchParams?.get("reset") === "1"
+  const requiresVerification = searchParams?.get("verify") === "1"
+  const prefillEmail = searchParams?.get("email") || ""
 
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -78,21 +81,39 @@ export default function LoginPage() {
       },
     )
 
-    const nextParams = new URLSearchParams(searchParams.toString())
+    const nextParams = new URLSearchParams(serializedSearchParams)
     nextParams.delete("registered")
     nextParams.delete("verify")
 
     const nextQuery = nextParams.toString()
     const nextUrl = nextQuery ? `/login?${nextQuery}` : "/login"
     router.replace(nextUrl, { scroll: false })
-  }, [registered, requiresVerification, router, searchParams])
+  }, [registered, requiresVerification, router, serializedSearchParams])
 
   useEffect(() => {
-    if (!searchParams.get("password")) {
+    if (!passwordReset) {
       return
     }
 
-    const params = new URLSearchParams(searchParams.toString())
+    toast.success("Password updated", {
+      id: LOGIN_PASSWORD_RESET_TOAST_ID,
+      description: "Sign in with your new password.",
+    })
+
+    const nextParams = new URLSearchParams(serializedSearchParams)
+    nextParams.delete("reset")
+
+    const nextQuery = nextParams.toString()
+    const nextUrl = nextQuery ? `/login?${nextQuery}` : "/login"
+    router.replace(nextUrl, { scroll: false })
+  }, [passwordReset, router, serializedSearchParams])
+
+  useEffect(() => {
+    if (!searchParams?.get("password")) {
+      return
+    }
+
+    const params = new URLSearchParams(serializedSearchParams)
     params.delete("password")
 
     const nextQuery = params.toString()
@@ -100,11 +121,11 @@ export default function LoginPage() {
 
     logClientAuthEvent("warn", "login.sensitive-query-stripped", {
       hadPasswordParam: true,
-      hadEmailParam: Boolean(searchParams.get("email")),
+      hadEmailParam: Boolean(searchParams?.get("email")),
     })
 
     router.replace(nextUrl, { scroll: false })
-  }, [router, searchParams])
+  }, [router, searchParams, serializedSearchParams])
 
   useEffect(() => {
     if (!error) {

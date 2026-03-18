@@ -425,5 +425,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/:path*"],
+  matcher: [
+    // Avoid running middleware/proxy on static assets and framework internals.
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|sw.js|.*\\..*).*)",
+    "/ADMIN/INDEX.HTML",
+  ],
 }

@@ -3,18 +3,29 @@ import type { Metadata } from "next"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { buildTakumiMetadata } from "@/lib/og/metadata"
 import { readSiteConfig } from "@/lib/site-content-loader"
 
 type SuccessPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }
 
-export const metadata: Metadata = {
-  title: "Payment Success",
-  robots: {
-    index: false,
-    follow: false,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await readSiteConfig()
+
+  return buildTakumiMetadata({
+    title: "Payment Success",
+    description: "Checkout completion screen for billing and plan activation.",
+    canonicalPath: "/success",
+    template: "pricing",
+    siteName: site.brand.name || site.brand.mark,
+    robots: {
+      index: false,
+      follow: false,
+    },
+    label: "Pricing Page",
+    seed: "checkout-success",
+  })
 }
 
 function readQueryValue(
@@ -91,7 +102,7 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
             <Link href={billingHref}>Open Billing</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/pricing">View Plans</Link>
+            <Link href="/plans">View Plans</Link>
           </Button>
           <Button asChild variant="ghost">
             <Link href={`mailto:${site.contact.contactEmail}`}>Contact Support</Link>

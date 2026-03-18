@@ -2,7 +2,7 @@ import Image from "next/image"
 import { tinaField } from "tinacms/dist/react"
 
 import { ContactForm } from "@/components/site/contact-form"
-import { DeapiPricingTable } from "@/components/site/deapi-pricing-table"
+import { PricingTable } from "@/components/site/pricing-table"
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text"
 import { QuoteAwareLink } from "@/components/site/quote-aware-link"
 import { RoutePageElements } from "@/components/site/route-page-elements"
@@ -104,7 +104,7 @@ export function RoutePageTemplate({
         </Reveal>
       </section>
 
-      {page.slug === "/pricing" ? <DeapiPricingTable snapshot={deapiPricingSnapshot} /> : null}
+      {page.slug === "/pricing" ? <PricingTable snapshot={deapiPricingSnapshot} /> : null}
 
       {page.pageContent?.elements?.length ? <RoutePageElements elements={page.pageContent.elements} /> : null}
 

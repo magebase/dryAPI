@@ -147,10 +147,10 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
           <p className="text-xs uppercase tracking-[0.26em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
-          <h1 className="mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] text-slate-900 sm:text-4xl md:text-6xl">
+          <h1 className="text-site-inverse mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] sm:text-4xl md:text-6xl">
             <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
           </h1>
-          <p className="mt-5 max-w-2xl text-sm text-slate-600 sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
+          <p className="text-site-inverse-muted mt-5 max-w-2xl text-sm sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
             {page.hero.body}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -190,10 +190,10 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:py-20">
           <div className="space-y-5">
             <p className="text-xs uppercase tracking-[0.24em] text-primary" data-tina-field={expertsKicker.field}>{expertsKicker.value}</p>
-            <h2 className="max-w-xl font-display text-3xl uppercase leading-tight tracking-[0.03em] text-slate-900 md:text-4xl">
+            <h2 className="text-site-inverse max-w-xl font-display text-3xl uppercase leading-tight tracking-[0.03em] md:text-4xl">
               <KeywordGradientText dataTinaField={expertsHeading.field} text={expertsHeading.value} />
             </h2>
-            <p className="max-w-xl text-slate-600" data-tina-field={expertsBody.field}>{expertsBody.value}</p>
+            <p className="text-site-inverse-muted max-w-xl" data-tina-field={expertsBody.field}>{expertsBody.value}</p>
           </div>
           <div className={`${getGradientVariant(1)} relative overflow-hidden rounded-sm border border-slate-200 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}>
             <Image
@@ -285,10 +285,10 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
       <Reveal className="border-b border-slate-200 bg-[linear-gradient(90deg,#1a2433_0%,#1a2433_52%,#111a29_52%,#111a29_100%)]">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:py-14 lg:grid-cols-2 lg:py-20">
           <div>
-            <h2 className="font-display text-3xl uppercase tracking-[0.04em] text-slate-900 md:text-4xl">
+            <h2 className="text-site-inverse font-display text-3xl uppercase tracking-[0.04em] md:text-4xl">
               <KeywordGradientText dataTinaField={packagesHeading.field} text={packagesHeading.value} />
             </h2>
-            <p className="mt-4 max-w-xl text-slate-600" data-tina-field={packagesBody.field}>{packagesBody.value}</p>
+            <p className="text-site-inverse-muted mt-4 max-w-xl" data-tina-field={packagesBody.field}>{packagesBody.value}</p>
             <QuoteAwareLink
               className="mt-7 inline-flex w-full justify-center rounded-sm border border-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition hover:bg-primary hover:text-primary-foreground sm:w-auto"
               data-tina-field={tinaField(site.header, "quoteCta")}

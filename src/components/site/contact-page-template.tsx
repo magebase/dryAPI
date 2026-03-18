@@ -69,10 +69,10 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
             <p className="text-sm uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
               {page.hero.kicker}
             </p>
-            <h1 className="mt-4 font-display text-3xl uppercase tracking-[0.06em] text-slate-900 sm:text-4xl md:text-6xl">
+            <h1 className="text-site-inverse mt-4 font-display text-3xl uppercase tracking-[0.06em] sm:text-4xl md:text-6xl">
               <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
             </h1>
-            <p className="mt-4 text-sm leading-relaxed text-slate-700 md:text-base" data-tina-field={tinaField(page.hero, "body")}>
+            <p className="text-site-inverse-muted mt-4 text-sm leading-relaxed md:text-base" data-tina-field={tinaField(page.hero, "body")}>
               {page.hero.body}
             </p>
 

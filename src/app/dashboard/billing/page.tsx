@@ -697,7 +697,7 @@ export default async function DashboardBillingPage({ searchParams }: DashboardBi
               </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <Link href="/pricing">View Pricing</Link>
+              <Link href="/plans">View Plans</Link>
             </Button>
           </div>
         </CardHeader>

@@ -14,6 +14,7 @@ import { isPwaEnabledServer } from "@/lib/feature-flags";
 import { AosProvider } from "@/components/site/aos-provider";
 import { AppToaster } from "@/components/site/app-toaster";
 import { SerwistRegister } from "@/components/site/serwist-register";
+import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
 import "./globals.css";
 import "aos/dist/aos.css";
 import { cn } from "@/lib/utils";
@@ -66,13 +67,6 @@ export const dynamic = "force-static";
 
 const FALLBACK_SITE_URL = "https://dryapi.dev";
 
-function normalizeSiteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? FALLBACK_SITE_URL).replace(
-    /\/+$/,
-    "",
-  );
-}
-
 const geist = Geist({
   subsets: ["latin-ext"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -87,12 +81,21 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig();
-  const siteUrl = normalizeSiteUrl();
+  const siteUrl = normalizeSiteUrl() || FALLBACK_SITE_URL;
+  const siteName = site.brand.name || site.brand.mark;
   const pwaEnabled = isPwaEnabledServer();
-
-  return {
+  const baseMetadata = buildTakumiMetadata({
     title: site.brand.mark,
     description: site.announcement,
+    canonicalPath: "/",
+    template: "marketing",
+    siteName,
+    label: "Marketing",
+    seed: "root-layout",
+  });
+
+  return {
+    ...baseMetadata,
     metadataBase: new URL(siteUrl),
     applicationName: site.brand.mark,
     manifest: pwaEnabled ? "/manifest.webmanifest" : undefined,

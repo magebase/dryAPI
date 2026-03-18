@@ -18,7 +18,7 @@ import {
 } from "@/lib/plan-tier";
 import type { SiteConfig } from "@/lib/site-content-schema";
 
-const FALLBACK_SITE_URL = "https://genfix.com.au";
+const FALLBACK_SITE_URL = "https://dryapi.dev";
 
 function normalizeSiteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? FALLBACK_SITE_URL).replace(
@@ -76,10 +76,11 @@ export function SiteFrame({
   const address = resolveAddress(site);
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-black text-[color:var(--site-text-strong)]">
+    <div className="site-marketing-theme min-h-screen overflow-x-clip bg-[var(--site-surface-0)] text-[color:var(--site-text-strong)]">
       <OrganizationJsonLd
         description={site.announcement}
         email={site.contact.contactEmail}
+        logo={`${siteUrl}/logo.png`}
         name={site.brand.mark}
         sameAs={sameAs}
         scriptId="site-organization-jsonld"

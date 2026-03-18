@@ -15,10 +15,10 @@ echo "[runpod] destroying existing managed endpoints BEFORE rebuild"
 bash "$ROOT_DIR/scripts/runpod-endpoints-pulumi.sh" destroy "$STACK_NAME" --skip-preview
 
 echo "[runpod] optimizing GPU revenue profile"
-node "$ROOT_DIR/scripts/optimize-runpod-gpu-revenue.mjs" --write
+tsx "$ROOT_DIR/scripts/optimize-runpod-gpu-revenue.ts" --write
 
 echo "[runpod] rebuilding endpoint manifest/create-requests"
-node "$ROOT_DIR/scripts/build-runpod-image-endpoints.mjs"
+tsx "$ROOT_DIR/scripts/build-runpod-image-endpoints.ts"
 
 echo "[runpod] applying rebuilt endpoints with Pulumi"
 bash "$ROOT_DIR/scripts/runpod-endpoints-pulumi.sh" up "$STACK_NAME" --skip-preview

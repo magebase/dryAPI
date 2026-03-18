@@ -50,7 +50,7 @@ Reference goals:
 - Content source: `content/**/*.json`
 - Content validation/loading: `src/lib/site-content-loader.ts`, `src/lib/*schema*.ts`
 - deAPI docs mirror + OpenAPI snapshot: `docs/deapi-mirror/**`
-- Docs sync script: `scripts/sync-deapi-docs.mjs`
+- Docs sync script: `scripts/sync-deapi-docs.ts`
 - Cloudflare container package: `cloudflare/container/**`
 - Cloudflare workflows package: `cloudflare/workflows/**`
 
@@ -101,10 +101,294 @@ Compatibility requirements:
 - Favor small, testable, low-regression changes over broad rewrites.
 - Keep changes scoped to the request; avoid opportunistic refactors.
 - Do not introduce formatting-only churn.
+- For `pnpm` script entrypoints in this repository, use TypeScript files (`.ts`) only. Do not add or call `.mjs`, `.cjs`, or custom `.js` script files.
 - Preserve existing Tina preview/edit paths (`/admin/index.html`, Tina API routes).
 - If schema changes are required, follow schema-first workflow:
   - Update `tina/config.js` first.
   - Update rendering and `content/**/*.json` together.
+
+## Multi-Brand Platform Guidelines
+
+This repo supports multiple public brands and domains from one codebase. Brand work must preserve the shared AI API platform while allowing differentiated positioning, visual identity, and pricing.
+
+### Brand Identity Source of Truth
+
+- Treat `content/site/brands.json` as the registry of supported brands, domains, personas, focus keywords, and brand-scoped database names.
+- Resolve the active brand through `src/lib/brand-catalog.ts` using `SITE_BRAND_KEY`, `DRYAPI_BRAND_KEY`, or hostname matching. Do not create parallel brand-resolution logic in routes, components, emails, or scripts.
+- Keep brand keys stable, lowercase, and URL-safe. Use the brand key as the join point across content, pricing, SEO, email, analytics, and billing flows.
+- Store brand-specific overrides under `content/brands/<brandKey>/**`. Keep shared defaults in `content/site/**`, `content/pages/**`, and `content/blog/**`.
+- Use `src/lib/site-content-loader.ts` for brand-aware content reads. Prefer data overrides over branching UI logic.
+
+### Shared Product Surface, Brand-Specific Packaging
+
+- All brands should offer the same core AI API products and services, plus compatible API contracts, unless a task explicitly requires a brand-specific exception.
+- Preserve the shared model catalog and routing behavior where `sharedModels.enabled` is true. Do not fork provider or model logic just to change branding, persona, or price presentation.
+- Different brands may vary pricing, plan names, included credits, support language, CTA copy, persona framing, and sales motion.
+- When price differences are required, implement them as brand-aware content or configuration, not hardcoded literals spread across marketing pages, dashboards, checkout routes, or emails.
+- Do not let one brand's promotional language, price points, or packaging leak into another brand's site, docs, checkout, or lifecycle messaging.
+
+### Brandifying Components and ShadCN Theme
+
+- Keep component structure shared across brands. Brandify through props, content, tokens, and helper functions before creating brand-specific component forks.
+- Prefer semantic design tokens and CSS variables for brand accents, gradients, marks, and illustration treatments so ShadCN/Tailwind primitives stay reusable.
+- ShadCN theme changes must be token-driven. Adjust brand colors, accent surfaces, and visual identity through shared theme variables instead of duplicating component markup or utility-class trees.
+- Keep neutral surfaces, forms, tables, and skeleton loaders visually consistent across brands unless a deliberate brand-level design requirement says otherwise. Loading skeletons remain neutral gray.
+- Isolate brand-specific logos, marks, and hero visuals in content/configuration or dedicated assets instead of embedding them into generic UI primitives.
+- If a component needs brand-specific copy or styling, pass a normalized brand object or theme data into the shared component, or resolve brand-aware site config at the boundary.
+- Avoid `if (brandKey === "...")` branching inside low-level primitives when the same outcome can be achieved by content, tokens, or a higher-level brand wrapper.
+
+### Marketing Pages and Public Copy
+
+- Marketing pages may vary headline, proof points, CTA language, comparison framing, persona targeting, and pricing emphasis per brand while reusing the same layouts and section components.
+- Keep public route structure and navigation broadly consistent across brands unless there is a deliberate go-to-market reason to diverge.
+- Brand-specific landing pages should emphasize the active brand persona and focus keywords without changing core platform claims beyond what the product actually supports.
+- Reuse shared section shells for hero, proof, API examples, pricing, trust, and CTA blocks. Brandify with content, visuals, and tokens instead of page rewrites.
+- Do not hardcode one brand's name, domain, contact details, or pricing language into reusable marketing components.
+
+### Brand SEO and Metadata
+
+- Every brand must emit its own canonical URLs, `metadataBase`, sitemap/robots host, Open Graph metadata, feed links, manifest metadata, and structured-data URLs based on the active domain.
+- Brand SEO should follow the active brand's `siteUrl`, `displayName`, persona, and focus keywords from the brand and site-content registry. Do not reuse another brand's canonical domain or keyword cluster.
+- Keep product and service claims consistent across brands. Differentiate who the brand is for and how offers are packaged, not what the API can do, unless the product actually differs.
+- Avoid duplicate-content SEO mistakes by ensuring titles, descriptions, headings, and internal links are brand-aware where pages target different personas.
+- When generating marketing or blog metadata, prefer brand-aware loaders and helpers over direct single-domain fallbacks when the page is intended to vary by brand.
+
+### Brand-Aware Emails
+
+- All transactional and marketing emails must resolve branding through the shared email branding layer in `src/emails/brand.ts`, or a thin wrapper around it.
+- Keep email structure reusable across brands. Vary mark, sender identity, support/sales addresses, announcement text, URLs, price points, and accent theme through brand data.
+- Do not hardcode `dryAPI`, `dryapi.dev`, or fixed sender addresses in reusable email templates or send paths.
+- Checkout, billing, onboarding, and support emails must link back to the active brand's domain plus the corresponding dashboard, docs, pricing, and contact routes.
+- Brand-specific price points or plan packaging mentioned in emails must match the active brand's public pricing and checkout behavior.
+
+## SEO and Structured Data Standards (Strict)
+
+This project uses Next.js App Router. Use the built-in `generateMetadata` / `export const metadata` API for all standard meta tags (title, description, canonical, OG, Twitter). Use `next-seo` JSON-LD components for structured data. Both are already installed and in active use.
+
+### Core Rule: Every Unauthenticated Page Requires Full SEO Coverage
+
+Every route accessible without authentication **must** include all of the following:
+
+- `title` — concise, brand-aware, ≤ 60 characters including site name.
+- `description` — benefit-first, 120–160 characters, matches page intent.
+- `alternates.canonical` — absolute URL for the page, brand-aware via `normalizeSiteUrl()`.
+- `openGraph` block — `type`, `title`, `description`, `url`, `siteName`, `images` with explicit `width`, `height`, and `alt`.
+- `twitter` block — `card: "summary_large_image"`, `title`, `description`, `images`.
+- Appropriate JSON-LD structured data via `next-seo` components (see page-type rules below).
+
+Authentication-gated pages (`/dashboard/**`, `/account/**`, success pages, API routes) must set `robots: { index: false, follow: false }` and **must not** include OG or JSON-LD.
+
+### Metadata Requirements by Field
+
+```ts
+// Required shape for every public page — fill all fields
+export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = normalizeSiteUrl()    // always brand-resolved
+  const site    = await readSiteConfig()
+
+  return {
+    title:       "Page Title | Brand Name",          // ≤ 60 chars
+    description: "Benefit-first description ...",    // 120–160 chars
+    keywords:    ["keyword a", "keyword b"],
+    alternates:  { canonical: `${siteUrl}/path` },   // absolute, no trailing slash
+    metadataBase: new URL(siteUrl),                  // required at layout level
+    openGraph: {
+      type:        "website",                        // or "article", see below
+      url:         `${siteUrl}/path`,
+      title:       "Open Graph Title",
+      description: "Open Graph description",
+      siteName:    site.brand.displayName,
+      images: [
+        {
+          url:    `${siteUrl}/og/default.png`,       // 1200×630 recommended
+          width:  1200,
+          height: 630,
+          alt:    "Descriptive alt text",
+          type:   "image/png",
+        },
+      ],
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title:       "Twitter Card Title",
+      description: "Twitter card description",
+      images:      [`${siteUrl}/og/default.png`],
+    },
+  }
+}
+```
+
+### OG Image Standards
+
+- Default OG image dimensions: **1200 × 630 px**, `type: "image/png"`.
+- Always provide explicit `width`, `height`, and `alt` on every OG image object.
+- Use brand-resolved images; never hardcode one brand's asset path in shared components.
+- Dynamic pages (blog posts, model pages) must include the page-specific `ogImage` when available, with a brand fallback.
+- Never reference `source.unsplash.com` directly — the `normalizeSiteImageSrc` helper already blocks these.
+
+### Twitter Card Standards
+
+- Always use `"summary_large_image"` for content pages.
+- Twitter reads `og:title`, `og:image`, and `og:description` — omit `twitter:title`, `twitter:image`, `twitter:description` to avoid duplication (next-seo handles this automatically when using the `NextSeo` component; for `generateMetadata`, set them explicitly only if they differ from OG values).
+
+### JSON-LD Structured Data (next-seo)
+
+Use `next-seo` JSON-LD components in `page.tsx` files (not `layout.tsx` or `head.tsx`). Always pass `useAppDir={true}` when inside the App Router.
+
+Assign stable, unique `scriptId` values to each component to prevent duplicate script injection.
+
+**Homepage / root layout** — `OrganizationJsonLd` + `LocalBusinessJsonLd`:
+
+```tsx
+import { OrganizationJsonLd } from "next-seo"
+
+<OrganizationJsonLd
+  useAppDir
+  type="Organization"
+  id={`${siteUrl}/#organization`}
+  name={site.brand.displayName}
+  url={siteUrl}
+  logo={`${siteUrl}/logo.png`}
+  sameAs={[site.brand.twitterUrl, site.brand.linkedInUrl].filter(Boolean)}
+  scriptId="site-organization-jsonld"
+/>
+```
+
+**Blog post page** — `ArticleJsonLd` with `type="BlogPosting"`:
+
+```tsx
+import { ArticleJsonLd } from "next-seo"
+
+<ArticleJsonLd
+  useAppDir
+  type="BlogPosting"
+  url={`${siteUrl}/blog/${post.slug}`}
+  title={post.seoTitle}
+  images={post.ogImage ? [post.ogImage] : []}
+  datePublished={post.publishedAt}          // ISO 8601
+  dateModified={post.updatedAt ?? post.publishedAt}
+  authorName={[{ name: post.author.name, url: `${siteUrl}/blog/authors/${post.author.slug}` }]}
+  publisherName={site.brand.displayName}
+  publisherLogo={`${siteUrl}/logo.png`}
+  description={post.seoDescription}
+  isAccessibleForFree
+  scriptId={`blog-post-jsonld-${post.slug}`}
+/>
+```
+
+**Pricing page** — `WebPageJsonLd` + `BreadcrumbJsonLd`:
+
+```tsx
+import { WebPageJsonLd, BreadcrumbJsonLd } from "next-seo"
+
+<BreadcrumbJsonLd
+  useAppDir
+  itemListElements={[
+    { position: 1, name: "Home",    item: siteUrl },
+    { position: 2, name: "Pricing", item: `${siteUrl}/pricing` },
+  ]}
+  scriptId="pricing-breadcrumb-jsonld"
+/>
+<WebPageJsonLd
+  useAppDir
+  id={`${siteUrl}/pricing`}
+  description="Model pricing in USD with per-token and per-request cost breakdowns."
+  scriptId="pricing-webpage-jsonld"
+/>
+```
+
+**Model detail page** — `WebPageJsonLd` + `BreadcrumbJsonLd` + optionally `SoftwareAppJsonLd`:
+
+```tsx
+import { WebPageJsonLd, BreadcrumbJsonLd } from "next-seo"
+
+<BreadcrumbJsonLd
+  useAppDir
+  itemListElements={[
+    { position: 1, name: "Home",        item: siteUrl },
+    { position: 2, name: "Models",      item: `${siteUrl}/models` },
+    { position: 3, name: categoryLabel, item: `${siteUrl}/models/${categorySlug}` },
+    { position: 4, name: modelName,     item: `${siteUrl}/models/${categorySlug}/${modelSlug}` },
+  ]}
+  scriptId={`model-breadcrumb-jsonld-${modelSlug}`}
+/>
+<WebPageJsonLd
+  useAppDir
+  id={`${siteUrl}/models/${categorySlug}/${modelSlug}`}
+  description={modelDetail?.summary ?? `${modelName} model deployment guide.`}
+  scriptId={`model-webpage-jsonld-${modelSlug}`}
+/>
+```
+
+**Docs/API reference pages** — `TechArticleJsonLd` via raw script or `ArticleJsonLd` with section:
+
+```tsx
+import { ArticleJsonLd } from "next-seo"
+
+<ArticleJsonLd
+  useAppDir
+  type="TechArticle"
+  url={`${siteUrl}/docs/${slug}`}
+  title={doc.title}
+  images={[]}
+  datePublished={doc.datePublished ?? "2024-01-01"}
+  authorName={[{ name: site.brand.displayName, url: siteUrl }]}
+  publisherName={site.brand.displayName}
+  publisherLogo={`${siteUrl}/logo.png`}
+  description={doc.description}
+  scriptId={`doc-jsonld-${slug}`}
+/>
+```
+
+**FAQ / help pages** — `FAQPageJsonLd`:
+
+```tsx
+import { FAQPageJsonLd } from "next-seo"
+
+<FAQPageJsonLd
+  useAppDir
+  mainEntity={faqs.map(f => ({
+    questionName:       f.question,
+    acceptedAnswerText: f.answer,
+  }))}
+  scriptId="faq-jsonld"
+/>
+```
+
+### Robots and Indexing Rules
+
+| Route pattern | `robots` setting |
+| --- | --- |
+| All public marketing pages | `{ index: true, follow: true }` (default, can omit) |
+| `/dashboard/**`, `/account/**` | `{ index: false, follow: false }` |
+| `/api/**` | Not applicable (API routes) |
+| `/success`, `/verify/**`, `/reset/**` | `{ index: false, follow: false }` |
+| Paginated duplicates (`?page=2`) | Set `alternates.canonical` to page-1 URL |
+| Staging / preview environments | Handle via `X-Robots-Tag: noindex` at middleware level, not per-page `robots` |
+
+### Canonical URL Rules
+
+- Always use absolute, brand-resolved canonical URLs.
+- Derive the base via `normalizeSiteUrl()` — never interpolate `process.env.NEXT_PUBLIC_SITE_URL` directly in page files.
+- For paginated list pages, canonical must point to the first page (`/blog`, not `/blog?page=1`).
+- Dynamic segments must produce stable slugs: `/models/{categorySlug}/{modelSlug}` not `/models/chat-completion/gpt-4`.
+- For pages that can be reached at multiple paths, always emit the canonical pointing to the preferred path.
+
+### `metadataBase` Requirement
+
+Set `metadataBase` once in the root `src/app/layout.tsx` via `generateMetadata`. All relative OG/Twitter image URLs resolve against this base. Never omit it — Next.js emits a warning and social cards fail silently.
+
+### SEO Anti-Patterns (Forbidden)
+
+- Missing or empty `openGraph.images` array on any public content page.
+- `openGraph.images` entries without explicit `width`, `height`, and `alt`.
+- Hardcoded domain strings (`"https://dryapi.dev"`, `"https://genfix.ai"`) in `generateMetadata` — always use `normalizeSiteUrl()`.
+- JSON-LD components placed in `layout.tsx` without `scriptId` — this causes duplicate injection on navigation.
+- JSON-LD in `head.js` in the App Router — use `page.tsx` only.
+- `twitter.card` set to `"summary"` for content pages — always use `"summary_large_image"`.
+- Identical `title` and `openGraph.title` when the page has a richer social title opportunity.
+- `noindex` set on pages that should be indexed (e.g., pricing, blog, model pages).
+- Omitting `alternates.canonical` on dynamic routes — Google may pick the wrong URL as canonical.
 
 ## UI and Frontend Guidelines
 
@@ -121,6 +405,46 @@ Compatibility requirements:
   - Prioritize nav items, section headers, CTA rows, metadata chips, status blocks, and feature lists.
   - Prefer `lucide-react` icons and keep sizing consistent (`size-4` inline, `size-5` for emphasis).
   - Pair icons with text labels (avoid ambiguous icon-only affordances unless accessibility labels are explicit).
+
+### Design Principles and UX Best Practices
+
+- Design for decisions, not decoration. Every section should help users answer: what is this, why should I care, and what do I do next.
+- Keep first-screen clarity high: communicate audience, value, and primary action within the first viewport.
+- Establish hierarchy with intent:
+  - One dominant heading.
+  - One primary CTA.
+  - Secondary actions visually de-emphasized.
+- Improve readability before adding novelty:
+  - Strong contrast for key text.
+  - Predictable spacing rhythm.
+  - Comfortable line lengths.
+- Use progressive disclosure for dense information:
+  - Start with summary metrics.
+  - Reveal detail with drilldowns, accordions, tabs, or linked detail pages.
+- Reduce cognitive load in forms and filters:
+  - Use clear labels and sensible defaults.
+  - Group related controls.
+  - Provide an obvious reset path.
+- Keep state explicit across interactive views:
+  - Loading, error, empty, and success states must each have distinct, actionable UI.
+- Prioritize accessibility as part of baseline quality:
+  - Keyboard navigable controls.
+  - Visible focus rings.
+  - WCAG-conscious color contrast.
+  - Semantic headings and landmarks.
+- Prevent layout instability:
+  - Reserve space for dynamic content.
+  - Keep loading and loaded geometry aligned.
+- Use motion sparingly and purposefully:
+  - Short entry transitions that reinforce hierarchy.
+  - No decorative animation that delays comprehension.
+- Prefer reusable patterns over page-specific hacks:
+  - Build shared section shells and companion skeleton components.
+  - Brandify through tokens/content, not repeated markup forks.
+- Validate across breakpoints and interaction modes:
+  - Mobile and desktop visual checks.
+  - Keyboard-only navigation checks.
+  - Hover and non-hover input paths.
 - For field-level value transfer actions (for example API keys, slugs, IDs):
   - Do not render visible `Copy` text on buttons.
   - Use an icon control (`Copy` icon) with accessible labeling (`aria-label`).
@@ -494,12 +818,14 @@ Use these rules for all transactional, lifecycle, internal alert, and marketing/
   - shared layout/primitives
   - flow-specific templates
 - Every template must work as a standalone render with explicit props. Do not make templates depend on browser APIs, client hooks, or runtime-only UI state.
+- Prefer `resolveCurrentEmailBranding()` or `buildEmailBranding()` from `src/emails/brand.ts` when a template or sender needs brand URLs, theme tokens, display names, or support addresses.
 - Brand identity must come from the existing brand system and site content:
   - `src/lib/brand-catalog.ts`
   - `src/lib/site-content-loader.ts`
   - `content/site/**`
   - `content/brands/**`
 - Do not hardcode `dryAPI` into reusable templates when the brand can be derived from current brand/site config.
+- Keep the underlying service inventory consistent across brands in reusable email flows. Adjust persona framing, offer packaging, and pricing by brand without inventing unsupported brand-only products in copy.
 
 ### Deliverability and Rendering
 
@@ -542,6 +868,7 @@ Use these rules for all transactional, lifecycle, internal alert, and marketing/
   - feature announcement
   - re-engagement
   - upgrade offer
+- Campaign variants may change price points, persona emphasis, and CTA framing by brand, but they should still describe the same underlying platform capabilities unless the product catalog intentionally differs.
 - Avoid deceptive urgency, vague claims, or copy that reads like generic SaaS spam.
 - Use short sections, scannable bullets, and proof-oriented copy rather than long prose blocks.
 
@@ -599,11 +926,11 @@ Additional gateway and docs guidance:
   - Proxy validated requests to the internal Next/OpenNext runtime (configurable via `ORIGIN_URL` and `INTERNAL_API_KEY`) so inference routing and billing logic can remain in server code.
 
 - Docs integration and build-time artifact:
-  - The docs site uses Fumadocs with MDX content generated into `src/content/**` by `scripts/sync-deapi-docs.mjs` and loaded through `source.config.ts` plus `src/lib/docs/source.ts`.
+  - The docs site uses Fumadocs with MDX content generated into `src/content/**` by `scripts/sync-deapi-docs.ts` and loaded through `source.config.ts` plus `src/lib/docs/source.ts`.
   - Keep `/docs` and `/[lang]/docs` in sync. Default locale docs stay unprefixed; non-default locales use the prefixed routes.
   - Preserve the local `/openapi.json` Next route as a same-origin mirror of `docs/deapi-mirror/articles/openapi.json` so docs previews work during Next-only development.
   - Keep the interactive OpenAPI preview available through the MDX component registered in `mdx-components.tsx` (example: `src/components/docs/OpenApiViewer.tsx`) and the generated Fumadocs OpenAPI reference under `/docs/v1/api-reference`.
-  - Add a prebuild step that generates an `content/llm-text.txt` artifact containing the API base and summary (script: `scripts/generate-llm-text.mjs`). The prebuild hook runs before `pnpm build` so the site deploy bundle includes the LLM text.
+  - Add a prebuild step that generates an `content/llm-text.txt` artifact containing the API base and summary (script: `scripts/generate-llm-text.ts`). The prebuild hook runs before `pnpm build` so the site deploy bundle includes the LLM text.
 
 ## RunPod Unit Economics and Profitability Rules
 
@@ -878,7 +1205,7 @@ Design around conservative write throughput per database and keep sustained writ
 - Test Pyramid (recommended):
   - **Unit tests (heaviest):** Fast, isolated, and numerous. Cover pure functions, components, and utility logic. Run with `vitest`/`pnpm test`; colocate tests next to code.
   - **Integration tests (middle):** Exercise interactions between modules, DB, workers, and API layers while keeping external dependencies mocked or using dedicated test fixtures. Use separate integration test jobs and dedicated commands where appropriate.
-  - **End-to-end (E2E) tests (thin):** Focus on critical user flows (auth, billing/checkout, inference dispatch). Keep these few, reliable, and expensive — run them on gated CI pipelines or nightly schedules (Playwright recommended).
+  - **End-to-end (E2E) tests (thin):** Focus on critical user flows (auth, billing/checkout, inference dispatch). Keep these few, reliable, and expensive — run them on gated CI pipelines or nightly schedules. Use Stagehand + Vitest for browser-based E2E flows; use Vitest with native `fetch` for pure API/worker E2E flows.
 
 - Minimum local/PR checks:
   - Run `pnpm lint` and `pnpm test` before opening a PR.
@@ -912,10 +1239,149 @@ Design around conservative write throughput per database and keep sustained writ
 - Commands and verification:
   - Quick local checks: `pnpm lint && pnpm test`
   - Cloudflare worker integration: run the recommended integration test command when touching worker code (see the 'Cloudflare API integration test command' section).
-  - For E2E Playwright flows, use the project's Playwright scripts and review video/artifacts when failures occur.
+  - For browser E2E flows, use Stagehand + Vitest; review console output and any saved screenshots when failures occur.
 
 - PR acceptance:
   - Pull requests must include the test commands used, a short test plan, and evidence that tests pass locally and on CI.
+
+## Stagehand E2E Testing Guidelines
+
+This project uses `@browserbasehq/stagehand` (v3) for browser-based end-to-end automation. Stagehand wraps Playwright with AI-driven natural language actions. It is not a test runner — pair it with Vitest.
+
+### When to use Stagehand
+
+- Use Stagehand for browser-based E2E flows: auth sign-up/sign-in, dashboard interactions, billing/checkout UI, model playground, and account management.
+- Do not use Stagehand for pure HTTP API tests. Those stay as Vitest tests with native `fetch`.
+- Do not use Stagehand for unit or integration tests — it is expensive, slow, and requires a browser.
+
+### Initialization and teardown
+
+Always initialize once per test file or suite and close after all tests complete.
+
+```ts
+import { afterAll, beforeAll, describe, it } from "vitest"
+import { Stagehand } from "@browserbasehq/stagehand"
+
+let stagehand: Stagehand
+
+beforeAll(async () => {
+  stagehand = new Stagehand({
+    env: "LOCAL",                    // LOCAL for CI/dev; BROWSERBASE for cloud
+    headless: true,
+    modelName: "gpt-4o",             // or "claude-3-5-sonnet-20241022"
+    modelClientOptions: {
+      apiKey: process.env["OPENAI_API_KEY"],
+    },
+    verbose: 0,                      // set to 1 only during debugging
+  })
+  await stagehand.init()
+})
+
+afterAll(async () => {
+  await stagehand.close()
+})
+```
+
+- Always call `await stagehand.close()` in `afterAll`; failure to do so leaks browser processes.
+- Use `env: "LOCAL"` for local development and CI pipelines. Use `env: "BROWSERBASE"` only for remote/cloud runs that require a persistent session or specific browser configuration.
+- Use `headless: true` in CI. Never commit `headless: false`.
+- Keep `verbose: 0` by default; enable `verbose: 1` only while actively debugging a failing test.
+
+### Core API usage
+
+**`act`** — perform a browser interaction described in plain language:
+
+```ts
+await stagehand.act({ action: "click the Sign In button" })
+await stagehand.act({ action: 'fill in the email field with "user@example.com"' })
+await stagehand.act({ action: "submit the login form" })
+```
+
+- Keep each `act` call atomic: one logical action per call.
+- Be specific enough to be unambiguous but not so verbose that the LLM over-constrains its selector search.
+- For sensitive data in `act` strings, pass a variable reference — never construct a string with a real secret or PII inline.
+
+**`extract`** — pull structured data from the current page:
+
+```ts
+const result = await stagehand.extract({
+  instruction: "extract the current credit balance shown on the billing page",
+  schema: z.object({ balance: z.string() }),
+})
+```
+
+- Always provide a `schema` (Zod) to get typed, validated output.
+- Use `extract` for assertions about page state instead of brittle CSS selectors.
+
+**`observe`** — dry-run an action to inspect what Stagehand would do without executing it:
+
+```ts
+const actions = await stagehand.observe({
+  instruction: "click the top-up button",
+})
+```
+
+- Use `observe` before `act` when uncertainty is high: unfamiliar pages, dynamic content, or unstable layouts.
+- `observe` output is useful for debugging; do not ship tests that rely on it for flow control.
+
+**`page`** — direct Playwright `Page` access for operations that do not need AI:
+
+```ts
+await stagehand.page.goto("http://localhost:3000/dashboard")
+await stagehand.page.waitForURL("**/dashboard")
+const url = stagehand.page.url()
+```
+
+- Prefer `page.goto` and `page.waitForURL` for navigation — these are deterministic and do not cost an LLM call.
+- Use `page.screenshot` only for debugging; remove screenshot calls before merging.
+
+### Test structure conventions
+
+- One Stagehand instance per `describe` block (or per file for small suites). Do not create a new instance per `it`.
+- Navigate to a known starting URL at the start of each `it` to keep tests independent:
+
+```ts
+it("should display balance after top-up", async () => {
+  await stagehand.page.goto(`${BASE_URL}/dashboard/billing`)
+  // ... act + extract assertions
+})
+```
+
+- Use `vitest`'s `expect` for assertions on extracted data; do not invent custom assertion helpers.
+- Keep test data deterministic: use fixed test accounts set up in `globalSetup`, not random state.
+
+### Local vs Browserbase environments
+
+| Setting | Local (CI/dev) | Browserbase (cloud) |
+| --- | --- | --- |
+| `env` | `"LOCAL"` | `"BROWSERBASE"` |
+| `headless` | `true` | managed by platform |
+| Required env vars | none (beyond LLM key) | `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID` |
+| Use case | unit CI pipeline E2E gate | remote cross-browser, persistent session |
+
+- Set `BROWSERBASE_API_KEY` and `BROWSERBASE_PROJECT_ID` via worker secrets or CI environment variables. Never commit them.
+- Do not run Browserbase sessions in local dev unless explicitly needed; they are billed per minute.
+
+### Model selection
+
+- Default to `gpt-4o` for general-purpose browser automation tasks.
+- Use `claude-3-5-sonnet-20241022` when multi-step reasoning over complex page layouts is needed.
+- Do not use models smaller than GPT-4 class for `act` or `extract`; accuracy degrades noticeably on dynamic UI.
+- Set the model API key via `modelClientOptions.apiKey` from an environment variable — never hardcode it.
+
+### Security and privacy rules
+
+- Never call `act` with a string that contains a real API key, password, or secret value — use a variable reference for the value and keep the action instruction generic.
+- Do not screenshot pages that show account credentials, billing details, or personal data unless the screenshot is ephemeral and debug-gated.
+- Do not log `stagehand` instance config objects — they may contain API keys in `modelClientOptions`.
+- Keep test-account credentials in environment variables (`E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`); never hardcode them in test files.
+
+### Performance and flakiness
+
+- Add `page.waitForURL` or `page.waitForSelector` after navigations before issuing `act` or `extract` — Stagehand does not automatically await page stability.
+- Cap per-test timeout at 60s for simple flows; 120s for checkout or multi-step flows.
+- If a test is consistently flaky, add an `observe` step to inspect what the AI sees before the failing `act`, then tighten the instruction or add an explicit wait.
+- Do not retry `act` calls in a loop — fix the instruction instead.
 
 ## Guardrails
 

@@ -17,9 +17,10 @@ type TinaDocument<TData> = {
 type TinaBlogPostPageProps = {
   siteDocument: TinaDocument<{ siteConfig: SiteConfig }>
   postDocument: TinaDocument<{ blogPosts: BlogPost }>
+  activeModel?: { displayName: string; playgroundHref: string }
 }
 
-export function TinaBlogPostPage({ siteDocument, postDocument }: TinaBlogPostPageProps) {
+export function TinaBlogPostPage({ siteDocument, postDocument, activeModel }: TinaBlogPostPageProps) {
   const { data: siteData } = useTina({
     query: siteDocument.query,
     variables: siteDocument.variables,
@@ -37,7 +38,7 @@ export function TinaBlogPostPage({ siteDocument, postDocument }: TinaBlogPostPag
 
   return (
     <SiteFrame site={siteData.siteConfig}>
-      <BlogPostPageTemplate post={postData.blogPosts} site={siteData.siteConfig} />
+      <BlogPostPageTemplate activeModel={activeModel} post={postData.blogPosts} site={siteData.siteConfig} />
     </SiteFrame>
   )
 }

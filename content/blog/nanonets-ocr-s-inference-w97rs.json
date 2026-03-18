@@ -1,0 +1,437 @@
+{
+  "slug": "nanonets-ocr-s-inference-w97rs",
+  "title": "Integrating Nanonets OCR S Inference API for High-Throughput Document Processing",
+  "excerpt": "A technical guide for experienced API teams on deploying and optimizing the Nanonets OCR S inference API in production, covering setup, performance, and error handling.",
+  "seoTitle": "Integrating Nanonets OCR S Inference API for High-Throughput Docum",
+  "seoDescription": "Learn how to effectively use the Nanonets OCR S inference API with practical steps for authentication, request formatting, and performance optimization in rea",
+  "seoKeywords": [
+    "Nanonets OCR S inference api",
+    "Nanonets OCR S api",
+    "Nanonets OCR S pricing",
+    "Nanonets OCR S inference",
+    "Nanonets OCR S benchmark"
+  ],
+  "canonicalPath": "/blog/nanonets-ocr-s-inference-w97rs",
+  "ogImage": "https://picsum.photos/seed/nanonets-ocr-s-inference-w97rs-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-13",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/nanonets-ocr-s-inference-w97rs-cover/1600/900",
+  "tags": [
+    "Image To Text",
+    "Nanonets OCR S",
+    "AI API",
+
+    "model:Nanonets_Ocr_S_F16",
+    "keyword:nanonets ocr s inference api"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For API teams requiring reliable optical character recognition, the Nanonets OCR S inference API provides a scalable solution. This draft focuses on practical implementation details to streamline integration and ensure robust performance in production systems."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Setting Up Nanonets OCR S Inference API"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Begin by obtaining API credentials from the Nanonets dashboard. Use HTTPS for all requests and include your API key in the header. Example curl command:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "bash",
+        "value": "curl -X POST https://api.nanonets.com/v2/ocr/s \\\n  -H 'Authorization: Basic YOUR_API_KEY' \\\n  -F 'file=@document.pdf'",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "curl -X POST https://api.nanonets.com/v2/ocr/s \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -H 'Authorization: Basic YOUR_API_KEY' \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -F 'file=@document.pdf'"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Ensure your environment supports multipart/form-data for file uploads and handle responses with appropriate error checking."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "API Request and Response Structure"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The Nanonets OCR S inference API accepts POST requests with image or PDF files. Key parameters include:"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Parameter"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Type"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Required"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Description"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "file"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "binary"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Yes"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Image or PDF file for OCR processing"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "api_key"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "string"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Yes"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Authentication key in header"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "model_id"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "string"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "No"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Specific model version (default: S)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Responses return JSON with extracted text, confidence scores, and bounding boxes. Parse the "
+          },
+          {
+            "type": "text",
+            "text": "results",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " array for structured data output."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Optimizing Inference Performance"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "To minimize latency, preprocess images to recommended resolutions (e.g., 300 DPI) and use batch endpoints for multiple files. Monitor API usage via headers like "
+          },
+          {
+            "type": "text",
+            "text": "X-RateLimit-Remaining",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " and implement exponential backoff for retries. Benchmark with tools like Apache JMeter to assess throughput under load."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Handling Errors and Edge Cases"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Common HTTP status codes include 400 for invalid requests, 401 for authentication failures, and 429 for rate limits. Log errors with request IDs for debugging. For low-confidence results, implement fallback mechanisms such as manual review or alternative OCR models to maintain accuracy."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -58,6 +58,8 @@ interface Env {
   STRIPE_METER_EVENT_WORKFLOW_DISPATCH?: string;
   STRIPE_METER_EVENT_WORKFLOW_RUN?: string;
   STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST?: string;
+  SITE_BRAND_KEY?: string;
+  DRYAPI_BRAND_KEY?: string;
   BREVO_API_KEY?: string;
   BREVO_FROM_EMAIL?: string;
   BREVO_FROM_NAME?: string;
@@ -160,6 +162,19 @@ function stringifyStripeDimensionValue(value: StripeMeterMetadataValue): string 
   return String(value).trim().slice(0, 120);
 }
 
+function resolveStripeBrandKey(env: Env, metadata: Record<string, StripeMeterMetadataValue> | undefined): string {
+  const explicit = metadata?.dryapi_brand_key;
+  if (explicit !== undefined && explicit !== null) {
+    const normalized = String(explicit).trim().toLowerCase();
+    if (normalized) {
+      return normalized.slice(0, 40);
+    }
+  }
+
+  const fromEnv = (env.SITE_BRAND_KEY || env.DRYAPI_BRAND_KEY || "dryapi").trim().toLowerCase();
+  return (fromEnv || "dryapi").slice(0, 40);
+}
+
 function normalizeStripeMeterValue(value: number | undefined): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return 1;
@@ -215,6 +230,7 @@ async function recordStripeMeterUsage(
   payload.set("payload[value]", String(value));
   payload.set("payload[stripe_customer_id]", customerId);
   payload.set("payload[project_key]", projectKey);
+  payload.set("payload[dryapi_brand_key]", resolveStripeBrandKey(env, input.metadata));
   payload.set("timestamp", String(timestamp));
   payload.set("identifier", identifier);
 

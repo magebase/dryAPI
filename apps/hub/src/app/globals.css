@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root {
+  --bg-page: #f2f2f2;
+  --bg-section: #ececec;
+  --surface: #f8f8f8;
+  --surface-strong: #ffffff;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-muted: #7a7a7a;
+  --line-soft: #dfdfdf;
+  --hero-a: #2563eb;
+  --hero-b: #7c3aed;
+  --cta-a: #111111;
+  --radius: 12px;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-inter, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}

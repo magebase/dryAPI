@@ -33,7 +33,7 @@ export async function persistQuoteRequest(
 
   try {
     const { env } = await getCloudflareContext({ async: true });
-    quoteDb = resolveQuoteDbBinding(env);
+    quoteDb = resolveQuoteDbBinding(env as unknown as Record<string, unknown>);
   } catch {
     if (process.env.NODE_ENV === "production") {
       throw new Error("Cloudflare context is unavailable.");

@@ -1,0 +1,720 @@
+{
+  "slug": "ltx-2-3-22b-distilled-int8-llm-examples-api-guide-qe4q0",
+  "title": "Deploying LTX-2.3 22B Distilled INT8: LLM API Examples for Production Teams",
+  "excerpt": "A concise technical guide providing practical API integration examples and best practices for the LTX-2.3 22B Distilled INT8 model, tailored for experienced development teams.\n\nKeyword focus: LTX-2.3 22B Distilled INT8 llm api examples.",
+  "seoTitle": "Deploying LTX-2.3 22B Distilled INT8: LLM API Examples for Product",
+  "seoDescription": "Discover how to implement the LTX-2.3 22B Distilled INT8 LLM API with real-world examples, optimization tips, and deployment strategies for production environ",
+  "seoKeywords": [
+    "LTX-2.3 22B Distilled INT8 llm api examples",
+    "LTX-2.3 22B Distilled INT8 api",
+    "LTX-2.3 22B Distilled INT8 pricing",
+    "LTX-2.3 22B Distilled INT8 inference",
+    "LTX-2.3 22B Distilled INT8 benchmark"
+  ],
+  "canonicalPath": "/blog/ltx-2-3-22b-distilled-int8-llm-examples-api-guide-qe4q0",
+  "ogImage": "https://picsum.photos/seed/ltx-2-3-22b-distilled-int8-llm-examples-api-guide-qe4q0-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-09",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/ltx-2-3-22b-distilled-int8-llm-examples-api-guide-qe4q0-cover/1600/900",
+  "tags": [
+    "Image To Video",
+    "LTX-2.3 22B Distilled INT8",
+    "AI API",
+
+    "model:Ltx2_3_22B_Dist_INT8",
+    "keyword:ltx 2 3 22b distilled int8 llm api examples"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For API teams looking to leverage efficient large language models, the LTX-2.3 22B Distilled INT8 offers a compelling balance of performance and resource efficiency. This post provides practical LTX-2.3 22B Distilled INT8 LLM API examples to streamline integration into production workflows."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Model Overview and Specifications"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The LTX-2.3 22B Distilled INT8 is a distilled version of a 22-billion parameter model, quantized to INT8 precision. This reduces memory footprint by approximately 75% compared to FP32, enabling faster inference and lower operational costs. Key specifications include:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Parameters: 22 billion"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Quantization: INT8"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Context Length: 4096 tokens"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Inference Speed: Up to 2x faster than FP16 variants on compatible hardware"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "LTX-2.3 22B Distilled INT8 LLM API Examples"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integrating the model via API is straightforward. Below are examples using Python with the "
+          },
+          {
+            "type": "text",
+            "text": "requests",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " library."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Basic Text Generation:",
+            "bold": true
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "python",
+        "value": "import requests\n\nAPI_ENDPOINT = \"https://api.example.com/v1/models/ltx2_3_22b_dist_int8/generate\"\nheaders = {\"Authorization\": \"Bearer YOUR_API_KEY\"}\npayload = {\n    \"prompt\": \"Explain the benefits of distilled models in production.\",\n    \"max_tokens\": 150,\n    \"temperature\": 0.7\n}\n\nresponse = requests.post(API_ENDPOINT, json=payload, headers=headers)\nprint(response.json()[\"text\"])",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import requests"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "API_ENDPOINT = \"https://api.example.com/v1/models/ltx2_3_22b_dist_int8/generate\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "headers = {\"Authorization\": \"Bearer YOUR_API_KEY\"}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "payload = {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"prompt\": \"Explain the benefits of distilled models in production.\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"max_tokens\": 150,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"temperature\": 0.7"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "response = requests.post(API_ENDPOINT, json=payload, headers=headers)"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "print(response.json()[\"text\"])"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Batch Processing Example:",
+            "bold": true
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For high-throughput scenarios, use batched requests to reduce latency."
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "python",
+        "value": "prompts = [\"Prompt 1\", \"Prompt 2\", \"Prompt 3\"]\nbatch_payload = {\"prompts\": prompts, \"max_tokens\": 100}\nresponse = requests.post(API_ENDPOINT + \"/batch\", json=batch_payload, headers=headers)",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "prompts = [\"Prompt 1\", \"Prompt 2\", \"Prompt 3\"]"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "batch_payload = {\"prompts\": prompts, \"max_tokens\": 100}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "response = requests.post(API_ENDPOINT + \"/batch\", json=batch_payload, headers=headers)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Performance Tuning and Best Practices"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Optimize API calls by adjusting parameters based on use case. The table below summarizes key parameters:"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Parameter"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Description"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Default Value"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Recommended for Production"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "max_tokens"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Maximum tokens to generate"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "100"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Set based on output needs"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "temperature"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Controls randomness"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1.0"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.5-0.8 for deterministic"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "top_p"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nucleus sampling threshold"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1.0"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.9 for balanced output"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "batch_size"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Number of prompts per batch request"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "10-50 for efficiency"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Additional tips:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Implement retry logic with exponential backoff for transient errors."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Cache frequent prompts to reduce API calls."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Monitor token usage to manage costs."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Deployment and Scaling Strategies"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Deploy the API in a containerized environment like Kubernetes for scalability. Use auto-scaling based on request latency and throughput metrics. Ensure health checks are configured to maintain availability. For global distribution, consider multi-region deployments with load balancers."
+          }
+        ]
+      }
+    ]
+  }
+}

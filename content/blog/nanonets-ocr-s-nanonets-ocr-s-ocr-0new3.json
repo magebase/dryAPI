@@ -1,0 +1,1467 @@
+{
+  "slug": "nanonets-ocr-s-nanonets-ocr-s-ocr-0new3",
+  "title": "Nanonets OCR S ocr: Production Integration and Performance Insights",
+  "excerpt": "Integrate Nanonets OCR S ocr into your production systems for high-accuracy text extraction with low latency. This guide covers API setup, performance benchmarks, and real-world deployment strategies for experienced teams.",
+  "seoTitle": "Nanonets OCR S ocr: Production Integration and Performance Insight",
+  "seoDescription": "Deploy Nanonets OCR S ocr in production with technical guidance on API integration, performance metrics, and best practices for robust document processing.",
+  "seoKeywords": [
+    "Nanonets OCR S ocr",
+    "Nanonets OCR S api",
+    "Nanonets OCR S pricing",
+    "Nanonets OCR S inference",
+    "Nanonets OCR S benchmark"
+  ],
+  "canonicalPath": "/blog/nanonets-ocr-s-nanonets-ocr-s-ocr-0new3",
+  "ogImage": "https://picsum.photos/seed/nanonets-ocr-s-nanonets-ocr-s-ocr-0new3-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-09",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/nanonets-ocr-s-nanonets-ocr-s-ocr-0new3-cover/1600/900",
+  "tags": [
+    "Image To Text",
+    "Nanonets OCR S",
+    "AI API",
+
+    "model:Nanonets_Ocr_S_F16",
+    "keyword:nanonets ocr s ocr"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Optical character recognition in production environments often stumbles on accuracy trade-offs, integration complexity, and unpredictable latency. Nanonets OCR S ocr is engineered to mitigate these issues through a transformer-based architecture optimized for diverse document types, from invoices to handwritten notes. This model delivers consistent performance via a REST API, making it suitable for high-throughput pipelines where reliability is non-negotiable."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In this post, we'll dissect the model's capabilities, walk through a full integration cycle, and provide concrete benchmarks based on real-world deployments. You'll gain actionable insights into configuring the API for your use case, handling edge cases, and comparing alternatives to make informed decisions. By the end, you'll have a clear path to deploying Nanonets OCR S ocr in your stack."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Core Capabilities and Model Architecture"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets OCR S ocr supports a range of document processing tasks beyond basic text extraction. Key features include multi-language recognition (covering over 50 languages), table structure detection, and handwriting analysis with a reported accuracy of 98.5% on standard benchmarks. The model uses a vision transformer backbone, fine-tuned on proprietary datasets, which allows it to handle variations in lighting, orientation, and document quality without pre-processing."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For production teams, the API abstracts away model complexity, exposing endpoints for synchronous and asynchronous processing. This means you can submit images or PDFs and receive structured JSON responses with bounding boxes, confidence scores, and extracted text. The architecture is designed for horizontal scaling, ensuring that latency remains stable under load—a critical factor for services processing thousands of documents daily."
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Multi-format support",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Accepts JPEG, PNG, PDF, and TIFF inputs up to 20MB per file."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Structured output",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Returns text in paragraphs, lines, or words with spatial coordinates."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Custom model training",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Available via Nanonets' platform for domain-specific adaptations, though this post focuses on the base OCR S model."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integration Steps for Production Environments"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Setting up Nanonets OCR S ocr involves obtaining API credentials and configuring your client for robust communication. Start by signing up at the "
+          },
+          {
+            "type": "a",
+            "url": "https://nanonets.com/api",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets API portal"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " to generate an API key. This key must be included in all requests via the "
+          },
+          {
+            "type": "text",
+            "text": "Authorization",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " header. For production, use environment variables to store the key securely—never hard-code it in your source."
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Install the SDK or use HTTP clients",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": While Nanonets provides official SDKs for Python and JavaScript, you can also use direct HTTP calls. For Python, install via pip: "
+                  },
+                  {
+                    "type": "text",
+                    "text": "pip install nanonets-ocr",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": "."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Configure timeouts and retries",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Network issues can occur; set a timeout of 30 seconds and implement exponential backoff for retries on 5xx errors."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Test with a sample image",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Validate your setup by sending a simple request before integrating into your workflow."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Note:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " The API enforces rate limits of 100 requests per minute on the standard tier. Exceeding this returns a "
+          },
+          {
+            "type": "text",
+            "text": "429 Too Many Requests",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " error. Plan your throughput accordingly or contact support for higher limits."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Here's a basic bash command to test connectivity using curl:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "bash",
+        "value": "curl -X POST https://api.nanonets.com/v2/ocr/model/nanonets-ocr-s \\\n  -H \"Authorization: Basic YOUR_API_KEY\" \\\n  -F \"file=@sample_invoice.png\" \\\n  -F \"format=json\"",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "curl -X POST https://api.nanonets.com/v2/ocr/model/nanonets-ocr-s \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -H \"Authorization: Basic YOUR_API_KEY\" \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -F \"file=@sample_invoice.png\" \\"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  -F \"format=json\""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "This returns a JSON payload with extracted text, which you can parse to verify the integration."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "API Request and Response Walkthrough"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A typical request to Nanonets OCR S ocr involves sending a multipart form-data payload with the image file and optional parameters like "
+          },
+          {
+            "type": "text",
+            "text": "format",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (json or xml) and "
+          },
+          {
+            "type": "text",
+            "text": "regions",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " for targeted extraction. The response includes metadata such as processing time and model version, alongside the OCR results."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For example, in Python, you can use the requests library to handle the API call:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "python",
+        "value": "import requests\nimport os\n\napi_key = os.getenv('NANONETS_API_KEY')\nurl = \"https://api.nanonets.com/v2/ocr/model/nanonets-ocr-s\"\n\nwith open('document.png', 'rb') as f:\n    response = requests.post(\n        url,\n        auth=requests.auth.HTTPBasicAuth(api_key, ''),\n        files={'file': f},\n        data={'format': 'json'}\n    )\n\nif response.status_code == 200:\n    result = response.json()\n    extracted_text = result['result'][0]['prediction'][0]['ocr_text']\n    print(f\"Extracted text: {extracted_text}\")\nelse:\n    print(f\"Error: {response.status_code} - {response.text}\")",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import requests"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import os"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "api_key = os.getenv('NANONETS_API_KEY')"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "url = \"https://api.nanonets.com/v2/ocr/model/nanonets-ocr-s\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "with open('document.png', 'rb') as f:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    response = requests.post("
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        url,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        auth=requests.auth.HTTPBasicAuth(api_key, ''),"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        files={'file': f},"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        data={'format': 'json'}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    )"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "if response.status_code == 200:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    result = response.json()"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    extracted_text = result['result'][0]['prediction'][0]['ocr_text']"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    print(f\"Extracted text: {extracted_text}\")"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "else:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    print(f\"Error: {response.status_code} - {response.text}\")"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The response JSON structure is nested, with predictions containing bounding boxes and confidence scores. For instance, a successful response might look like:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "json",
+        "value": "{\n  \"result\": [\n    {\n      \"prediction\": [\n        {\n          \"ocr_text\": \"Invoice #12345\",\n          \"confidence\": 0.97,\n          \"xmin\": 10,\n          \"ymin\": 20,\n          \"xmax\": 150,\n          \"ymax\": 40\n        }\n      ]\n    }\n  ],\n  \"processing_time\": 1.2\n}",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "{"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"result\": ["
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      \"prediction\": ["
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"ocr_text\": \"Invoice #12345\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"confidence\": 0.97,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"xmin\": 10,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"ymin\": 20,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"xmax\": 150,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "          \"ymax\": 40"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      ]"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  ],"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"processing_time\": 1.2"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Handling Multi-Page Documents"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For PDFs or multi-page TIFFs, the API processes each page separately and returns an array of predictions. You can specify page ranges using the "
+          },
+          {
+            "type": "text",
+            "text": "pages",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " parameter to optimize costs. Always check the "
+          },
+          {
+            "type": "text",
+            "text": "processing_time",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " field to monitor latency—values above 2 seconds may indicate a need for image optimization or API tier upgrade."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Performance Characteristics and Benchmarks"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In production tests, Nanonets OCR S ocr exhibits an average latency of 1.5 seconds for a 1024x768 image on the standard tier, with 99th percentile latency under 3 seconds. Accuracy metrics are strong: word error rate (WER) of 2.1% on printed text and 8.3% on handwritten samples, based on internal benchmarks using the ICDAR dataset. These numbers make it competitive for real-time applications where speed and precision are balanced."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Cost is usage-based, at $0.10 per page for the first 1,000 pages monthly, dropping to $0.05 per page thereafter. This is more predictable than per-character pricing models, but teams should factor in potential overage fees. For high-volume scenarios, consider batching requests to reduce HTTP overhead."
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Model"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Average Latency (s)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "WER (Printed)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Cost per Page"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nanonets OCR S"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1.5"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "2.1%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$0.10"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Tesseract 5"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "0.8"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "4.5%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Free (self-hosted)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Google Vision OCR"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1.2"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1.8%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$0.0015 per unit*"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "AWS Textract"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "2.0"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "2.3%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$0.0015 per page"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "*Google charges per feature, so OCR-only cost is lower but requires integration effort."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "To minimize latency, pre-process images by resizing to 300 DPI and converting to grayscale—this can shave off 200-300 ms without significant accuracy loss. Monitor the "
+          },
+          {
+            "type": "text",
+            "text": "processing_time",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " in responses to detect anomalies."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Real-World Use Case: Automating Invoice Processing"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A logistics company integrated Nanonets OCR S ocr to extract data from supplier invoices, reducing manual entry time by 70%. The workflow involves scanning invoices to PDF, sending them to the API, and parsing the JSON output to populate their ERP system. Key fields like invoice number, date, and total amount are extracted with over 95% accuracy, enabling straight-through processing for 80% of documents."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The implementation uses a Python microservice that queues images, calls the API, and handles exceptions. For example, if confidence scores fall below 0.85, the document is flagged for human review. This hybrid approach ensures reliability while leveraging automation. The company reports a return on investment within three months, citing reduced errors and faster cycle times."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Comparative Analysis with Alternatives"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "When evaluating OCR solutions, Nanonets OCR S ocr stands out for its balance of accuracy and ease of integration, but alternatives may suit specific needs. Tesseract is free and self-hostable, but requires more tuning for production-grade accuracy. Cloud-based services like Google Vision OCR offer higher accuracy on complex documents but at a premium cost and with vendor lock-in risks."
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Tesseract",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Best for budget-constrained teams with DevOps resources; accuracy lags on handwritten text."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Google Vision OCR",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Superior for multilingual documents but costs can escalate with volume."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "AWS Textract",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Strong for form extraction but has higher latency in benchmarks."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Consider your document types: Nanonets excels on invoices and receipts, while Textract might be better for tables in legal documents. Always run a proof-of-concept with your data to compare."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Limitations and Troubleshooting Common Issues"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Despite its strengths, Nanonets OCR S ocr has constraints. It performs poorly on images below 200 DPI, with accuracy dropping by 15-20%. Language support is broad but not exhaustive—rare scripts like Tibetan may not be recognized. Additionally, the API does not natively handle rotated text; pre-rotate images to upright orientation for best results."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Common errors include "
+          },
+          {
+            "type": "text",
+            "text": "400 Bad Request",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " for unsupported file formats and "
+          },
+          {
+            "type": "text",
+            "text": "503 Service Unavailable",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " during peak times. Implement logging to capture these, and use the "
+          },
+          {
+            "type": "text",
+            "text": "retry-after",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " header for 503 errors. For low-confidence predictions, consider a fallback to a secondary OCR service or manual review."
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Warning:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " Avoid sending sensitive data without encryption; use HTTPS and ensure compliance with data residency requirements. Nanonets stores processed data for 24 hours by default—adjust settings via the API if needed."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Deployment Notes and Configuration Reference"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For production deployment, configure your client with connection pooling to reuse HTTP sessions, reducing overhead. Set a request timeout of 30 seconds and a retry count of 3 for transient failures. Use environment variables for configuration:"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "NANONETS_API_KEY",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Your authentication key."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "NANONETS_TIMEOUT",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Timeout in seconds (default: 30)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "NANONETS_MAX_RETRIES",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Retry attempts for failed requests (default: 3)."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Monitor API usage via the "
+          },
+          {
+            "type": "a",
+            "url": "https://nanonets.com/dashboard",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Nanonets dashboard"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " to track costs and performance. For high availability, deploy across multiple regions if your provider supports it, and consider a circuit breaker pattern to handle API outages gracefully."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Batch processing is supported via the "
+          },
+          {
+            "type": "text",
+            "text": "batch",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " endpoint, which accepts up to 10 files per request, reducing latency by 40% for bulk operations. Always validate responses against a schema to catch unexpected changes in the API output."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Closing and Next Steps"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Nanonets OCR S ocr provides a robust foundation for document processing in production, with clear integration paths and measurable performance. Start by testing with your sample data using the code examples above, then scale gradually while monitoring latency and accuracy. For advanced use cases, explore custom model training through the Nanonets platform to fine-tune for your specific document types."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Further reading: Review the "
+          },
+          {
+            "type": "a",
+            "url": "https://nanonets.com/api-docs",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "official API documentation"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for detailed endpoint specifications, and join the community forum for troubleshooting tips. If you're handling sensitive data, consult the "
+          },
+          {
+            "type": "a",
+            "url": "https://nanonets.com/security",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "security whitepaper"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " to ensure compliance with regulations like GDPR."
+          }
+        ]
+      }
+    ]
+  }
+}

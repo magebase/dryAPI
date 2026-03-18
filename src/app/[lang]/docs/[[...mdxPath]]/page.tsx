@@ -22,7 +22,7 @@ export async function generateMetadata(props: {
     notFound()
   }
 
-  return generateDocsMetadata(params.mdxPath, params.lang)
+  return await generateDocsMetadata(params.mdxPath, params.lang)
 }
 
 export default async function LocalizedDocsPage(props: {

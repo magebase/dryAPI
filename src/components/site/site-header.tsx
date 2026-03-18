@@ -24,15 +24,21 @@ export function SiteHeader({
   site: SiteConfig;
   pathname: string;
 }) {
+  const isHome = pathname === "/";
+  const isHomeRef = useRef(isHome);
+  isHomeRef.current = isHome;
   const headerRef = useRef<HTMLElement | null>(null);
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [hasScrolled, setHasScrolled] = useState(!isHome);
+  const [scrollProgress, setScrollProgress] = useState(isHome ? 0 : 1);
   const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null);
   const isMobileMenuOpen = mobileMenuPath === pathname;
   const utilityCtaLabel = site.header.phone.label.replace(/\s+/g, " ").trim();
+  const useSolidPalette =
+    hasScrolled || pathname.startsWith("/pricing") || pathname.startsWith("/plans") || pathname.startsWith("/models");
 
   useEffect(() => {
     const handleScroll = () => {
+      if (!isHomeRef.current) return;
       const y = window.scrollY;
       setHasScrolled(y > 18);
       setScrollProgress((current) => {
@@ -94,6 +100,17 @@ export function SiteHeader({
     };
   }, [isMobileMenuOpen]);
 
+  useEffect(() => {
+    if (isHome) {
+      const y = window.scrollY;
+      setHasScrolled(y > 18);
+      setScrollProgress(Math.min(1, Math.max(0, y / 260)));
+    } else {
+      setHasScrolled(true);
+      setScrollProgress(1);
+    }
+  }, [isHome]);
+
   const headerMotionStyle = {
     transform: `translateY(${(-4 * scrollProgress).toFixed(2)}px)`,
   };
@@ -109,7 +126,7 @@ export function SiteHeader({
     <header
       ref={headerRef}
       className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow,transform] duration-500 animate-in slide-in-from-top-24 ease-out ${
-        hasScrolled
+        useSolidPalette
           ? "border-b border-[color:var(--border)] bg-[var(--site-surface-0)]/94 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
           : "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
       }`}
@@ -117,7 +134,7 @@ export function SiteHeader({
     >
       <div
         className={`hidden text-center text-[12px] transition-[background-color,border-color,opacity,transform] duration-500 ease-out md:block ${
-          hasScrolled
+          useSolidPalette
             ? "border-b border-[color:var(--border)] bg-[var(--site-surface-0)] text-site-muted"
             : "border-b border-transparent bg-transparent text-site-inverse-muted"
         }`}
@@ -137,7 +154,7 @@ export function SiteHeader({
         }`}
       >
         <Link
-          className={`flex items-center ${hasScrolled ? "text-site-strong" : "text-site-inverse"}`}
+          className={`flex items-center ${useSolidPalette ? "text-site-strong" : "text-site-inverse"}`}
           href="/"
           style={navMotionStyle}
         >
@@ -148,7 +165,7 @@ export function SiteHeader({
             nameClassName="text-[11px]"
             nameDataTinaField={tinaField(site.brand, "name")}
             size="lg"
-            tone={hasScrolled ? "dark" : "light"}
+            tone={useSolidPalette ? "dark" : "light"}
           />
         </Link>
 
@@ -162,10 +179,10 @@ export function SiteHeader({
               data-tina-field={tinaField(link)}
               className={`rounded-sm px-2 py-1.5 text-[11px] font-medium uppercase tracking-[0.13em] transition ${
                 isCurrentPath(link.href, pathname)
-                  ? hasScrolled
+                  ? useSolidPalette
                     ? "border border-primary/45 bg-primary/15 text-primary"
                     : "border border-white/36 bg-white/10 text-site-inverse"
-                  : hasScrolled
+                  : useSolidPalette
                     ? "text-site-muted hover:bg-white/5 hover:text-[color:var(--site-text-strong)]"
                     : "text-site-inverse-muted hover:bg-white/10 hover:text-[color:var(--site-text-inverse)]"
               }`}
@@ -179,7 +196,7 @@ export function SiteHeader({
         <div className="hidden items-center gap-2 xl:flex">
           <Link
             className={`inline-flex items-center gap-2 rounded-sm px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
-              hasScrolled
+              useSolidPalette
                 ? "border border-primary/45 bg-primary/10 text-primary hover:border-accent/70 hover:text-[color:var(--site-text-strong)]"
                 : "border border-white/34 bg-white/8 text-site-inverse hover:border-white/48 hover:text-[color:var(--site-text-inverse)]"
             }`}
@@ -202,7 +219,7 @@ export function SiteHeader({
           <Link
             aria-label={utilityCtaLabel}
             className={`inline-flex items-center justify-center rounded-sm px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition ${
-              hasScrolled
+              useSolidPalette
                 ? "border border-[color:var(--border)] text-site-muted hover:border-primary/40 hover:text-[color:var(--site-text-strong)]"
                 : "border border-white/32 text-site-inverse hover:border-white/48 hover:text-[color:var(--site-text-inverse)]"
             }`}
@@ -217,7 +234,7 @@ export function SiteHeader({
             aria-expanded={isMobileMenuOpen}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             className={`inline-flex items-center justify-center rounded-sm p-2 transition ${
-              hasScrolled
+              useSolidPalette
                 ? "border border-[color:var(--border)] text-site-strong hover:border-primary/40"
                 : "border border-white/32 text-site-inverse hover:border-white/48"
             }`}

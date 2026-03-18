@@ -189,6 +189,16 @@ Tina backend endpoint:
 
 - `src/pages/api/tina/[...routes].ts`
 
+## Takumi OG Images (Programmatic)
+
+OG images are generated programmatically with Takumi and served on-demand from the OpenNext Cloudflare Worker.
+
+- OG route: `src/app/api/og/route.tsx`
+- Metadata helper: `src/lib/og/metadata.ts`
+- Templates (marketing/pricing/dashboard): `src/lib/og/templates.tsx`
+- Verification script: `pnpm og:verify`
+- Best practices: `docs/takumi-og-best-practices.md`
+
 ## OpenNext + Cloudflare Hosting Pattern
 
 Cloudflare worker config:

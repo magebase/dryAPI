@@ -25,8 +25,8 @@ class TestD1PreparedStatement {
     return { success: true }
   }
 
-  async all<T extends Record<string, unknown>>(): Promise<{ results: T[] }> {
-    const results = this.sqlite.prepare(this.query).all(...this.params) as T[]
+  async all<T>(): Promise<{ results: T[] }> {
+    const results = this.sqlite.prepare(this.query).all(...this.params) as unknown as T[]
     return { results }
   }
 
@@ -41,7 +41,7 @@ class TestD1PreparedStatement {
       return (row[columnName] as T) ?? null
     }
 
-    return row as T
+    return row as unknown as T
   }
 }
 

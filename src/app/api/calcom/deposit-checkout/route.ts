@@ -12,6 +12,7 @@ import {
   resolveTopUpCharge,
   sanitizeDepositMetadata,
 } from "@/lib/stripe-deposit-checkout"
+import { resolveActiveBrand } from "@/lib/brand-catalog"
 import { isStripeDepositsEnabledServer } from "@/lib/feature-flags"
 import { getRequestIp, verifyTurnstileToken } from "@/lib/turnstile"
 
@@ -156,8 +157,11 @@ export async function POST(request: NextRequest) {
       ? parseAutoTopUpThresholdToCents(payload.autoTopUpThreshold)
       : DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS
     const currency = normalizeCurrencyCode(payload.currency || process.env.STRIPE_DEPOSIT_DEFAULT_CURRENCY || "aud")
+    const { successUrl, cancelUrl } = resolveRedirectUrls(payload)
+    const brand = await resolveActiveBrand({
+      hostname: new URL(successUrl).hostname || new URL(cancelUrl).hostname,
+    })
     const metadata = sanitizeDepositMetadata({
-      source: "genfix-calcom-deposit",
       ...(payload.metadata || {}),
       requestedAmountCents: topUp.requestedAmountCents,
       chargeAmountCents: topUp.chargeAmountCents,
@@ -168,7 +172,8 @@ export async function POST(request: NextRequest) {
       isPresetAmount: isPresetCreditTopUpAmountCents(topUp.requestedAmountCents),
       calcomBookingUrl: payload.calcomBookingUrl || "",
     })
-    const { successUrl, cancelUrl } = resolveRedirectUrls(payload)
+    metadata.dryapi_brand_key = brand.key
+    metadata.source = "genfix-calcom-deposit"
 
     const sessionParams = buildStripeDepositCheckoutParams({
       amountCents: topUp.chargeAmountCents,

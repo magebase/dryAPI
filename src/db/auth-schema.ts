@@ -46,6 +46,7 @@ export const session = sqliteTable(
     tokenUnique: uniqueIndex("idx_better_auth_session_token").on(table.token),
     userIdIndex: index("idx_better_auth_session_user_id").on(table.userId),
     activeOrganizationIdIndex: index("idx_better_auth_session_active_org_id").on(table.activeOrganizationId),
+    expiresAtIndex: index("idx_better_auth_session_expires_at").on(table.expiresAt),
   }),
 )
 

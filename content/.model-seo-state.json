@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-03-16T12:43:49.036Z",
-  "updatedAt": "2026-03-17T02:55:57.324Z",
+  "updatedAt": "2026-03-17T16:00:52.190Z",
   "nextModelCursor": 7,
   "models": {
     "AceStep_1_5_Turbo": {
@@ -27,7 +27,11 @@
         "model-acestep-1-5-turbo-ace-step-1-5-turbo-cost",
         "model-acestep-1-5-turbo-ace-step-1-5-turbo-javascript",
         "model-acestep-1-5-turbo-ace-step-1-5-turbo-latency",
-        "model-acestep-1-5-turbo-ace-step-1-5-turbo-python"
+        "model-acestep-1-5-turbo-ace-step-1-5-turbo-python",
+        "model-ace-step-1-5-turbo-ai-d95oh",
+        "model-ace-step-1-5-turbo-llm-examples-ge5vw",
+        "model-ace-step-1-5-turbo-multi-jpoku",
+        "model-ace-step-1-5-turbo-unified-inference-qh49t"
       ],
       "usedKeywordKeys": [
         "ace step 1 5 turbo ai",
@@ -51,10 +55,14 @@
         "ace step 1 5 turbo cost",
         "ace step 1 5 turbo javascript",
         "ace step 1 5 turbo latency",
-        "ace step 1 5 turbo python"
+        "ace step 1 5 turbo python",
+        "ace step 1 5 turbo ai api",
+        "ace step 1 5 turbo llm api examples",
+        "ace step 1 5 turbo multi model api",
+        "ace step 1 5 turbo unified inference api"
       ],
-      "generatedCount": 22,
-      "lastGeneratedAt": "2026-03-17T01:15:40.902Z"
+      "generatedCount": 26,
+      "lastGeneratedAt": "2026-03-17T13:27:55.290Z"
     },
     "Ben2": {
       "generatedSlugs": [
@@ -93,7 +101,13 @@
         "model-ben2-ben2-cost",
         "model-ben2-ben2-javascript",
         "model-ben2-ben2-latency",
-        "model-ben2-ben2-python"
+        "model-ben2-ben2-python",
+        "model-ben2-ben-23-5vamt",
+        "model-ben2-applicability-57xyr",
+        "model-ben2-arcade-2dw5i",
+        "model-ben2-cake-7s8br",
+        "model-ben2-comfyui-1tnop",
+        "model-ben2-conversion-3onn0"
       ],
       "usedKeywordKeys": [
         "ben 2 applicability with example",
@@ -131,10 +145,16 @@
         "ben2 cost",
         "ben2 javascript",
         "ben2 latency",
-        "ben2 python"
+        "ben2 python",
+        "ben 23",
+        "ben2 applicability",
+        "ben2 arcade",
+        "ben2 cake",
+        "ben2 comfyui",
+        "ben2 conversion"
       ],
-      "generatedCount": 36,
-      "lastGeneratedAt": "2026-03-17T01:41:51.582Z"
+      "generatedCount": 42,
+      "lastGeneratedAt": "2026-03-17T13:32:37.900Z"
     },
     "Bge_M3_FP16": {
       "generatedSlugs": [
@@ -156,7 +176,17 @@
         "model-bge-m3-fp16-bge-m3-python",
         "model-bge-m3-fp16-bge-m3-retrieval",
         "model-bge-m3-fp16-bge-m3-vector-search",
-        "model-bge-m3-fp16-bge-m3"
+        "model-bge-m3-fp16-bge-m3",
+        "bge-m3-pricing-api-guide-yz0pn",
+        "bge-m3-baai-api-guide-2w3iy",
+        "bge-m3-baai-key-api-guide-439xm",
+        "bge-m3-embedding-api-guide-zihuj",
+        "bge-m3-free-api-guide-ewpwj",
+        "bge-m3-baai-benchmark-api-guide-6odhr",
+        "bge-m3-embedding-benchmark-api-guide-0g2nx",
+        "bge-m3-reranker-v2-benchmark-api-guide-7hz1t",
+        "bge-m3-baai-python-api-guide-7pbv1",
+        "bge-m3-account-number-api-guide-974fb"
       ],
       "usedKeywordKeys": [
         "bge m3 api key",
@@ -177,10 +207,20 @@
         "bge m3 python",
         "bge m3 retrieval",
         "bge m3 vector search",
-        "bge m3"
+        "bge m3",
+        "bge m3 api pricing",
+        "baai bge m3 api",
+        "baai bge m3 api key",
+        "bge m3 embedding api",
+        "bge m3 free api",
+        "baai bge m3 benchmark",
+        "bge m3 embedding benchmark",
+        "bge reranker v2 m3 benchmark",
+        "baai bge m3 python",
+        "bge account number"
       ],
-      "generatedCount": 19,
-      "lastGeneratedAt": "2026-03-17T01:56:14.674Z"
+      "generatedCount": 29,
+      "lastGeneratedAt": "2026-03-17T13:45:08.255Z"
     },
     "Chatterbox": {
       "generatedSlugs": [
@@ -249,7 +289,11 @@
         "model-flux-2-klein-4b-bf16-flux-2-klein-4b-bf16-javascript",
         "model-flux-2-klein-4b-bf16-flux-2-klein-4b-bf16-latency",
         "model-flux-2-klein-4b-bf16-flux-2-klein-4b-bf16-prompt-examples",
-        "model-flux-2-klein-4b-bf16-flux-2-klein-4b-bf16-python"
+        "model-flux-2-klein-4b-bf16-flux-2-klein-4b-bf16-python",
+        "flux-2-klein-4b-bf16-ai-api-guide-daa3i",
+        "flux-2-klein-4b-bf16-llm-examples-api-guide-0h4q1",
+        "flux-2-klein-4b-bf16-multi-api-guide-u82vt",
+        "flux-2-klein-4b-bf16-unified-inference-api-guide-00rna"
       ],
       "usedKeywordKeys": [
         "flux 2 klein 4b bf16 api",
@@ -267,10 +311,14 @@
         "flux 2 klein 4b bf16 javascript",
         "flux 2 klein 4b bf16 latency",
         "flux 2 klein 4b bf16 prompt examples",
-        "flux 2 klein 4b bf16 python"
+        "flux 2 klein 4b bf16 python",
+        "flux 2 klein 4b bf16 ai api",
+        "flux 2 klein 4b bf16 llm api examples",
+        "flux 2 klein 4b bf16 multi model api",
+        "flux 2 klein 4b bf16 unified inference api"
       ],
-      "generatedCount": 16,
-      "lastGeneratedAt": "2026-03-17T02:22:16.782Z"
+      "generatedCount": 20,
+      "lastGeneratedAt": "2026-03-17T13:48:25.054Z"
     },
     "Flux1schnell": {
       "generatedSlugs": [
@@ -389,6 +437,242 @@
       ],
       "generatedCount": 10,
       "lastGeneratedAt": "2026-03-17T02:55:57.324Z"
+    },
+    "Ltx2_3_22B_Dist_INT8": {
+      "generatedSlugs": [
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-ai-api",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api-a",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api-b",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api-c",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api-d",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api-e",
+        "model-ltx2-3-22b-dist-int8-ltx-2-3-22b-distilled-int8-api-f",
+        "ltx-2-3-22b-distilled-int8-inference-api-guide-pyr3x",
+        "ltx-2-3-22b-distilled-int8-pricing-api-guide-gfvz8",
+        "ltx-2-3-22b-distilled-int8-video-api-guide-buceo",
+        "ltx-2-3-22b-distilled-int8-benchmark-api-guide-yt02c",
+        "ltx-2-3-22b-distilled-int8-llm-examples-api-guide-qe4q0",
+        "ltx-2-3-22b-distilled-int8-multi-api-guide-s77bh"
+      ],
+      "usedKeywordKeys": [
+        "ltx 2 3 22b distilled int8 ai api",
+        "ltx 2 3 22b distilled int8 api",
+        "ltx 2 3 22b distilled int8 api a",
+        "ltx 2 3 22b distilled int8 api b",
+        "ltx 2 3 22b distilled int8 api c",
+        "ltx 2 3 22b distilled int8 api d",
+        "ltx 2 3 22b distilled int8 api e",
+        "ltx 2 3 22b distilled int8 api f",
+        "ltx 2 3 22b distilled int8 inference api",
+        "ltx 2 3 22b distilled int8 pricing",
+        "ltx 2 3 22b distilled int8 video api",
+        "ltx 2 3 22b distilled int8 benchmark",
+        "ltx 2 3 22b distilled int8 llm api examples",
+        "ltx 2 3 22b distilled int8 multi model api"
+      ],
+      "generatedCount": 14,
+      "lastGeneratedAt": "2026-03-17T13:52:38.722Z"
+    },
+    "Ltxv_13B_0_9_8_Distilled_FP8": {
+      "generatedSlugs": [
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-ai-api",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api-a",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api-b",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api-c",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api-d",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api-e",
+        "model-ltxv-13b-0-9-8-distilled-fp8-ltx-video-13b-api-f"
+      ],
+      "usedKeywordKeys": [
+        "ltx video 13b ai api",
+        "ltx video 13b api",
+        "ltx video 13b api a",
+        "ltx video 13b api b",
+        "ltx video 13b api c",
+        "ltx video 13b api d",
+        "ltx video 13b api e",
+        "ltx video 13b api f"
+      ],
+      "generatedCount": 8,
+      "lastGeneratedAt": "2026-03-17T09:56:40.538Z"
+    },
+    "Nanonets_Ocr_S_F16": {
+      "generatedSlugs": [
+        "model-nanonets-ocr-s-f16-nanonets-nanonets-ocr-s",
+        "model-nanonets-ocr-s-f16-nanonets-ocr-s-demo",
+        "model-nanonets-ocr-s-f16-nanonets-ocr-s-gguf",
+        "model-nanonets-ocr-s-f16-nanonets-ocr-s-git",
+        "model-nanonets-ocr-s-f16-nanonets-ocr-s-github",
+        "model-nanonets-ocr-s-f16-nanonets-ocr-s-ollama",
+        "model-nanonets-ocr-s-f16-nanonets-ocr-small",
+        "nanonets-ocr-s-hugging-face-jx2l3",
+        "nanonets-ocr-s-ai-i4qtx",
+        "nanonets-ocr-s-nanonets-ocr-s-api-hhuan",
+        "nanonets-ocr-s-image-text-ptvd2",
+        "nanonets-ocr-s-inference-w97rs",
+        "nanonets-ocr-s-llm-examples-mqu2j",
+        "nanonets-ocr-s-multi-4fa34",
+        "nanonets-ocr-s-pricing-pb87e",
+        "nanonets-ocr-s-unified-inference-c2vyt",
+        "nanonets-ocr-s-benchmark-ezzog",
+        "nanonets-ocr-s-vs-openai-3nfl7",
+        "nanonets-ocr-s-q6sps",
+        "nanonets-ocr-s-best-use-cases-m4woy",
+        "nanonets-ocr-s-cost-busw3",
+        "nanonets-ocr-s-document-extraction-czirk",
+        "nanonets-ocr-s-javascript-4o92t",
+        "nanonets-ocr-s-latency-bjsdy",
+        "nanonets-ocr-s-nanonets-ocr-s-ocr-0new3",
+        "nanonets-ocr-s-python-7vw0y"
+      ],
+      "usedKeywordKeys": [
+        "nanonets nanonets ocr s",
+        "nanonets ocr s demo",
+        "nanonets ocr s gguf",
+        "nanonets ocr s git",
+        "nanonets ocr s github",
+        "nanonets ocr s ollama",
+        "nanonets ocr small",
+        "nanonets nanonets ocr a hugging face",
+        "nanonets ocr s ai api",
+        "nanonets ocr s api",
+        "nanonets ocr s image text api",
+        "nanonets ocr s inference api",
+        "nanonets ocr s llm api examples",
+        "nanonets ocr s multi model api",
+        "nanonets ocr s pricing",
+        "nanonets ocr s unified inference api",
+        "nanonets ocr s benchmark",
+        "nanonets ocr s vs openai",
+        "nanonets ocr s",
+        "nanonets ocr s best use cases",
+        "nanonets ocr s cost",
+        "nanonets ocr s document extraction",
+        "nanonets ocr s javascript",
+        "nanonets ocr s latency",
+        "nanonets ocr s ocr",
+        "nanonets ocr s python"
+      ],
+      "generatedCount": 26,
+      "lastGeneratedAt": "2026-03-17T14:36:38.424Z"
+    },
+    "Qwen3_TTS_12Hz_1_7B_Base": {
+      "generatedSlugs": [
+        "model-qwen3-tts-12hz-1-7b-base-qwen3-tts-voice-clone"
+      ],
+      "usedKeywordKeys": [
+        "qwen3 tts voice clone"
+      ],
+      "generatedCount": 1,
+      "lastGeneratedAt": "2026-03-17T10:57:27.879Z"
+    },
+    "Qwen3_TTS_12Hz_1_7B_CustomVoice": {
+      "generatedSlugs": [
+        "model-qwen3-tts-12hz-1-7b-customvoice-qwen3-tts-12hz-0-6b-customvoice",
+        "qwen3-tts-customvoice-github-cykn9",
+        "qwen3-tts-customvoice-custom-voice-eenxh",
+        "qwen3-tts-customvoice-ai-2vvca",
+        "qwen3-tts-customvoice-qwen3-tts-customvoice-api-7oj4o",
+        "qwen3-tts-customvoice-inference-wj3pg",
+        "qwen3-tts-customvoice-llm-examples-8vigd",
+        "qwen3-tts-customvoice-multi-0wzbp",
+        "qwen3-tts-customvoice-pricing-6l791",
+        "qwen3-tts-customvoice-unified-inference-0akm5",
+        "qwen3-tts-customvoice-voice-1wj6d"
+      ],
+      "usedKeywordKeys": [
+        "qwen3 tts 12hz 0 6b customvoice",
+        "qwen3 tts 12hz 1 7b customvoice github",
+        "qwen3 tts custom voice",
+        "qwen3 tts customvoice ai api",
+        "qwen3 tts customvoice api",
+        "qwen3 tts customvoice inference api",
+        "qwen3 tts customvoice llm api examples",
+        "qwen3 tts customvoice multi model api",
+        "qwen3 tts customvoice pricing",
+        "qwen3 tts customvoice unified inference api",
+        "qwen3 tts customvoice voice api"
+      ],
+      "generatedCount": 11,
+      "lastGeneratedAt": "2026-03-17T16:00:52.178Z"
+    },
+    "Qwen3_TTS_12Hz_1_7B_VoiceDesign": {
+      "generatedSlugs": [
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-12hz-1-7b-voicedesign",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voice-design",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voice-design-demo",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-ai-api",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api-a",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api-b",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api-c",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api-d",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api-e",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-api-f",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-inference-api",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-llm-api-examples",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-multi-model-api",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-pricing",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-unified-inference-api",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-voice-api",
+        "model-qwen3-tts-12hz-1-7b-voicedesign-qwen3-tts-voicedesign-benchmark"
+      ],
+      "usedKeywordKeys": [
+        "qwen3 tts 12hz 1 7b voicedesign",
+        "qwen3 tts voice design",
+        "qwen3 tts voice design demo",
+        "qwen3 tts voicedesign ai api",
+        "qwen3 tts voicedesign api",
+        "qwen3 tts voicedesign api a",
+        "qwen3 tts voicedesign api b",
+        "qwen3 tts voicedesign api c",
+        "qwen3 tts voicedesign api d",
+        "qwen3 tts voicedesign api e",
+        "qwen3 tts voicedesign api f",
+        "qwen3 tts voicedesign inference api",
+        "qwen3 tts voicedesign llm api examples",
+        "qwen3 tts voicedesign multi model api",
+        "qwen3 tts voicedesign pricing",
+        "qwen3 tts voicedesign unified inference api",
+        "qwen3 tts voicedesign voice api",
+        "qwen3 tts voicedesign benchmark"
+      ],
+      "generatedCount": 18,
+      "lastGeneratedAt": "2026-03-17T12:39:18.835Z"
+    },
+    "QwenImageEdit_Plus_NF4": {
+      "generatedSlugs": [
+        "model-qwenimageedit-plus-nf4-qwen-image-edit-plus-vs-nano-banana",
+        "model-qwenimageedit-plus-nf4-anime2realism-plus-version-for-qwen-image-edit-2509",
+        "model-qwenimageedit-plus-nf4-calcuis-qwen-image-edit-plus-gguf",
+        "model-qwenimageedit-plus-nf4-comfyui-text-encode-qwen-image-edit-plus",
+        "model-qwenimageedit-plus-nf4-edit-photos-to-add-text",
+        "model-qwenimageedit-plus-nf4-fal-ai-qwen-image-edit-plus",
+        "model-qwenimageedit-plus-nf4-how-to-edit-a-picture-to-add-someone",
+        "model-qwenimageedit-plus-nf4-how-to-edit-photos-on-iphone-8-plus",
+        "model-qwenimageedit-plus-nf4-qwen-image-edit-plus-2511",
+        "model-qwenimageedit-plus-nf4-qwen-image-edit-plus-comfyui",
+        "model-qwenimageedit-plus-nf4-qwen-image-edit-plus-controlnet",
+        "model-qwenimageedit-plus-nf4-qwen-image-edit-plus-diffusers"
+      ],
+      "usedKeywordKeys": [
+        "qwen image edit plus vs nano banana",
+        "anime2realism plus version for qwen image edit 2509",
+        "calcuis qwen image edit plus gguf",
+        "comfyui text encode qwen image edit plus",
+        "edit photos to add text",
+        "fal ai qwen image edit plus",
+        "how to edit a picture to add someone",
+        "how to edit photos on iphone 8 plus",
+        "qwen image edit plus 2511",
+        "qwen image edit plus comfyui",
+        "qwen image edit plus controlnet",
+        "qwen image edit plus diffusers"
+      ],
+      "generatedCount": 12,
+      "lastGeneratedAt": "2026-03-17T13:20:14.326Z"
     }
   }
 }

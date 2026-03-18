@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { WebPageJsonLd } from "@/components/site/seo-jsonld"
 import { TinaBlogPostPage } from "@/components/site/tina-blog-post-page"
 import { TinaRoutePage } from "@/components/site/tina-route-page"
 import { getLatestDeapiPricingSnapshot } from "@/lib/deapi-pricing-store"
 import { isManualBlogEnabled } from "@/lib/feature-flags"
-import { filterPricingSnapshotToActiveModels } from "@/lib/runpod-active-models"
+import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata"
+import { filterPricingSnapshotToActiveModels, listActiveRunpodModels } from "@/lib/runpod-active-models"
 import {
   listBlogPosts,
   listRoutePages,
@@ -30,8 +32,36 @@ function isBlogPostPath(slug: string[]) {
   return slug.length === 2 && slug[0] === "blog"
 }
 
-function normalizeSiteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://dryapi.dev").replace(/\/+$/, "")
+const CATEGORY_TO_PLAYGROUND: Record<string, string> = {
+  "text-to-image": "/playground/text-to-image",
+  "image-to-image": "/playground/image-to-image",
+  "image-to-text": "/playground/image-to-text",
+  "image-to-video": "/playground/image-to-video",
+  "text-to-speech": "/playground/text-to-speech",
+  "text-to-music": "/playground/text-to-music",
+  "video-to-text": "/playground/video-to-text",
+  "text-to-embedding": "/playground",
+  "image-upscale": "/playground/image-to-image",
+  "background-removal": "/playground/image-to-image",
+  "text-to-video": "/playground/image-to-video",
+}
+
+function resolveActiveModelForBlogPost(
+  tags: string[],
+): { displayName: string; playgroundHref: string } | null {
+  const modelTag = tags.find((t) => t.startsWith("model:"))
+  if (!modelTag) return null
+  const slug = modelTag.slice("model:".length).trim()
+  if (!slug) return null
+
+  const activeModels = listActiveRunpodModels()
+  const match = activeModels.find((m) => m.slug === slug)
+  if (!match) return null
+
+  const category = match.categories[0] ?? ""
+  const playgroundHref = CATEGORY_TO_PLAYGROUND[category] ?? "/playground"
+
+  return { displayName: match.displayName, playgroundHref }
 }
 
 function normalizeCanonicalPath(slug: string, canonicalPath: string | undefined) {
@@ -50,6 +80,22 @@ function toIsoDate(value: string): string | undefined {
   }
 
   return date.toISOString()
+}
+
+function resolveTemplateForPath(pathname: string) {
+  if (pathname.startsWith("/blog")) {
+    return "blog" as const
+  }
+
+  if (pathname.startsWith("/pricing") || pathname === "/plans") {
+    return "pricing" as const
+  }
+
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/account")) {
+    return "dashboard" as const
+  }
+
+  return "marketing" as const
 }
 
 export async function generateStaticParams() {
@@ -73,6 +119,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: CatchAllPageProps): Promise<Metadata> {
   const { slug } = await params
   const manualBlogEnabled = isManualBlogEnabled()
+  const site = await readSiteConfig()
+  const siteName = site.brand.name || site.brand.mark
 
   if (isBlogPostPath(slug) && !manualBlogEnabled) {
     return {}
@@ -88,18 +136,16 @@ export async function generateMetadata({ params }: CatchAllPageProps): Promise<M
     const siteUrl = normalizeSiteUrl()
     const canonicalPath = normalizeCanonicalPath(post.slug, post.canonicalPath)
     const canonicalUrl = `${siteUrl}${canonicalPath}`
-    const image = post.ogImage?.trim() || post.coverImage
     const publishedTime = toIsoDate(post.publishedAt)
     const keywords = post.seoKeywords.length > 0 ? post.seoKeywords : post.tags
-
-    return {
+    const baseMetadata = buildTakumiMetadata({
       title: post.seoTitle,
       description: post.seoDescription,
+      canonicalPath,
+      template: "blog",
+      siteName,
       keywords,
       authors: [{ name: post.author.name }],
-      alternates: {
-        canonical: canonicalUrl,
-      },
       robots: post.noindex
         ? {
             index: false,
@@ -109,22 +155,20 @@ export async function generateMetadata({ params }: CatchAllPageProps): Promise<M
             index: true,
             follow: true,
           },
+      openGraphType: "article",
+      label: "Blog Post",
+      seed: `blog-post:${post.slug}`,
+    })
+
+    return {
+      ...baseMetadata,
       openGraph: {
+        ...baseMetadata.openGraph,
         type: "article",
-        title: post.seoTitle,
-        description: post.seoDescription,
         url: canonicalUrl,
-        siteName: "GenFix",
-        images: image ? [{ url: image, alt: post.title }] : undefined,
         publishedTime,
         authors: [post.author.name],
         tags: post.tags,
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: post.seoTitle,
-        description: post.seoDescription,
-        images: image ? [image] : undefined,
       },
     }
   }
@@ -141,11 +185,20 @@ export async function generateMetadata({ params }: CatchAllPageProps): Promise<M
 
   if (page.slug === "/blog") {
     const siteUrl = normalizeSiteUrl()
-
-    return {
+    const baseMetadata = buildTakumiMetadata({
       title: page.seoTitle,
       description: page.seoDescription,
+      canonicalPath: page.slug,
+      template: "blog",
+      siteName,
+      label: "Blog",
+      seed: "blog-index",
+    })
+
+    return {
+      ...baseMetadata,
       alternates: {
+        ...baseMetadata.alternates,
         types: {
           "application/rss+xml": `${siteUrl}/blog/feed.xml`,
           "application/atom+xml": `${siteUrl}/blog/feed.atom`,
@@ -155,10 +208,15 @@ export async function generateMetadata({ params }: CatchAllPageProps): Promise<M
     }
   }
 
-  return {
+  return buildTakumiMetadata({
     title: page.seoTitle,
     description: page.seoDescription,
-  }
+    canonicalPath: page.slug,
+    template: resolveTemplateForPath(page.slug),
+    siteName,
+    label: page.slug.startsWith("/pricing") || page.slug === "/plans" ? "Pricing Page" : "Marketing",
+    seed: `route:${page.slug}`,
+  })
 }
 
 export default async function CatchAllPage({ params }: CatchAllPageProps) {
@@ -177,19 +235,36 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
       notFound()
     }
 
+    const activeModel = resolveActiveModelForBlogPost(post.tags)
+    const canonicalPath = normalizeCanonicalPath(post.slug, post.canonicalPath)
+
     return (
-      <TinaBlogPostPage
-        postDocument={{
-          query: tinaBlogPostQuery,
-          variables: { relativePath: `${slug[1]}.json` },
-          data: { blogPosts: post },
-        }}
-        siteDocument={{
-          query: tinaSiteConfigQuery,
-          variables: { relativePath: "site-config.json" },
-          data: { siteConfig: site },
-        }}
-      />
+      <>
+        <WebPageJsonLd
+          breadcrumbs={[
+            { name: "Home", path: "/" },
+            { name: "Blog", path: "/blog" },
+            { name: post.title, path: canonicalPath },
+          ]}
+          description={post.seoDescription}
+          path={canonicalPath}
+          scriptId={`blog-post-${post.slug}`}
+          title={post.seoTitle}
+        />
+        <TinaBlogPostPage
+          activeModel={activeModel ?? undefined}
+          postDocument={{
+            query: tinaBlogPostQuery,
+            variables: { relativePath: `${slug[1]}.json` },
+            data: { blogPosts: post },
+          }}
+          siteDocument={{
+            query: tinaSiteConfigQuery,
+            variables: { relativePath: "site-config.json" },
+            data: { siteConfig: site },
+          }}
+        />
+      </>
     )
   }
 
@@ -221,20 +296,32 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
   }
 
   return (
-    <TinaRoutePage
-      blogPosts={blogPosts}
-      deapiPricingSnapshot={filteredDeapiPricingSnapshot}
-      pageDocument={{
-        query: tinaRoutePageQuery,
-        variables: { relativePath },
-        data: { routePages: page },
-      }}
-      productPages={productPages}
-      siteDocument={{
-        query: tinaSiteConfigQuery,
-        variables: { relativePath: "site-config.json" },
-        data: { siteConfig: site },
-      }}
-    />
+    <>
+      <WebPageJsonLd
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: page.navLabel, path: page.slug },
+        ]}
+        description={page.seoDescription}
+        path={page.slug}
+        scriptId={`route-page-${page.slug}`}
+        title={page.seoTitle}
+      />
+      <TinaRoutePage
+        blogPosts={blogPosts}
+        deapiPricingSnapshot={filteredDeapiPricingSnapshot}
+        pageDocument={{
+          query: tinaRoutePageQuery,
+          variables: { relativePath },
+          data: { routePages: page },
+        }}
+        productPages={productPages}
+        siteDocument={{
+          query: tinaSiteConfigQuery,
+          variables: { relativePath: "site-config.json" },
+          data: { siteConfig: site },
+        }}
+      />
+    </>
   )
 }

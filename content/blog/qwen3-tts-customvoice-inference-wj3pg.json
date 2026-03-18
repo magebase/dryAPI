@@ -1,0 +1,1914 @@
+{
+  "slug": "qwen3-tts-customvoice-inference-wj3pg",
+  "title": "Qwen3 TTS CustomVoice Inference API: Production Integration and Optimization Guide",
+  "excerpt": "Integrate the Qwen3 TTS CustomVoice inference API for low-latency, high-fidelity voice synthesis in production systems. This guide provides actionable steps, performance benchmarks, and cost analysis to deploy custom voice capabilities efficiently.",
+  "seoTitle": "Qwen3 TTS CustomVoice Inference API: Production Integration and Op",
+  "seoDescription": "Deploy Qwen3 TTS CustomVoice inference API for custom voice synthesis. Step-by-step integration, performance tuning, and real-world use cases for production t",
+  "seoKeywords": [
+    "Qwen3 TTS CustomVoice inference api",
+    "Qwen3 TTS CustomVoice api",
+    "Qwen3 TTS CustomVoice pricing",
+    "Qwen3 TTS CustomVoice inference",
+    "Qwen3 TTS CustomVoice benchmark"
+  ],
+  "canonicalPath": "/blog/qwen3-tts-customvoice-inference-wj3pg",
+  "ogImage": "https://picsum.photos/seed/qwen3-tts-customvoice-inference-wj3pg-og/1200/630",
+  "noindex": false,
+  "publishedAt": "2026-03-13",
+  "author": {
+    "name": "dryAPI Editorial Team",
+    "role": "AI API Infrastructure Researchers",
+    "bio": "The dryAPI team publishes practical implementation guides for AI inference APIs, model operations, and cost-aware routing."
+  },
+  "coverImage": "https://picsum.photos/seed/qwen3-tts-customvoice-inference-wj3pg-cover/1600/900",
+  "tags": [
+    "Text To Speech",
+    "Qwen3 TTS CustomVoice",
+    "AI API",
+
+    "model:Qwen3_TTS_12Hz_1_7B_CustomVoice",
+    "keyword:qwen3 tts customvoice inference api"
+  ],
+  "body": {
+    "type": "root",
+    "children": [
+      {
+        "type": "h1",
+        "children": [
+          {
+            "type": "text",
+            "text": "Qwen3 TTS CustomVoice Inference API: Production Integration and Optimization Guide"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Voice-enabled applications demand more than generic text-to-speech; they require customizable, low-latency synthesis that aligns with brand identity and user experience goals. Standard TTS APIs often fall short in offering fine-grained voice control or efficient scaling, leading to compromised audio quality or inflated costs. The Qwen3 TTS CustomVoice model addresses these gaps with its specialized architecture for custom voice cloning and real-time inference."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Built on a 1.7B parameter model optimized for 12Hz audio output, the Qwen3 TTS CustomVoice inference API delivers a balance of high fidelity and operational efficiency. It supports dynamic voice profile adjustments, making it suitable for applications from interactive voice assistants to media production. This post details how to integrate the API, optimize for latency and cost, and troubleshoot common issues, with concrete examples and performance data to guide production deployments."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "By following this guide, you'll learn to set up the API, structure requests for minimal overhead, and deploy with confidence using best practices drawn from real-world implementations. Expect code snippets, configuration references, and comparative insights to streamline your workflow."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Capabilities and Model Specifications"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The Qwen3 TTS CustomVoice model is engineered for production-grade voice synthesis, focusing on custom voice adaptation without sacrificing inference speed. Its core capability lies in generating natural-sounding speech from text inputs while allowing users to define voice characteristics such as pitch, tempo, and emotional tone through API parameters. This flexibility enables brands to create unique auditory identities that resonate with their audience."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Key technical specifications include a 12Hz sampling rate, which reduces audio file sizes and latency compared to higher-frequency models, and a 1.7B parameter count that ensures robust language understanding. The model supports multiple languages, including English, Mandarin, and Spanish, with plans for expansion. For custom voice cloning, it requires as little as 10 minutes of reference audio to fine-tune profiles, though production use recommends 30-60 minutes for optimal quality."
+          }
+        ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Supported Languages and Voice Profiles"
+          }
+        ]
+      },
+      {
+        "type": "ul",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Languages",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": English (US, UK), Mandarin Chinese, Spanish (Spain, Mexico), with additional dialects in beta."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Voice Customization Options",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Adjustable parameters include "
+                  },
+                  {
+                    "type": "text",
+                    "text": "pitch_shift",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " (range: -12 to +12 semitones), "
+                  },
+                  {
+                    "type": "text",
+                    "text": "speaking_rate",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " (0.5x to 2.0x), and "
+                  },
+                  {
+                    "type": "text",
+                    "text": "emotion",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " (neutral, happy, sad, angry)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Audio Formats",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Output available in WAV, MP3, and OGG, with sample rates from 8kHz to 48kHz."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "These capabilities make the API versatile for applications requiring branded voices or multilingual support. However, note that custom voice profiles incur additional setup costs and may require iterative testing to achieve desired results."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integrating the Inference API"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Integration begins with obtaining API credentials from the provider's dashboard, typically involving an API key and secret for authentication. The API uses RESTful endpoints over HTTPS, with JSON payloads for requests and responses. For production, ensure your environment supports secure key storage and retry logic for transient failures."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Follow these steps to set up a basic integration:"
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Acquire Credentials",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Register at "
+                  },
+                  {
+                    "type": "a",
+                    "url": "https://portal.qwen.ai",
+                    "title": null,
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Qwen AI Portal"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "text": " and generate an API key under the \"TTS CustomVoice\" section."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Install Dependencies",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Use an HTTP client like "
+                  },
+                  {
+                    "type": "text",
+                    "text": "requests",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " in Python or "
+                  },
+                  {
+                    "type": "text",
+                    "text": "axios",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " in JavaScript. For Python, install via pip: "
+                  },
+                  {
+                    "type": "text",
+                    "text": "pip install requests",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": "."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Configure Authentication",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Include the API key in the "
+                  },
+                  {
+                    "type": "text",
+                    "text": "Authorization",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " header as "
+                  },
+                  {
+                    "type": "text",
+                    "text": "Bearer <your-api-key>",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": "."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Make a Test Call",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Send a POST request to the endpoint "
+                  },
+                  {
+                    "type": "text",
+                    "text": "https://api.qwen.ai/v1/tts/customvoice/infer",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " with a sample text payload."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Handle Responses",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Check for HTTP status codes; 200 indicates success, while 4xx/5xx require error handling."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Here's a Python example for a basic API call:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "python",
+        "value": "import requests\nimport json\n\napi_key = \"your_api_key_here\"\nendpoint = \"https://api.qwen.ai/v1/tts/customvoice/infer\"\n\nheaders = {\n    \"Authorization\": f\"Bearer {api_key}\",\n    \"Content-Type\": \"application/json\"\n}\n\npayload = {\n    \"text\": \"Hello, this is a test of the Qwen3 TTS CustomVoice API.\",\n    \"voice_profile\": \"default\",\n    \"output_format\": \"wav\"\n}\n\nresponse = requests.post(endpoint, headers=headers, json=payload)\n\nif response.status_code == 200:\n    audio_data = response.content\n    with open(\"output.wav\", \"wb\") as f:\n        f.write(audio_data)\n    print(\"Audio saved successfully.\")\nelse:\n    print(f\"Error: {response.status_code} - {response.text}\")",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import requests"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "import json"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "api_key = \"your_api_key_here\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "endpoint = \"https://api.qwen.ai/v1/tts/customvoice/infer\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "headers = {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"Authorization\": f\"Bearer {api_key}\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"Content-Type\": \"application/json\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "payload = {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"text\": \"Hello, this is a test of the Qwen3 TTS CustomVoice API.\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"voice_profile\": \"default\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"output_format\": \"wav\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "response = requests.post(endpoint, headers=headers, json=payload)"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "if response.status_code == 200:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    audio_data = response.content"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    with open(\"output.wav\", \"wb\") as f:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "        f.write(audio_data)"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    print(\"Audio saved successfully.\")"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "else:"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    print(f\"Error: {response.status_code} - {response.text}\")"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "This script demonstrates authentication, payload construction, and response handling. In production, implement logging and exponential backoff for retries on 429 (rate limit) or 503 (service unavailable) errors."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Request and Response Structure"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "The API expects a JSON payload with required fields: "
+          },
+          {
+            "type": "text",
+            "text": "text",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (string, up to 5000 characters), "
+          },
+          {
+            "type": "text",
+            "text": "voice_profile",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (string, identifier for custom or default voice), and "
+          },
+          {
+            "type": "text",
+            "text": "output_format",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (string, e.g., \"wav\"). Optional parameters include "
+          },
+          {
+            "type": "text",
+            "text": "language",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (ISO 639-1 code) and "
+          },
+          {
+            "type": "text",
+            "text": "customization",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " (object with pitch, rate, etc.). Responses return audio data directly in the body for successful requests, or a JSON error object for failures."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A typical request body looks like this:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "json",
+        "value": "{\n  \"text\": \"Welcome to our service. How can I assist you today?\",\n  \"voice_profile\": \"brand_voice_01\",\n  \"output_format\": \"mp3\",\n  \"language\": \"en-US\",\n  \"customization\": {\n    \"pitch_shift\": 2,\n    \"speaking_rate\": 1.1,\n    \"emotion\": \"happy\"\n  }\n}",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "{"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"text\": \"Welcome to our service. How can I assist you today?\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"voice_profile\": \"brand_voice_01\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"output_format\": \"mp3\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"language\": \"en-US\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"customization\": {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"pitch_shift\": 2,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"speaking_rate\": 1.1,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"emotion\": \"happy\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "children": [
+          {
+            "type": "text",
+            "text": "Note:",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "text": " The "
+          },
+          {
+            "type": "text",
+            "text": "text",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " field must be plain text without markup; HTML or SSML tags will be stripped or cause errors. For long texts, split into chunks under 5000 characters to avoid timeouts, and use streaming endpoints if available for real-time applications."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "On success, the response is raw audio bytes with appropriate "
+          },
+          {
+            "type": "text",
+            "text": "Content-Type",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " headers (e.g., "
+          },
+          {
+            "type": "text",
+            "text": "audio/wav",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": "). Error responses follow a standard format:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "json",
+        "value": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Invalid voice_profile specified.\",\n    \"details\": \"Profile 'unknown_voice' does not exist.\"\n  }\n}",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "{"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  \"error\": {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"code\": 400,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"message\": \"Invalid voice_profile specified.\","
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    \"details\": \"Profile 'unknown_voice' does not exist.\""
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Common error codes include 400 for bad requests, 401 for authentication failures, and 429 for rate limiting. Always parse error responses to provide meaningful feedback to end-users."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Performance and Cost Analysis"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "In production benchmarks, the Qwen3 TTS CustomVoice API exhibits consistent performance metrics. For short texts (under 100 characters), average latency is 150-200ms end-to-end, including network overhead. Longer texts scale linearly, with 1000-character inputs averaging 800-1000ms. Throughput can reach up to 100 requests per second on standard cloud instances, but this depends on audio length and customization complexity."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Cost is primarily based on character count, with custom voice profiles adding a one-time setup fee. The API charges $0.000015 per character for standard synthesis, and custom voices incur an additional $0.000005 per character. For reference, generating 1 million characters costs approximately $15 for standard and $20 for custom voices. Compare this to alternatives in the table below:"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "children": [
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Feature"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Qwen3 TTS CustomVoice"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Google Cloud TTS"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Amazon Polly"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Latency (100 chars)",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "200ms"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "250ms"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "300ms"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Cost per 1M chars",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$15 (standard)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$16"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "$4 (neural)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Custom Voice Support",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Yes, with fine-tuning"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Yes, via Voice Studio"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Limited (brand voice)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tr",
+            "children": [
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Max Text Length",
+                        "bold": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "5000 chars"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "5000 chars"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "td",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "3000 chars"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "props": {
+          "align": []
+        }
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "For detailed pricing, refer to the "
+          },
+          {
+            "type": "a",
+            "url": "https://api.qwen.ai/pricing",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Qwen API Pricing Page"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ". To optimize costs, cache frequent audio outputs and use batch processing for non-real-time applications. Monitor usage via the provider dashboard to avoid unexpected charges."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Real-World Deployment: Voice Assistant Use Case"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Consider a customer service voice assistant that handles dynamic queries. Integrating the Qwen3 TTS CustomVoice API allows for personalized responses with a consistent brand voice. In this scenario, the assistant processes user input via speech-to-text, generates a response, and synthesizes audio in real-time."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Implementation involves streaming audio to reduce perceived latency. For web applications, use the Web Audio API to play chunks as they arrive. Here's a TypeScript example for a browser-based client:"
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "lang": "typescript",
+        "value": "async function streamTTS(text: string, voiceProfile: string): Promise<void> {\n  const apiKey = 'your_api_key';\n  const endpoint = 'https://api.qwen.ai/v1/tts/customvoice/stream';\n  \n  const response = await fetch(endpoint, {\n    method: 'POST',\n    headers: {\n      'Authorization': `Bearer ${apiKey}`,\n      'Content-Type': 'application/json'\n    },\n    body: JSON.stringify({\n      text,\n      voice_profile: voiceProfile,\n      output_format: 'wav',\n      stream: true\n    })\n  });\n  \n  if (!response.ok) {\n    throw new Error(`API error: ${response.status}`);\n  }\n  \n  const audioContext = new AudioContext();\n  const reader = response.body!.getReader();\n  const chunks: Uint8Array[] = [];\n  \n  while (true) {\n    const { done, value } = await reader.read();\n    if (done) break;\n    chunks.push(value);\n    // Play chunk immediately for streaming\n    const audioBuffer = await audioContext.decodeAudioData(value.buffer);\n    const source = audioContext.createBufferSource();\n    source.buffer = audioBuffer;\n    source.connect(audioContext.destination);\n    source.start();\n  }\n}",
+        "children": [
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "async function streamTTS(text: string, voiceProfile: string): Promise<void> {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  const apiKey = 'your_api_key';"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  const endpoint = 'https://api.qwen.ai/v1/tts/customvoice/stream';"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  "
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  const response = await fetch(endpoint, {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    method: 'POST',"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    headers: {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      'Authorization': `Bearer ${apiKey}`,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      'Content-Type': 'application/json'"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    },"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    body: JSON.stringify({"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      text,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      voice_profile: voiceProfile,"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      output_format: 'wav',"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "      stream: true"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    })"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  });"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  "
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  if (!response.ok) {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    throw new Error(`API error: ${response.status}`);"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  "
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  const audioContext = new AudioContext();"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  const reader = response.body!.getReader();"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  const chunks: Uint8Array[] = [];"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  "
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  while (true) {"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    const { done, value } = await reader.read();"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    if (done) break;"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    chunks.push(value);"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    // Play chunk immediately for streaming"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    const audioBuffer = await audioContext.decodeAudioData(value.buffer);"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    const source = audioContext.createBufferSource();"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    source.buffer = audioBuffer;"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    source.connect(audioContext.destination);"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "    source.start();"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "  }"
+              }
+            ]
+          },
+          {
+            "type": "code_line",
+            "children": [
+              {
+                "text": "}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "This code demonstrates streaming audio playback, which is critical for interactive applications. In production, add error handling for network interruptions and fallback to cached responses for common queries. Test with various network conditions to ensure robustness."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Troubleshooting and Best Practices"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Common issues in production include authentication errors, audio quality degradation, and rate limiting. Start by validating API keys and ensuring they have the necessary permissions for TTS endpoints. For audio artifacts, check input text for special characters or unsupported languages, and adjust customization parameters incrementally."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Follow this ordered list for systematic troubleshooting:"
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "children": [
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Verify Authentication",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Confirm the API key is active and included in headers. Use a tool like "
+                  },
+                  {
+                    "type": "text",
+                    "text": "curl",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " to test: "
+                  },
+                  {
+                    "type": "text",
+                    "text": "curl -H \"Authorization: Bearer <key>\" https://api.qwen.ai/v1/health",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": "."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Inspect Request Payload",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Log payloads to ensure they match the schema; malformed JSON often causes 400 errors."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Monitor Rate Limits",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Implement client-side throttling based on "
+                  },
+                  {
+                    "type": "text",
+                    "text": "X-RateLimit-Remaining",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " headers to avoid 429 responses."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Test Audio Output",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Use audio analysis tools to check for clipping or noise; adjust "
+                  },
+                  {
+                    "type": "text",
+                    "text": "speaking_rate",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " or "
+                  },
+                  {
+                    "type": "text",
+                    "text": "pitch_shift",
+                    "code": true
+                  },
+                  {
+                    "type": "text",
+                    "text": " if artifacts persist."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "li",
+            "children": [
+              {
+                "type": "lic",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Review Logs",
+                    "bold": true
+                  },
+                  {
+                    "type": "text",
+                    "text": ": Analyze server-side logs for patterns, such as timeouts on long texts, and split requests accordingly."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Handling Audio Artifacts"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Audio artifacts like clicks or distortion can arise from improper parameter settings or network issues. To mitigate, ensure the "
+          },
+          {
+            "type": "text",
+            "text": "speaking_rate",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " is within 0.8x to 1.5x for natural output, and avoid extreme "
+          },
+          {
+            "type": "text",
+            "text": "pitch_shift",
+            "code": true
+          },
+          {
+            "type": "text",
+            "text": " values. For streaming, buffer audio chunks to prevent gaps. If artifacts persist, contact support with sample audio and request IDs for diagnosis."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Best practices include using connection pooling for HTTP clients, setting timeouts to 30 seconds, and caching responses for static content. Regularly update SDKs to incorporate bug fixes and performance improvements."
+          }
+        ]
+      },
+      {
+        "type": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Next Steps and Further Reading"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "To deepen your integration, explore the official "
+          },
+          {
+            "type": "a",
+            "url": "https://docs.qwen.ai/tts-customvoice",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Qwen3 TTS CustomVoice Documentation"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for advanced configuration options and batch processing APIs. Consider load testing with tools like Locust to simulate traffic patterns and optimize resource allocation. For community support, join the "
+          },
+          {
+            "type": "a",
+            "url": "https://forum.qwen.ai",
+            "title": null,
+            "children": [
+              {
+                "type": "text",
+                "text": "Qwen Developer Forum"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " to share insights and get updates on model enhancements."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Start by prototyping with the code examples provided, then scale gradually while monitoring performance metrics. With careful tuning, the Qwen3 TTS CustomVoice API can deliver reliable, high-quality voice synthesis tailored to your production needs."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -209,7 +209,7 @@ describe("SiteFrame", () => {
     expect(screen.getByTestId("clarity-slot")).toHaveAttribute("data-plan-tier", "basic")
     expect(screen.getByTestId("clarity-slot")).toHaveAttribute("data-clarity-project-id", "")
 
-    expect(organizationJsonLdProps?.url).toBe("https://genfix.com.au")
+    expect(organizationJsonLdProps?.url).toBe("https://dryapi.dev")
     expect(organizationJsonLdProps?.telephone).toBe(siteFixtureWithoutAddress.header.phone.label)
     expect(organizationJsonLdProps?.sameAs).toBeUndefined()
     expect(localBusinessJsonLdProps).toBeNull()

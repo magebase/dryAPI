@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import { defineI18n } from "fumadocs-core/i18n"
 import { loader } from "fumadocs-core/source"
 import { openapiPlugin } from "fumadocs-openapi/server"
@@ -22,12 +24,50 @@ export const source = loader({
   plugins: [openapiPlugin()],
 })
 
-type PageTreeNode = {
-  [key: string]: unknown
-  name?: string
-  url?: string
-  children?: PageTreeNode[]
+type PageTreeId = {
+  $id?: string
 }
+
+type PageTreeItem = PageTreeId & {
+  type: "page"
+  name: ReactNode
+  url: string
+  external?: boolean
+  description?: ReactNode
+  icon?: ReactNode
+  $ref?: {
+    file: string
+  }
+}
+
+type PageTreeSeparator = PageTreeId & {
+  type: "separator"
+  name?: ReactNode
+  icon?: ReactNode
+}
+
+type PageTreeFolder = PageTreeId & {
+  type: "folder"
+  name: ReactNode
+  description?: ReactNode
+  root?: boolean
+  defaultOpen?: boolean
+  collapsible?: boolean
+  index?: PageTreeItem
+  icon?: ReactNode
+  children: PageTreeNode[]
+  $ref?: {
+    metaFile?: string
+  }
+}
+
+type PageTreeRoot = PageTreeId & {
+  name: ReactNode
+  children: PageTreeNode[]
+  fallback?: PageTreeRoot
+}
+
+type PageTreeNode = PageTreeItem | PageTreeSeparator | PageTreeFolder
 
 const GET_STARTED_ORDER = [
   "introduction",
@@ -123,6 +163,10 @@ const OPENAPI_ROUTE_ORDER = [
   "transformation/image-upscale-price",
 ] as const
 
+function isPageTreeFolder(node: PageTreeNode | PageTreeRoot | undefined): node is PageTreeFolder {
+  return Boolean(node && "type" in node && node.type === "folder")
+}
+
 function pathFromUrl(url?: string) {
   if (!url) return undefined
 
@@ -130,13 +174,13 @@ function pathFromUrl(url?: string) {
   return normalized.replace(/\/+$/, "") || "/"
 }
 
-function keyFromName(name?: string) {
-  if (!name) return undefined
+function keyFromName(name?: ReactNode) {
+  if (typeof name !== "string") return undefined
   return name.toLowerCase().trim().replace(/\s+/g, "-")
 }
 
 function keyFromNode(node: PageTreeNode) {
-  return keyFromPath(pathFromUrl(node.url)) ?? keyFromName(node.name)
+  return keyFromPath("url" in node ? pathFromUrl(node.url) : undefined) ?? keyFromName(node.name)
 }
 
 function keyFromPath(pathname?: string) {
@@ -174,13 +218,13 @@ function reorderChildrenByKeys(children: PageTreeNode[], orderedKeys: readonly s
   return ordered
 }
 
-function findChildByKey(children: PageTreeNode[], key: string) {
+function findChildByKey(children: PageTreeNode[], key: string): PageTreeNode | undefined {
   return children.find((child) => keyFromNode(child) === key)
 }
 
-function withApiMethodLabels(nodes: PageTreeNode[]) {
+function withApiMethodLabels(nodes: PageTreeNode[]): PageTreeNode[] {
   return nodes.map((node) => {
-    if (node.children?.length) {
+    if (isPageTreeFolder(node) && node.children.length) {
       return {
         ...node,
         children: withApiMethodLabels(node.children),
@@ -221,7 +265,7 @@ function normalizeApiChildren(children: PageTreeNode[]) {
 
   for (const child of children) {
     const childKey = keyFromNode(child)
-    if ((childKey === "generation" || childKey === "transformation") && child.children?.length) {
+    if ((childKey === "generation" || childKey === "transformation") && isPageTreeFolder(child) && child.children.length) {
       flattened.push(...child.children)
       continue
     }
@@ -254,7 +298,7 @@ function normalizeApiChildren(children: PageTreeNode[]) {
   return withApiMethodLabels(ordered)
 }
 
-function normalizeVersionTree(versionNode: PageTreeNode) {
+function normalizeVersionTree(versionNode: PageTreeFolder): PageTreeFolder {
   const children = versionNode.children ?? []
   const apiIndex = children.findIndex((child) => keyFromNode(child) === "api")
 
@@ -263,7 +307,11 @@ function normalizeVersionTree(versionNode: PageTreeNode) {
   }
 
   const apiNode = children[apiIndex]
-  const apiChildren = apiNode.children ?? []
+  if (!isPageTreeFolder(apiNode)) {
+    return versionNode
+  }
+
+  const apiChildren = apiNode.children
   const extracted: PageTreeNode[] = []
   const keptVersionChildren: PageTreeNode[] = []
 
@@ -279,7 +327,7 @@ function normalizeVersionTree(versionNode: PageTreeNode) {
 
   const normalizedApiChildren = normalizeApiChildren(apiChildren)
   for (const node of extracted) {
-    if (!normalizedApiChildren.some((existing) => existing.url === node.url)) {
+    if (!normalizedApiChildren.some((existing) => "url" in existing && "url" in node && existing.url === node.url)) {
       normalizedApiChildren.push(node)
     }
   }
@@ -295,20 +343,20 @@ function normalizeVersionTree(versionNode: PageTreeNode) {
   }
 }
 
-export function getDocsPageTree(locale: string) {
-  const tree = source.getPageTree(locale) as PageTreeNode
+export function getDocsPageTree(locale: string): PageTreeRoot {
+  const tree = source.getPageTree(locale) as unknown as PageTreeRoot
   const versionPath = `/${locale === DEFAULT_LOCALE ? "" : `${locale}/`}docs/${CURRENT_DOCS_VERSION}`.replace(/\/\//g, "/")
 
   const versionNode = tree.children?.find((child) => {
-    const name = child.name?.toLowerCase()
-    if (name === CURRENT_DOCS_VERSION || child.url === versionPath) {
+    const name = typeof child.name === "string" ? child.name.toLowerCase() : undefined
+    if (name === CURRENT_DOCS_VERSION || ("url" in child && child.url === versionPath)) {
       return true
     }
 
-    return child.children?.some((nested) => nested.url === versionPath)
+    return isPageTreeFolder(child) ? child.children.some((nested) => "url" in nested && nested.url === versionPath) : false
   })
 
-  if (!versionNode?.children) {
+  if (!versionNode || !isPageTreeFolder(versionNode)) {
     return tree
   }
 
@@ -321,14 +369,14 @@ export function getDocsPageTree(locale: string) {
   })
 
   const executionNode = findChildByKey(topLevelChildren, "execution-modes-and-integrations")
-  const executionChildren = reorderChildrenByKeys(executionNode?.children ?? [], EXECUTION_ORDER).filter((child) => {
+  const executionChildren = reorderChildrenByKeys(isPageTreeFolder(executionNode) ? executionNode.children : [], EXECUTION_ORDER).filter((child) => {
     const key = keyFromNode(child)
     return Boolean(key && EXECUTION_ORDER.includes(key as (typeof EXECUTION_ORDER)[number]))
   })
 
   const apiNode = findChildByKey(topLevelChildren, "api")
   const otherNode = findChildByKey(topLevelChildren, "other")
-  const otherChildren = reorderChildrenByKeys(otherNode?.children ?? [], OTHER_ORDER).filter((child) => {
+  const otherChildren = reorderChildrenByKeys(isPageTreeFolder(otherNode) ? otherNode.children : [], OTHER_ORDER).filter((child) => {
     const key = keyFromNode(child)
     return Boolean(key && OTHER_ORDER.includes(key as (typeof OTHER_ORDER)[number]))
   })
@@ -339,7 +387,7 @@ export function getDocsPageTree(locale: string) {
     rootChildren.push(createFolderNode("Get started", getStartedChildren))
   }
 
-  if (executionNode) {
+  if (executionNode && isPageTreeFolder(executionNode)) {
     rootChildren.push({
       ...executionNode,
       name: "Execution Modes & Integrations",
@@ -347,14 +395,14 @@ export function getDocsPageTree(locale: string) {
     })
   }
 
-  if (apiNode) {
+  if (apiNode && isPageTreeFolder(apiNode)) {
     rootChildren.push({
       ...apiNode,
       name: "API",
     })
   }
 
-  if (otherNode) {
+  if (otherNode && isPageTreeFolder(otherNode)) {
     rootChildren.push({
       ...otherNode,
       name: "Other",

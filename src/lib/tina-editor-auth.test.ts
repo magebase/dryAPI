@@ -54,6 +54,7 @@ describe("tina editor auth", () => {
 
   afterEach(() => {
     process.env = { ...originalEnv }
+    vi.unstubAllEnvs()
     jwtVerifyMock.mockReset()
     vi.restoreAllMocks()
   })
@@ -65,12 +66,12 @@ describe("tina editor auth", () => {
   })
 
   it("applies allowlist rules for emails/domains and dev fallback", () => {
-    process.env.NODE_ENV = "development"
+    vi.stubEnv("NODE_ENV", "development")
     delete process.env.TINA_ALLOWED_GOOGLE_EMAILS
     delete process.env.TINA_ALLOWED_GOOGLE_DOMAINS
     expect(isTinaEditorEmailAllowed("dev@example.com")).toBe(true)
 
-    process.env.NODE_ENV = "production"
+    vi.stubEnv("NODE_ENV", "production")
     expect(isTinaEditorEmailAllowed("dev@example.com")).toBe(false)
 
     process.env.TINA_ALLOWED_GOOGLE_EMAILS = "approved@example.com"
@@ -81,7 +82,7 @@ describe("tina editor auth", () => {
   })
 
   it("signs and verifies editor tokens when allowlisted", async () => {
-    process.env.NODE_ENV = "production"
+    vi.stubEnv("NODE_ENV", "production")
     process.env.TINA_AUTH_TOKEN_SECRET = "super-secret"
     process.env.TINA_ALLOWED_GOOGLE_EMAILS = "editor@example.com"
     delete process.env.TINA_ALLOWED_GOOGLE_DOMAINS
@@ -96,7 +97,7 @@ describe("tina editor auth", () => {
   })
 
   it("rejects verification when allowlist changes after token creation", async () => {
-    process.env.NODE_ENV = "production"
+    vi.stubEnv("NODE_ENV", "production")
     process.env.TINA_AUTH_TOKEN_SECRET = "super-secret"
     process.env.TINA_ALLOWED_GOOGLE_EMAILS = "editor@example.com"
 
@@ -110,7 +111,7 @@ describe("tina editor auth", () => {
   })
 
   it("returns null token for missing email or non-allowlisted email", async () => {
-    process.env.NODE_ENV = "production"
+    vi.stubEnv("NODE_ENV", "production")
     process.env.TINA_AUTH_TOKEN_SECRET = "super-secret"
     process.env.TINA_ALLOWED_GOOGLE_EMAILS = "approved@example.com"
 
@@ -119,7 +120,7 @@ describe("tina editor auth", () => {
   })
 
   it("returns null when jwt verification throws", async () => {
-    process.env.NODE_ENV = "production"
+    vi.stubEnv("NODE_ENV", "production")
     process.env.TINA_AUTH_TOKEN_SECRET = "super-secret"
     process.env.TINA_ALLOWED_GOOGLE_EMAILS = "editor@example.com"
 
