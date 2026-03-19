@@ -5,8 +5,9 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { tinaField } from "tinacms/dist/react";
 
-import { DryApiLogo } from "@/components/site/dryapi-logo";
+import { BrandLogo } from "@/components/site/brand-logo";
 import { QuoteAwareLink } from "@/components/site/quote-aware-link";
+import { toRoute } from "@/lib/route";
 import type { SiteConfig } from "@/lib/site-content-schema";
 
 function isCurrentPath(target: string, currentPath: string) {
@@ -34,15 +35,20 @@ export function SiteHeader({
   const isMobileMenuOpen = mobileMenuPath === pathname;
   const utilityCtaLabel = site.header.phone.label.replace(/\s+/g, " ").trim();
   const useSolidPalette =
-    hasScrolled || pathname.startsWith("/pricing") || pathname.startsWith("/plans") || pathname.startsWith("/models");
+    hasScrolled ||
+    pathname === "/blog" ||
+    pathname.includes("/blog/") ||
+    pathname.startsWith("/pricing") ||
+    pathname.startsWith("/plans") ||
+    pathname.startsWith("/models");
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!isHomeRef.current) return;
+      if (!isHomeRef.current && pathname !== "/blog") return;
       const y = window.scrollY;
-      setHasScrolled(y > 18);
+      setHasScrolled(y > 18 || pathname === "/blog");
       setScrollProgress((current) => {
-        const next = Math.min(1, Math.max(0, y / 260));
+        const next = pathname === "/blog" ? 1 : Math.min(1, Math.max(0, y / 260));
         return Math.abs(next - current) > 0.01 ? next : current;
       });
     };
@@ -105,15 +111,15 @@ export function SiteHeader({
       const y = window.scrollY;
       setHasScrolled(y > 18);
       setScrollProgress(Math.min(1, Math.max(0, y / 260)));
+    } else if (pathname === "/blog") {
+      setHasScrolled(true);
+      setScrollProgress(1);
     } else {
       setHasScrolled(true);
       setScrollProgress(1);
     }
-  }, [isHome]);
+  }, [isHome, pathname]);
 
-  const headerMotionStyle = {
-    transform: `translateY(${(-4 * scrollProgress).toFixed(2)}px)`,
-  };
   const announcementStyle = {
     opacity: 1 - scrollProgress * 0.3,
     transform: `translateY(${(-1 * scrollProgress).toFixed(2)}px)`,
@@ -127,10 +133,9 @@ export function SiteHeader({
       ref={headerRef}
       className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow,transform] duration-500 animate-in slide-in-from-top-24 ease-out ${
         useSolidPalette
-          ? "border-b border-[color:var(--border)] bg-[var(--site-surface-0)]/94 shadow-[0_14px_30px_rgba(0,0,0,0.28)] backdrop-blur-md"
+          ? "border-b border-[color:var(--border)] bg-[var(--site-surface-0)]/94 shadow backdrop-blur-md"
           : "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
       }`}
-      style={headerMotionStyle}
     >
       <div
         className={`hidden text-center text-[12px] transition-[background-color,border-color,opacity,transform] duration-500 ease-out md:block ${
@@ -155,10 +160,10 @@ export function SiteHeader({
       >
         <Link
           className={`flex items-center ${useSolidPalette ? "text-site-strong" : "text-site-inverse"}`}
-          href="/"
+          href={toRoute("/")}
           style={navMotionStyle}
         >
-          <DryApiLogo
+          <BrandLogo
             mark={site.brand.mark}
             markDataTinaField={tinaField(site.brand, "mark")}
             name={site.brand.name}
@@ -186,7 +191,7 @@ export function SiteHeader({
                     ? "text-site-muted hover:bg-white/5 hover:text-[color:var(--site-text-strong)]"
                     : "text-site-inverse-muted hover:bg-white/10 hover:text-[color:var(--site-text-inverse)]"
               }`}
-              href={link.href}
+              href={toRoute(link.href)}
             >
               {link.label}
             </Link>
@@ -201,7 +206,7 @@ export function SiteHeader({
                 : "border border-white/34 bg-white/8 text-site-inverse hover:border-white/48 hover:text-[color:var(--site-text-inverse)]"
             }`}
             data-tina-field={tinaField(site.header, "phone")}
-            href={site.header.phone.href}
+            href={toRoute(site.header.phone.href)}
           >
             {utilityCtaLabel}
           </Link>
@@ -224,7 +229,7 @@ export function SiteHeader({
                 : "border border-white/32 text-site-inverse hover:border-white/48 hover:text-[color:var(--site-text-inverse)]"
             }`}
             data-tina-field={tinaField(site.header, "phone")}
-            href={site.header.phone.href}
+            href={toRoute(site.header.phone.href)}
           >
             {utilityCtaLabel}
           </Link>
@@ -272,7 +277,7 @@ export function SiteHeader({
                     ? "bg-primary/15 text-primary"
                     : "text-site-muted hover:bg-white/5 hover:text-[color:var(--site-text-strong)]"
                 }`}
-                href={link.href}
+                href={toRoute(link.href)}
                 onClick={() => setMobileMenuPath(null)}
               >
                 {link.label}
@@ -284,7 +289,7 @@ export function SiteHeader({
             <Link
               className="inline-flex items-center justify-center gap-2 rounded-sm border border-primary/45 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:border-accent/70 hover:text-[color:var(--site-text-strong)]"
               data-tina-field={tinaField(site.header, "phone")}
-              href={site.header.phone.href}
+              href={toRoute(site.header.phone.href)}
               onClick={() => setMobileMenuPath(null)}
             >
               {utilityCtaLabel}

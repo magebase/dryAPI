@@ -4,6 +4,12 @@ const { jwtVerifyMock } = vi.hoisted(() => ({
   jwtVerifyMock: vi.fn(),
 }))
 
+vi.mock("server-only", () => ({}))
+
+vi.mock("@/lib/auth", () => ({
+  getAuth: vi.fn(),
+}))
+
 vi.mock("jose", () => {
   class MockSignJWT {
     setProtectedHeader() {
@@ -154,5 +160,28 @@ describe("tina editor auth", () => {
     const failedResult = await getBetterAuthSession(new Request("https://example.com/admin"))
     expect(failedResult.setCookieHeader).toBe("sid=2")
     expect(failedResult.session).toBeNull()
+  })
+
+  it("uses the configured auth origin for session fetches", async () => {
+    vi.stubEnv("BETTER_AUTH_URL", "https://auth.example.com/base")
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ user: { email: "editor@example.com" } }), {
+        status: 200,
+      })
+    )
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    await getBetterAuthSession(
+      new Request("https://spoofed.example.com/admin", {
+        headers: { cookie: "sid=1" },
+      })
+    )
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [input, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit]
+    expect(String(input)).toBe("https://auth.example.com/api/auth/get-session")
+    expect(new Headers(init.headers).get("cookie")).toBe("sid=1")
   })
 })

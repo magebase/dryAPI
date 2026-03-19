@@ -1,20 +1,20 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # n8n Integration
 
-This guide explains how to integrate deAPI with n8n to automate AI-powered workflows such as image generation, video transcription, and more.
+This guide explains how to integrate dryAPI with n8n to automate AI-powered workflows such as image generation, video transcription, and more.
 
 <Note>
-  For a simpler, no-code experience, use the [deAPI Community Node](/execution-modes-and-integrations/n8n-deapi-node) instead. It handles webhook-based waiting, binary downloads, and error handling automatically — with just one node. The guide below covers the manual HTTP Request approach, which works with both self-hosted n8n and n8n Cloud.
+  For a simpler, no-code experience, use the [dryAPI Community Node](/execution-modes-and-integrations/n8n-dryapi-node) instead. It handles webhook-based waiting, binary downloads, and error handling automatically — with just one node. The guide below covers the manual HTTP Request approach, which works with both self-hosted n8n and n8n Cloud.
 </Note>
 
 ***
 
 ### What is n8n?
 
-**n8n** is an open-source workflow automation tool that allows you to connect different services and APIs together. With deAPI's HTTP API, you can build powerful automation workflows that generate images, transcribe videos, create speech, and more — all without writing code.
+**n8n** is an open-source workflow automation tool that allows you to connect different services and APIs together. With dryAPI's HTTP API, you can build powerful automation workflows that generate images, transcribe videos, create speech, and more — all without writing code.
 
 ***
 
@@ -23,28 +23,28 @@ This guide explains how to integrate deAPI with n8n to automate AI-powered workf
 Before you begin, ensure you have:
 
 * An **n8n instance** (self-hosted or [n8n Cloud](https://n8n.io/))
-* A **deAPI API key** from the [deAPI Dashboard](https://deapi.ai/dashboard)
+* A **dryAPI API key** from the [dryAPI Dashboard](https://dryapi.dev/dashboard)
 * Basic understanding of n8n workflows
 
 ***
 
 ### Authentication Setup
 
-All deAPI endpoints require Bearer token authentication. In n8n, configure this once and reuse it across your workflow:
+All dryAPI endpoints require Bearer token authentication. In n8n, configure this once and reuse it across your workflow:
 
 1. In your HTTP Request node, set **Authentication** to `Generic Credential Type`
 2. Set **Generic Auth Type** to `Bearer Auth`
-3. Create a new credential with your deAPI API key as the token
+3. Create a new credential with your dryAPI API key as the token
 
 ***
 
 ### Example Workflow: Text-to-Image Generation
 
-This example demonstrates a complete workflow that generates an image from a text prompt using deAPI's asynchronous job model.
+This example demonstrates a complete workflow that generates an image from a text prompt using dryAPI's asynchronous job model.
 
 #### Workflow Overview
 
-The workflow follows deAPI's [queued execution model](/execution-modes-and-integrations/execution-modes-and-http-queue):
+The workflow follows dryAPI's [queued execution model](/execution-modes-and-integrations/execution-modes-and-http-queue):
 
 1. **Submit job** — POST request to start image generation
 2. **Poll status** — Check job status in a loop
@@ -101,10 +101,10 @@ Add an **HTTP Request** node with the following configuration:
 | Setting               | Value                                        |
 | --------------------- | -------------------------------------------- |
 | **Method**            | `POST`                                       |
-| **URL**               | `https://api.deapi.ai/api/v1/client/txt2img` |
+| **URL**               | `https://api.dryapi.dev/api/v1/client/txt2img` |
 | **Authentication**    | Generic Credential Type                      |
 | **Generic Auth Type** | Bearer Auth                                  |
-| **Bearer Auth**       | Select your deAPI credential                 |
+| **Bearer Auth**       | Select your dryAPI credential                 |
 | **Send Body**         | Enabled (toggle ON)                          |
 | **Body Content Type** | JSON                                         |
 | **Specify Body**      | Using JSON                                   |
@@ -144,10 +144,10 @@ Add a second **HTTP Request** node to check the job status:
 | Setting               | Value                                                                                                |
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Method**            | `GET`                                                                                                |
-| **URL**               | `https://api.deapi.ai/api/v1/client/request-status/{{ $node["HTTP Request"].json.data.request_id }}` |
+| **URL**               | `https://api.dryapi.dev/api/v1/client/request-status/{{ $node["HTTP Request"].json.data.request_id }}` |
 | **Authentication**    | Generic Credential Type                                                                              |
 | **Generic Auth Type** | Bearer Auth                                                                                          |
-| **Bearer Auth**       | Select your deAPI credential                                                                         |
+| **Bearer Auth**       | Select your dryAPI credential                                                                         |
 
 <Note>
   The URL uses n8n expression syntax to reference the `request_id` from the previous node.
@@ -242,13 +242,13 @@ Add error handling to your workflow:
 
 #### Reusable Credentials
 
-Create a single Bearer Auth credential named "deAPI" and reuse it across all HTTP Request nodes.
+Create a single Bearer Auth credential named "dryAPI" and reuse it across all HTTP Request nodes.
 
 ***
 
 ### Other Endpoints
 
-Use the same polling pattern for all deAPI endpoints:
+Use the same polling pattern for all dryAPI endpoints:
 
 | Service                  | POST Endpoint                  |
 | ------------------------ | ------------------------------ |
@@ -278,8 +278,8 @@ All endpoints follow the same pattern:
 ### Resources
 
 * [n8n Documentation](https://docs.n8n.io/)
-* [deAPI Community Node](/execution-modes-and-integrations/n8n-deapi-node)
-* [deAPI API Reference](/api/overview)
+* [dryAPI Community Node](/execution-modes-and-integrations/n8n-dryapi-node)
+* [dryAPI API Reference](/api/overview)
 * [Execution Modes & HTTP Queue](/execution-modes-and-integrations/execution-modes-and-http-queue)
 * [Model Selection](/api/utilities/model-selection)
 

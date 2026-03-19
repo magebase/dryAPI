@@ -990,7 +990,7 @@
           "Pricing"
         ],
         "summary": "List dynamic pricing snapshots for a surface",
-        "description": "Returns worker-calculated pricing snapshots derived from runtime analytics. Prices are computed with a hard 200% profit floor (3x effective unit cost) and refreshed continuously from recent request statistics.",
+        "description": "Returns worker-calculated pricing snapshots derived from Analytics Engine pricing telemetry and recent runtime statistics. Prices are computed with a hard 200% profit floor (3x effective unit cost) and refreshed continuously.",
         "security": [
           {
             "BearerAuth": []
@@ -1050,6 +1050,26 @@
               ]
             },
             "description": "Model slug used for endpoint routing and cost estimation."
+          },
+          {
+            "in": "query",
+            "name": "workerType",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "active"
+                },
+                {
+                  "type": "string",
+                  "const": "flex"
+                }
+              ],
+              "examples": [
+                "flex"
+              ]
+            },
+            "description": "Optional worker type override used when resolving the active quote."
           },
           {
             "in": "query",
@@ -1336,6 +1356,22 @@
                       "ZImageTurbo_INT8"
                     ]
                   },
+                  "worker_type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "active"
+                      },
+                      {
+                        "type": "string",
+                        "const": "flex"
+                      }
+                    ],
+                    "description": "Optional worker type hint for dynamic pricing (`active` or `flex`).",
+                    "examples": [
+                      "flex"
+                    ]
+                  },
                   "input": {
                     "type": "object",
                     "patternProperties": {
@@ -1516,6 +1552,22 @@
                       "RealESRGAN_x4",
                       "WhisperLargeV3",
                       "ZImageTurbo_INT8"
+                    ]
+                  },
+                  "worker_type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "active"
+                      },
+                      {
+                        "type": "string",
+                        "const": "flex"
+                      }
+                    ],
+                    "description": "Optional worker type hint for dynamic pricing (`active` or `flex`).",
+                    "examples": [
+                      "flex"
                     ]
                   },
                   "input": {

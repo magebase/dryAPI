@@ -1,12 +1,12 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Models
 
-> How to discover, select, and use models on deAPI
+> How to discover, select, and use models on dryAPI
 
-**deAPI** gives you a unified API across multiple open-source models running on a decentralized GPU cloud. We regularly expand the model lineup — new models, new capabilities, better performance — so your integration can always take advantage of the latest options.
+**dryAPI** gives you a unified API across multiple open-source models running on a decentralized GPU cloud. We regularly expand the model lineup — new models, new capabilities, better performance — so your integration can always take advantage of the latest options.
 
 The [Model Selection](/api/utilities/model-selection) endpoint returns the live, authoritative list of all available models, their slugs, limits, and defaults. **Use it as the starting point for every integration.**
 
@@ -21,8 +21,8 @@ The [Model Selection](/api/utilities/model-selection) endpoint returns the live,
 Before you start building, call the models endpoint to discover what's available:
 
 ```bash  theme={null}
-curl -X GET "https://api.deapi.ai/api/v1/client/models" \
-  -H "Authorization: Bearer $DEAPI_API_KEY" \
+curl -X GET "https://api.dryapi.dev/api/v1/client/models" \
+  -H "Authorization: Bearer $DRYAPI_API_KEY" \
   -H "Accept: application/json"
 ```
 
@@ -47,8 +47,8 @@ You can filter the list by task type using the `filter[inference_types]` query p
 
 ```bash  theme={null}
 # Get only image-generation models
-curl -X GET "https://api.deapi.ai/api/v1/client/models?filter[inference_types]=txt2img" \
-  -H "Authorization: Bearer $DEAPI_API_KEY" \
+curl -X GET "https://api.dryapi.dev/api/v1/client/models?filter[inference_types]=txt2img" \
+  -H "Authorization: Bearer $DRYAPI_API_KEY" \
   -H "Accept: application/json"
 ```
 
@@ -66,7 +66,7 @@ See the full endpoint spec → [Model Selection](/api/utilities/model-selection)
 
 ## Supported tasks
 
-The table below shows which **task types** deAPI supports. To see which models are currently available for a given task, query the models endpoint with the corresponding `filter[inference_types]` value.
+The table below shows which **task types** dryAPI supports. To see which models are currently available for a given task, query the models endpoint with the corresponding `filter[inference_types]` value.
 
 | Task                | `inference_types` value | What it does                                                                                                      |
 | ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -141,8 +141,8 @@ Some models do not support guidance. Check `info.features.supports_guidance` —
 
 ```bash  theme={null}
 # Fetch all text-to-image models
-curl -X GET "https://api.deapi.ai/api/v1/client/models?filter[inference_types]=txt2img" \
-  -H "Authorization: Bearer $DEAPI_API_KEY" \
+curl -X GET "https://api.dryapi.dev/api/v1/client/models?filter[inference_types]=txt2img" \
+  -H "Authorization: Bearer $DRYAPI_API_KEY" \
   -H "Accept: application/json"
 
 # Read the response: pick a slug, note its limits and defaults.
@@ -151,8 +151,8 @@ curl -X GET "https://api.deapi.ai/api/v1/client/models?filter[inference_types]=t
 **2. Use the slug in a generation request**
 
 ```bash  theme={null}
-curl -X POST "https://api.deapi.ai/api/v1/client/txt2img" \
-  -H "Authorization: Bearer $DEAPI_API_KEY" \
+curl -X POST "https://api.dryapi.dev/api/v1/client/txt2img" \
+  -H "Authorization: Bearer $DRYAPI_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -d '{
@@ -172,8 +172,8 @@ curl -X POST "https://api.deapi.ai/api/v1/client/txt2img" \
 **3. Transcribe a video by URL**
 
 ```bash  theme={null}
-curl -X POST "https://api.deapi.ai/api/v1/client/vid2txt" \
-  -H "Authorization: Bearer $DEAPI_API_KEY" \
+curl -X POST "https://api.dryapi.dev/api/v1/client/vid2txt" \
+  -H "Authorization: Bearer $DRYAPI_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -d '{
@@ -199,7 +199,7 @@ Jobs return a `request_id`. Poll results with `GET /api/v1/client/request-status
 
 ## For AI agents & LLMs
 
-If you are an AI agent, MCP client, or LLM integrating with deAPI:
+If you are an AI agent, MCP client, or LLM integrating with dryAPI:
 
 1. **Call** `GET /api/v1/client/models` at the start of your session to get the current model list. Do not rely on model slugs from training data, cached documentation, or prior conversations — they may be outdated.
 2. **Use** `filter[inference_types]` to narrow down to the task you need (e.g. `txt2img`, `txt2audio`, `aud2video`).

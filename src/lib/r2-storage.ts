@@ -7,6 +7,8 @@ type UploadedFile = {
   url: string
 }
 
+const MEDIA_KEY_PREFIX = "media/"
+
 function getR2Config() {
   const accountId = process.env.R2_ACCOUNT_ID
   const bucket = process.env.R2_BUCKET
@@ -98,7 +100,15 @@ export async function listR2Files() {
     }))
 }
 
+export function isDeletableMediaKey(key: string): boolean {
+  return key.startsWith(MEDIA_KEY_PREFIX) && !key.includes("..") && !key.includes("\\")
+}
+
 export async function deleteR2File(key: string) {
+  if (!isDeletableMediaKey(key)) {
+    return false
+  }
+
   const context = getClient()
 
   if (!context) {

@@ -1,5 +1,5 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Webhooks
@@ -18,7 +18,7 @@ Webhooks allow you to receive real-time HTTP notifications when your inference j
 
 ### Global Webhook URL
 
-Configure a global webhook URL in your [account settings](https://deapi.ai/settings/webhooks). All jobs will send notifications to this URL unless overridden.
+Configure a global webhook URL in your [account settings](https://dryapi.dev/settings/webhooks). All jobs will send notifications to this URL unless overridden.
 
 ### Per-Request Override
 
@@ -28,7 +28,7 @@ You can override the global webhook URL on any job request by including the `web
 {
   "prompt": "a beautiful sunset over mountains",
   "model": "flux-schnell",
-  "webhook_url": "https://your-server.com/webhooks/deapi"
+  "webhook_url": "https://your-server.com/webhooks/dryapi"
 }
 ```
 
@@ -54,12 +54,12 @@ All webhook requests include these headers:
 
 | Header                | Description                            | Example                                      |
 | --------------------- | -------------------------------------- | -------------------------------------------- |
-| `X-DeAPI-Signature`   | HMAC-SHA256 signature for verification | `sha256=5d41402abc4b2a76b9719d911017c592...` |
-| `X-DeAPI-Timestamp`   | Unix timestamp when webhook was sent   | `1705315800`                                 |
-| `X-DeAPI-Event`       | Event type that triggered the webhook  | `job.completed`                              |
-| `X-DeAPI-Delivery-Id` | Unique identifier for this delivery    | `550e8400-e29b-41d4-a716-446655440001`       |
+| `X-dryAPI-Signature`   | HMAC-SHA256 signature for verification | `sha256=5d41402abc4b2a76b9719d911017c592...` |
+| `X-dryAPI-Timestamp`   | Unix timestamp when webhook was sent   | `1705315800`                                 |
+| `X-dryAPI-Event`       | Event type that triggered the webhook  | `job.completed`                              |
+| `X-dryAPI-Delivery-Id` | Unique identifier for this delivery    | `550e8400-e29b-41d4-a716-446655440001`       |
 | `Content-Type`        | Always `application/json`              | `application/json`                           |
-| `User-Agent`          | Identifies the sender                  | `DeAPI-Webhook/1.0`                          |
+| `User-Agent`          | Identifies the sender                  | `dryAPI-Webhook/1.0`                          |
 
 ### Payload Structure
 
@@ -105,7 +105,7 @@ All webhook requests include these headers:
         "previous_status": "processing",
         "job_type": "txt2img",
         "completed_at": "2024-01-15T10:30:45.000Z",
-        "result_url": "https://storage.deapi.ai/results/.../output.png",
+        "result_url": "https://storage.dryapi.dev/results/.../output.png",
         "processing_time_ms": 45000
       }
     }
@@ -169,13 +169,13 @@ All webhook requests include these headers:
 
 ### Signature Verification
 
-Every webhook includes an HMAC-SHA256 signature in the `X-DeAPI-Signature` header. **Always verify this signature** to ensure the request came from deAPI.
+Every webhook includes an HMAC-SHA256 signature in the `X-dryAPI-Signature` header. **Always verify this signature** to ensure the request came from dryAPI.
 
 **Signature format:** `sha256=<hex-encoded-hmac>`
 
 **How to verify:**
 
-1. Get the timestamp from `X-DeAPI-Timestamp` header
+1. Get the timestamp from `X-dryAPI-Timestamp` header
 2. Get the raw JSON body (don't parse it first)
 3. Concatenate: `timestamp + "." + raw_body`
 4. Calculate HMAC-SHA256 using your webhook secret
@@ -186,8 +186,8 @@ Every webhook includes an HMAC-SHA256 signature in the `X-DeAPI-Signature` heade
   const crypto = require('crypto');
 
   function verifyWebhook(req, secret) {
-    const signature = req.headers['x-deapi-signature'];
-    const timestamp = req.headers['x-deapi-timestamp'];
+    const signature = req.headers['x-dryapi-signature'];
+    const timestamp = req.headers['x-dryapi-timestamp'];
     const body = req.body.toString(); // Raw request body as string
 
     // Check timestamp is within 5 minutes
@@ -217,8 +217,8 @@ Every webhook includes an HMAC-SHA256 signature in the `X-DeAPI-Signature` heade
   import time
 
   def verify_webhook(headers, body, secret):
-      signature = headers.get('X-DeAPI-Signature', '')
-      timestamp = headers.get('X-DeAPI-Timestamp', '')
+      signature = headers.get('X-dryAPI-Signature', '')
+      timestamp = headers.get('X-dryAPI-Timestamp', '')
 
       # Check timestamp is within 5 minutes
       now = int(time.time())
@@ -240,8 +240,8 @@ Every webhook includes an HMAC-SHA256 signature in the `X-DeAPI-Signature` heade
   ```php PHP theme={null}
   function verifyWebhook(array $headers, string $body, string $secret): bool
   {
-      $signature = $headers['X-DeAPI-Signature'] ?? '';
-      $timestamp = $headers['X-DeAPI-Timestamp'] ?? '';
+      $signature = $headers['X-dryAPI-Signature'] ?? '';
+      $timestamp = $headers['X-dryAPI-Timestamp'] ?? '';
 
       // Check timestamp is within 5 minutes
       if (abs(time() - (int) $timestamp) > 300) {
@@ -343,9 +343,9 @@ Your endpoint should:
 
 ```javascript  theme={null}
 // Example: Express.js endpoint
-app.post('/webhooks/deapi', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhooks/dryapi', express.raw({ type: 'application/json' }), (req, res) => {
   // Verify signature first
-  if (!verifyWebhook(req, process.env.DEAPI_WEBHOOK_SECRET)) {
+  if (!verifyWebhook(req, process.env.DRYAPI_WEBHOOK_SECRET)) {
     return res.status(401).send('Invalid signature');
   }
 

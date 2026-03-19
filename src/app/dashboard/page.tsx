@@ -3,13 +3,22 @@ import { headers } from "next/headers";
 import {
   ArrowUpRight,
   CreditCard,
+  Gauge,
   KeyRound,
   Layers2,
+  Megaphone,
+  type LucideIcon,
+  Rocket,
   ShieldCheck,
+  Sparkles,
   Zap,
 } from "lucide-react";
 
 import { DashboardOverviewCharts } from "@/app/dashboard/_components/dashboard-overview-charts";
+import {
+  getDashboardAnnouncementGradient,
+  getGrainOverlayStyle,
+} from "@/components/site/utility/gradients";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,8 +27,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-export const dynamic = "force-dynamic";
+import { resolveAccountRpmLimit } from "@/lib/account-rate-limits";
+import { toRoute } from "@/lib/route";
+import { listActiveRunpodModels } from "@/lib/runpod-active-models";
+import {
+  listSaasPlans,
+  type SaasPlanDefinition,
+} from "@/lib/stripe-saas-plans";
 
 type EndpointResult = {
   status: number | null;
@@ -56,6 +70,15 @@ type DashboardOverviewData = {
   balance: EndpointResult;
   usage: EndpointResult;
   models: EndpointResult;
+};
+
+type DashboardAnnouncementItem = {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  ctaLabel: string;
+  icon: LucideIcon;
 };
 
 type HeaderStore = {
@@ -361,13 +384,29 @@ async function getDashboardOverviewData(): Promise<DashboardOverviewData> {
   return { balance, usage, models };
 }
 
-function resolveBalance(payload: unknown): number | null {
-  return readFirstNumber(payload, [
+function resolveBalance(payload: unknown) {
+  const balance = readFirstNumber(payload, [
     ["balance"],
     ["data", "balance"],
     ["credits"],
     ["data", "credits"],
   ]);
+
+  const subscriptionCredits = readFirstNumber(payload, [
+    ["subscription_credits"],
+    ["data", "subscription_credits"],
+  ]);
+
+  const topUpCredits = readFirstNumber(payload, [
+    ["top_up_credits"],
+    ["data", "top_up_credits"],
+  ]);
+
+  return {
+    balance,
+    subscriptionCredits,
+    topUpCredits,
+  };
 }
 
 function resolveUsageStats(payload: unknown): DashboardUsageStats {
@@ -507,6 +546,119 @@ function resolveModelCount(payload: unknown): number | null {
   return readFirstArrayLength(payload, [["data"], ["models"], ["items"]]);
 }
 
+function resolveLifetimeDepositedUsd(payload: unknown): number | null {
+  return readFirstNumber(payload, [
+    ["lifetime_deposited_usd"],
+    ["lifetimeDepositedUsd"],
+    ["data", "lifetime_deposited_usd"],
+    ["data", "lifetimeDepositedUsd"],
+  ]);
+}
+
+function resolveAccountRpmFromPayload(
+  payload: unknown,
+  lifetimeDepositedUsd: number,
+): number {
+  const explicitRpm = readFirstNumber(payload, [
+    ["rate_limit", "rpm"],
+    ["rateLimit", "rpm"],
+    ["data", "rate_limit", "rpm"],
+    ["data", "rateLimit", "rpm"],
+  ]);
+
+  if (explicitRpm !== null && explicitRpm > 0) {
+    return Math.round(explicitRpm);
+  }
+
+  return resolveAccountRpmLimit(lifetimeDepositedUsd);
+}
+
+function formatUsdCompact(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: value < 10 ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatModelHeadlineName(value: string): string {
+  const normalized = value.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+
+  if (normalized.length === 0) {
+    return value;
+  }
+
+  return normalized
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function buildAnnouncementItems(input: {
+  plans: readonly SaasPlanDefinition[];
+  lifetimeDepositedUsd: number;
+  rpmLimit: number;
+  featuredModels: string[];
+}): DashboardAnnouncementItem[] {
+  const nextRpmUnlockDetail =
+    input.rpmLimit < 25
+      ? `Deposit ${formatUsdCompact(Math.max(0, 50 - input.lifetimeDepositedUsd))} more to unlock 25 RPM.`
+      : input.rpmLimit < 50
+        ? `Deposit ${formatUsdCompact(Math.max(0, 100 - input.lifetimeDepositedUsd))} more to unlock 50 RPM.`
+        : "You are on the highest RPM tier.";
+
+  const rpmAnnouncements: DashboardAnnouncementItem[] = [
+    {
+      id: "rpm-tier-active",
+      title: `RPM Tier Active: ${input.rpmLimit} RPM`,
+      detail: `Lifetime deposited: ${formatUsdCompact(input.lifetimeDepositedUsd)}. Deposit tiers: < $50 = 4 RPM, >= $50 = 25 RPM, >= $100 = 50 RPM.`,
+      href: "/dashboard/billing",
+      ctaLabel: "View Billing",
+      icon: Gauge,
+    },
+    {
+      id: "rpm-next-tier",
+      title: "Next Throughput Unlock",
+      detail: nextRpmUnlockDetail,
+      href: "/dashboard/billing",
+      ctaLabel: "Add Credits",
+      icon: Rocket,
+    },
+  ];
+
+  const planAnnouncements = input.plans.map((plan) => {
+    const topUpSavingsUsd = Number(
+      ((plan.defaultTopUpAmountUsd * plan.discountPercent) / 100).toFixed(2),
+    );
+
+    return {
+      id: `plan-ad-${plan.slug}`,
+      title: `Subscribe ${plan.label}`,
+      detail: `Get ${plan.monthlyTokens.toLocaleString("en-US")} tokens every month and save ${plan.discountPercent}% on top-ups (${formatUsdCompact(
+        topUpSavingsUsd,
+      )} saved on a ${formatUsdCompact(plan.defaultTopUpAmountUsd)} top-up).`,
+      href: `/api/dashboard/billing/subscribe?plan=${plan.slug}`,
+      ctaLabel: "Subscribe",
+      icon: Sparkles,
+    } satisfies DashboardAnnouncementItem;
+  });
+
+  const modelAnnouncement: DashboardAnnouncementItem = {
+    id: "model-announcement",
+    title: "New Model Announcements",
+    detail:
+      input.featuredModels.length > 0
+        ? `${input.featuredModels.join(" · ")} are now available in the catalog.`
+        : "Fresh model updates are available in the model catalog.",
+    href: "/dashboard/models",
+    ctaLabel: "Explore Models",
+    icon: Megaphone,
+  };
+
+  return [...rpmAnnouncements, ...planAnnouncements, modelAnnouncement];
+}
+
 function describeEndpointIssue(status: number | null): string {
   if (status === 401 || status === 403) {
     return "Authorization required";
@@ -526,7 +678,16 @@ function describeEndpointIssue(status: number | null): string {
 export default async function DashboardOverviewPage() {
   const { balance, usage, models } = await getDashboardOverviewData();
 
-  const availableCredits = resolveBalance(balance.data);
+  const {
+    balance: availableCredits,
+    subscriptionCredits,
+    topUpCredits,
+  } = resolveBalance(balance.data);
+  const lifetimeDepositedUsd = resolveLifetimeDepositedUsd(balance.data) ?? 0;
+  const currentRpmLimit = resolveAccountRpmFromPayload(
+    balance.data,
+    lifetimeDepositedUsd,
+  );
   const usageStats = resolveUsageStats(usage.data);
   const modelsRouted = resolveModelCount(models.data);
   const balanceUpdatedAt = readFirstString(balance.data, [
@@ -556,7 +717,11 @@ export default async function DashboardOverviewPage() {
       label: "Available Credits",
       value: formatCredits(availableCredits),
       trend:
-        availableCredits !== null ? "" : describeEndpointIssue(balance.status),
+        availableCredits !== null
+          ? (subscriptionCredits ?? 0) > 0 || (topUpCredits ?? 0) > 0
+            ? `${formatCredits(subscriptionCredits)} sub / ${formatCredits(topUpCredits)} top-up`
+            : ""
+          : describeEndpointIssue(balance.status),
       icon: CreditCard,
     },
     {
@@ -585,8 +750,69 @@ export default async function DashboardOverviewPage() {
     },
   ];
 
+  const plans = listSaasPlans();
+  const featuredModels = listActiveRunpodModels()
+    .slice(0, 3)
+    .map((model) => formatModelHeadlineName(model.displayName));
+  const announcementGradient = getDashboardAnnouncementGradient(
+    Math.round(lifetimeDepositedUsd * 22),
+  );
+  const grainOverlayStyle = getGrainOverlayStyle();
+  const announcementItems = buildAnnouncementItems({
+    plans,
+    lifetimeDepositedUsd,
+    rpmLimit: currentRpmLimit,
+    featuredModels,
+  });
+
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6">
+      <div
+        className="animate-fade-in relative isolate overflow-hidden rounded-2xl border border-zinc-200/80 shadow-sm dark:border-zinc-700/70"
+        aria-live="polite"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{ background: announcementGradient.background }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 animate-[hero-grain-drift_6s_steps(8)_infinite]"
+          style={grainOverlayStyle}
+        />
+        <div className="relative z-10 border-b border-white/25 px-4 py-3 text-white md:px-5">
+          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em]">
+            <Megaphone className="size-4" />
+            Overview Announcements
+          </p>
+        </div>
+        <div className="relative z-10 grid gap-2 p-3 md:grid-cols-2 md:p-4 xl:grid-cols-3">
+          {announcementItems.map((item, index) => (
+            <article
+              key={item.id}
+              style={{ animationDelay: `${index * 45}ms` }}
+              className="animate-slide-up rounded-xl border border-white/35 bg-white/14 p-3 text-white backdrop-blur-[2px]"
+            >
+              <p className="inline-flex items-center gap-2 text-sm font-semibold">
+                <item.icon className="size-4" />
+                {item.title}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-white/90">
+                {item.detail}
+              </p>
+              <Link
+                href={toRoute(item.href)}
+                className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-white underline-offset-4 hover:underline"
+              >
+                {item.ctaLabel}
+                <ArrowUpRight className="size-3.5" />
+              </Link>
+            </article>
+          ))}
+        </div>
+      </div>
+
       <Card className="animate-fade-in border-zinc-200 bg-white/95 py-0 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
         <CardHeader className="gap-3 border-b border-zinc-200/70 py-6 dark:border-zinc-700/70">
           <CardTitle className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
@@ -598,7 +824,9 @@ export default async function DashboardOverviewPage() {
           </CardDescription>
           <div className="flex flex-wrap gap-2 pt-1">
             <Button asChild size="sm">
-              <Link href="/dashboard/settings/api-keys">Create API Key</Link>
+              <Link href="/dashboard/settings/api-keys" prefetch={false}>
+                Create API Key
+              </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/dashboard/models">

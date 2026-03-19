@@ -4,6 +4,17 @@ import { createAIShareURLs } from "citemet"
 import { BrainCircuit, ChevronDown, ExternalLink } from "lucide-react"
 
 import {
+  ChatGptIcon,
+  ClaudeIcon,
+  CopilotIcon,
+  GeminiIcon,
+  GrokIcon,
+  MetaAiIcon,
+  MistralIcon,
+  PerplexityIcon,
+} from "./ai-provider-icons"
+
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -42,20 +53,20 @@ export function SummarizeWithAi({
   })
 
   const providers = [
-    { name: "ChatGPT", url: shareURLs.chatgpt, dotColor: "bg-emerald-500" },
-    { name: "Claude", url: shareURLs.claude, dotColor: "bg-orange-500" },
-    { name: "Perplexity", url: shareURLs.perplexity, dotColor: "bg-sky-500" },
-    { name: "Gemini", url: shareURLs.gemini, dotColor: "bg-blue-500" },
+    { name: "ChatGPT", url: shareURLs.chatgpt, Icon: ChatGptIcon },
+    { name: "Claude", url: shareURLs.claude, Icon: ClaudeIcon },
+    { name: "Perplexity", url: shareURLs.perplexity, Icon: PerplexityIcon },
+    { name: "Gemini", url: shareURLs.gemini, Icon: GeminiIcon },
     {
       name: "Copilot",
       url: `https://copilot.microsoft.com/chat?q=${encodeURIComponent(
         `Summarize this article: "${title}" — ${pageUrl}. Provide the key technical points and practical takeaways for developers evaluating this option. — redirected by ${brandName}`
       )}`,
-      dotColor: "bg-violet-500",
+      Icon: CopilotIcon,
     },
-    { name: "Grok", url: shareURLs.grok, dotColor: "bg-slate-800" },
-    { name: "Meta AI", url: shareURLs.meta, dotColor: "bg-indigo-500" },
-    { name: "Mistral", url: shareURLs.mistral, dotColor: "bg-amber-500" },
+    { name: "Grok", url: shareURLs.grok, Icon: GrokIcon },
+    { name: "Meta AI", url: shareURLs.meta, Icon: MetaAiIcon },
+    { name: "Mistral", url: shareURLs.mistral, Icon: MistralIcon },
   ]
 
   return (
@@ -68,11 +79,11 @@ export function SummarizeWithAi({
         >
           <BrainCircuit className="size-3.5 text-violet-500" />
           <span>{label}</span>
-          <ChevronDown className="size-3 text-slate-400" />
+          <ChevronDown className="size-3 text-site-soft" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-44">
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.12em] text-site-soft">
           Open in
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -84,9 +95,9 @@ export function SummarizeWithAi({
               rel="noopener noreferrer"
               target="_blank"
             >
-              <span className={`size-2 shrink-0 rounded-full ${provider.dotColor}`} />
+              <provider.Icon className="shrink-0" size={14} />
               <span className="flex-1 font-medium text-slate-700">{provider.name}</span>
-              <ExternalLink className="size-3 shrink-0 text-slate-400" />
+              <ExternalLink className="size-3 shrink-0 text-site-soft" />
             </a>
           </DropdownMenuItem>
         ))}

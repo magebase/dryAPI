@@ -18,8 +18,8 @@ export function BlogSectionMarkdown({ content, dataTinaField }: BlogSectionMarkd
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          h3: ({ children }) => <h3 className="mt-5 text-lg font-semibold text-slate-900">{children}</h3>,
-          h4: ({ children }) => <h4 className="mt-4 text-base font-semibold text-slate-900">{children}</h4>,
+          h3: ({ children }) => <h3 className="mt-5 text-lg font-semibold text-site-strong">{children}</h3>,
+          h4: ({ children }) => <h4 className="mt-4 text-base font-semibold text-site-strong">{children}</h4>,
           p: ({ children }) => <p className="mt-3 first:mt-0">{children}</p>,
           ul: ({ children }) => <ul className="mt-3 list-disc space-y-2 pl-6 marker:text-primary">{children}</ul>,
           ol: ({ children }) => <ol className="mt-3 list-decimal space-y-2 pl-6 marker:text-primary">{children}</ol>,
@@ -60,12 +60,12 @@ export function BlogSectionMarkdown({ content, dataTinaField }: BlogSectionMarkd
               <table className="min-w-full border-collapse text-sm">{children}</table>
             </div>
           ),
-          thead: ({ children }) => <thead className="bg-[var(--site-surface-1)] text-slate-900">{children}</thead>,
+          thead: ({ children }) => <thead className="bg-[var(--site-surface-1)] text-site-strong">{children}</thead>,
           tbody: ({ children }) => <tbody className="divide-y divide-white/10">{children}</tbody>,
           tr: ({ children }) => <tr>{children}</tr>,
           th: ({ children }) => <th className="px-3 py-2 text-left font-semibold">{children}</th>,
           td: ({ children }) => <td className="px-3 py-2 align-top text-slate-600">{children}</td>,
-          strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
+          strong: ({ children }) => <strong className="font-semibold text-site-strong">{children}</strong>,
         }}
       >
         {content}

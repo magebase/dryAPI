@@ -1,21 +1,21 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-type DryApiLogoProps = {
-  mark?: string;
-  name?: string;
-  suffix?: string;
-  tone?: "light" | "dark";
-  size?: "sm" | "md" | "lg";
-  className?: string;
-  markClassName?: string;
-  nameClassName?: string;
-  suffixClassName?: string;
-  markDataTinaField?: string;
-  nameDataTinaField?: string;
-};
+type BrandLogoProps = {
+  mark?: string
+  name?: string
+  suffix?: string
+  tone?: "light" | "dark"
+  size?: "sm" | "md" | "lg"
+  className?: string
+  markClassName?: string
+  nameClassName?: string
+  suffixClassName?: string
+  markDataTinaField?: string
+  nameDataTinaField?: string
+}
 
 const SIZE_STYLES: Record<
-  NonNullable<DryApiLogoProps["size"]>,
+  NonNullable<BrandLogoProps["size"]>,
   { icon: string; mark: string; name: string; suffix: string }
 > = {
   sm: {
@@ -36,9 +36,9 @@ const SIZE_STYLES: Record<
     name: "text-xs tracking-[0.2em]",
     suffix: "text-[11px] px-2.5 py-1",
   },
-};
+}
 
-export function DryApiLogo({
+export function BrandLogo({
   mark = "dryAPI",
   name,
   suffix,
@@ -50,9 +50,9 @@ export function DryApiLogo({
   suffixClassName,
   markDataTinaField,
   nameDataTinaField,
-}: DryApiLogoProps) {
-  const sizeStyles = SIZE_STYLES[size];
-  const isDarkTone = tone === "dark";
+}: BrandLogoProps) {
+  const sizeStyles = SIZE_STYLES[size]
+  const isDarkTone = tone === "dark"
 
   return (
     <span className={cn("inline-flex items-center gap-3", className)}>
@@ -82,7 +82,7 @@ export function DryApiLogo({
         {name ? (
           <span
             className={cn(
-              "hidden font-semibold uppercase sm:inline",
+              "font-semibold uppercase",
               isDarkTone ? "text-site-soft" : "text-site-inverse-soft",
               sizeStyles.name,
               nameClassName,
@@ -109,5 +109,5 @@ export function DryApiLogo({
         ) : null}
       </span>
     </span>
-  );
+  )
 }

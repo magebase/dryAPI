@@ -49,7 +49,26 @@ function hasSessionPayload(payload: unknown): payload is { user: Record<string, 
   return Boolean(typed.user) && Boolean(typed.session)
 }
 
-export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<{ ok: boolean; quotaKey?: string }> {
+function readRateLimitRpm(payload: unknown): number | undefined {
+  if (!payload || typeof payload !== 'object') {
+    return undefined
+  }
+
+  const typed = payload as {
+    rate_limit?: { rpm?: unknown }
+    data?: { rate_limit?: { rpm?: unknown } }
+  }
+
+  const direct = parseLimit(typed.rate_limit?.rpm, 0)
+  if (direct > 0) {
+    return direct
+  }
+
+  const nested = parseLimit(typed.data?.rate_limit?.rpm, 0)
+  return nested > 0 ? nested : undefined
+}
+
+export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<{ ok: boolean; quotaKey?: string; minuteLimit?: number; creditUserId?: string }> {
   const origin = normalizeOrigin(c.env.ORIGIN_URL)
   if (!origin) {
     return { ok: false }
@@ -86,15 +105,27 @@ export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promi
     return { ok: false }
   }
 
-  const payload = await response.json().catch(() => null) as { principal?: { keyId?: string } } | null
+  const payload = await response.json().catch(() => null) as {
+    principal?: { keyId?: string; rateLimitPerMinute?: unknown; userEmail?: string }
+  } | null
   const quotaKey = typeof payload?.principal?.keyId === 'string' && payload.principal.keyId.length > 0
     ? payload.principal.keyId
     : token
+  const minuteLimit = parseLimit(payload?.principal?.rateLimitPerMinute, 0)
+  const creditUserId =
+    typeof payload?.principal?.userEmail === 'string' && payload.principal.userEmail.trim().length > 0
+      ? payload.principal.userEmail.trim().toLowerCase()
+      : undefined
 
-  return { ok: true, quotaKey }
+  return {
+    ok: true,
+    quotaKey,
+    ...(creditUserId ? { creditUserId } : {}),
+    ...(minuteLimit > 0 ? { minuteLimit } : {}),
+  }
 }
 
-export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok: boolean; quotaKey?: string }> {
+export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok: boolean; quotaKey?: string; minuteLimit?: number; creditUserId?: string }> {
   const cookie = c.req.header('cookie') ?? ''
   if (!cookie) {
     return { ok: false }
@@ -128,13 +159,39 @@ export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok:
   }
 
   const userEmail = typeof payload.user.email === 'string' ? payload.user.email.trim().toLowerCase() : ''
+
+  let minuteLimit: number | undefined
+  const internalKey = String(c.env.INTERNAL_API_KEY ?? c.env.API_KEY ?? '').trim()
+
+  if (internalKey) {
+    try {
+      const balanceResponse = await fetch(`${origin}/api/v1/client/balance`, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          cookie,
+          authorization: `Bearer ${internalKey}`,
+        },
+      })
+
+      if (balanceResponse.ok) {
+        const balancePayload = await balanceResponse.json().catch(() => null)
+        minuteLimit = readRateLimitRpm(balancePayload)
+      }
+    } catch {
+      // Keep session authentication available even when rate-limit lookup fails.
+    }
+  }
+
   return {
     ok: true,
     quotaKey: userEmail || undefined,
+    ...(userEmail ? { creditUserId: userEmail } : {}),
+    ...(minuteLimit ? { minuteLimit } : {}),
   }
 }
 
-export async function authorizeRequest(c: AppContext): Promise<{ ok: boolean; quotaKey?: string }> {
+export async function authorizeRequest(c: AppContext): Promise<{ ok: boolean; quotaKey?: string; minuteLimit?: number; creditUserId?: string }> {
   const token = getBearerToken(c)
   if (token) {
     if (hasStaticApiKeyMatch(c, token)) {
@@ -178,8 +235,12 @@ export function registerCommonMiddleware(app: Hono<WorkerEnv>) {
       return jsonUnauthorized(c)
     }
 
+    c.set('creditUserId', authResult.creditUserId ?? null)
+
     if (c.env.API_KEY_QUOTA_DO) {
-      const minuteLimit = parseLimit(c.env.API_KEY_LIMIT_PER_MINUTE, 300)
+      const minuteLimit = authResult.minuteLimit && authResult.minuteLimit > 0
+        ? authResult.minuteLimit
+        : parseLimit(c.env.API_KEY_LIMIT_PER_MINUTE, 300)
       const dayLimit = parseLimit(c.env.API_KEY_LIMIT_PER_DAY, 20_000)
       const quotaKey = authResult.quotaKey || getBearerToken(c) || getClientIp(c)
       const id = c.env.API_KEY_QUOTA_DO.idFromName(quotaKey)

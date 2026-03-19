@@ -5,8 +5,16 @@ const { verifyDashboardApiKeyTokenMock } = vi.hoisted(() => ({
   verifyDashboardApiKeyTokenMock: vi.fn(),
 }))
 
+const { getLifetimeDepositedCreditsMock } = vi.hoisted(() => ({
+  getLifetimeDepositedCreditsMock: vi.fn(),
+}))
+
 vi.mock("@/lib/dashboard-api-keys-store", () => ({
   verifyDashboardApiKeyToken: verifyDashboardApiKeyTokenMock,
+}))
+
+vi.mock("@/lib/dashboard-billing-credits", () => ({
+  getLifetimeDepositedCredits: getLifetimeDepositedCreditsMock,
 }))
 
 import { POST } from "@/app/api/internal/auth/verify-api-key/route"
@@ -28,6 +36,8 @@ function buildRequest(args: {
 describe("POST /api/internal/auth/verify-api-key", () => {
   beforeEach(() => {
     verifyDashboardApiKeyTokenMock.mockReset()
+    getLifetimeDepositedCreditsMock.mockReset()
+    getLifetimeDepositedCreditsMock.mockResolvedValue(0)
   })
 
   afterEach(() => {
@@ -100,6 +110,7 @@ describe("POST /api/internal/auth/verify-api-key", () => {
 
   it("returns principal details for authorized API keys", async () => {
     vi.stubEnv("INTERNAL_API_KEY", "internal_secret")
+    getLifetimeDepositedCreditsMock.mockResolvedValue(88.4)
     verifyDashboardApiKeyTokenMock.mockResolvedValue({
       valid: true,
       authorized: true,
@@ -132,6 +143,8 @@ describe("POST /api/internal/auth/verify-api-key", () => {
         permissions: ["all"],
         roles: ["admin"],
         meta: { scope: "full" },
+        lifetimeDepositedUsd: 88.4,
+        rateLimitPerMinute: 25,
       },
     })
   })

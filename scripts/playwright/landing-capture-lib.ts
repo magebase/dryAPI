@@ -207,6 +207,9 @@ export async function installCinematicHarness(page) {
     callout.id = "landing-cinema-callout";
     document.body.appendChild(callout);
 
+        // Safety shim for bundler-injected helpers
+    if (typeof window.__name === 'undefined') { window.__name = (t, v) => t; }
+
     window.__landingCinema = {
       cursor,
       callout,
@@ -232,183 +235,245 @@ export async function playCinematicShot(page, slotSelector, options = {}) {
     settleMs = 420,
   } = options;
 
-  await page.evaluate(
-    async ({
-      selector,
-      zoomValue,
-      blurValue,
-      calloutText,
-      paddingTop,
-      scrollMs,
-      trackMs,
-      holdMs,
-      settleDuration,
-    }) => {
-      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-      const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
+  try {
+    await page.evaluate(
+      async ({
+        selector,
+        zoomValue,
+        blurValue,
+        calloutText,
+        paddingTop,
+        scrollMs,
+        trackMs,
+        holdMs,
+        settleDuration,
+      }) => {
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
 
+        const state = window.__landingCinema;
+        if (!state) {
+          return;
+        }
+
+        const slot = document.querySelector(selector);
+        if (!slot) {
+          return;
+        }
+
+        const slotRectBeforeScroll = slot.getBoundingClientRect();
+        const targetScroll = Math.max(
+          0,
+          window.scrollY + slotRectBeforeScroll.top - paddingTop,
+        );
+
+        const scrollStart = window.scrollY;
+        const scrollDelta = targetScroll - scrollStart;
+        const scrollStartTime = performance.now();
+
+        await new Promise((resolve) => {
+          const tick = (now) => {
+            const elapsed = now - scrollStartTime;
+            const progress = Math.min(1, elapsed / Math.max(1, scrollMs));
+            const eased = ease(progress);
+
+            window.scrollTo({ top: scrollStart + scrollDelta * eased, behavior: "auto" });
+
+            if (progress < 1) {
+              requestAnimationFrame(tick);
+              return;
+            }
+
+            resolve();
+          };
+
+          requestAnimationFrame(tick);
+        });
+
+        await wait(110);
+
+        const slotRect = slot.getBoundingClientRect();
+        const targetX = slotRect.left + slotRect.width * 0.5;
+        const targetY = Math.max(
+          38,
+          Math.min(
+            window.innerHeight - 38,
+            slotRect.top + Math.min(slotRect.height * 0.35, 210),
+          ),
+        );
+
+        const startX = state.x;
+        const startY = state.y;
+        const jitterX = (Math.random() - 0.5) * 16;
+        const jitterY = (Math.random() - 0.5) * 10;
+        const endX = targetX + jitterX;
+        const endY = targetY + jitterY;
+        const trackStartTime = performance.now();
+
+        await new Promise((resolve) => {
+          const tick = (now) => {
+            const elapsed = now - trackStartTime;
+            const progress = Math.min(1, elapsed / Math.max(1, trackMs));
+            const eased = ease(progress);
+
+            state.x = startX + (endX - startX) * eased;
+            state.y = startY + (endY - startY) * eased;
+            state.cursor.style.transform = `translate3d(${state.x}px, ${state.y}px, 0)`;
+
+            if (progress < 1) {
+              requestAnimationFrame(tick);
+              return;
+            }
+
+            resolve();
+          };
+
+          requestAnimationFrame(tick);
+        });
+
+        document.documentElement.style.setProperty("--landing-cinema-blur", `${blurValue}px`);
+        document.documentElement.classList.add("landing-cinema-soft-focus");
+        slot.classList.add("landing-cinema-focus");
+
+        const stage = state.stage || document.body;
+        const centerX = Math.round(slotRect.left + slotRect.width / 2);
+        const centerY = Math.round(slotRect.top + Math.min(slotRect.height / 2, window.innerHeight * 0.55));
+
+        stage.style.willChange = "transform";
+        stage.style.transition = "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)";
+        stage.style.transformOrigin = `${centerX}px ${centerY}px`;
+        stage.style.transform = `scale(${zoomValue})`;
+
+        if (calloutText) {
+          state.callout.textContent = calloutText;
+          state.callout.style.left = `${Math.max(10, Math.min(window.innerWidth - 220, targetX - 16))}px`;
+          state.callout.style.top = `${Math.max(10, targetY - 52)}px`;
+          state.callout.style.opacity = "1";
+          state.callout.style.transform = "translateY(-4px)";
+        }
+
+        const pulseScale = Math.min(1.08, 1 + (zoomValue - 1) * 0.42);
+        slot.animate(
+          [
+            { transform: "scale(1)", offset: 0 },
+            { transform: `scale(${pulseScale})`, offset: 0.55 },
+            { transform: "scale(1)", offset: 1 },
+          ],
+          {
+            duration: holdMs + 240,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "none",
+          },
+        );
+
+        await wait(holdMs);
+
+        const ripple = document.createElement("div");
+        ripple.className = "landing-cinema-ripple";
+        ripple.style.left = `${targetX}px`;
+        ripple.style.top = `${targetY}px`;
+        document.body.appendChild(ripple);
+
+        ripple.animate(
+          [
+            { transform: "translate3d(-50%, -50%, 0) scale(0.1)", opacity: 0.75 },
+            { transform: "translate3d(-50%, -50%, 0) scale(1.95)", opacity: 0 },
+          ],
+          {
+            duration: 460,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "forwards",
+          },
+        );
+
+        await wait(260);
+        ripple.remove();
+
+        await wait(settleDuration);
+
+        stage.style.transform = "scale(1)";
+
+        state.callout.style.opacity = "0";
+        state.callout.style.transform = "translateY(4px)";
+
+        await wait(300);
+
+        slot.classList.remove("landing-cinema-focus");
+        document.documentElement.classList.remove("landing-cinema-soft-focus");
+      },
+      {
+        selector: slotSelector,
+        zoomValue: zoom,
+        blurValue: blurPx,
+        calloutText: callout,
+        paddingTop: scrollPaddingTop,
+        scrollMs: scrollDurationMs,
+        trackMs: trackDurationMs,
+        holdMs: preClickHoldMs,
+        settleDuration: settleMs,
+      },
+    );
+  } catch (err) {
+    // Some bundlers or runtime transforms can inject helpers into evaluated code
+    // that are not available in the page context (for example `__name`). If
+    // the in-page evaluate fails, fall back to a smaller, safer set of
+    // evaluations that achieve the same end-state for video capture.
+    // Log the original error to help debugging.
+    // eslint-disable-next-line no-console
+    console.warn("playCinematicShot evaluate failed, using fallback:", err && err.message ? err.message : err);
+
+    // Fallback: perform a safe scroll, position cursor/callout, and set styles.
+    await page.evaluate(
+      ({ selector, paddingTop, calloutText, blurValue, zoomValue }) => {
+        const state = window.__landingCinema;
+        if (!state) return;
+        const slot = document.querySelector(selector);
+        if (!slot) return;
+
+        const rect = slot.getBoundingClientRect();
+        const targetScroll = Math.max(0, window.scrollY + rect.top - paddingTop);
+        window.scrollTo({ top: targetScroll, behavior: "auto" });
+
+        const targetX = Math.round(rect.left + rect.width / 2);
+        const targetY = Math.round(Math.max(38, Math.min(window.innerHeight - 38, rect.top + Math.min(rect.height * 0.35, 210))));
+
+        state.x = targetX;
+        state.y = targetY;
+        state.cursor.style.transform = `translate3d(${state.x}px, ${state.y}px, 0)`;
+
+        document.documentElement.style.setProperty("--landing-cinema-blur", `${blurValue}px`);
+        document.documentElement.classList.add("landing-cinema-soft-focus");
+        slot.classList.add("landing-cinema-focus");
+
+        const stage = state.stage || document.body;
+        stage.style.transform = `scale(${zoomValue})`;
+
+        if (calloutText) {
+          state.callout.textContent = calloutText;
+          state.callout.style.left = `${Math.max(10, Math.min(window.innerWidth - 220, targetX - 16))}px`;
+          state.callout.style.top = `${Math.max(10, targetY - 52)}px`;
+          state.callout.style.opacity = "1";
+        }
+      },
+      { selector: slotSelector, paddingTop: scrollPaddingTop, calloutText: callout, blurValue: blurPx, zoomValue: zoom },
+    );
+
+    await page.waitForTimeout(Math.max(300, settleMs));
+
+    // Cleanup fallback state so subsequent captures remain stable.
+    await page.evaluate(({ selector }) => {
       const state = window.__landingCinema;
-      if (!state) {
-        return;
-      }
-
+      if (!state) return;
       const slot = document.querySelector(selector);
-      if (!slot) {
-        return;
-      }
-
-      const slotRectBeforeScroll = slot.getBoundingClientRect();
-      const targetScroll = Math.max(
-        0,
-        window.scrollY + slotRectBeforeScroll.top - paddingTop,
-      );
-
-      const scrollStart = window.scrollY;
-      const scrollDelta = targetScroll - scrollStart;
-      const scrollStartTime = performance.now();
-
-      await new Promise((resolve) => {
-        const tick = (now) => {
-          const elapsed = now - scrollStartTime;
-          const progress = Math.min(1, elapsed / Math.max(1, scrollMs));
-          const eased = ease(progress);
-
-          window.scrollTo({ top: scrollStart + scrollDelta * eased, behavior: "auto" });
-
-          if (progress < 1) {
-            requestAnimationFrame(tick);
-            return;
-          }
-
-          resolve();
-        };
-
-        requestAnimationFrame(tick);
-      });
-
-      await wait(110);
-
-      const slotRect = slot.getBoundingClientRect();
-      const targetX = slotRect.left + slotRect.width * 0.5;
-      const targetY = Math.max(
-        38,
-        Math.min(
-          window.innerHeight - 38,
-          slotRect.top + Math.min(slotRect.height * 0.35, 210),
-        ),
-      );
-
-      const startX = state.x;
-      const startY = state.y;
-      const jitterX = (Math.random() - 0.5) * 16;
-      const jitterY = (Math.random() - 0.5) * 10;
-      const endX = targetX + jitterX;
-      const endY = targetY + jitterY;
-      const trackStartTime = performance.now();
-
-      await new Promise((resolve) => {
-        const tick = (now) => {
-          const elapsed = now - trackStartTime;
-          const progress = Math.min(1, elapsed / Math.max(1, trackMs));
-          const eased = ease(progress);
-
-          state.x = startX + (endX - startX) * eased;
-          state.y = startY + (endY - startY) * eased;
-          state.cursor.style.transform = `translate3d(${state.x}px, ${state.y}px, 0)`;
-
-          if (progress < 1) {
-            requestAnimationFrame(tick);
-            return;
-          }
-
-          resolve();
-        };
-
-        requestAnimationFrame(tick);
-      });
-
-      document.documentElement.style.setProperty("--landing-cinema-blur", `${blurValue}px`);
-      document.documentElement.classList.add("landing-cinema-soft-focus");
-      slot.classList.add("landing-cinema-focus");
-
-      const stage = state.stage || document.body;
-      const centerX = Math.round(slotRect.left + slotRect.width / 2);
-      const centerY = Math.round(slotRect.top + Math.min(slotRect.height / 2, window.innerHeight * 0.55));
-
-      stage.style.willChange = "transform";
-      stage.style.transition = "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)";
-      stage.style.transformOrigin = `${centerX}px ${centerY}px`;
-      stage.style.transform = `scale(${zoomValue})`;
-
-      if (calloutText) {
-        state.callout.textContent = calloutText;
-        state.callout.style.left = `${Math.max(10, Math.min(window.innerWidth - 220, targetX - 16))}px`;
-        state.callout.style.top = `${Math.max(10, targetY - 52)}px`;
-        state.callout.style.opacity = "1";
-        state.callout.style.transform = "translateY(-4px)";
-      }
-
-      const pulseScale = Math.min(1.08, 1 + (zoomValue - 1) * 0.42);
-      slot.animate(
-        [
-          { transform: "scale(1)", offset: 0 },
-          { transform: `scale(${pulseScale})`, offset: 0.55 },
-          { transform: "scale(1)", offset: 1 },
-        ],
-        {
-          duration: holdMs + 240,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-          fill: "none",
-        },
-      );
-
-      await wait(holdMs);
-
-      const ripple = document.createElement("div");
-      ripple.className = "landing-cinema-ripple";
-      ripple.style.left = `${targetX}px`;
-      ripple.style.top = `${targetY}px`;
-      document.body.appendChild(ripple);
-
-      ripple.animate(
-        [
-          { transform: "translate3d(-50%, -50%, 0) scale(0.1)", opacity: 0.75 },
-          { transform: "translate3d(-50%, -50%, 0) scale(1.95)", opacity: 0 },
-        ],
-        {
-          duration: 460,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-          fill: "forwards",
-        },
-      );
-
-      await wait(260);
-      ripple.remove();
-
-      await wait(settleDuration);
-
-      stage.style.transform = "scale(1)";
-
+      if (slot) slot.classList.remove("landing-cinema-focus");
+      document.documentElement.classList.remove("landing-cinema-soft-focus");
       state.callout.style.opacity = "0";
       state.callout.style.transform = "translateY(4px)";
-
-      await wait(300);
-
-      slot.classList.remove("landing-cinema-focus");
-      document.documentElement.classList.remove("landing-cinema-soft-focus");
+      const stage = state.stage || document.body;
+      stage.style.transform = "scale(1)";
     },
-    {
-      selector: slotSelector,
-      zoomValue: zoom,
-      blurValue: blurPx,
-      calloutText: callout,
-      paddingTop: scrollPaddingTop,
-      scrollMs: scrollDurationMs,
-      trackMs: trackDurationMs,
-      holdMs: preClickHoldMs,
-      settleDuration: settleMs,
-    },
-  );
+    { selector: slotSelector });
+  }
 }
 
 export async function moveToTop(page, holdMs = 250) {

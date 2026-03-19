@@ -1,5 +1,5 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Prompt Enhancement
@@ -41,7 +41,7 @@ Prompt Enhancement is a suite of AI-powered tools that optimize your prompts for
 ### Request
 
 ```bash  theme={null}
-curl -X POST https://api.deapi.ai/api/v1/client/prompt/image \
+curl -X POST https://api.dryapi.dev/api/v1/client/prompt/image \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -63,7 +63,7 @@ curl -X POST https://api.deapi.ai/api/v1/client/prompt/image \
 ### Request (with reference image)
 
 ```bash  theme={null}
-curl -X POST https://api.deapi.ai/api/v1/client/prompt/video \
+curl -X POST https://api.dryapi.dev/api/v1/client/prompt/video \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -F "prompt=ocean waves at sunset" \
   -F "image=@reference.jpg"
@@ -83,7 +83,7 @@ curl -X POST https://api.deapi.ai/api/v1/client/prompt/video \
 ### Request
 
 ```bash  theme={null}
-curl -X GET "https://api.deapi.ai/api/v1/client/prompts/samples?type=text2image&topic=cyberpunk" \
+curl -X GET "https://api.dryapi.dev/api/v1/client/prompts/samples?type=text2image&topic=cyberpunk" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

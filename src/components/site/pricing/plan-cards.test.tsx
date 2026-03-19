@@ -37,8 +37,8 @@ describe("PricingPlanCards", () => {
   it("shows explicit monthly credit reset copy", () => {
     render(<PricingPlanCards />)
 
-    expect(screen.getByText(/Unused monthly subscription credits do not carry over/i)).toBeInTheDocument()
-    expect(screen.getByText(/Included subscription credits reset on the 1st of each month/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Unused subscription credits do not carry over/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Included subscription credits reset monthly/i).length).toBeGreaterThan(0)
   })
 
   it("shows 1 credit = $1 USD copy", () => {

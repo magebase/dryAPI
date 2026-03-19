@@ -14,6 +14,11 @@ vi.mock("next/link", () => ({
 
 describe("SaasPlanCards", () => {
   const plans = listSaasPlans()
+  const growthPlan = plans.find((plan) => plan.slug === "growth")
+
+  if (!growthPlan) {
+    throw new Error("Expected growth plan fixture")
+  }
 
   it("uses monthly subscribe links by default", () => {
     render(
@@ -59,6 +64,22 @@ describe("SaasPlanCards", () => {
 
     expect(screen.getByText(/Monthly subscription credits reset on the first of each month/i)).toBeInTheDocument()
     expect(screen.getByText(/unused subscription credits do not carry over/i)).toBeInTheDocument()
+  })
+
+  it("shows relative expiry messaging and a credit-formatted top-up CTA for Growth", () => {
+    render(
+      <SaasPlanCards
+        plans={plans}
+        monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+      />,
+    )
+
+    expect(screen.getAllByText(/subscription credits expire/i).length).toBeGreaterThan(0)
+
+    const topUpLabel = growthPlan.defaultTopUpAmountUsd.toFixed(2)
+    const topUpLink = screen.getByRole("link", { name: `Top up ${topUpLabel} credits` })
+    expect(topUpLink.getAttribute("href") || "").toContain(`amount=${growthPlan.defaultTopUpAmountUsd}`)
+    expect(topUpLink.getAttribute("href") || "").toContain("plan=growth")
   })
 
   it("shows starter included credits as 50", () => {

@@ -1,11 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import type { MouseEventHandler } from "react"
 import { parseAsStringLiteral, useQueryState } from "nuqs"
 
 import { openQuoteDialog } from "@/components/site/quote-dialog"
+import { toRoute } from "@/lib/route"
 
-type QuoteAwareLinkProps = React.ComponentProps<typeof Link> & {
+type QuoteAwareLinkProps = Omit<React.ComponentProps<typeof Link>, "href"> & {
+  href: string
   quoteLabel?: string
   forceQuoteModal?: boolean
 }
@@ -42,21 +45,32 @@ export function QuoteAwareLink({
   const childText = typeof children === "string" ? children : ""
   const label = `${quoteLabel} ${childText}`.trim()
   const shouldOpenQuoteModal = forceQuoteModal || isQuoteIntentLink(label, hrefString)
+  const isInternalRoute = hrefString.startsWith("/") || hrefString.startsWith("#")
+
+  const handleClick: MouseEventHandler<HTMLAnchorElement> = (event) => {
+    onClick?.(event)
+
+    if (event.defaultPrevented || !shouldOpenQuoteModal) {
+      return
+    }
+
+    event.preventDefault()
+    void setQuoteQuery("open")
+    openQuoteDialog()
+  }
+
+  if (!isInternalRoute) {
+    return (
+      <a href={hrefString} onClick={handleClick} {...props}>
+        {children}
+      </a>
+    )
+  }
 
   return (
     <Link
-      href={href}
-      onClick={(event) => {
-        onClick?.(event)
-
-        if (event.defaultPrevented || !shouldOpenQuoteModal) {
-          return
-        }
-
-        event.preventDefault()
-        void setQuoteQuery("open")
-        openQuoteDialog()
-      }}
+      href={toRoute(hrefString)}
+      onClick={handleClick}
       {...props}
     >
       {children}

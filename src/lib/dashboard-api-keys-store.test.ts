@@ -2,13 +2,43 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-const { invokeAuthHandlerMock, sendApiKeyCreatedNotificationMock } = vi.hoisted(() => ({
-  invokeAuthHandlerMock: vi.fn(),
+vi.mock("@opennextjs/cloudflare", () => ({
+  getCloudflareContext: vi.fn().mockResolvedValue({ env: {} }),
+}))
+
+vi.mock("@/lib/d1-bindings", () => {
+  const authDb = {
+    prepare: (query: string) => ({
+      bind: (...values: unknown[]) => ({
+        all: async () => {
+          if (query.includes("SELECT id") && query.includes("FROM user")) {
+            return {
+              results: [{ id: "user_123" }],
+            }
+          }
+
+          return { results: [] }
+        },
+      }),
+    }),
+  }
+
+  return {
+    D1_BINDING_PRIORITY: {
+      auth: "auth",
+      analytics: "analytics",
+    },
+    resolveD1Binding: vi.fn(() => authDb),
+  }
+})
+
+const { createAuthApiKeyMock, sendApiKeyCreatedNotificationMock } = vi.hoisted(() => ({
+  createAuthApiKeyMock: vi.fn(),
   sendApiKeyCreatedNotificationMock: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("@/lib/auth-handler-proxy", () => ({
-  invokeAuthHandler: invokeAuthHandlerMock,
+  createAuthApiKey: createAuthApiKeyMock,
 }))
 
 vi.mock("@/lib/dashboard-api-key-emails", () => ({
@@ -24,7 +54,7 @@ import {
 
 describe("dashboard api keys store", () => {
   beforeEach(() => {
-    invokeAuthHandlerMock.mockReset()
+    createAuthApiKeyMock.mockReset()
     sendApiKeyCreatedNotificationMock.mockClear()
   })
 
@@ -33,31 +63,26 @@ describe("dashboard api keys store", () => {
   })
 
   it("sends a notification after creating an API key", async () => {
-    invokeAuthHandlerMock.mockResolvedValue({
-      response: {
-        ok: true,
+    createAuthApiKeyMock.mockResolvedValue({
+      id: "key_123",
+      name: "Production Server",
+      start: "dry_live_preview",
+      prefix: null,
+      referenceId: "user_123",
+      enabled: true,
+      expiresAt: null,
+      createdAt: "2026-03-17T12:00:00.000Z",
+      updatedAt: "2026-03-17T12:00:00.000Z",
+      permissions: {
+        legacy: ["models:infer", "billing:read"],
       },
-      data: {
-        id: "key_123",
-        name: "Production Server",
-        start: "dry_live_preview",
-        prefix: null,
-        referenceId: "user_123",
-        enabled: true,
-        expiresAt: null,
-        createdAt: "2026-03-17T12:00:00.000Z",
-        updatedAt: "2026-03-17T12:00:00.000Z",
-        permissions: {
-          legacy: ["models:infer", "billing:read"],
+      metadata: {
+        roles: [],
+        meta: {
+          environment: "production",
         },
-        metadata: {
-          roles: [],
-          meta: {
-            environment: "production",
-          },
-        },
-        key: "dry_live_secret_token_1234",
       },
+      key: "dry_live_secret_token_1234",
     })
 
     const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
@@ -84,6 +109,74 @@ describe("dashboard api keys store", () => {
       permissions: ["models:infer", "billing:read"],
       key: "dry_live_secret_token_1234",
     })
+  })
+
+  it("passes user id, permissions, and metadata to the server auth api", async () => {
+    createAuthApiKeyMock.mockResolvedValue({
+      id: "key_123",
+      name: "Production Server",
+      start: "dry_live_preview",
+      prefix: null,
+      referenceId: "user_123",
+      enabled: true,
+      expiresAt: null,
+      createdAt: "2026-03-17T12:00:00.000Z",
+      updatedAt: "2026-03-17T12:00:00.000Z",
+      permissions: {
+        legacy: ["models:infer", "billing:read"],
+      },
+      metadata: {
+        roles: [],
+        meta: {
+          environment: "production",
+        },
+      },
+      key: "dry_live_secret_token_1234",
+    })
+
+    const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
+      method: "POST",
+    })
+
+    await createDashboardApiKey(request, {
+      userEmail: "ops@example.com",
+      name: "Production Server",
+      permissions: ["models:infer", "billing:read"],
+      meta: {
+        environment: "production",
+      },
+    })
+
+    expect(createAuthApiKeyMock).toHaveBeenCalledWith({
+      userId: "user_123",
+      name: "Production Server",
+      permissions: { legacy: ["models:infer", "billing:read"] },
+      metadata: {
+        roles: [],
+        meta: {
+          environment: "production",
+        },
+      },
+    })
+  })
+
+  it("includes auth failure details in the thrown error", async () => {
+    createAuthApiKeyMock.mockRejectedValue(new Error("SERVER_ONLY_PROPERTY"))
+
+    const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
+      method: "POST",
+    })
+
+    await expect(
+      createDashboardApiKey(request, {
+        userEmail: "ops@example.com",
+        name: "Production Server",
+        permissions: ["models:infer"],
+        meta: {
+          environment: "production",
+        },
+      }),
+    ).rejects.toThrow("Failed to create API key with Better Auth: SERVER_ONLY_PROPERTY")
   })
 })
 

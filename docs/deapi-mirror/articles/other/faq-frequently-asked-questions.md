@@ -1,10 +1,10 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # FAQ — Frequently Asked Questions
 
-#### 1. **How do I get access to the deAPI panel?**
+#### 1. **How do I get access to the dryAPI panel?**
 
 Register or log in (also via Google OAuth) and after authentication you will automatically gain access to the Control Panel, where you can directly create an API key and get access the full capabilities of the platform.
 
@@ -74,9 +74,9 @@ Yes. Visit the **Model Selection** endpoint to browse available models, or check
 
 ***
 
-#### 9. **What services does deAPI offer?**
+#### 9. **What services does dryAPI offer?**
 
-deAPI provides the following AI-powered services:
+dryAPI provides the following AI-powered services:
 
 * **Text-to-Image** — Generate images from text prompts (Flux, Z-Image-Turbo)
 * **Image-to-Image** — Transform and edit existing images
@@ -92,21 +92,21 @@ deAPI provides the following AI-powered services:
 
 ***
 
-#### 10. **Can I use deAPI with AI assistants like Claude or Cursor?**
+#### 10. **Can I use dryAPI with AI assistants like Claude or Cursor?**
 
-Yes! deAPI offers an **MCP (Model Context Protocol) server** that allows AI assistants and IDE extensions to call deAPI capabilities as structured tools. You can connect Claude, Cursor, and other MCP-compatible clients to generate images, transcribe videos, and more directly within conversations. See the **MCP Server** documentation for setup instructions.
-
-***
-
-#### 11. **Can I use deAPI with n8n or other automation tools?**
-
-Yes! deAPI works seamlessly with **n8n** and other workflow automation platforms. You can build automated workflows that generate images, transcribe videos, create speech, and more using deAPI's HTTP API. The integration uses standard HTTP Request nodes with Bearer token authentication. See the **n8n Integration** documentation for a complete step-by-step guide with example workflows.
+Yes! dryAPI offers an **MCP (Model Context Protocol) server** that allows AI assistants and IDE extensions to call dryAPI capabilities as structured tools. You can connect Claude, Cursor, and other MCP-compatible clients to generate images, transcribe videos, and more directly within conversations. See the **MCP Server** documentation for setup instructions.
 
 ***
 
-#### 12. **Is deAPI ready for production use?**
+#### 11. **Can I use dryAPI with n8n or other automation tools?**
 
-Yes. deAPI is built to support production-grade workloads. All models and services are optimized for speed, reliability, and scalability. The platform offers 300 RPM immediately after the first account top-up.
+Yes! dryAPI works seamlessly with **n8n** and other workflow automation platforms. You can build automated workflows that generate images, transcribe videos, create speech, and more using dryAPI's HTTP API. The integration uses standard HTTP Request nodes with Bearer token authentication. See the **n8n Integration** documentation for a complete step-by-step guide with example workflows.
+
+***
+
+#### 12. **Is dryAPI ready for production use?**
+
+Yes. dryAPI is built to support production-grade workloads. All models and services are optimized for speed, reliability, and scalability. The platform offers 300 RPM immediately after the first account top-up.
 
 ***
 
@@ -117,9 +117,9 @@ Check the error code and make sure:
 * `401` — Your API key is valid
 * `403` — Your account has sufficient permissions
 * `429` — You haven't exceeded rate limits
-* `500` — Server error (check [status.deapi.ai](https://status.deapi.ai/))
+* `500` — Server error (check [status.dryapi.dev](https://status.dryapi.dev/))
 
-Also verify your request parameters are correct. If the issue persists, contact our support team at [**support@deapi.ai**](mailto:support@deapi.ai) or join our [Discord](https://discord.com/invite/UFfK5YRBsr) for help.
+Also verify your request parameters are correct. If the issue persists, contact our support team at [**support@dryapi.dev**](mailto:support@dryapi.dev) or join our [Discord](https://discord.com/invite/UFfK5YRBsr) for help.
 
 
 Built with [Mintlify](https://mintlify.com).

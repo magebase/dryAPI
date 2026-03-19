@@ -9,12 +9,9 @@ import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import {
   admin,
-  bearer,
   captcha,
-  emailOTP,
   haveIBeenPwned,
   lastLoginMethod,
-  magicLink,
   organization,
   twoFactor,
 } from "better-auth/plugins";
@@ -35,8 +32,6 @@ import {
   type PasswordResetEmailPayload,
   type VerificationEmailPayload,
 } from "@/lib/auth-user-emails";
-import { sendEmailOtpEmail } from "@/lib/auth-email-otp-email";
-import { sendMagicLinkEmail } from "@/lib/auth-magic-link-email";
 import { sendOrganizationInvitationEmail } from "@/lib/auth-organization-invitations";
 import { sendTwoFactorOtpEmail } from "@/lib/auth-two-factor-otp-email";
 import {
@@ -69,6 +64,7 @@ import {
   resolveSaasPlanStripePriceId,
 } from "@/lib/stripe-saas-plans";
 import { handleStripePluginEvent } from "@/lib/auth-stripe-plugin-events";
+import { buildStripeClient } from "@/lib/stripe-client";
 
 type SocialProviderConfig = {
   clientId: string;
@@ -1004,9 +1000,7 @@ function buildStripePlugin() {
     return null;
   }
 
-  const stripeClient = new Stripe(stripePrivateKey, {
-    apiVersion: "2026-02-25.clover",
-  });
+  const stripeClient = buildStripeClient(stripePrivateKey);
 
   const plans = listSaasPlans().flatMap((plan) => {
     const priceId = resolveSaasPlanStripePriceId(plan);
@@ -1042,12 +1036,15 @@ function buildStripePlugin() {
     }
   };
 
+  const requireEmailVerificationForSubscriptions =
+    process.env.NODE_ENV === "production";
+
   return stripePlugin({
     stripeClient,
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET?.trim() || "",
     subscription: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: requireEmailVerificationForSubscriptions,
       plans,
       onSubscriptionCreated: async ({ subscription }) => {
         await syncSubscriptionBenefits(subscription.referenceId);

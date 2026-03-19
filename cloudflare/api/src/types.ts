@@ -33,6 +33,16 @@ export type KvNamespaceBinding = {
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>
 }
 
+export type AnalyticsEngineDataPoint = {
+  indexes?: string[]
+  blobs?: string[]
+  doubles?: number[]
+}
+
+export type AnalyticsEngineDatasetBinding = {
+  writeDataPoint: (dataPoint: AnalyticsEngineDataPoint) => void | Promise<void>
+}
+
 export type WorkerBindings = {
   API_KEY?: string
   ORIGIN_URL?: string
@@ -62,10 +72,21 @@ export type WorkerBindings = {
   RUNPOD_PRICING_LOOKBACK_HOURS?: string
   RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS?: string
   RUNPOD_PRICING_ROUND_STEP_USD?: string
+  RUNPOD_PRICING_WORKER_TYPE_DEFAULT?: string
+  RUNPOD_PRICING_BANDIT_ENABLED?: string
+  RUNPOD_PRICING_BANDIT_EXPLORE_PROBABILITY?: string
+  RUNPOD_PRICING_BANDIT_EXPLORATION_WEIGHT?: string
+  RUNPOD_PRICING_BANDIT_ALPHA_MARGIN?: string
+  RUNPOD_PRICING_BANDIT_BETA_GROWTH?: string
+  RUNPOD_PRICING_BANDIT_EMA_SMOOTHING?: string
+  RUNPOD_PRICING_BANDIT_MAX_STEP_UP_PCT?: string
+  RUNPOD_PRICING_BANDIT_MAX_STEP_DOWN_PCT?: string
+  RUNPOD_PRICING_BANDIT_ARMS_CSV?: string
   RUNPOD_BATCH_QUEUE_ENABLED?: string
   RUNPOD_BATCHING_CONFIG_JSON?: string
   RUNPOD_QUEUE_METRICS_RETENTION_HOURS?: string
   RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS?: string
+  RUNPOD_PRICING_ANALYTICS?: AnalyticsEngineDatasetBinding
   RUNPOD_BATCH_QUEUE?: CloudflareQueueBinding
   QUEUE_METRICS_KV?: KvNamespaceBinding
   WEBHOOK_SIGNING_SECRET?: string
@@ -85,5 +106,9 @@ export type AppContext = Context<WorkerEnv>
 export const RUNPOD_SURFACES = ['chat', 'images', 'embeddings', 'transcribe'] as const
 
 export type RunpodSurface = (typeof RUNPOD_SURFACES)[number]
+
+export const RUNPOD_WORKER_TYPES = ['active', 'flex'] as const
+
+export type RunpodWorkerType = (typeof RUNPOD_WORKER_TYPES)[number]
 
 export type RunpodJobMode = 'run' | 'runsync'

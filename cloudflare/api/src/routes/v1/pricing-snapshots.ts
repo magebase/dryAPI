@@ -10,6 +10,12 @@ import { ModelSlugSchema, surfaceParamValidator } from './schemas'
 
 const PricingSnapshotsQuerySchema = Type.Object({
   model: Type.Optional(ModelSlugSchema),
+  workerType: Type.Optional(
+    Type.Union([Type.Literal('active'), Type.Literal('flex')], {
+      description: 'Optional worker type override used when resolving the active quote.',
+      examples: ['flex'],
+    }),
+  ),
   endpointId: Type.Optional(Type.String({
     minLength: 1,
     description: 'Optional endpoint filter and quote override.',
@@ -33,7 +39,7 @@ export function registerPricingSnapshotsRoute(app: Hono<WorkerEnv>) {
       operationId: 'listPricingSnapshots',
       summary: 'List dynamic pricing snapshots for a surface',
       description:
-        'Returns worker-calculated pricing snapshots derived from runtime analytics. Prices are computed with a hard 200% profit floor (3x effective unit cost) and refreshed continuously from recent request statistics.',
+        'Returns worker-calculated pricing snapshots derived from Analytics Engine pricing telemetry and recent runtime statistics. Prices are computed with a hard 200% profit floor (3x effective unit cost) and refreshed continuously.',
       security: [{ BearerAuth: [] }],
       parameters: [
         {
@@ -51,6 +57,14 @@ export function registerPricingSnapshotsRoute(app: Hono<WorkerEnv>) {
           description: 'Optional model slug filter.',
           schema: { type: 'string' },
           example: 'Flux1schnell',
+        },
+        {
+          name: 'workerType',
+          in: 'query',
+          required: false,
+          description: 'Optional worker type override for active quote resolution.',
+          schema: { type: 'string', enum: ['active', 'flex'] },
+          example: 'active',
         },
         {
           name: 'endpointId',
@@ -86,6 +100,7 @@ export function registerPricingSnapshotsRoute(app: Hono<WorkerEnv>) {
       }
       const query = c.req.valid('query') as {
         model?: string
+        workerType?: 'active' | 'flex'
         endpointId?: string
         limit?: number
       }
@@ -103,6 +118,7 @@ export function registerPricingSnapshotsRoute(app: Hono<WorkerEnv>) {
         surface,
         modelSlug,
         endpointId,
+        workerType: query.workerType ?? null,
         limit: query.limit,
       })
 
@@ -112,6 +128,7 @@ export function registerPricingSnapshotsRoute(app: Hono<WorkerEnv>) {
             surface,
             endpointId,
             modelSlug,
+            workerType: query.workerType ?? null,
           })
         : null
 
@@ -124,6 +141,8 @@ export function registerPricingSnapshotsRoute(app: Hono<WorkerEnv>) {
             ? {
                 price_key: activeQuote.priceKey,
                 source: activeQuote.source,
+                bandit_arm_id: activeQuote.banditArmId,
+                worker_type: activeQuote.workerType,
                 unit_price_usd: activeQuote.recommendedPriceUsd,
                 min_price_usd: activeQuote.minPriceUsd,
                 sample_size: activeQuote.sampleSize,

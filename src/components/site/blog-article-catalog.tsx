@@ -207,14 +207,14 @@ function BlogArticleControls({
               Articles
             </p>
             <p className="mt-2 text-sm text-slate-600">Sort and filter the archive, then browse with pagination.</p>
-            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">{countLabel}</p>
+            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-site-muted">{countLabel}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 md:min-w-[420px]">
-            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500" htmlFor="blog-sort-order">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-site-muted" htmlFor="blog-sort-order">
               Sort
               <select
-                className="mt-1 w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800"
+                className="mt-1 w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-site-strong"
                 id="blog-sort-order"
                 value={selectedSortOrder}
                 onChange={(event) => onSortOrderChange(event.target.value as BlogSortOrder)}
@@ -226,10 +226,10 @@ function BlogArticleControls({
               </select>
             </label>
 
-            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500" htmlFor="blog-tag-filter">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-site-muted" htmlFor="blog-tag-filter">
               Filter
               <select
-                className="mt-1 w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800"
+                className="mt-1 w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-site-strong"
                 id="blog-tag-filter"
                 value={selectedTag}
                 onChange={(event) => onTagChange(event.target.value)}
@@ -340,7 +340,7 @@ export function BlogArticleCatalog({ posts, site }: BlogArticleCatalogProps) {
                 <BookText className="size-3.5" />
                 <span>{featuredLabel.value}</span>
               </p>
-              <h2 className="font-display text-3xl uppercase leading-[1.08] tracking-[0.03em] text-slate-900 md:text-4xl">
+              <h2 className="font-display text-3xl uppercase leading-[1.08] tracking-[0.03em] text-site-strong md:text-4xl">
                 <KeywordGradientText dataTinaField={tinaField(featuredPost, "title")} text={featuredPost.title} />
               </h2>
               <p
@@ -353,7 +353,7 @@ export function BlogArticleCatalog({ posts, site }: BlogArticleCatalogProps) {
                 </span>
                 <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
               </p>
-              <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+              <p className="text-xs uppercase tracking-[0.14em] text-site-muted">
                 <span data-tina-field={tinaField(featuredPost.author, "name")}>{featuredPost.author.name}</span> ·{" "}
                 <span data-tina-field={tinaField(featuredPost.author, "role")}>{featuredPost.author.role}</span>
               </p>
@@ -389,14 +389,14 @@ export function BlogArticleCatalog({ posts, site }: BlogArticleCatalogProps) {
                 <TakumiBlogCoverImage className="h-52 w-full object-cover" height={640} post={post} width={960} />
 
                 <div className="space-y-4 px-5 py-5">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500" data-tina-field={tinaField(post, "publishedAt")}>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-site-muted" data-tina-field={tinaField(post, "publishedAt")}>
                     {formatPublishedDate(post.publishedAt)} · {estimateReadTime(post)}{" "}
                     <span data-tina-field={readTimeSuffix.field}>{readTimeSuffix.value}</span>
                   </p>
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-site-muted">
                     <span data-tina-field={tinaField(post.author, "name")}>{post.author.name}</span>
                   </p>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-semibold text-site-strong">
                     <KeywordGradientText dataTinaField={tinaField(post, "title")} text={post.title} />
                   </h2>
                   <p className="text-sm text-slate-600" data-tina-field={tinaField(post, "excerpt")}>
@@ -430,7 +430,7 @@ export function BlogArticleCatalog({ posts, site }: BlogArticleCatalogProps) {
       ) : (
         <section className="mx-auto mt-6 max-w-7xl px-4 md:mt-8">
           <Reveal className={`${getGradientVariant(0)} rounded-md border border-slate-200 px-6 py-10 text-center`}>
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">No articles found</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-site-muted">No articles found</p>
             <p className="mt-2 text-sm text-slate-600">Try a different filter or reset to all topics.</p>
           </Reveal>
         </section>

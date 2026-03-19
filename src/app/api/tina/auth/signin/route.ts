@@ -1,26 +1,29 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
 
-import { getConfiguredSocialProviders } from "@/lib/auth"
+import { getConfiguredSocialProviders } from "@/lib/auth";
+import { resolveAuthInvocationOrigin } from "@/lib/auth-handler-proxy";
 
-export const runtime = "nodejs"
-
-const DEFAULT_PROVIDER = "google"
-const DEFAULT_CALLBACK_PATH = "/admin/index.html"
+const DEFAULT_PROVIDER = "google";
+const DEFAULT_CALLBACK_PATH = "/admin/index.html";
 
 function resolveSignInProvider(): {
-  provider: string | null
-  configuredProviders: string[]
-  requestedProvider: string | null
+  provider: string | null;
+  configuredProviders: string[];
+  requestedProvider: string | null;
 } {
-  const configuredProviders = getConfiguredSocialProviders()
-  const requestedProvider = process.env.TINA_BETTER_AUTH_PROVIDER?.trim().toLowerCase() || null
+  const configuredProviders = getConfiguredSocialProviders();
+  const requestedProvider =
+    process.env.TINA_BETTER_AUTH_PROVIDER?.trim().toLowerCase() || null;
 
-  if (requestedProvider && configuredProviders.includes(requestedProvider as "google" | "github")) {
+  if (
+    requestedProvider &&
+    configuredProviders.includes(requestedProvider as "google" | "github")
+  ) {
     return {
       provider: requestedProvider,
       configuredProviders,
       requestedProvider,
-    }
+    };
   }
 
   if (configuredProviders.includes(DEFAULT_PROVIDER as "google" | "github")) {
@@ -28,36 +31,46 @@ function resolveSignInProvider(): {
       provider: DEFAULT_PROVIDER,
       configuredProviders,
       requestedProvider,
-    }
+    };
   }
 
   return {
     provider: configuredProviders[0] || null,
     configuredProviders,
     requestedProvider,
-  }
+  };
 }
 
-function resolveCallbackPath(request: NextRequest, rawValue: string | null): string {
+function resolveCallbackPath(
+  baseOrigin: string,
+  rawValue: string | null,
+): string {
   if (!rawValue) {
-    return DEFAULT_CALLBACK_PATH
+    return DEFAULT_CALLBACK_PATH;
   }
 
   try {
-    const parsed = new URL(rawValue, request.nextUrl.origin)
-    if (parsed.origin !== request.nextUrl.origin) {
-      return DEFAULT_CALLBACK_PATH
+    const parsed = new URL(rawValue, baseOrigin);
+    if (parsed.origin !== baseOrigin) {
+      return DEFAULT_CALLBACK_PATH;
     }
 
-    return `${parsed.pathname}${parsed.search}${parsed.hash}` || DEFAULT_CALLBACK_PATH
+    return (
+      `${parsed.pathname}${parsed.search}${parsed.hash}` ||
+      DEFAULT_CALLBACK_PATH
+    );
   } catch {
-    return DEFAULT_CALLBACK_PATH
+    return DEFAULT_CALLBACK_PATH;
   }
 }
 
 export async function GET(request: NextRequest) {
-  const callbackUrl = resolveCallbackPath(request, request.nextUrl.searchParams.get("callbackUrl"))
-  const providerResolution = resolveSignInProvider()
+  const authOrigin = resolveAuthInvocationOrigin(request);
+  const callbackUrl = resolveCallbackPath(
+    authOrigin,
+    request.nextUrl.searchParams.get("callbackUrl"),
+  );
+  const providerResolution = resolveSignInProvider();
 
   if (!providerResolution.provider) {
     return NextResponse.json(
@@ -67,36 +80,42 @@ export async function GET(request: NextRequest) {
         configuredProviders: providerResolution.configuredProviders,
         requestedProvider: providerResolution.requestedProvider,
       },
-      { status: 503 }
-    )
+      { status: 503 },
+    );
   }
 
-  const provider = providerResolution.provider
+  const provider = providerResolution.provider;
 
-  const signInResponse = await fetch(new URL("/api/auth/sign-in/social", request.url), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      cookie: request.headers.get("cookie") || "",
-      origin: request.nextUrl.origin,
-      referer: request.nextUrl.origin,
+  const signInResponse = await fetch(
+    new URL("/api/auth/sign-in/social", authOrigin),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: request.headers.get("cookie") || "",
+        origin: authOrigin,
+        referer: authOrigin,
+      },
+      body: JSON.stringify({
+        provider,
+        callbackURL: callbackUrl,
+        disableRedirect: true,
+      }),
+      cache: "no-store",
     },
-    body: JSON.stringify({
-      provider,
-      callbackURL: callbackUrl,
-      disableRedirect: true,
-    }),
-    cache: "no-store",
-  })
+  );
 
-  const payload = (await signInResponse.json().catch(() => null)) as
-    | { url?: string; error?: string; message?: string; code?: string }
-    | null
+  const payload = (await signInResponse.json().catch(() => null)) as {
+    url?: string;
+    error?: string;
+    message?: string;
+    code?: string;
+  } | null;
 
   const errorMessage =
     payload?.error ||
     payload?.message ||
-    `Unable to start Better Auth sign-in. Ensure provider "${provider}" is configured.`
+    `Unable to start Better Auth sign-in. Ensure provider "${provider}" is configured.`;
 
   if (!signInResponse.ok || !payload?.url) {
     return NextResponse.json(
@@ -107,15 +126,15 @@ export async function GET(request: NextRequest) {
         requestedProvider: providerResolution.requestedProvider,
         resolvedProvider: provider,
       },
-      { status: signInResponse.status || 500 }
-    )
+      { status: signInResponse.status || 500 },
+    );
   }
 
-  const response = NextResponse.redirect(payload.url)
-  const setCookie = signInResponse.headers.get("set-cookie")
+  const response = NextResponse.redirect(payload.url);
+  const setCookie = signInResponse.headers.get("set-cookie");
   if (setCookie) {
-    response.headers.set("set-cookie", setCookie)
+    response.headers.set("set-cookie", setCookie);
   }
 
-  return response
+  return response;
 }

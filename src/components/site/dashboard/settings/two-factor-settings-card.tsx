@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { QRCodeSVG } from "qrcode.react"
+import { AlertCircle, CheckCircle2, Copy, Eye, EyeOff, Key, QrCode, ShieldCheck, Trash2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 type TwoFactorSessionPayload = {
   user?: {
@@ -38,19 +43,26 @@ function extractSecretFromTotpUri(value: string | null): string | null {
 
 function TwoFactorSettingsCardSkeleton() {
   return (
-    <div className="rounded-lg border border-zinc-200/80 bg-white p-4 dark:border-zinc-700/80 dark:bg-zinc-900/70" aria-busy="true">
-      <Skeleton className="h-4 w-44" />
-      <Skeleton className="mt-2 h-3 w-80" />
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-10 w-full" />
+    <Card aria-busy="true">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-5 w-16 rounded-full" />
         </div>
-        <div className="flex items-end justify-end">
-          <Skeleton className="h-10 w-32" />
+        <Skeleton className="mt-1 h-4 w-72" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Skeleton className="h-9 w-28" />
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -65,6 +77,8 @@ export function TwoFactorSettingsCard() {
   const [setupUri, setSetupUri] = useState<string | null>(null)
   const [backupCodes, setBackupCodes] = useState<string[]>([])
   const [pendingAction, setPendingAction] = useState<"enable" | "verify" | "disable" | null>(null)
+  const [showSecret, setShowSecret] = useState(false)
+  const [copiedSecret, setCopiedSecret] = useState(false)
 
   const secret = useMemo(() => extractSecretFromTotpUri(setupUri), [setupUri])
 
@@ -140,7 +154,7 @@ export function TwoFactorSettingsCard() {
       setSetupUri(payload.totpURI)
       setBackupCodes(Array.isArray(payload.backupCodes) ? payload.backupCodes : [])
       setVerificationCode("")
-      toast.success("Scan the authenticator secret and verify a code to finish setup")
+      toast.success("Identity verified. Please scan the QR code to proceed.")
     } catch {
       toast.error("Unable to start two-factor setup")
     } finally {
@@ -230,109 +244,257 @@ export function TwoFactorSettingsCard() {
     }
   }
 
+  const handleCopySecret = async () => {
+    if (!secret) return
+    try {
+      await navigator.clipboard.writeText(secret)
+      setCopiedSecret(true)
+      toast.success("Secret copied to clipboard")
+      setTimeout(() => setCopiedSecret(false), 2000)
+    } catch {
+      toast.error("Failed to copy secret")
+    }
+  }
+
   if (loading) {
     return <TwoFactorSettingsCardSkeleton />
   }
 
   if (loadError) {
     return (
-      <div className="space-y-3 rounded-lg border border-red-200/80 bg-red-50/70 p-4 dark:border-red-900/40 dark:bg-red-900/20">
-        <p className="text-sm text-red-700 dark:text-red-300">{loadError}</p>
-        <Button type="button" variant="outline" onClick={() => setReloadToken((value) => value + 1)}>
-          Retry
-        </Button>
-      </div>
+      <Alert variant="destructive">
+        <AlertCircle className="size-4" />
+        <AlertTitle>Configuration Error</AlertTitle>
+        <AlertDescription className="space-y-4">
+          <p>{loadError}</p>
+          <Button type="button" variant="outline" size="sm" onClick={() => setReloadToken((value) => value + 1)}>
+            Retry
+          </Button>
+        </AlertDescription>
+      </Alert>
     )
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200/80 bg-white p-4 dark:border-zinc-700/80 dark:bg-zinc-900/70">
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Two-factor authentication</p>
-        <Badge variant={enabled ? "default" : "secondary"}>{enabled ? "Enabled" : "Disabled"}</Badge>
-      </div>
-      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-        Protect {email || "this account"} with a TOTP authenticator app and backup recovery codes.
-      </p>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="settings-2fa-password">Account password</Label>
-          <Input
-            id="settings-2fa-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Enter your current password"
-            autoComplete="current-password"
-          />
-        </div>
-
-        {!enabled ? (
-          <div className="md:col-span-2 flex justify-end">
-            <Button type="button" onClick={handleStartSetup} disabled={pendingAction === "enable"}>
-              {pendingAction === "enable" ? "Preparing..." : "Start setup"}
-            </Button>
-          </div>
-        ) : (
-          <div className="md:col-span-2 flex justify-end">
-            <Button type="button" variant="destructive" onClick={handleDisable} disabled={pendingAction === "disable"}>
-              {pendingAction === "disable" ? "Disabling..." : "Disable 2FA"}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {setupUri ? (
-        <div className="mt-5 space-y-4 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
-          <div>
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Authenticator setup</p>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Add the secret below to your authenticator app, then enter the current 6-digit code to finish enabling 2FA.
-            </p>
-          </div>
-
-          {secret ? (
-            <div className="space-y-2">
-              <Label htmlFor="settings-2fa-secret">Manual setup secret</Label>
-              <Input id="settings-2fa-secret" value={secret} readOnly />
+    <Card className={cn("overflow-hidden transition-all", enabled && "border-primary/20 bg-primary/5 dark:bg-primary/5")}>
+      <CardHeader>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "flex size-8 items-center justify-center rounded-lg border",
+              enabled ? "border-primary/20 bg-primary/10 text-primary" : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800"
+            )}>
+              <ShieldCheck className="size-4" />
             </div>
-          ) : null}
-
-          <div className="space-y-2">
-            <Label htmlFor="settings-2fa-code">Verification code</Label>
-            <Input
-              id="settings-2fa-code"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={6}
-              value={verificationCode}
-              onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="123456"
-            />
+            <CardTitle className="text-base">Two-Factor Authentication</CardTitle>
           </div>
+          <Badge variant={enabled ? "default" : "secondary"} className="h-5">
+            {enabled ? (
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="size-3" /> Enabled
+              </span>
+            ) : "Disabled"}
+          </Badge>
+        </div>
+        <CardDescription>
+          Add an extra layer of security to your account by requiring more than just a password to sign in.
+        </CardDescription>
+      </CardHeader>
 
-          {backupCodes.length > 0 ? (
+      <CardContent className="space-y-6">
+        {!setupUri && (
+          <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">Backup codes</p>
-              <div className="grid gap-2 rounded-lg border border-dashed border-zinc-300/80 p-3 font-mono text-xs text-zinc-700 dark:border-zinc-700/80 dark:text-zinc-200 md:grid-cols-2">
-                {backupCodes.map((code) => (
-                  <span key={code}>{code}</span>
-                ))}
-              </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Store these codes somewhere safe. Each code can be used once if you lose access to your authenticator app.
+              <Label htmlFor="settings-2fa-password">Verify Password</Label>
+              <Input
+                id="settings-2fa-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Enter password to change settings"
+                autoComplete="current-password"
+                className="max-w-sm"
+              />
+              <p className="text-[11px] text-muted-foreground italic">
+                {enabled ? "Password required to disable protection." : "Password required to start setup."}
               </p>
             </div>
-          ) : null}
 
-          <div className="flex justify-end">
-            <Button type="button" onClick={handleVerifySetup} disabled={pendingAction === "verify"}>
-              {pendingAction === "verify" ? "Verifying..." : "Verify and enable"}
-            </Button>
+            <div className="flex justify-start">
+              {!enabled ? (
+                <Button 
+                  type="button" 
+                  onClick={handleStartSetup} 
+                  disabled={pendingAction === "enable"}
+                  className="gap-2"
+                >
+                  <Key className="size-4" />
+                  {pendingAction === "enable" ? "Verifying..." : "Enable 2FA"}
+                </Button>
+              ) : (
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  onClick={handleDisable} 
+                  disabled={pendingAction === "disable"}
+                  className="gap-2"
+                >
+                  <Trash2 className="size-4" />
+                  {pendingAction === "disable" ? "Disabling..." : "Disable 2FA"}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      ) : null}
-    </div>
+        )}
+
+        {setupUri && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-6 pt-2">
+            <div className="space-y-4 rounded-xl border border-primary/10 bg-primary/5 p-6 dark:border-primary/20">
+              <div className="flex flex-col gap-6 md:flex-row md:items-start">
+                <div className="flex shrink-0 flex-col items-center gap-3">
+                  <div className="overflow-hidden rounded-xl border-4 border-white bg-white p-2 shadow-sm dark:border-zinc-100">
+                    <QRCodeSVG 
+                      value={setupUri} 
+                      size={160}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono tracking-tighter uppercase whitespace-nowrap bg-white/50 dark:bg-zinc-900/50">
+                    Scan with Authenticator
+                  </Badge>
+                </div>
+
+                <div className="flex-1 space-y-5">
+                  <div className="space-y-1.5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <QrCode className="size-4" />
+                      Step 1: Link Authenticator
+                    </h4>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      Open your preferred authenticator app (e.g., Google Authenticator, 1Password, Authy) and scan the QR code.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Copy className="size-4" />
+                      Step 2: Manual Setup (Optional)
+                    </h4>
+                    <p className="text-[13px] text-muted-foreground">
+                      If you can't scan the QR code, use this secret key in your app:
+                    </p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input 
+                          id="settings-2fa-secret" 
+                          value={secret ?? ""} 
+                          readOnly 
+                          type={showSecret ? "text" : "password"}
+                          className="font-mono text-xs pr-20 bg-background/50" 
+                        />
+                        <div className="absolute right-1 top-1 flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon-xs" 
+                            onClick={() => setShowSecret(!showSecret)}
+                            title={showSecret ? "Hide secret" : "Show secret"}
+                          >
+                            {showSecret ? <EyeOff className="size-3" /> : <Eye className="size-3" /> }
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon-xs" 
+                            onClick={handleCopySecret}
+                            title="Copy secret"
+                          >
+                            {copiedSecret ? <CheckCircle2 className="size-3 text-green-500" /> : <Copy className="size-3" />}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 border-t border-primary/10 pt-6 space-y-4">
+                <div className="space-y-1.5">
+                  <h4 className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <ShieldCheck className="size-4" />
+                    Step 3: Verify & Finish
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Enter the 6-digit code from your app to confirm setup.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="settings-2fa-verify"
+                      placeholder="000000"
+                      value={verificationCode}
+                      onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className="text-center font-mono text-lg tracking-[0.2em]"
+                      maxLength={6}
+                    />
+                  </div>
+                  <Button 
+                    type="button" 
+                    onClick={handleVerifySetup} 
+                    disabled={pendingAction === "verify" || verificationCode.length < 6}
+                    className="sm:w-32"
+                  >
+                    {pendingAction === "verify" ? "Verifying..." : "Verify Code"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setSetupUri(null)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+
+      {backupCodes.length > 0 && setupUri && (
+        <CardFooter className="flex-col items-start gap-4 border-t bg-zinc-50/50 p-6 dark:bg-zinc-900/50">
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-destructive flex items-center gap-2">
+              <AlertCircle className="size-4" />
+              Save your recovery codes
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              These codes let you access your account if you lose your phone. Keep them in a safe place!
+            </p>
+          </div>
+          <div className="grid w-full grid-cols-2 gap-2 rounded-lg border bg-background p-3 font-mono text-[11px]">
+            {backupCodes.map((code, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-muted-foreground/50">{String(i + 1).padStart(2, "0")}.</span>
+                <span>{code}</span>
+              </div>
+            ))}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full" 
+            onClick={() => {
+              const text = backupCodes.join("\n")
+              navigator.clipboard.writeText(text)
+              toast.success("Recovery codes copied")
+            }}
+          >
+            Copy Recovery Codes
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
   )
 }

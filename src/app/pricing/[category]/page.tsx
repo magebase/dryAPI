@@ -16,7 +16,7 @@ import {
 import { filterPricingSnapshotToActiveModels } from "@/lib/runpod-active-models"
 import { readSiteConfig } from "@/lib/site-content-loader"
 
-export const dynamic = "force-static"
+
 
 type PricingCategoryPageProps = {
   params: Promise<{ category: string }>

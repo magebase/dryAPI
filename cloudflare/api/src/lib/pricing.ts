@@ -1,8 +1,9 @@
-import type { AppContext, RunpodSurface } from '../types'
+import type { AppContext, RunpodSurface, RunpodWorkerType } from '../types'
 
 import { isObjectRecord, safeParseJson } from './validation'
 
 const DEFAULT_GPU_COST_PER_SECOND_USD = 0.00055
+const DEFAULT_WORKER_TYPE: RunpodWorkerType = 'flex'
 const DEFAULT_INFRA_COST_USD = 0.00005
 const DEFAULT_PAYMENT_FEE_FRACTION = 0.04
 const DEFAULT_RETRY_SAFETY_FRACTION = 0.12
@@ -17,6 +18,9 @@ const MIN_PROFIT_MULTIPLE_FLOOR = 3
 
 type PricingNode = {
   gpuCostPerSecondUsd?: number
+  gpuCostPerSecondUsdActive?: number
+  gpuCostPerSecondUsdFlex?: number
+  workerType?: RunpodWorkerType
   infraCostUsd?: number
   paymentFeeFraction?: number
   retrySafetyFraction?: number
@@ -40,8 +44,11 @@ export type PricingPolicy = {
   surface: RunpodSurface
   endpointId: string
   modelSlug: string | null
+  workerType: RunpodWorkerType
   priceKey: string
   gpuCostPerSecondUsd: number
+  gpuCostPerSecondUsdActive: number
+  gpuCostPerSecondUsdFlex: number
   infraCostUsd: number
   paymentFeeFraction: number
   retrySafetyFraction: number
@@ -106,13 +113,43 @@ function pickFraction(value: unknown, fallback: number): number {
   return clamp(parsed, 0, 0.95)
 }
 
+function parseWorkerType(value: unknown): RunpodWorkerType | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'active') {
+    return 'active'
+  }
+
+  if (normalized === 'flex') {
+    return 'flex'
+  }
+
+  return null
+}
+
 function parsePricingNode(value: unknown): PricingNode {
   if (!isObjectRecord(value)) {
     return {}
   }
 
+  const gpuCostValue = value.gpuCostPerSecondUsd
+  const parsedBaseGpuCost = toNumber(gpuCostValue) ?? undefined
+  let parsedActiveGpuCost = toNumber(value.gpuCostPerSecondUsdActive) ?? undefined
+  let parsedFlexGpuCost = toNumber(value.gpuCostPerSecondUsdFlex) ?? undefined
+
+  if (isObjectRecord(gpuCostValue)) {
+    parsedActiveGpuCost = toNumber(gpuCostValue.active) ?? parsedActiveGpuCost
+    parsedFlexGpuCost = toNumber(gpuCostValue.flex) ?? parsedFlexGpuCost
+  }
+
   return {
-    gpuCostPerSecondUsd: toNumber(value.gpuCostPerSecondUsd) ?? undefined,
+    gpuCostPerSecondUsd: parsedBaseGpuCost,
+    gpuCostPerSecondUsdActive: parsedActiveGpuCost,
+    gpuCostPerSecondUsdFlex: parsedFlexGpuCost,
+    workerType: parseWorkerType(value.workerType) ?? undefined,
     infraCostUsd: toNumber(value.infraCostUsd) ?? undefined,
     paymentFeeFraction: toNumber(value.paymentFeeFraction) ?? undefined,
     retrySafetyFraction: toNumber(value.retrySafetyFraction) ?? undefined,
@@ -179,6 +216,9 @@ function mergeNode(base: PricingNode, next: PricingNode | undefined): PricingNod
 
   return {
     gpuCostPerSecondUsd: next.gpuCostPerSecondUsd ?? base.gpuCostPerSecondUsd,
+    gpuCostPerSecondUsdActive: next.gpuCostPerSecondUsdActive ?? base.gpuCostPerSecondUsdActive,
+    gpuCostPerSecondUsdFlex: next.gpuCostPerSecondUsdFlex ?? base.gpuCostPerSecondUsdFlex,
+    workerType: next.workerType ?? base.workerType,
     infraCostUsd: next.infraCostUsd ?? base.infraCostUsd,
     paymentFeeFraction: next.paymentFeeFraction ?? base.paymentFeeFraction,
     retrySafetyFraction: next.retrySafetyFraction ?? base.retrySafetyFraction,
@@ -223,6 +263,7 @@ export function resolvePricingPolicy(args: {
   surface: RunpodSurface
   endpointId: string
   modelSlug?: string | null
+  workerType?: RunpodWorkerType | null
 }): PricingPolicy {
   const rawConfig = typeof args.c.env.RUNPOD_PRICING_CONFIG_JSON === 'string' ? args.c.env.RUNPOD_PRICING_CONFIG_JSON : ''
   const parsedConfig = rawConfig.trim() === '' ? {} : parsePricingConfig(rawConfig)
@@ -251,6 +292,19 @@ export function resolvePricingPolicy(args: {
   )
 
   const roundStepUsd = pickPositive(args.c.env.RUNPOD_PRICING_ROUND_STEP_USD ?? merged.roundStepUsd, DEFAULT_ROUND_STEP_USD)
+  const envDefaultWorkerType = parseWorkerType(args.c.env.RUNPOD_PRICING_WORKER_TYPE_DEFAULT)
+  const resolvedWorkerType = args.workerType ?? merged.workerType ?? envDefaultWorkerType ?? DEFAULT_WORKER_TYPE
+
+  const activeGpuCostPerSecondUsd = pickPositive(
+    merged.gpuCostPerSecondUsdActive ?? merged.gpuCostPerSecondUsd,
+    DEFAULT_GPU_COST_PER_SECOND_USD,
+  )
+  const flexGpuCostPerSecondUsd = pickPositive(
+    merged.gpuCostPerSecondUsdFlex ?? merged.gpuCostPerSecondUsd,
+    DEFAULT_GPU_COST_PER_SECOND_USD,
+  )
+
+  const selectedGpuCostPerSecondUsd = resolvedWorkerType === 'active' ? activeGpuCostPerSecondUsd : flexGpuCostPerSecondUsd
 
   const modelKey = args.modelSlug && args.modelSlug.trim() !== '' ? args.modelSlug : '*'
 
@@ -258,8 +312,11 @@ export function resolvePricingPolicy(args: {
     surface: args.surface,
     endpointId: args.endpointId,
     modelSlug: args.modelSlug ?? null,
-    priceKey: `${args.surface}:${modelKey}:${args.endpointId}`,
-    gpuCostPerSecondUsd: pickPositive(merged.gpuCostPerSecondUsd, DEFAULT_GPU_COST_PER_SECOND_USD),
+    workerType: resolvedWorkerType,
+    priceKey: `${args.surface}:${modelKey}:${args.endpointId}:${resolvedWorkerType}`,
+    gpuCostPerSecondUsd: selectedGpuCostPerSecondUsd,
+    gpuCostPerSecondUsdActive: activeGpuCostPerSecondUsd,
+    gpuCostPerSecondUsdFlex: flexGpuCostPerSecondUsd,
     infraCostUsd: pickPositive(merged.infraCostUsd, DEFAULT_INFRA_COST_USD),
     paymentFeeFraction: pickFraction(merged.paymentFeeFraction, DEFAULT_PAYMENT_FEE_FRACTION),
     retrySafetyFraction: pickFraction(merged.retrySafetyFraction, DEFAULT_RETRY_SAFETY_FRACTION),

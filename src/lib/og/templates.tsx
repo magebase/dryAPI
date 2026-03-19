@@ -213,7 +213,8 @@ function resolveGradient(template: OgTemplateKind, seed: string): GradientPalett
 }
 
 function renderBackground(gradient: GradientPalette, seed: string) {
-  const noiseOffset = hashString(seed) % 17
+  const diagonalOffset = hashString(seed) % 17
+  const secondaryOffset = (diagonalOffset + 90) % 360
 
   return (
     <div
@@ -221,8 +222,8 @@ function renderBackground(gradient: GradientPalette, seed: string) {
         position: "absolute",
         inset: 0,
         backgroundImage: [
-          `repeating-linear-gradient(${noiseOffset}deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 3px)`,
-          `repeating-linear-gradient(${90 + noiseOffset}deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 2px)`,
+          `linear-gradient(${diagonalOffset}deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 48%)`,
+          `linear-gradient(${secondaryOffset}deg, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0) 46%)`,
           `radial-gradient(circle at 22% 18%, ${gradient.glowA} 0%, rgba(255,255,255,0) 45%)`,
           `radial-gradient(circle at 78% 82%, ${gradient.glowB} 0%, rgba(0,0,0,0) 52%)`,
           `linear-gradient(140deg, ${gradient.start} 0%, ${gradient.middle} 52%, ${gradient.end} 100%)`,

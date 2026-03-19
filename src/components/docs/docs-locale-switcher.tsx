@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { localizePath, stripLocalePrefix, SUPPORTED_LOCALES } from "@/lib/i18n"
+import { toRoute } from "@/lib/route"
 
 export function DocsLocaleSwitcher() {
   const pathname = usePathname() || "/docs"
@@ -18,7 +19,7 @@ export function DocsLocaleSwitcher() {
         return (
           <Link
             key={locale}
-            href={href}
+            href={toRoute(href)}
             className={[
               "rounded-full px-2.5 py-1 transition-colors",
               isActive

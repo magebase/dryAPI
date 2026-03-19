@@ -17,6 +17,7 @@ describe("stripe deposit checkout helpers", () => {
 
   it("rejects invalid major-unit amounts", () => {
     expect(() => parseDepositAmountToCents("10.999")).toThrowError(/2 decimal places/i)
+    expect(() => parseDepositAmountToCents("9.99")).toThrowError(/at least/i)
     expect(() => parseDepositAmountToCents(0)).toThrowError(/at least/i)
   })
 

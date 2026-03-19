@@ -130,7 +130,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
   const faqHeading = resolveSiteUiText(site, "productsPage.faqHeading", "Frequently Asked Questions")
 
   return (
-    <main className="overflow-x-clip bg-[var(--site-surface-0)] text-slate-900">
+    <main className="overflow-x-clip bg-[var(--site-surface-0)] text-site-strong">
       <section className="relative isolate border-b border-slate-200">
         <Image
           alt={page.hero.heading}
@@ -225,7 +225,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
                 >
                   <div className={reverse ? "lg:order-2" : ""}>
                     <h3
-                      className="max-w-lg font-display text-3xl uppercase tracking-[0.03em] text-slate-900 md:text-4xl"
+                      className="max-w-lg font-display text-3xl uppercase tracking-[0.03em] text-site-strong md:text-4xl"
                     >
                       <KeywordGradientText dataTinaField={feature.titleField} text={feature.title} />
                     </h3>
@@ -310,7 +310,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
       <section className="bg-[var(--site-surface-1)] py-12 md:py-14 lg:py-20">
         <div className="mx-auto max-w-7xl px-4">
           <Reveal className="border-b border-slate-200 pb-6">
-            <h2 className="font-display text-3xl uppercase tracking-[0.03em] text-slate-900">
+            <h2 className="font-display text-3xl uppercase tracking-[0.03em] text-site-strong">
               <KeywordGradientText dataTinaField={faqHeading.field} text={faqHeading.value} />
             </h2>
           </Reveal>
@@ -319,7 +319,7 @@ export function ProductsPageTemplate({ page, productPages, site }: ProductsPageT
             {faqItems.map((item, index) => (
               <Reveal key={`${item.question}-${index}`} className="py-3" id={`product-faq-${index + 1}`}>
                 <details className="group">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold uppercase tracking-[0.13em] text-slate-900">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold uppercase tracking-[0.13em] text-site-strong">
                     <span data-tina-field={item.questionField}>{item.question}</span>
                     <span className="text-lg leading-none text-primary transition group-open:rotate-45">+</span>
                   </summary>

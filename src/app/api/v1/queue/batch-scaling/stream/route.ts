@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 function resolveApiToken(): string | null {
   const token =
     process.env.DASHBOARD_API_KEY?.trim() ||

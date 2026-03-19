@@ -14,6 +14,7 @@ import { ModelSlugCopyButton } from "@/components/site/dashboard/model-slug-copy
 import { WebPageJsonLd } from "@/components/site/seo-jsonld";
 import { SiteFrame } from "@/components/site/site-frame";
 import { SummarizeWithAi } from "@/components/site/summarize-with-ai";
+import { toRoute } from "@/lib/route";
 import { getModelDetail } from "@/lib/deapi-model-details";
 import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
 import {
@@ -37,7 +38,7 @@ type ModelDetailPageProps = {
   }>;
 };
 
-export const dynamic = "force-static";
+;
 
 export function generateStaticParams() {
   return toRoutePairs().map((pair) => ({
@@ -166,7 +167,7 @@ export default async function ModelDetailPage({
             <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-slate-500">
               <Link
                 className="inline-flex items-center gap-1 text-primary transition hover:text-slate-900"
-                href="/pricing"
+                href={toRoute("/pricing")}
               >
                 <ArrowLeft className="size-3.5" />
                 <span>All Pricing</span>
@@ -174,7 +175,7 @@ export default async function ModelDetailPage({
               <span>/</span>
               <Link
                 className="text-primary transition hover:text-slate-900"
-                href={categoryPricingHref}
+                href={toRoute(categoryPricingHref)}
               >
                 {categoryLabel}
               </Link>
@@ -208,14 +209,14 @@ export default async function ModelDetailPage({
                 className="h-9 rounded-md border-slate-300 bg-white px-3 text-xs text-slate-700 hover:bg-slate-100"
               />
               <Link
-                href={pricingHref}
+                href={toRoute(pricingHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-slate-100"
               >
                 <Table2 className="size-3.5" />
                 <span>Detailed Pricing</span>
               </Link>
               <Link
-                href={categoryPricingHref}
+                href={toRoute(categoryPricingHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-slate-100"
               >
                 <Layers2 className="size-3.5" />
@@ -365,7 +366,7 @@ export default async function ModelDetailPage({
                 {modelDetail?.sourceNote ??
                   "Derived from active model and pricing snapshot metadata."}
               </p>
-              <Link
+              <a
                 href={
                   modelDetail?.huggingFaceUrl ??
                   `https://huggingface.co/models?search=${encodeURIComponent(routePair.model)}`
@@ -376,7 +377,7 @@ export default async function ModelDetailPage({
               >
                 <ExternalLink className="size-3.5" />
                 <span>Open Hugging Face</span>
-              </Link>
+              </a>
             </div>
 
             <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
@@ -415,14 +416,14 @@ export default async function ModelDetailPage({
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link
-                href={pricingHref}
+                href={toRoute(pricingHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-900 transition hover:bg-slate-100"
               >
                 <Table2 className="size-3.5" />
                 <span>See parameter pricing</span>
               </Link>
               <Link
-                href={categoryPricingHref}
+                href={toRoute(categoryPricingHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md border border-white/45 bg-white/10 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white/20"
               >
                 <Layers2 className="size-3.5" />
@@ -473,14 +474,14 @@ export default async function ModelDetailPage({
                 </ul>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
-                    href={pricingHref}
+                    href={toRoute(pricingHref)}
                     className="inline-flex h-9 items-center gap-1 rounded-md bg-slate-900 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-slate-700"
                   >
                     <Table2 className="size-3.5" />
                     <span>Open Detailed Pricing</span>
                   </Link>
                   <Link
-                    href={categoryPricingHref}
+                    href={toRoute(categoryPricingHref)}
                     className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-slate-100"
                   >
                     <Link2 className="size-3.5" />

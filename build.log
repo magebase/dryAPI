@@ -1,0 +1,119 @@
+[MDX] generated files in 527.7776759999997ms
+▲ Next.js 16.1.6 (webpack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+✓ (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m				You have defined bindings to the following internal Durable Objects:[0m
+
+  				- {"name":"NEXT_CACHE_DO_QUEUE","class_name":"DOQueueHandler"}
+  - {"name":"NEXT_TAG_CACHE_DO_SHARDED","class_name":"DOShardedTagCache"}
+  - {"name":"NEXT_CACHE_DO_PURGE","class_name":"BucketCachePurge"}
+  				These will not work in local development, but they should work in production.
+  
+  				If you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+  				For detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api#supported-bindings[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mAI bindings always access remote resources, and so may incur usage charges even in local dev. To suppress this warning, set `remote: true` for the binding definition in your configuration file.[0m
+
+
+workerd/server/server.c++:1937: warning: A DurableObjectNamespace in the config referenced the class "BucketCachePurge", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+workerd/server/server.c++:1937: warning: A DurableObjectNamespace in the config referenced the class "DOShardedTagCache", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+workerd/server/server.c++:1937: warning: A DurableObjectNamespace in the config referenced the class "DOQueueHandler", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+✓ Compiled successfully in 58s
+  Running TypeScript ...
+Failed to compile.
+
+./apps/hub/src/lib/auth-client.ts:10:28
+Type error: Type '{ id: "api-key"; $InferServerPlugin: { id: "api-key"; $ERROR_CODES: { INVALID_METADATA_TYPE: RawError<"INVALID_METADATA_TYPE">; REFILL_AMOUNT_AND_INTERVAL_REQUIRED: RawError<"REFILL_AMOUNT_AND_INTERVAL_REQUIRED">; ... 28 more ...; ORGANIZATION_PLUGIN_REQUIRED: RawError<...>; }; hooks: { ...; }; endpoints: { ...; }; ...' is not assignable to type 'BetterAuthClientPlugin'.
+  Types of property '$InferServerPlugin' are incompatible.
+    Type '{ id: "api-key"; $ERROR_CODES: { INVALID_METADATA_TYPE: RawError<"INVALID_METADATA_TYPE">; REFILL_AMOUNT_AND_INTERVAL_REQUIRED: RawError<"REFILL_AMOUNT_AND_INTERVAL_REQUIRED">; ... 28 more ...; ORGANIZATION_PLUGIN_REQUIRED: RawError<...>; }; hooks: { ...; }; endpoints: { ...; }; schema: { ...; }; configurations: Pre...' is not assignable to type 'BetterAuthPlugin'.
+      Type '{ id: "api-key"; $ERROR_CODES: { INVALID_METADATA_TYPE: RawError<"INVALID_METADATA_TYPE">; REFILL_AMOUNT_AND_INTERVAL_REQUIRED: RawError<"REFILL_AMOUNT_AND_INTERVAL_REQUIRED">; ... 28 more ...; ORGANIZATION_PLUGIN_REQUIRED: RawError<...>; }; hooks: { ...; }; endpoints: { ...; }; schema: { ...; }; configurations: Pre...' is not assignable to type '{ id: LiteralString; init?: ((ctx: AuthContext) => void | Promise<void> | Awaitable<{ context?: ({ logger?: { error?: ((message: string, ...args: any[]) => void) | undefined; ... 4 more ...; readonly level?: LogLevel | undefined; } | undefined; ... 30 more ...; runInBackgroundOrAwait?: ((promise: void | Promise<...>...'.
+        The types of 'hooks.before' are incompatible between these types.
+          Type '{ matcher: (ctx: HookEndpointContext) => boolean; handler: (inputContext: MiddlewareInputContext<MiddlewareOptions>) => Promise<...>; }[]' is not assignable to type '{ matcher: (context: HookEndpointContext) => boolean; handler: (inputContext: MiddlewareInputContext<MiddlewareOptions>) => Promise<...>; }[]'.
+            Type '{ matcher: (ctx: HookEndpointContext) => boolean; handler: (inputContext: MiddlewareInputContext<MiddlewareOptions>) => Promise<...>; }' is not assignable to type '{ matcher: (context: HookEndpointContext) => boolean; handler: (inputContext: MiddlewareInputContext<MiddlewareOptions>) => Promise<...>; }'.
+              Types of property 'matcher' are incompatible.
+                Type '(ctx: HookEndpointContext) => boolean' is not assignable to type '(context: HookEndpointContext) => boolean'.
+                  Types of parameters 'ctx' and 'context' are incompatible.
+                    Type 'import("/home/aqua/Projects/dryapi/apps/hub/node_modules/.pnpm/@better-auth+core@1.5.5_@better-auth+utils@0.3.1_@better-fetch+fetch@1.1.21_better-call_4b917e3fdada8500803305059c920496/node_modules/@better-auth/core/dist/types/plugin").HookEndpointContext' is not assignable to type 'import("/home/aqua/Projects/dryapi/node_modules/.pnpm/@better-auth+core@1.5.5_@better-auth+utils@0.3.1_@better-fetch+fetch@1.1.21_better-call_67579310e3d032f6266823a7be698d9a/node_modules/@better-auth/core/dist/types/plugin").HookEndpointContext'.
+                      Type 'HookEndpointContext' is not assignable to type '{ path?: string | undefined; context: PluginContext<BetterAuthOptions> & InfoContext & { options: BetterAuthOptions; ... 26 more ...; runInBackgroundOrAwait: (promise: void | Promise<...>) => unknown; } & { ...; }; headers?: Headers | undefined; }'.
+                        Types of property 'context' are incompatible.
+                          Type '{ [x: string]: any; } & Record<string, any> & PluginContext<BetterAuthOptions> & InfoContext & { options: BetterAuthOptions; ... 26 more ...; runInBackgroundOrAwait: (promise: void | Promise<...>) => unknown; } & { ...; }' is not assignable to type 'PluginContext<BetterAuthOptions> & InfoContext & { options: BetterAuthOptions; trustedOrigins: string[]; ... 25 more ...; runInBackgroundOrAwait: (promise: void | Promise<...>) => unknown; } & { ...; }'.
+                            Type '{ [x: string]: any; } & Record<string, any> & PluginContext<BetterAuthOptions> & InfoContext & { options: BetterAuthOptions; ... 26 more ...; runInBackgroundOrAwait: (promise: void | Promise<...>) => unknown; } & { ...; }' is not assignable to type 'PluginContext<BetterAuthOptions>'.
+                              The types returned by 'getPlugin(...)' are incompatible between these types.
+                                Type '(ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, never>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin) | null' is not assignable to type '(ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, PluginOptions>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin) | null'.
+                                  Type 'ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, never>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin' is not assignable to type '(ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, PluginOptions>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin) | null'.
+                                    Type 'BetterAuthPlugin | { id: "generic-oauth"; init: (ctx: AuthContext) => { context: { socialProviders: OAuthProvider<Record<string, any>, Partial<ProviderOptions<any>>>[]; }; }; endpoints: { ...; }; options: GenericOAuthOptions; $ERROR_CODES: { ...; }; } | ... 22 more ... | { ...; }' is not assignable to type '(ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, PluginOptions>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin) | null'.
+                                      Type 'BetterAuthPlugin' is not assignable to type '(ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, PluginOptions>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin) | null'.
+                                        Type 'BetterAuthPlugin' is not assignable to type 'ID extends keyof BetterAuthPluginRegistry<unknown, unknown> ? BetterAuthPluginRegistry<BetterAuthOptions, PluginOptions>[ID] extends { ...; } ? C extends (...args: any[]) => infer R ? R : never : never : BetterAuthPlugin'.
+
+[0m [90m  8 |[39m       [33m?[39m window[33m.[39mlocation[33m.[39morigin
+ [90m  9 |[39m       [33m:[39m (process[33m.[39menv[[32m"NEXT_PUBLIC_SITE_URL"[39m] [33m?[39m[33m?[39m [32m"http://localhost:3001"[39m)[33m,[39m
+[31m[1m>[22m[39m[90m 10 |[39m   plugins[33m:[39m [adminClient()[33m,[39m apiKeyClient()][33m,[39m
+ [90m    |[39m                            [31m[1m^[22m[39m
+ [90m 11 |[39m })
+ [90m 12 |[39m
+ [90m 13 |[39m [36mexport[39m type { [33mSession[39m[33m,[39m [33mUser[39m } [36mfrom[39m [32m"./auth"[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+fatal error: all goroutines are asleep - deadlock!
+
+goroutine 1 [chan receive]:
+github.com/evanw/esbuild/internal/helpers.(*ThreadSafeWaitGroup).Wait(...)
+	github.com/evanw/esbuild/internal/helpers/waitgroup.go:36
+main.runService.func2()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:114 +0x53
+main.runService(0x1)
+	github.com/evanw/esbuild/cmd/esbuild/service.go:160 +0x4c3
+main.main()
+	github.com/evanw/esbuild/cmd/esbuild/main.go:252 +0xb75
+
+goroutine 7 [chan receive]:
+main.runService.func1()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:98 +0x45
+created by main.runService in goroutine 1
+	github.com/evanw/esbuild/cmd/esbuild/service.go:97 +0x1ce
+
+goroutine 8 [chan receive]:
+main.(*serviceType).sendRequest(0xc00018aed0, {0x9f48c0, 0xc0001a2240})
+	github.com/evanw/esbuild/cmd/esbuild/service.go:192 +0x12b
+main.runService.func3()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:125 +0x3e
+created by main.runService in goroutine 1
+	github.com/evanw/esbuild/cmd/esbuild/service.go:122 +0x2d0
+
+goroutine 298 [chan receive]:
+main.(*serviceType).sendRequest(0xc00018aed0, {0x9f48c0, 0xc00030a060})
+	github.com/evanw/esbuild/cmd/esbuild/service.go:192 +0x12b
+main.(*serviceType).convertPlugins.func2.2()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:963 +0x117
+github.com/evanw/esbuild/pkg/api.(*pluginImpl).onStart-fm.(*pluginImpl).onStart.func1()
+	github.com/evanw/esbuild/pkg/api/api_impl.go:1865 +0x35
+github.com/evanw/esbuild/internal/bundler.ScanBundle.func1({{0xa7dc43, 0x12}, {0xc0003114a0, 0x1, 0x1}, {0xc0005eb0b0, 0x1, 0x1}, {0xc0005eb110, 0x1, ...}}, ...)
+	github.com/evanw/esbuild/internal/bundler/bundler.go:1391 +0x5e
+created by github.com/evanw/esbuild/internal/bundler.ScanBundle in goroutine 113
+	github.com/evanw/esbuild/internal/bundler/bundler.go:1390 +0x10de
+
+goroutine 113 [sync.WaitGroup.Wait]:
+sync.runtime_SemacquireWaitGroup(0xc00030c498?, 0xc0?)
+	runtime/sema.go:114 +0x2e
+sync.(*WaitGroup).Wait(0xc0002b49f0)
+	sync/waitgroup.go:206 +0x85
+github.com/evanw/esbuild/internal/bundler.ScanBundle(_, {_, _, _, _, _, _}, {_, _}, 0xc0002f8360, ...)
+	github.com/evanw/esbuild/internal/bundler/bundler.go:1485 +0x9be
+github.com/evanw/esbuild/pkg/api.rebuildImpl({0xc0002f8360, {0xc000311518, 0x1, 0x1}, {0x0, 0x0, 0x0}, {0x0, 0x1, 0x0, ...}, ...}, ...)
+	github.com/evanw/esbuild/pkg/api/api_impl.go:1493 +0x2c6
+github.com/evanw/esbuild/pkg/api.(*internalContext).rebuild(_)
+	github.com/evanw/esbuild/pkg/api/api_impl.go:1007 +0x27d
+github.com/evanw/esbuild/pkg/api.(*internalContext).Watch.func1()
+	github.com/evanw/esbuild/pkg/api/api_impl.go:1092 +0x25
+github.com/evanw/esbuild/pkg/api.(*watcher).start.func1()
+	github.com/evanw/esbuild/pkg/api/watcher.go:123 +0xc3
+created by github.com/evanw/esbuild/pkg/api.(*watcher).start in goroutine 101
+	github.com/evanw/esbuild/pkg/api/watcher.go:98 +0x65
+
+goroutine 300 [chan send]:
+github.com/evanw/esbuild/internal/bundler.ScanBundle.func2()
+	github.com/evanw/esbuild/internal/bundler/bundler.go:1425 +0x2c5
+created by github.com/evanw/esbuild/internal/bundler.ScanBundle in goroutine 113
+	github.com/evanw/esbuild/internal/bundler/bundler.go:1423 +0x97d

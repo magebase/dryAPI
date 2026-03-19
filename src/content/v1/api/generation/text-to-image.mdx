@@ -1,20 +1,14 @@
 ---
 title: "Text-to-Image"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
-
-# Text-to-Image
-
 > Endpoint for requesting text2img inference
 
 Text-to-Image generates images from text prompts. The endpoint returns a ready-to-use image URL and a task ID to track processing status. Ideal for apps needing automated image creation.
 
-<Callout>
-**Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability. Please **omit** the LoRA parameter by default during initial testing.
-</Callout>
+> **NOTE**
+>
+> **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability. Please **omit** the LoRA parameter by default during initial testing.
 
 ## OpenAPI
 
-<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/txt2img","method":"post"}]} showTitle={true} />
+<APIPage document={"/home/aqua/Projects/dryapi/docs/dryapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/txt2img","method":"post"}]} showTitle={true} />

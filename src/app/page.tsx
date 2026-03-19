@@ -6,7 +6,7 @@ import { buildTakumiMetadata } from "@/lib/og/metadata"
 import { readHomeContent, readSiteConfig } from "@/lib/site-content-loader"
 import { tinaHomeQuery, tinaSiteConfigQuery } from "@/lib/tina-documents"
 
-export const dynamic = "force-static"
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const [home, site] = await Promise.all([readHomeContent(), readSiteConfig()])

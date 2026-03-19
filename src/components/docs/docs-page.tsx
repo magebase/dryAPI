@@ -1,6 +1,14 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { DocsBody, DocsPage, PageLastUpdate } from "fumadocs-ui/layouts/notebook/page"
+import {
+  DocsBody,
+  DocsDescription,
+  DocsPage,
+  DocsTitle,
+} from "fumadocs-ui/layouts/notebook/page"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Clock3 } from "lucide-react"
 import type { TOCItemType } from "fumadocs-core/toc"
 import type { MDXContent } from "mdx/types"
 
@@ -24,6 +32,8 @@ type MdxPageData = {
   lastModified?: Date
 }
 
+const DOCS_SOURCE_REPO = "https://github.com/magebase/dryAPI"
+
 function isMdxPageData(value: unknown): value is MdxPageData {
   return typeof value === "object" && value !== null && "body" in value
 }
@@ -40,6 +50,21 @@ export function getLocalizedDocsStaticParams(locales: string[]) {
       lang: locale,
       mdxPath: page.slugs,
     }))
+  )
+}
+
+function PageLastUpdate({ date }: { date: Date }) {
+  const formatted = new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date)
+
+  return (
+    <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-zinc-400">
+      <Clock3 className="size-3.5" />
+      <span>Last updated on {formatted}</span>
+    </div>
   )
 }
 
@@ -94,6 +119,13 @@ export async function DocumentationPage({ slug, locale }: DocumentationPageProps
   const pageDescription =
     page.data.description
     ?? "Technical documentation for dryAPI APIs, integration guides, and operational references."
+  const docsSourcePath = `src/content/${page.path}`
+  const encodedDocsSourcePath = docsSourcePath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/")
+  const markdownUrl = `https://raw.githubusercontent.com/magebase/dryAPI/main/${encodedDocsSourcePath}`
+  const githubUrl = `${DOCS_SOURCE_REPO}/blob/main/${encodedDocsSourcePath}`
   const docsIndexPath = locale === "en" ? "/docs" : `/${locale}/docs`
   const breadcrumbItems = [
     { name: "Home", path: "/" },
@@ -123,6 +155,21 @@ export async function DocumentationPage({ slug, locale }: DocumentationPageProps
         title={pageTitle}
       />
       <DocsPage toc={toc} full={full}>
+        <div className="flex flex-col gap-4 mb-8">
+          <Badge
+            variant="outline"
+            className="w-fit border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary"
+          >
+            Technical Reference
+          </Badge>
+          <DocsTitle className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+            {pageTitle}
+          </DocsTitle>
+          <DocsDescription className="max-w-2xl text-lg text-slate-500 dark:text-zinc-400">
+            {pageDescription}
+          </DocsDescription>
+          <Separator className="mt-4 bg-slate-200/60 dark:bg-zinc-800/60" />
+        </div>
         <DocsBody className={isApiPage ? "max-w-none" : undefined}>
           <div className="mb-5 flex items-center justify-end">
             <SummarizeWithAi

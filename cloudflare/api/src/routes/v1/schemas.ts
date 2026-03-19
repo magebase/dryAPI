@@ -113,6 +113,12 @@ export const RunpodSubmitBodySchema = Type.Object(
       examples: ['o6r4i5q9j8k7l6'],
     })),
     model: Type.Optional(ModelSlugSchema),
+    worker_type: Type.Optional(
+      Type.Union([Type.Literal('active'), Type.Literal('flex')], {
+        description: 'Optional worker type hint for dynamic pricing (`active` or `flex`).',
+        examples: ['flex'],
+      }),
+    ),
     input: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
       description: 'Provider input payload forwarded to RunPod as `input`.',
       examples: [{ prompt: 'A cinematic aerial shot of neon Tokyo in the rain.' }],

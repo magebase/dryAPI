@@ -42,6 +42,7 @@ function jsonRequest(method: string, body?: unknown) {
 
 describe("GET /api/dashboard/api-keys", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     getDashboardSessionSnapshotMock.mockReset()
     listDashboardApiKeysForRequestMock.mockReset()
   })
@@ -75,11 +76,28 @@ describe("GET /api/dashboard/api-keys", () => {
     const res = await GET(jsonRequest("GET"))
     expect(res.status).toBe(500)
     expect(await res.json()).toMatchObject({ error: "api_keys_list_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to list API keys",
+      expect.any(Error),
+    )
+  })
+
+  it("logs session lookup failures", async () => {
+    getDashboardSessionSnapshotMock.mockRejectedValue(new Error("session lookup failed"))
+
+    const res = await GET(jsonRequest("GET"))
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({ error: "api_keys_list_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to list API keys",
+      expect.any(Error),
+    )
   })
 })
 
 describe("POST /api/dashboard/api-keys", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     getDashboardSessionSnapshotMock.mockReset()
     createDashboardApiKeyMock.mockReset()
   })
@@ -117,5 +135,21 @@ describe("POST /api/dashboard/api-keys", () => {
     const res = await POST(jsonRequest("POST", { name: "Over Limit" }))
     expect(res.status).toBe(500)
     expect(await res.json()).toMatchObject({ error: "api_key_create_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to create API key",
+      expect.any(Error),
+    )
+  })
+
+  it("logs session lookup failures", async () => {
+    getDashboardSessionSnapshotMock.mockRejectedValue(new Error("session lookup failed"))
+
+    const res = await POST(jsonRequest("POST", { name: "New Key" }))
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({ error: "api_key_create_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to create API key",
+      expect.any(Error),
+    )
   })
 })

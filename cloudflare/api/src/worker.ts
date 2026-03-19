@@ -27,6 +27,7 @@ function isRunpodBatchMessage(value: unknown): value is RunpodBatchQueueMessage 
     typeof value.clientJobId === 'string' &&
     typeof value.surface === 'string' &&
     typeof value.endpointId === 'string' &&
+		(value.workerType === 'active' || value.workerType === 'flex') &&
     isObjectRecord(value.payload) &&
 		(typeof value.requestHash === 'string' || value.requestHash === null) &&
     typeof value.priceKey === 'string' &&

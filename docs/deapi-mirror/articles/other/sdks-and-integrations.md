@@ -1,21 +1,21 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # SDKs & Integrations
 
 ## Python SDK
 
-The official Python SDK for deAPI. Generate images, videos, audio, transcriptions, embeddings, and more — through a type-safe Python interface with sync and async support.
+The official Python SDK for dryAPI. Generate images, videos, audio, transcriptions, embeddings, and more — through a type-safe Python interface with sync and async support.
 
-<Card icon="github" href="https://github.com/deapi-ai/deapi-python-sdk" title="GitHub Repository">
-  deapi-ai/deapi-python-sdk
+<Card icon="github" href="https://github.com/dryapi-ai/dryapi-python-sdk" title="GitHub Repository">
+  dryapi-ai/dryapi-python-sdk
 </Card>
 
 ### Installation
 
 ```bash  theme={null}
-pip install deapi-python-sdk
+pip install dryapi-python-sdk
 ```
 
 **Requirements:** Python 3.9+
@@ -23,9 +23,9 @@ pip install deapi-python-sdk
 ### Quick Start
 
 ```python  theme={null}
-from deapi import DeapiClient
+from dryapi import dryAPIClient
 
-client = DeapiClient(api_key="sk-your-api-key")
+client = dryAPIClient(api_key="sk-your-api-key")
 
 # Generate an image
 job = client.images.generate(
@@ -45,7 +45,7 @@ print(result.result_url)
 ### Features
 
 * **Full API coverage** — images, video, audio (TTS, voice cloning, music), transcription, embeddings, OCR, prompt enhancement
-* **Sync + Async** — `DeapiClient` and `AsyncDeapiClient`
+* **Sync + Async** — `dryAPIClient` and `AsyncdryAPIClient`
 * **Job polling** — automatic exponential backoff with `.wait()`
 * **Auto-retry** — built-in retry on rate limits (429) and server errors (5xx)
 * **Type-safe** — full type hints, Pydantic v2 models, `py.typed` marker
@@ -53,7 +53,7 @@ print(result.result_url)
 * **Price calculation** — every method has a `_price` counterpart to check cost before submitting
 
 <Tip>
-  For full documentation, configuration options, usage examples, and API reference, visit the [GitHub repository](https://github.com/deapi-ai/deapi-python-sdk).
+  For full documentation, configuration options, usage examples, and API reference, visit the [GitHub repository](https://github.com/dryapi-ai/dryapi-python-sdk).
 </Tip>
 
 ***

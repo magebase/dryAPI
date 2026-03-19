@@ -1,25 +1,17 @@
 import "server-only";
 
-import { drizzle } from "drizzle-orm/d1";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-
-import { quoteRequests } from "@/db/schema-analytics";
-import {
-  D1_BINDING_PRIORITY,
-  formatExpectedBindings,
-  resolveD1Binding,
-} from "@/lib/d1-bindings";
+import * as analyticsSchema from "@/db/schema-analytics";
+import { createCloudflareDbAccessors } from "@/lib/cloudflare-db";
 import type { ContactSubmission } from "@/lib/contact-schema";
 
 type QuoteRequestMetadata = {
   sourcePath: string;
 };
 
-type D1Binding = Parameters<typeof drizzle>[0];
-
-function resolveQuoteDbBinding(env: Record<string, unknown>): D1Binding | null {
-  return resolveD1Binding<D1Binding>(env, D1_BINDING_PRIORITY.analytics);
-}
+const { getDbAsync } = createCloudflareDbAccessors(
+  "ANALYTICS_DB",
+  analyticsSchema,
+);
 
 export async function persistQuoteRequest(
   submission: ContactSubmission,
@@ -29,11 +21,10 @@ export async function persistQuoteRequest(
     return;
   }
 
-  let quoteDb: D1Binding | null = null;
+  let quoteDb: Awaited<ReturnType<typeof getDbAsync>> | null = null;
 
   try {
-    const { env } = await getCloudflareContext({ async: true });
-    quoteDb = resolveQuoteDbBinding(env as unknown as Record<string, unknown>);
+    quoteDb = await getDbAsync();
   } catch {
     if (process.env.NODE_ENV === "production") {
       throw new Error("Cloudflare context is unavailable.");
@@ -42,17 +33,13 @@ export async function persistQuoteRequest(
 
   if (!quoteDb) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        `${formatExpectedBindings(D1_BINDING_PRIORITY.analytics)} binding is missing.`,
-      );
+      throw new Error("Cloudflare D1 binding ANALYTICS_DB is unavailable.");
     }
 
     return;
   }
 
-  const db = drizzle(quoteDb);
-
-  await db.insert(quoteRequests).values({
+  await quoteDb.insert(analyticsSchema.quoteRequests).values({
     id: crypto.randomUUID(),
     submissionType: submission.submissionType,
     name: submission.name,

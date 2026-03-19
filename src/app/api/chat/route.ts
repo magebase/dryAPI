@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { defaultEmailBranding, resolveCurrentEmailBranding } from "@/emails/brand";
+import {
+  defaultEmailBranding,
+  resolveCurrentEmailBranding,
+} from "@/emails/brand";
 import { ChatEscalationEmail } from "@/emails/chat-escalation-email";
 import {
   buildFallbackSalesAnswer,
@@ -38,8 +41,6 @@ import { persistModerationRejectionAttempt } from "@/lib/moderation-rejection-st
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { recordStripeMeterUsage } from "@/lib/stripe-metering";
 import { getRequestIp, verifyTurnstileToken } from "@/lib/turnstile";
-
-export const runtime = "nodejs";
 
 const chatMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -404,7 +405,9 @@ async function sendEscalationEmail({
     return false;
   }
 
-  const emailBranding = await resolveCurrentEmailBranding().catch(() => defaultEmailBranding);
+  const emailBranding = await resolveCurrentEmailBranding().catch(
+    () => defaultEmailBranding,
+  );
 
   await sendBrevoReactEmail({
     apiKey,

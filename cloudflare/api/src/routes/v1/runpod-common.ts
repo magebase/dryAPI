@@ -59,10 +59,12 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
   let pricingHeaderValue: string | null = null
   let pricingHeaderKey: string | null = null
   let pricingHeaderSource: string | null = null
+  let pricingHeaderWorkerType: 'active' | 'flex' | null = null
 
   let quotedPriceUsd: number | null = null
   let priceKey: string | null = null
   let pricingSource: 'snapshot' | 'fallback' | null = null
+  let workerType: 'active' | 'flex' | null = null
   let creditReservation: CreditReservation | null = null
 
   if (options.cacheKey) {
@@ -73,11 +75,17 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
   }
 
   if (options.operationPath === 'run' || options.operationPath === 'runsync') {
+    const requestedWorkerType =
+      isObjectRecord(options.body) && (options.body.worker_type === 'active' || options.body.worker_type === 'flex')
+        ? options.body.worker_type
+        : null
+
     const pricingQuote = await getCurrentPricingQuote({
       c,
       surface: options.surface,
       endpointId: options.endpointId,
       modelSlug: options.modelSlug ?? null,
+      workerType: requestedWorkerType,
     })
 
     const payloadForMultiplier = isObjectRecord(options.body) && isObjectRecord(options.body.input)
@@ -99,8 +107,10 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
     pricingHeaderValue = String(quotedPriceUsd)
     pricingHeaderKey = pricingQuote.priceKey
     pricingHeaderSource = pricingQuote.source
+    pricingHeaderWorkerType = pricingQuote.workerType
     priceKey = pricingQuote.priceKey
     pricingSource = pricingQuote.source
+    workerType = pricingQuote.workerType
 
     const explicitUserId = isObjectRecord(options.body) && typeof options.body.user === 'string'
       ? options.body.user
@@ -169,6 +179,7 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
         requestHash: options.requestHash ?? null,
         status,
         responsePayload: upstreamPayload,
+        workerType,
         quotedPriceUsd,
         priceKey,
         pricingSource,
@@ -275,6 +286,9 @@ export async function forwardRunpodOperation(options: ForwardOptions): Promise<R
     }
     if (pricingHeaderSource) {
       headers.set('x-dryapi-price-source', pricingHeaderSource)
+    }
+    if (pricingHeaderWorkerType) {
+      headers.set('x-dryapi-worker-type', pricingHeaderWorkerType)
     }
     if (creditReservation) {
       headers.set('x-dryapi-credit-balance', String(creditReservation.balanceAfter))

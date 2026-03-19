@@ -1,19 +1,13 @@
 ---
 title: "MCP Server"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
+> Describes the dryAPI MCP server, its available tools, and how to connect agents or IDE integrations to use dryAPI as a structured toolbox.
 
-# MCP Server
+> **WARNING**
+>
+> The MCP server is currently in beta. You may encounter occasional issues or unexpected behavior as we continue to refine the service. We actively welcome feedback and bug reports — join the conversation on [Discord](https://discord.com/invite/UFfK5YRBsr).
 
-> Describes the deAPI MCP server, its available tools, and how to connect agents or IDE integrations to use deAPI as a structured toolbox.
-
-<Callout title="Warning" type="warn">
-The MCP server is currently in beta. You may encounter occasional issues or unexpected behavior as we continue to refine the service. We actively welcome feedback and bug reports — join the conversation on [Discord](https://discord.com/invite/UFfK5YRBsr).
-</Callout>
-
-In addition to the HTTP API, deAPI exposes an **MCP (Model Context Protocol) server**. This allows AI assistants, IDE extensions, and MCP-aware tools to call deAPI capabilities as structured tools instead of manually constructing HTTP requests.
+In addition to the HTTP API, dryAPI exposes an **MCP (Model Context Protocol) server**. This allows AI assistants, IDE extensions, and MCP-aware tools to call dryAPI capabilities as structured tools instead of manually constructing HTTP requests.
 
 ***
 
@@ -21,17 +15,17 @@ In addition to the HTTP API, deAPI exposes an **MCP (Model Context Protocol) ser
 
 The **Model Context Protocol (MCP)** is an open standard that enables AI models and agents to interact with external tools and services in a structured way. Instead of crafting raw HTTP requests, your AI assistant discovers available tools and calls them using a standardized protocol.
 
-With deAPI's MCP server, Claude, ChatGPT, Cursor, and other MCP-compatible clients can:
+With dryAPI's MCP server, Claude, ChatGPT, Cursor, and other MCP-compatible clients can:
 
 * Generate images, videos, and audio directly within conversations
 * Transcribe YouTube / X / Twitch / Kick / TikTok videos or audio files
 * Remove backgrounds and upscale images
 * Check pricing before running expensive operations
-* Access all deAPI capabilities through natural language
+* Access all dryAPI capabilities through natural language
 
 New tools and capabilities will be added as the MCP server evolves. Follow our [Discord](https://discord.com/invite/UFfK5YRBsr) for updates and to share feature requests.
 
-The full source code for the MCP server is available on GitHub: [github.com/deapi-ai/mcp-server-deapi](https://github.com/deapi-ai/mcp-server-deapi)
+The full source code for the MCP server is available on GitHub: [github.com/dryapi-ai/mcp-server-dryapi](https://github.com/dryapi-ai/mcp-server-dryapi)
 
 ***
 
@@ -39,16 +33,16 @@ The full source code for the MCP server is available on GitHub: [github.com/deap
 
 | Property                | Value                      |
 | ----------------------- | -------------------------- |
-| **MCP Server URL**      | `https://mcp.deapi.ai/mcp` |
-| **OAuth Client ID**     | `deapi-mcp`                |
-| **OAuth Client Secret** | Your deAPI API key         |
+| **MCP Server URL**      | `https://mcp.dryapi.dev/mcp` |
+| **OAuth Client ID**     | `dryapi-mcp`                |
+| **OAuth Client Secret** | Your dryAPI API key         |
 | **Transport**           | Streamed HTTP              |
 
 ***
 
 ### Available Tools
 
-The deAPI MCP server exposes the following tools:
+The dryAPI MCP server exposes the following tools:
 
 #### Image Generation & Manipulation
 
@@ -105,7 +99,7 @@ The deAPI MCP server exposes the following tools:
 | Tool                   | Description                                      |
 | ---------------------- | ------------------------------------------------ |
 | `get_available_models` | List all available AI models with specifications |
-| `get_balance`          | Check your deAPI account balance                 |
+| `get_balance`          | Check your dryAPI account balance                 |
 | `check_job_status`     | Check status of submitted jobs                   |
 
 ***
@@ -114,9 +108,9 @@ The deAPI MCP server exposes the following tools:
 
 #### Claude (claude.ai)
 
-To use deAPI MCP tools directly in Claude conversations:
+To use dryAPI MCP tools directly in Claude conversations:
 
-**Step 1.** Get your API key from the [deAPI Dashboard](https://deapi.ai/dashboard)
+**Step 1.** Get your API key from the [dryAPI Dashboard](https://dryapi.dev/dashboard)
 
 **Step 2.** Add the MCP connector in Claude settings:
 
@@ -127,27 +121,27 @@ To use deAPI MCP tools directly in Claude conversations:
 
 | Field                   | Value                      |
 | ----------------------- | -------------------------- |
-| **OAuth Client ID**     | `deapi-mcp`                |
-| **OAuth Client Secret** | Your deAPI API key         |
-| **Server URL**          | `https://mcp.deapi.ai/mcp` |
+| **OAuth Client ID**     | `dryapi-mcp`                |
+| **OAuth Client Secret** | Your dryAPI API key         |
+| **Server URL**          | `https://mcp.dryapi.dev/mcp` |
 
-**Step 3.** Grant permissions — After adding the connector, Claude will ask you to authorize the connection. Click **Allow** to enable deAPI MCP tools in your conversations.
+**Step 3.** Grant permissions — After adding the connector, Claude will ask you to authorize the connection. Click **Allow** to enable dryAPI MCP tools in your conversations.
 
-**Step 4.** Start using deAPI MCP by asking Claude to generate images, transcribe videos, or use any other capability. Make sure to mention "deAPI MCP" in your prompt so Claude knows to use the MCP tools.
+**Step 4.** Start using dryAPI MCP by asking Claude to generate images, transcribe videos, or use any other capability. Make sure to mention "dryAPI MCP" in your prompt so Claude knows to use the MCP tools.
 
 **Example prompts:**
 
-* *"Using deAPI MCP, generate an image of a futuristic city at sunset"*
-* *"With deAPI MCP, transcribe this YouTube video: \[URL]"*
-* *"With deAPI MCP, transcribe this Twitch video: \[URL]"*
-* *"Check my deAPI MCP balance"*
-* *"Using deAPI MCP, create a video of waves crashing on a beach"*
+* *"Using dryAPI MCP, generate an image of a futuristic city at sunset"*
+* *"With dryAPI MCP, transcribe this YouTube video: \[URL]"*
+* *"With dryAPI MCP, transcribe this Twitch video: \[URL]"*
+* *"Check my dryAPI MCP balance"*
+* *"Using dryAPI MCP, create a video of waves crashing on a beach"*
 
 ***
 
 #### Claude Desktop
 
-To use deAPI MCP in the Claude Desktop app, configure it via the config file with a Bearer token. This is the recommended approach for desktop — no OAuth setup required.
+To use dryAPI MCP in the Claude Desktop app, configure it via the config file with a Bearer token. This is the recommended approach for desktop — no OAuth setup required.
 
 **Config file setup:**
 
@@ -159,8 +153,8 @@ Edit your Claude Desktop configuration file:
 ```json  theme={null}
 {
   "mcpServers": {
-    "deapi": {
-      "url": "https://mcp.deapi.ai/mcp",
+    "dryapi": {
+      "url": "https://mcp.dryapi.dev/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -169,15 +163,15 @@ Edit your Claude Desktop configuration file:
 }
 ```
 
-Replace `YOUR_API_KEY` with your actual deAPI key. Save the file and restart Claude Desktop.
+Replace `YOUR_API_KEY` with your actual dryAPI key. Save the file and restart Claude Desktop.
 
 ***
 
 #### Cursor IDE
 
-To integrate deAPI MCP into Cursor for AI-assisted development:
+To integrate dryAPI MCP into Cursor for AI-assisted development:
 
-**Step 1.** Get your API key from the [deAPI Dashboard](https://deapi.ai/dashboard)
+**Step 1.** Get your API key from the [dryAPI Dashboard](https://dryapi.dev/dashboard)
 
 **Step 2.** Open Cursor Settings:
 
@@ -193,9 +187,9 @@ To integrate deAPI MCP into Cursor for AI-assisted development:
 ```json  theme={null}
 {
   "mcpServers": {
-    "deapi": {
-      "name": "DEAPI MCP",
-      "url": "https://mcp.deapi.ai/mcp",
+    "dryapi": {
+      "name": "DRYAPI MCP",
+      "url": "https://mcp.dryapi.dev/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -206,27 +200,27 @@ To integrate deAPI MCP into Cursor for AI-assisted development:
 
 **Step 4.** Restart Cursor to apply the configuration.
 
-**Step 5.** Invoke deAPI MCP in chat by using phrases like:
+**Step 5.** Invoke dryAPI MCP in chat by using phrases like:
 
-* *"Using deAPI MCP, generate an image of…"*
-* *"With deAPI MCP, transcribe this audio…"*
-* *"Via deAPI MCP, check my balance"*
+* *"Using dryAPI MCP, generate an image of…"*
+* *"With dryAPI MCP, transcribe this audio…"*
+* *"Via dryAPI MCP, check my balance"*
 
-<Callout title="Tip" type="idea">
-Cursor recognizes deAPI MCP tools when you mention keywords like "using deAPI MCP", "with deAPI MCP", or "via MCP" in your prompts.
-</Callout>
+> **TIP**
+>
+> Cursor recognizes dryAPI MCP tools when you mention keywords like "using dryAPI MCP", "with dryAPI MCP", or "via MCP" in your prompts.
 
 ***
 
 #### ChatGPT
 
-To use deAPI MCP tools in ChatGPT conversations:
+To use dryAPI MCP tools in ChatGPT conversations:
 
-<Callout>
-MCP is available in beta to **Pro, Plus, Business, Enterprise, and Education** accounts. The MCP apps work on both web and desktop, but Developer mode settings are only accessible in the **web version** at [chatgpt.com](https://chatgpt.com).
-</Callout>
+> **INFO**
+>
+> MCP is available in beta to **Pro, Plus, Business, Enterprise, and Education** accounts. The MCP apps work on both web and desktop, but Developer mode settings are only accessible in the **web version** at [chatgpt.com](https://chatgpt.com).
 
-**Step 1.** Get your API key from the [deAPI Dashboard](https://deapi.ai/dashboard)
+**Step 1.** Get your API key from the [dryAPI Dashboard](https://dryapi.dev/dashboard)
 
 **Step 2.** Enable Developer mode:
 
@@ -242,43 +236,43 @@ MCP is available in beta to **Pro, Plus, Business, Enterprise, and Education** a
 
 | Field                   | Value                            |
 | ----------------------- | -------------------------------- |
-| **Name**                | `deAPI` (or any name you prefer) |
-| **Description**         | `deAPI MCP` (optional)           |
-| **MCP Server URL**      | `https://mcp.deapi.ai/mcp`       |
+| **Name**                | `dryAPI` (or any name you prefer) |
+| **Description**         | `dryAPI MCP` (optional)           |
+| **MCP Server URL**      | `https://mcp.dryapi.dev/mcp`       |
 | **Authentication**      | `OAuth`                          |
-| **OAuth Client ID**     | `deapi-mcp`                      |
-| **OAuth Client Secret** | Your deAPI API key               |
+| **OAuth Client ID**     | `dryapi-mcp`                      |
+| **OAuth Client Secret** | Your dryAPI API key               |
 
 **Step 4.** Check the risk acknowledgment checkbox ("I understand and want to continue")
 
 **Step 5.** Click **Create**
 
-**Step 6.** Start using deAPI MCP by asking ChatGPT to generate images, transcribe videos, or use any other capability.
+**Step 6.** Start using dryAPI MCP by asking ChatGPT to generate images, transcribe videos, or use any other capability.
 
 **Example prompts:**
 
-* *"Using deAPI MCP, generate an image of a cyberpunk cat"*
-* *"With deAPI MCP, transcribe this YouTube video: \[URL]"*
-* *"Check my deAPI MCP balance"*
-* *"With deAPI MCP, transcribe this Kick video: \[URL]"*
+* *"Using dryAPI MCP, generate an image of a cyberpunk cat"*
+* *"With dryAPI MCP, transcribe this YouTube video: \[URL]"*
+* *"Check my dryAPI MCP balance"*
+* *"With dryAPI MCP, transcribe this Kick video: \[URL]"*
 
 ***
 
 ### Self-Hosting
 
-You can run the MCP server on your own infrastructure. The full source code is available at [github.com/deapi-ai/mcp-server-deapi](https://github.com/deapi-ai/mcp-server-deapi) under the MIT license.
+You can run the MCP server on your own infrastructure. The full source code is available at [github.com/dryapi-ai/mcp-server-dryapi](https://github.com/dryapi-ai/mcp-server-dryapi) under the MIT license.
 
 #### Prerequisites
 
 * Python 3.10 or higher
 * `uv`, `pip`, or `conda` for package management
-* A deAPI API key from the [Dashboard](https://deapi.ai/dashboard)
+* A dryAPI API key from the [Dashboard](https://dryapi.dev/dashboard)
 
 #### Quick Start
 
 ```bash  theme={null}
-git clone https://github.com/deapi-ai/mcp-server-deapi.git
-cd mcp-server-deapi
+git clone https://github.com/dryapi-ai/mcp-server-dryapi.git
+cd mcp-server-dryapi
 
 # Install dependencies (uv recommended)
 uv pip install -e .
@@ -297,8 +291,8 @@ MCP_HOST=0.0.0.0 MCP_PORT=8000 python -m src.server_remote
 
 ```bash  theme={null}
 # Build and run
-docker build -t mcp-server-deapi .
-docker run -d -p 8000:8000 --name mcp-server-deapi mcp-server-deapi
+docker build -t mcp-server-dryapi .
+docker run -d -p 8000:8000 --name mcp-server-dryapi mcp-server-dryapi
 
 # Or with Docker Compose
 docker-compose up -d
@@ -306,16 +300,16 @@ docker-compose up -d
 
 #### Cloud Deployment Options
 
-The server can be deployed to any platform that supports Python or Docker containers: Railway, Fly.io, Heroku, DigitalOcean App Platform, AWS ECS, GCP Cloud Run, and others. Detailed deployment instructions are available in [DEPLOYMENT.md](https://github.com/deapi-ai/mcp-server-deapi/blob/main/DEPLOYMENT.md) in the repository.
+The server can be deployed to any platform that supports Python or Docker containers: Railway, Fly.io, Heroku, DigitalOcean App Platform, AWS ECS, GCP Cloud Run, and others. Detailed deployment instructions are available in [DEPLOYMENT.md](https://github.com/dryapi-ai/mcp-server-dryapi/blob/main/DEPLOYMENT.md) in the repository.
 
 #### Connecting a Self-Hosted Server
 
-Point your MCP client to your server URL instead of the default `https://mcp.deapi.ai/mcp`:
+Point your MCP client to your server URL instead of the default `https://mcp.dryapi.dev/mcp`:
 
 ```json  theme={null}
 {
   "mcpServers": {
-    "deapi": {
+    "dryapi": {
       "url": "http://your-server-ip:8000/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
@@ -329,7 +323,7 @@ Point your MCP client to your server URL instead of the default `https://mcp.dea
 
 ### Supported Models
 
-The MCP server provides access to all deAPI models.
+The MCP server provides access to all dryAPI models.
 
 Use the `get_available_models` tool to retrieve the full list with current specifications and limits.
 
@@ -341,31 +335,31 @@ Use the `get_available_models` tool to retrieve the full list with current speci
 
 Ask your AI assistant:
 
-> "Using deAPI MCP, generate an image of an astronaut riding a horse on Mars, photorealistic style"
+> "Using dryAPI MCP, generate an image of an astronaut riding a horse on Mars, photorealistic style"
 
 The assistant will call `text_to_image` with appropriate parameters and return the generated image URL.
 
 #### Transcribe a YouTube Video
 
-> "With deAPI MCP, transcribe this YouTube video with timestamps: [https://www.youtube.com/watch?v=7qaiNfoMRts](https://www.youtube.com/watch?v=7qaiNfoMRts)"
+> "With dryAPI MCP, transcribe this YouTube video with timestamps: [https://www.youtube.com/watch?v=7qaiNfoMRts](https://www.youtube.com/watch?v=7qaiNfoMRts)"
 
 The assistant calls `video_url_transcription` and returns the full transcript.
 
 #### Convert Text to Speech
 
-> "Using deAPI MCP, convert this text to speech with a British female voice: 'Welcome to our platform'"
+> "Using dryAPI MCP, convert this text to speech with a British female voice: 'Welcome to our platform'"
 
 The assistant calls `text_to_audio` with the Kokoro model and appropriate voice settings.
 
 #### Remove Background from Image
 
-> "Using deAPI MCP, remove the background from this product photo"
+> "Using dryAPI MCP, remove the background from this product photo"
 
 The assistant calls `image_remove_background` and returns a transparent PNG.
 
 #### Transcribe X/Twitter Spaces
 
-> "With deAPI MCP, transcribe this Twitter Space: [https://twitter.com/i/spaces/…](https://twitter.com/i/spaces/…)"
+> "With dryAPI MCP, transcribe this Twitter Space: [https://twitter.com/i/spaces/…](https://twitter.com/i/spaces/…)"
 
 The assistant calls `audio_url_transcription` and returns the full transcript.
 
@@ -390,8 +384,8 @@ Polling uses exponential backoff (1.5× multiplier by default), so jobs receive 
 The MCP server does **not** store your API token. Authentication works at the connection level:
 
 * **Remote hosted server**: OAuth 2.0 Authorization Code with PKCE, or Bearer token in HTTP headers
-* **Self-hosted server**: Bearer token forwarded per-request to the deAPI API
-* Tokens are never persisted or logged; tools do **not** accept `deapi_api_token` as a parameter
+* **Self-hosted server**: Bearer token forwarded per-request to the dryAPI API
+* Tokens are never persisted or logged; tools do **not** accept `dryapi_api_token` as a parameter
 
 ***
 
@@ -415,8 +409,8 @@ Use the **MCP server** when you want an AI agent to decide which tools to call, 
 #### Connection Issues
 
 * **Verify your API key** is valid and has sufficient balance
-* **Check the server URL** is exactly `https://mcp.deapi.ai/mcp`
-* **For Claude:** Ensure OAuth Client ID is `deapi-mcp` and Secret is your API key
+* **Check the server URL** is exactly `https://mcp.dryapi.dev/mcp`
+* **For Claude:** Ensure OAuth Client ID is `dryapi-mcp` and Secret is your API key
 * **For Cursor / Claude Desktop:** Ensure Bearer token format — the Authorization header should be `Bearer YOUR_API_KEY`
 
 #### Tools Not Appearing
@@ -431,11 +425,11 @@ Use the **MCP server** when you want an AI agent to decide which tools to call, 
 
 * Use `check_job_status` tool with the job ID to monitor progress
 * Large video generation or transcription jobs may take several minutes
-* Check [status.deapi.ai](https://status.deapi.ai/) for system status
+* Check [status.dryapi.dev](https://status.dryapi.dev/) for system status
 
 #### Remote Connection Issues (Self-Hosted)
 
 * Test the endpoint: `curl -N http://your-server:8000/mcp`
-* Check server logs: `docker logs mcp-server-deapi` or `journalctl -u mcp-server-deapi`
+* Check server logs: `docker logs mcp-server-dryapi` or `journalctl -u mcp-server-dryapi`
 * Verify firewall rules allow the configured port
 * For SSL issues, confirm certificates are valid and paths are correct in your proxy config

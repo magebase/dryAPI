@@ -5,6 +5,7 @@ import {
   BookText,
   Clock3,
   MessageSquare,
+  Share2,
   TableOfContents,
   Tag,
 } from "lucide-react";
@@ -261,7 +262,7 @@ export function BlogPostPageTemplate({
       const id = slugifyHeading(extractTextFromReactNode(children));
       return (
         <h2
-          className="text-site-strong mt-10 scroll-mt-24 text-3xl font-semibold tracking-tight first:mt-0"
+          className="text-site-strong border-site-muted/12 mt-12 border-b-2 pb-5 scroll-mt-24 text-3xl font-semibold tracking-tight first:mt-0"
           id={id}
         >
           {children}
@@ -273,7 +274,7 @@ export function BlogPostPageTemplate({
       const id = slugifyHeading(extractTextFromReactNode(children));
       return (
         <h2
-          className="text-site-strong mt-10 scroll-mt-24 text-2xl font-semibold tracking-tight first:mt-0"
+          className="text-site-strong border-site-muted/12 mt-12 border-b-2 pb-5 scroll-mt-24 text-2xl font-semibold tracking-tight first:mt-0"
           id={id}
         >
           {children}
@@ -285,7 +286,7 @@ export function BlogPostPageTemplate({
       const id = slugifyHeading(extractTextFromReactNode(children));
       return (
         <h3
-          className="text-site-strong mt-8 scroll-mt-24 text-xl font-semibold tracking-tight"
+          className="text-site-strong mt-10 scroll-mt-24 text-xl font-semibold tracking-tight"
           id={id}
         >
           {children}
@@ -297,7 +298,7 @@ export function BlogPostPageTemplate({
       const id = slugifyHeading(extractTextFromReactNode(children));
       return (
         <h4
-          className="text-site-strong mt-7 scroll-mt-24 text-lg font-semibold"
+          className="text-site-strong mt-8 border-none bg-transparent p-0 scroll-mt-24 text-lg font-semibold"
           id={id}
         >
           {children}
@@ -305,22 +306,22 @@ export function BlogPostPageTemplate({
       );
     },
     p: (props: { children?: React.ReactNode } | undefined) => (
-      <p className="text-site-muted mt-4 text-[1.04rem] leading-8 first:mt-0">
+      <p className="text-site-muted/90 mt-5 text-[1.1rem] leading-8 font-serif first:mt-0">
         {props?.children}
       </p>
     ),
     ul: (props: { children?: React.ReactNode } | undefined) => (
-      <ul className="text-site-muted mt-5 list-disc space-y-2 pl-6 marker:text-orange-500">
+      <ul className="text-site-muted/90 mt-6 list-disc space-y-3 pl-6 marker:text-primary">
         {props?.children}
       </ul>
     ),
     ol: (props: { children?: React.ReactNode } | undefined) => (
-      <ol className="text-site-muted mt-5 list-decimal space-y-2 pl-6 marker:text-orange-500">
+      <ol className="text-site-muted/90 mt-6 list-decimal space-y-3 pl-6 marker:text-primary">
         {props?.children}
       </ol>
     ),
     li: (props: { children?: React.ReactNode } | undefined) => (
-      <li className="leading-7">{props?.children}</li>
+      <li className="leading-relaxed font-serif pl-1">{props?.children}</li>
     ),
     lic: (props: { children?: React.ReactNode } | undefined) => (
       <>{props?.children}</>
@@ -331,7 +332,7 @@ export function BlogPostPageTemplate({
 
       return (
         <a
-          className="font-medium text-blue-700 underline decoration-blue-300 underline-offset-4 transition-colors hover:text-blue-800"
+          className="font-medium text-primary underline decoration-primary/30 decoration-2 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
           href={url}
           rel={isExternal ? "noopener noreferrer" : undefined}
           target={isExternal ? "_blank" : undefined}
@@ -341,26 +342,43 @@ export function BlogPostPageTemplate({
       );
     },
     blockquote: (props: { children?: React.ReactNode } | undefined) => (
-      <blockquote className="text-site-muted mt-6 rounded-r-lg border-l-4 border-orange-400 bg-orange-50/60 px-5 py-3 italic">
-        {props?.children}
+      <blockquote className="text-site-soft mt-8 border-l-4 border-primary bg-slate-50/50 px-6 py-4 italic shadow-sm italic-serif">
+        <div className="[&_p]:text-xl [&_p]:leading-relaxed [&_p]:font-serif [&_p]:text-site-muted">
+          {props?.children}
+        </div>
       </blockquote>
     ),
     code: (props: { children?: React.ReactNode } | undefined) => (
-      <code className="text-site-strong rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.92em]">
+      <code className="text-site-strong rounded bg-[color:var(--site-surface-1)] px-1.5 py-0.5 font-mono text-[0.92em]">
         {props?.children}
       </code>
     ),
     code_block: (props: { value?: string; lang?: string } | undefined) => (
-      <pre className="text-site-inverse mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-sm">
-        {props?.lang ? (
-          <p className="text-site-inverse-soft mb-3 text-xs uppercase tracking-[0.14em]">
-            {props.lang}
-          </p>
-        ) : null}
-        <code className="font-mono leading-6">{props?.value ?? ""}</code>
-      </pre>
+      <div className="group relative mt-10">
+        <pre className="text-site-inverse overflow-x-auto rounded-xl border border-white/12 bg-slate-900/98 p-6 shadow-2xl">
+          {props?.lang ? (
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-site-inverse-soft bg-white/10 px-2 py-0.5 rounded text-[10px] uppercase tracking-[0.2em] font-semibold">
+                {props.lang}
+              </span>
+              <button 
+                onClick={() => {
+                  if (props.value) {
+                    navigator.clipboard.writeText(props.value);
+                  }
+                }}
+                className="text-white/40 hover:text-white transition-colors"
+                title="Copy code"
+              >
+                <Share2 className="size-4" />
+              </button>
+            </div>
+          ) : null}
+          <code className="block font-mono text-[0.92rem] leading-7 antialiased">{props?.value ?? ""}</code>
+        </pre>
+      </div>
     ),
-    hr: () => <hr className="my-10 border-slate-200" />,
+    hr: () => <hr className="my-16 border-t-2 border-slate-100/60" />,
   };
 
   const quoteHref = site.header.quoteCta.href;
@@ -399,11 +417,11 @@ export function BlogPostPageTemplate({
   );
 
   return (
-    <main className="text-site-strong overflow-x-clip bg-[radial-gradient(circle_at_top_left,#fff6ec_0,#f8fafc_34%,#f8fafc_100%)] pb-16 md:pb-20">
-      <div className="sticky top-0 z-40 h-1 w-full bg-slate-900/10 backdrop-blur supports-[backdrop-filter]:bg-slate-900/5">
+    <main className="text-site-strong overflow-x-clip bg-white pb-16 md:pb-24">
+      <div className="fixed top-0 left-0 right-0 z-[60] h-1.5 w-full bg-slate-900/5">
         <div
           aria-hidden
-          className="h-full bg-gradient-to-r from-orange-500 via-amber-400 to-blue-500 transition-[width] duration-150"
+          className="h-full bg-gradient-to-r from-primary via-accent to-blue-500 transition-[width] duration-300 ease-out shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
           style={{ width: `${readingProgress}%` }}
         />
       </div>
@@ -430,73 +448,77 @@ export function BlogPostPageTemplate({
         {...(publishedIso ? { datePublished: publishedIso } : {})}
       />
 
-      <section className="relative isolate overflow-hidden border-b border-slate-200">
+      <section className="relative isolate overflow-hidden">
+        <div className="absolute inset-0 bg-slate-950" />
         <Image
           alt={post.title}
-          className="absolute inset-0 h-full w-full object-cover opacity-25"
+          className="absolute inset-0 h-full w-full object-cover opacity-30 grayscale-[0.4] blur-[2px] transition-transform duration-[10s] hover:scale-105"
           height={1080}
           priority
           src={post.coverImage}
           width={1920}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(112deg,rgba(7,15,24,0.93),rgba(7,15,24,0.82),rgba(7,15,24,0.94))]" />
-        <div className="absolute inset-0 opacity-28 [background-image:linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:72px_72px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/70 to-slate-950/95" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(15,23,42,0.6)_100%)]" />
 
-        <Reveal className="relative mx-auto max-w-4xl px-4 pb-12 pt-20 md:pb-14 md:pt-24 lg:pb-20 lg:pt-28">
-          <QuoteAwareLink
-            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary hover:text-accent"
-            data-tina-field={blogLink ? tinaField(blogLink) : undefined}
-            href="/blog"
-          >
-            <ArrowRight className="size-4 rotate-180" />
-            {backToBlog.value}
-          </QuoteAwareLink>
+        <Reveal className="relative mx-auto max-w-5xl px-6 pb-20 pt-28 md:pb-28 md:pt-36 lg:pb-36 lg:pt-44">
+          <div className="flex flex-col items-center text-center">
+            <QuoteAwareLink
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-4 py-1.5 shadow-sm text-[10px] font-bold uppercase tracking-[0.2em] text-primary transition hover:bg-white/10 hover:text-accent"
+              data-tina-field={blogLink ? tinaField(blogLink) : undefined}
+              href="/blog"
+            >
+              {backToBlog.value}
+            </QuoteAwareLink>
 
-          <h1 className="text-site-inverse mt-4 font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] sm:text-4xl md:text-6xl">
-            <KeywordGradientText
-              dataTinaField={tinaField(post, "title")}
-              text={post.title}
-            />
-          </h1>
+            <h1 className="text-site-inverse mt-8 max-w-4xl font-display text-4xl leading-[1.1] tracking-tight sm:text-5xl md:text-7xl">
+              <KeywordGradientText
+                dataTinaField={tinaField(post, "title")}
+                text={post.title}
+              />
+            </h1>
 
-          <p
-            className="text-site-inverse-muted mt-4 text-sm sm:text-base md:text-lg"
-            data-tina-field={tinaField(post, "excerpt")}
-          >
-            {post.excerpt}
-          </p>
+            <p
+              className="text-site-inverse-muted mt-8 max-w-2xl text-base font-medium leading-relaxed sm:text-lg md:text-xl opacity-90"
+              data-tina-field={tinaField(post, "excerpt")}
+            >
+              {post.excerpt}
+            </p>
 
-          <p className="text-site-inverse-muted mt-5 inline-flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
-            <BookText className="size-4" />
-            <span data-tina-field={tinaField(post, "publishedAt")}>
-              {formatPublishedDate(post.publishedAt)}
-            </span>
-            <span className="text-site-inverse-soft">|</span>
-            <span data-tina-field={tinaField(post.author, "name")}>
-              {post.author.name}
-            </span>
-            <span className="text-site-inverse-soft">|</span>
-            <span data-tina-field={tinaField(post.author, "role")}>
-              {post.author.role}
-            </span>
-            <span className="text-site-inverse-soft">|</span>
-            <Clock3 className="size-4" />
-            <span>{readTime} min read</span>
-          </p>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-[10px] font-bold uppercase tracking-[0.25em] text-white/50">
+              <div className="flex items-center gap-2">
+                <BookText className="size-3.5 text-primary" />
+                <span data-tina-field={tinaField(post, "publishedAt")}>
+                  {formatPublishedDate(post.publishedAt)}
+                </span>
+              </div>
+              <span className="hidden sm:inline bg-white/20 h-3 w-[1px]" />
+              <div className="flex items-center gap-2">
+                <Clock3 className="size-3.5 text-primary" />
+                <span>{readTime} MIN READ</span>
+              </div>
+              <span className="hidden sm:inline bg-white/20 h-3 w-[1px]" />
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span data-tina-field={tinaField(post.author, "name")}>
+                  {post.author.name}
+                </span>
+              </div>
+            </div>
 
-          <div
-            className="mt-5 flex flex-wrap gap-2"
-            data-tina-field={tinaField(post, "tags")}
-          >
-            {post.tags.slice(0, 4).map((tag) => (
-              <span
-                key={`${post.slug}-${tag}`}
-                className="text-site-inverse inline-flex items-center gap-1.5 rounded-full border border-white/18 bg-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
-              >
-                <Tag className="size-3" />
-                <span>{tag}</span>
-              </span>
-            ))}
+            <div
+              className="mt-10 flex flex-wrap justify-center gap-3"
+              data-tina-field={tinaField(post, "tags")}
+            >
+              {post.tags.slice(0, 4).map((tag) => (
+                <span
+                  key={`${post.slug}-${tag}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/5 px-4 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/80 transition-colors hover:border-primary/40 hover:text-white"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </Reveal>
       </section>
@@ -509,13 +531,23 @@ export function BlogPostPageTemplate({
         />
       ) : null}
 
-      <section className="mx-auto mt-8 max-w-6xl px-4 md:mt-10">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
+      <section className="mx-auto mt-12 max-w-7xl px-6 md:mt-20">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
           <Reveal
             as="article"
-            className="rounded-2xl border border-slate-200 bg-white px-5 py-6 shadow-[0_14px_38px_rgba(15,23,42,0.08)] md:px-8 md:py-8"
+            className="rounded-2xl border border-slate-100 bg-white px-6 py-8 shadow-[0_22px_48px_rgba(15,23,42,0.05)] md:px-12 md:py-16"
           >
-            <div className="mb-4 flex items-center justify-end border-b border-slate-100 pb-4">
+            <div className="mb-10 flex items-center justify-between border-b border-slate-100 pb-8">
+              <div className="flex gap-4 items-center">
+                 <div className="flex -space-x-2">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-site-soft">
+                            {i}
+                        </div>
+                    ))}
+                 </div>
+                 <span className="text-xs font-bold uppercase tracking-widest text-site-soft">Shared by 1.2k+</span>
+              </div>
               <SummarizeWithAi
                 brandName={site.brand.mark}
                 pageUrl={canonicalUrl}
@@ -523,7 +555,7 @@ export function BlogPostPageTemplate({
               />
             </div>
             <div
-              className="[&_table]:mt-6 [&_table]:min-w-full [&_table]:border-collapse [&_table]:text-sm [&_td]:border [&_td]:border-slate-200 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_td]:text-slate-700 [&_tr:first-child_td]:bg-slate-50 [&_tr:first-child_td]:font-semibold [&_tr:first-child_td]:text-slate-900"
+              className="[&_table]:mt-10 [&_table]:min-w-full [&_table]:border-collapse [&_table]:text-sm [&_td]:border [&_td]:border-slate-100 [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_td]:text-slate-600 [&_tr:first-child_td]:bg-slate-50/50 [&_tr:first-child_td]:font-bold [&_tr:first-child_td]:text-site-strong [&_tr:first-child_td]:uppercase [&_tr:first-child_td]:tracking-wider [&_tr:first-child_td]:text-[11px]"
               data-tina-field={tinaField(post, "body")}
             >
               <TinaMarkdown
@@ -533,86 +565,111 @@ export function BlogPostPageTemplate({
             </div>
           </Reveal>
 
-          {tocAnchors.length > 0 ? (
-            <Reveal as="section" className="hidden lg:block">
-              <div className="sticky top-20 rounded-xl border border-slate-200 bg-white p-4 shadow-[0_10px_26px_rgba(15,23,42,0.07)]">
-                <p className="text-site-soft inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em]">
-                  <TableOfContents className="size-4" />
-                  <span>On This Page</span>
-                </p>
-                <nav aria-label="Table of contents" className="mt-3 space-y-2">
-                  {tocAnchors.map((anchor) => (
-                    <a
-                      key={anchor.id}
-                      className={`text-site-muted block text-sm leading-relaxed transition-colors hover:text-[color:var(--site-text-strong)] ${
-                        anchor.level === 3 ? "pl-3" : ""
-                      }`}
-                      href={`#${anchor.id}`}
+          <div className="sticky top-24 space-y-8 hidden lg:block">
+            {tocAnchors.length > 0 ? (
+                <Reveal as="section">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/30 p-6 backdrop-blur-sm">
+                    <p className="text-site-soft inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-site-soft">
+                    <TableOfContents className="size-4 text-primary" />
+                    <span>On This Page</span>
+                    </p>
+                    <nav aria-label="Table of contents" className="mt-6 space-y-4">
+                    {tocAnchors.map((anchor) => (
+                        <a
+                        key={anchor.id}
+                        className={`text-slate-600 block text-[13px] font-medium leading-relaxed transition-all hover:text-primary hover:translate-x-1 ${
+                            anchor.level === 3 ? "pl-4 border-l border-slate-200 ml-1" : ""
+                        }`}
+                        href={`#${anchor.id}`}
+                        >
+                        {anchor.title}
+                        </a>
+                    ))}
+                    </nav>
+                </div>
+                </Reveal>
+            ) : null}
+
+            <Reveal as="section">
+                <div className="rounded-2xl border border-slate-100 bg-slate-900 p-6 shadow-xl overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 bg-primary/20 rounded-full blur-3xl transition-transform group-hover:scale-150" />
+                    <p className="relative z-10 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Limited Offer</p>
+                    <h4 className="relative z-10 mt-2 text-white font-bold leading-tight">Scale your AI with $100 free credits.</h4>
+                    <QuoteAwareLink
+                        href={quoteHref}
+                        quoteLabel={quoteLabel}
+                        className="relative z-10 mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest text-slate-950 transition-transform active:scale-95"
                     >
-                      {anchor.title}
-                    </a>
-                  ))}
-                </nav>
-              </div>
+                        Claim Now
+                        <ArrowRight className="size-4" />
+                    </QuoteAwareLink>
+                </div>
             </Reveal>
-          ) : null}
+          </div>
         </div>
       </section>
 
       {activeModel ? (
         <TryModelCta
-          className="mt-8"
+          className="mt-12"
           modelDisplayName={activeModel.displayName}
           playgroundHref={activeModel.playgroundHref}
         />
       ) : null}
 
-      <Reveal as="section" className="mx-auto mt-8 max-w-3xl px-4">
-        <div className="rounded-xl border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_36px_rgba(15,23,42,0.08)] md:px-8">
+      <Reveal as="section" className="mx-auto mt-12 max-w-4xl px-6">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/30 px-6 py-8 md:px-12 md:py-10">
           <div
-            className="flex items-start gap-4"
+            className="flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-left"
             data-tina-field={tinaField(post, "author")}
           >
             {post.author.avatar ? (
               <Image
                 alt={post.author.name}
-                className="h-14 w-14 rounded-full border border-slate-200 object-cover"
+                className="h-20 w-20 rounded-full border-4 border-white shadow-md grayscale-[0.2] transition-all hover:grayscale-0"
                 data-tina-field={tinaField(post.author, "avatar")}
-                height={56}
+                height={80}
                 src={post.author.avatar}
-                width={56}
+                width={80}
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-sm font-semibold uppercase text-slate-900">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-slate-100 text-lg font-bold uppercase text-site-soft shadow-md">
                 {getAuthorInitials(post.author.name)}
               </div>
             )}
 
-            <div>
-              <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-orange-700">
+            <div className="flex-1">
+              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                 <BookText className="size-4" />
-                <span>Author</span>
+                <span>Written By</span>
               </p>
               <p
-                className="text-site-strong mt-1 text-base font-semibold"
+                className="text-site-strong mt-2 text-xl font-bold"
                 data-tina-field={tinaField(post.author, "name")}
               >
                 {post.author.name}
               </p>
               <p
-                className="text-site-soft text-sm"
+                className="text-site-muted text-xs font-bold uppercase tracking-widest mt-1"
                 data-tina-field={tinaField(post.author, "role")}
               >
                 {post.author.role}
               </p>
               {post.author.bio ? (
                 <p
-                  className="text-site-muted mt-3 text-sm leading-relaxed"
+                  className="text-slate-600 mt-6 text-base leading-relaxed font-serif"
                   data-tina-field={tinaField(post.author, "bio")}
                 >
                   {post.author.bio}
                 </p>
               ) : null}
+              <div className="mt-8 flex justify-center md:justify-start gap-4">
+                  {[1,2,3].map(i => (
+                      <div key={i} className="h-8 w-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-site-soft hover:text-primary transition-colors cursor-pointer">
+                          <Share2 className="size-4" />
+                      </div>
+                  ))}
+              </div>
             </div>
           </div>
         </div>
@@ -620,53 +677,58 @@ export function BlogPostPageTemplate({
 
       <Reveal
         as="section"
-        className="mx-auto mt-10 max-w-3xl rounded-xl border border-slate-200 bg-white px-5 py-5 shadow-[0_14px_36px_rgba(15,23,42,0.08)] md:mt-12 md:px-6 md:py-6"
+        className="mx-auto mt-12 max-w-4xl px-6 md:mt-16"
       >
-        <p
-          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-orange-700"
-          data-tina-field={nextStepKicker.field}
-        >
-          <MessageSquare className="size-4" />
-          <span>{nextStepKicker.value}</span>
-        </p>
-        <h2 className="text-site-strong mt-2 text-lg font-semibold uppercase tracking-[0.14em]">
-          <KeywordGradientText
-            dataTinaField={nextStepHeading.field}
-            text={nextStepHeading.value}
-          />
-        </h2>
-        <p
-          className="text-site-muted mt-3"
-          data-tina-field={nextStepBody.field}
-        >
-          {nextStepBody.value}
-        </p>
+        <div className="rounded-3xl border border-slate-900 bg-slate-900 p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 bg-primary/20 rounded-full blur-3xl transition-transform duration-1000 group-hover:scale-150" />
+            <div className="relative z-10">
+                <p
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary"
+                data-tina-field={nextStepKicker.field}
+                >
+                <MessageSquare className="size-4" />
+                <span>{nextStepKicker.value}</span>
+                </p>
+                <h2 className="text-white mt-4 text-2xl md:text-4xl font-bold max-w-2xl leading-tight">
+                <KeywordGradientText
+                    dataTinaField={nextStepHeading.field}
+                    text={nextStepHeading.value}
+                />
+                </h2>
+                <p
+                className="text-site-soft mt-6 text-base md:text-lg max-w-xl leading-relaxed"
+                data-tina-field={nextStepBody.field}
+                >
+                {nextStepBody.value}
+                </p>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <QuoteAwareLink
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-orange-300 bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-900 shadow-lg transition hover:brightness-105 sm:w-auto"
-            data-tina-field={tinaField(site.header, "quoteCta")}
-            forceQuoteModal
-            href={quoteHref}
-            quoteLabel={quoteLabel}
-          >
-            <span>{quoteLabel}</span>
-            <ArrowRight className="size-4" />
-          </QuoteAwareLink>
+                <div className="mt-10 flex flex-wrap gap-4">
+                <QuoteAwareLink
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-950 transition hover:bg-accent hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/20"
+                    data-tina-field={tinaField(site.header, "quoteCta")}
+                    forceQuoteModal
+                    href={quoteHref}
+                    quoteLabel={quoteLabel}
+                >
+                    <span>{quoteLabel}</span>
+                    <ArrowRight className="size-4" />
+                </QuoteAwareLink>
 
-          <QuoteAwareLink
-            className="text-site-muted inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-[color:var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition hover:border-primary/40 hover:text-[color:var(--site-text-strong)] sm:w-auto"
-            data-tina-field={
-              resourcesLink ? tinaField(resourcesLink) : undefined
-            }
-            href={resourcesLink?.href ?? "/resources"}
-          >
-            <span data-tina-field={resourcesPrefix.field}>
-              {resourcesPrefix.value}
-            </span>{" "}
-            <span>{resourcesLink?.label ?? "Resources"}</span>
-            <ArrowRight className="size-4" />
-          </QuoteAwareLink>
+                <QuoteAwareLink
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-white/10 hover:scale-[1.02] active:scale-95"
+                    data-tina-field={
+                    resourcesLink ? tinaField(resourcesLink) : undefined
+                    }
+                    href={resourcesLink?.href ?? "/resources"}
+                >
+                    <span data-tina-field={resourcesPrefix.field}>
+                    {resourcesPrefix.value}
+                    </span>{" "}
+                    <span>{resourcesLink?.label ?? "Resources"}</span>
+                    <ArrowRight className="size-4" />
+                </QuoteAwareLink>
+                </div>
+            </div>
         </div>
       </Reveal>
     </main>

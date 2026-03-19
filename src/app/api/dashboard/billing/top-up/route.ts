@@ -1,49 +1,49 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   buildStripeDepositCheckoutParams,
-  isPresetCreditTopUpAmountCents,
   normalizeCurrencyCode,
   parseDepositAmountToCents,
   resolveTopUpCharge,
   sanitizeDepositMetadata,
-} from "@/lib/stripe-deposit-checkout"
-import { isStripeDepositsEnabledServer } from "@/lib/feature-flags"
-import { resolveActiveBrand } from "@/lib/brand-catalog"
+} from "@/lib/stripe-deposit-checkout";
+import { isStripeDepositsEnabledServer } from "@/lib/feature-flags";
+import { resolveActiveBrand } from "@/lib/brand-catalog";
 import {
   resolveCurrentMonthlyTokenCycleStartIso,
   resolveMonthlyTokenExpiryIso,
   resolveSaasPlan,
-} from "@/lib/stripe-saas-plans"
-import { getDashboardSessionSnapshot, resolveRequestOriginFromRequest } from "@/lib/dashboard-billing"
+} from "@/lib/stripe-saas-plans";
+import {
+  getDashboardSessionSnapshot,
+  resolveRequestOriginFromRequest,
+} from "@/lib/dashboard-billing";
 import {
   buildBrandedCheckoutCancelUrl,
   buildBrandedCheckoutSuccessUrl,
-} from "@/lib/stripe-branding"
-
-export const runtime = "nodejs"
+} from "@/lib/stripe-branding";
 
 type StripeCheckoutSessionResponse = {
-  id?: string
-  url?: string
+  id?: string;
+  url?: string;
   error?: {
-    message?: string
-  }
-}
+    message?: string;
+  };
+};
 
 function resolveAmountMajor(request: NextRequest): number {
-  const value = request.nextUrl.searchParams.get("amount")?.trim() || "10"
-  const parsed = Number(value)
+  const value = request.nextUrl.searchParams.get("amount")?.trim() || "10";
+  const parsed = Number(value);
 
   if (!Number.isFinite(parsed)) {
-    return 10
+    return 10;
   }
 
-  return parsed
+  return parsed;
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getDashboardSessionSnapshot(request)
+  const session = await getDashboardSessionSnapshot(request);
   if (!session.authenticated) {
     return NextResponse.json(
       {
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         message: "Sign in to create a top-up checkout session.",
       },
       { status: 401 },
-    )
+    );
   }
 
   if (!isStripeDepositsEnabledServer()) {
@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
         message: "Stripe top-ups are currently disabled.",
       },
       { status: 404 },
-    )
+    );
   }
 
-  const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim() || ""
+  const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim() || "";
   if (!stripePrivateKey) {
     return NextResponse.json(
       {
@@ -72,12 +72,13 @@ export async function GET(request: NextRequest) {
         message: "Missing STRIPE_PRIVATE_KEY.",
       },
       { status: 501 },
-    )
+    );
   }
 
   try {
-    const requestedPlanSlug = request.nextUrl.searchParams.get("plan")?.trim() || ""
-    const plan = requestedPlanSlug ? resolveSaasPlan(requestedPlanSlug) : null
+    const requestedPlanSlug =
+      request.nextUrl.searchParams.get("plan")?.trim() || "";
+    const plan = requestedPlanSlug ? resolveSaasPlan(requestedPlanSlug) : null;
 
     if (requestedPlanSlug && !plan) {
       return NextResponse.json(
@@ -86,35 +87,32 @@ export async function GET(request: NextRequest) {
           message: "Unknown SaaS plan. Use starter, growth, or scale.",
         },
         { status: 400 },
-      )
+      );
     }
 
-    const amountMajor = resolveAmountMajor(request)
-    const amountCents = parseDepositAmountToCents(amountMajor)
-
-    if (!isPresetCreditTopUpAmountCents(amountCents)) {
-      return NextResponse.json(
-        {
-          error: "invalid_top_up_amount",
-          message: "Only preset top-up amounts are allowed.",
-        },
-        { status: 400 },
-      )
-    }
+    const amountMajor = resolveAmountMajor(request);
+    const amountCents = parseDepositAmountToCents(amountMajor);
 
     const topUp = resolveTopUpCharge(amountCents, {
       discountPercent: plan?.discountPercent,
-    })
-    const currency = normalizeCurrencyCode(process.env.STRIPE_DEPOSIT_DEFAULT_CURRENCY || "usd")
-    const origin = resolveRequestOriginFromRequest(request)
-    const brand = await resolveActiveBrand({ hostname: new URL(origin).hostname })
+    });
+    const currency = normalizeCurrencyCode(
+      process.env.STRIPE_DEPOSIT_DEFAULT_CURRENCY || "usd",
+    );
+    const origin = resolveRequestOriginFromRequest(request);
+    const brand = await resolveActiveBrand({
+      hostname: new URL(origin).hostname,
+    });
 
-    const monthlyTokenCycleStart = plan ? resolveCurrentMonthlyTokenCycleStartIso() : null
-    const monthlyTokenExpiry = plan ? resolveMonthlyTokenExpiryIso() : null
+    const monthlyTokenCycleStart = plan
+      ? resolveCurrentMonthlyTokenCycleStartIso()
+      : null;
+    const monthlyTokenExpiry = plan ? resolveMonthlyTokenExpiryIso() : null;
 
     const metadata = sanitizeDepositMetadata({
-      dryapi_brand_key: brand.key,
       source: "dryapi-dashboard-top-up",
+      creditsGranted: topUp.creditsGranted,
+      dryapi_brand_key: brand.key,
       pricingMode: plan ? "saas-tier-discount" : "standard-top-up",
       planSlug: plan?.slug ?? null,
       planLabel: plan?.label ?? null,
@@ -123,15 +121,15 @@ export async function GET(request: NextRequest) {
       chargeAmountCents: topUp.chargeAmountCents,
       discountCents: topUp.discountCents,
       appliedDiscountPercent: topUp.appliedDiscountPercent,
-      creditsGranted: topUp.creditsGranted,
       monthlyTokensGranted: plan?.monthlyTokens ?? null,
       monthlyTokenCycleStart,
       monthlyTokenExpiresAt: monthlyTokenExpiry,
-    })
+    });
 
-    const discountDescription = topUp.discountCents > 0
-      ? ` (${topUp.appliedDiscountPercent}% off applied)`
-      : ""
+    const discountDescription =
+      topUp.discountCents > 0
+        ? ` (${topUp.appliedDiscountPercent}% off applied)`
+        : "";
 
     const sessionParams = buildStripeDepositCheckoutParams({
       amountCents: topUp.chargeAmountCents,
@@ -147,32 +145,42 @@ export async function GET(request: NextRequest) {
       description: `${topUp.creditsGranted.toFixed(2)} credits top-up${discountDescription}`,
       customerEmail: session.email || undefined,
       metadata,
-    })
+    });
 
-    const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${stripePrivateKey}`,
-        "content-type": "application/x-www-form-urlencoded",
+    const stripeResponse = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions",
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${stripePrivateKey}`,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: sessionParams.toString(),
       },
-      body: sessionParams.toString(),
-    })
+    );
 
-    const payload = (await stripeResponse.json().catch(() => null)) as StripeCheckoutSessionResponse | null
+    const payload = (await stripeResponse
+      .json()
+      .catch(() => null)) as StripeCheckoutSessionResponse | null;
 
     if (!stripeResponse.ok || !payload?.url || !payload.id) {
       return NextResponse.json(
         {
           error: "checkout_creation_failed",
-          message: payload?.error?.message || "Unable to create Stripe top-up checkout session.",
+          message:
+            payload?.error?.message ||
+            "Unable to create Stripe top-up checkout session.",
         },
         { status: 502 },
-      )
+      );
     }
 
-    return NextResponse.redirect(payload.url, 302)
+    return NextResponse.redirect(payload.url, 302);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to create top-up session"
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to create top-up session";
 
     return NextResponse.json(
       {
@@ -180,6 +188,6 @@ export async function GET(request: NextRequest) {
         message,
       },
       { status: 400 },
-    )
+    );
   }
 }

@@ -19,7 +19,7 @@ export function TryModelCta({ modelDisplayName, playgroundHref, className }: Try
           </p>
         </div>
         <Link
-          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-md bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-1.5 text-xs font-semibold text-slate-900 shadow-sm transition hover:brightness-105 sm:self-auto"
+          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-md bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-1.5 text-xs font-semibold text-site-strong shadow-sm transition hover:brightness-105 sm:self-auto"
           href={playgroundHref}
         >
           <Zap className="size-3.5" />

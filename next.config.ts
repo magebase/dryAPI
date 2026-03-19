@@ -8,7 +8,10 @@ initOpenNextCloudflareForDev({ configPath: "wrangler.local.jsonc" });
 const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"]);
 const FALSE_VALUES = new Set(["0", "false", "no", "off", "disabled"]);
 
-function parseBooleanEnv(value: string | undefined, defaultValue: boolean): boolean {
+function parseBooleanEnv(
+  value: string | undefined,
+  defaultValue: boolean,
+): boolean {
   if (value === undefined) {
     return defaultValue;
   }
@@ -97,8 +100,9 @@ const adminCspValue =
     : adminProductionCsp.join(" ");
 
 const pwaEnabled = parseBooleanEnv(
-  process.env.FEATURE_PWA_ENABLED ?? process.env.NEXT_PUBLIC_FEATURE_PWA_ENABLED,
-  true
+  process.env.FEATURE_PWA_ENABLED ??
+    process.env.NEXT_PUBLIC_FEATURE_PWA_ENABLED,
+  true,
 );
 
 const withSerwist = withSerwistInit({
@@ -110,7 +114,8 @@ const withSerwist = withSerwistInit({
   manifestTransforms: [
     async (entries) => ({
       manifest: entries.filter(
-        (entry) => !entry.url.startsWith("/admin/") && !entry.url.startsWith("admin/")
+        (entry) =>
+          !entry.url.startsWith("/admin/") && !entry.url.startsWith("admin/"),
       ),
       warnings: [],
     }),
@@ -123,7 +128,20 @@ const withMDX = createMDX({
 });
 
 const nextConfig: NextConfig = {
+  typedRoutes: true,
+  cacheComponents: false,
   webpack(config) {
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    }
+
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: "asset/resource",
+    })
+
     config.module.rules.push({
       test: /\.txt$/i,
       type: "asset/source",
@@ -180,6 +198,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "**.r2.cloudflarestorage.com",
+      },
+    ],
+    localPatterns: [
+      {
+        pathname: "/api/og",
       },
     ],
   },

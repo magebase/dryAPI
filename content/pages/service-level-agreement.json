@@ -1,0 +1,107 @@
+{
+  "slug": "/service-level-agreement",
+  "navLabel": "Service Level Agreement",
+  "seoTitle": "Service Level Agreement | deAPI",
+  "seoDescription": "Review availability targets, response expectations, and service credit terms for deAPI plans.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Service Level Agreement"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "This SLA outlines platform availability targets, response commitments, and service credit handling."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Read Architecture and Security",
+        "href": "/docs/architecture-and-security"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Legal",
+    "heading": "Service Level Agreement",
+    "body": "The SLA defines uptime targets and incident handling expectations for teams running production AI workloads.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "View Pricing Plans",
+        "href": "/pricing",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "availability",
+      "title": "Availability Targets",
+      "body": "Availability objectives are defined by plan level and measured over monthly service windows.",
+      "cards": [
+        {
+          "id": "availability-card-1",
+          "title": "Uptime Objectives",
+          "description": "Track monthly service availability with transparent measurement boundaries.",
+          "href": "/pricing",
+          "ctaLabel": "Plan Details"
+        },
+        {
+          "id": "availability-card-2",
+          "title": "Maintenance Windows",
+          "description": "Planned maintenance is scheduled to reduce impact on production workloads.",
+          "href": "/changelog",
+          "ctaLabel": "View Changelog"
+        },
+        {
+          "id": "availability-card-3",
+          "title": "Dependency Boundaries",
+          "description": "Certain upstream provider outages may affect service behavior outside direct platform control.",
+          "href": "/terms-of-service",
+          "ctaLabel": "Terms Details"
+        }
+      ]
+    },
+    {
+      "id": "incident",
+      "title": "Incident Response and Credits",
+      "body": "Incident handling includes classification, communication, and remediation paths where applicable.",
+      "cards": [
+        {
+          "id": "incident-card-1",
+          "title": "Response Workflow",
+          "description": "Incidents are triaged by severity and escalated to the appropriate on-call team.",
+          "href": "/docs",
+          "ctaLabel": "Operational Docs"
+        },
+        {
+          "id": "incident-card-2",
+          "title": "Service Credits",
+          "description": "Eligible credits are calculated based on SLA terms and validated outage windows.",
+          "href": "/refund-policy",
+          "ctaLabel": "Refund Policy"
+        },
+        {
+          "id": "incident-card-3",
+          "title": "Support Coordination",
+          "description": "Enterprise teams can coordinate post-incident reviews with technical support.",
+          "href": "/contact-sales",
+          "ctaLabel": "Contact Support"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need SLA clarification for procurement?",
+    "body": "We can support procurement and legal reviews with plan-specific SLA guidance.",
+    "responseTime": "SLA questions answered in one business day"
+  }
+}

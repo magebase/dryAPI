@@ -1,10 +1,10 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Video-to-Text (Transcription)
 
-> Unique Platform Support: deAPI is one of the few APIs offering direct transcription from YT, TikTok, Twitch VODs, X and Kick videos — no need to download files first. Just paste the URL.
+> Unique Platform Support: dryAPI is one of the few APIs offering direct transcription from YT, TikTok, Twitch VODs, X and Kick videos — no need to download files first. Just paste the URL.
 
 <Note>
   **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability.
@@ -16,17 +16,17 @@
 ````yaml openapi.json post /api/v1/client/vid2txt
 openapi: 3.0.0
 info:
-  title: deAPI REST API
+  title: dryAPI REST API
   description: >-
     Decentralized AI inference API for image generation, video processing, audio
     transcription, and more.
   contact:
-    name: deAPI Support
-    url: https://deapi.ai
-    email: support@deapi.ai
+    name: dryAPI Support
+    url: https://dryapi.dev
+    email: support@dryapi.dev
   version: 0.0.1
 servers:
-  - url: https://api.deapi.ai
+  - url: https://api.dryapi.dev
     description: Production API Server base URL
 security:
   - bearerAuth: []
@@ -85,7 +85,7 @@ paths:
                   type: string
                   format: uri
                   maxLength: 2048
-                  example: https://your-server.com/webhooks/deapi
+                  example: https://your-server.com/webhooks/dryapi
                   nullable: true
               type: object
       responses:

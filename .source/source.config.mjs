@@ -2,7 +2,12 @@
 import { defineDocs, defineConfig } from "fumadocs-mdx/config";
 import lastModified from "fumadocs-mdx/plugins/last-modified";
 var docs = defineDocs({
-  dir: "src/content"
+  dir: "src/content",
+  docs: {
+    postprocess: {
+      includeProcessedMarkdown: true
+    }
+  }
 });
 var source_config_default = defineConfig({
   plugins: [lastModified()]

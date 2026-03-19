@@ -30,6 +30,26 @@ type CreditBalanceRow = {
   updated_at: number
 }
 
+type CreditBalanceProfileRow = {
+  customer_ref: string
+  balance_credits: number | string | null
+  updated_at: number | string | null
+  auto_top_up_enabled: number | string | null
+  auto_top_up_threshold_credits: number | string | null
+  auto_top_up_amount_credits: number | string | null
+  auto_top_up_monthly_cap_credits: number | string | null
+  auto_top_up_monthly_spent_credits: number | string | null
+  auto_top_up_monthly_window_start_at: number | string | null
+}
+
+type D1TableInfoRow = {
+  name: string
+}
+
+type CreditDepositAggregateRow = {
+  lifetime_deposited_credits: number | string | null
+}
+
 type SaasMonthlyTokenBucketRow = {
   bucket_id: string
   customer_ref: string
@@ -58,6 +78,32 @@ export type CreditBalanceSnapshot = {
   updatedAt: string | null
 }
 
+export type StoredSubscriptionCreditsSnapshot = {
+  subscriptionCredits: number
+  topUpCredits: number
+}
+
+export type BillingSafeguardSnapshot = {
+  minimumTopUpCredits: number
+  blockingThresholdCredits: number
+  maximumNegativeCredits: number
+}
+
+export type AutoTopUpSettingsSnapshot = {
+  enabled: boolean
+  thresholdCredits: number
+  amountCredits: number
+  monthlyCapCredits: number
+  monthlySpentCredits: number
+  monthlyWindowStartAt: string | null
+}
+
+export const BILLING_SAFEGUARDS: BillingSafeguardSnapshot = {
+  minimumTopUpCredits: 10,
+  blockingThresholdCredits: 0,
+  maximumNegativeCredits: -100,
+}
+
 export type SaasMonthlyTokenBucketSnapshot = {
   bucketId: string
   customerRef: string
@@ -75,6 +121,10 @@ CREATE TABLE IF NOT EXISTS credit_balance_profiles (
   balance_credits REAL NOT NULL DEFAULT 0,
   auto_top_up_enabled INTEGER NOT NULL DEFAULT 1,
   auto_top_up_threshold_credits REAL NOT NULL DEFAULT 5,
+  auto_top_up_amount_credits REAL NOT NULL DEFAULT 25,
+  auto_top_up_monthly_cap_credits REAL NOT NULL DEFAULT 250,
+  auto_top_up_monthly_spent_credits REAL NOT NULL DEFAULT 0,
+  auto_top_up_monthly_window_start_at INTEGER NOT NULL DEFAULT 0,
   updated_at INTEGER NOT NULL
 )
 `
@@ -153,6 +203,41 @@ async function ensureBillingTables(db: D1DatabaseLike): Promise<void> {
   await db.prepare(CREATE_BALANCE_TABLE_SQL).run()
   await db.prepare(CREATE_EVENTS_TABLE_SQL).run()
   await db.prepare(CREATE_SAAS_BUCKETS_TABLE_SQL).run()
+  await ensureBalanceProfileColumns(db)
+}
+
+async function listTableColumnNames(db: D1DatabaseLike, tableName: string): Promise<Set<string>> {
+  const response = await db
+    .prepare(`PRAGMA table_info(${tableName})`)
+    .all<D1TableInfoRow>()
+
+  return new Set(response.results.map((row) => row.name))
+}
+
+async function ensureBalanceProfileColumns(db: D1DatabaseLike): Promise<void> {
+  const columns = await listTableColumnNames(db, "credit_balance_profiles")
+
+  const statements: string[] = []
+
+  if (!columns.has("auto_top_up_amount_credits")) {
+    statements.push("ALTER TABLE credit_balance_profiles ADD COLUMN auto_top_up_amount_credits REAL NOT NULL DEFAULT 25")
+  }
+
+  if (!columns.has("auto_top_up_monthly_cap_credits")) {
+    statements.push("ALTER TABLE credit_balance_profiles ADD COLUMN auto_top_up_monthly_cap_credits REAL NOT NULL DEFAULT 250")
+  }
+
+  if (!columns.has("auto_top_up_monthly_spent_credits")) {
+    statements.push("ALTER TABLE credit_balance_profiles ADD COLUMN auto_top_up_monthly_spent_credits REAL NOT NULL DEFAULT 0")
+  }
+
+  if (!columns.has("auto_top_up_monthly_window_start_at")) {
+    statements.push("ALTER TABLE credit_balance_profiles ADD COLUMN auto_top_up_monthly_window_start_at INTEGER NOT NULL DEFAULT 0")
+  }
+
+  for (const statement of statements) {
+    await db.prepare(statement).run()
+  }
 }
 
 async function selectBalanceRow(db: D1DatabaseLike, customerRef: string): Promise<CreditBalanceRow | null> {
@@ -169,6 +254,78 @@ async function selectBalanceRow(db: D1DatabaseLike, customerRef: string): Promis
     .all<CreditBalanceRow>()
 
   return response.results[0] ?? null
+}
+
+async function selectBalanceProfileRow(
+  db: D1DatabaseLike,
+  customerRef: string,
+): Promise<CreditBalanceProfileRow | null> {
+  const response = await db
+    .prepare(
+      `
+      SELECT customer_ref, balance_credits, updated_at,
+             auto_top_up_enabled,
+             auto_top_up_threshold_credits,
+             auto_top_up_amount_credits,
+             auto_top_up_monthly_cap_credits,
+             auto_top_up_monthly_spent_credits,
+             auto_top_up_monthly_window_start_at
+      FROM credit_balance_profiles
+      WHERE customer_ref = ?
+      LIMIT 1
+      `,
+    )
+    .bind(customerRef)
+    .all<CreditBalanceProfileRow>()
+
+  return response.results[0] ?? null
+}
+
+function toBooleanInteger(value: boolean): number {
+  return value ? 1 : 0
+}
+
+function toSafeCredits(value: number, fallback: number): number {
+  if (!Number.isFinite(value)) {
+    return fallback
+  }
+
+  return Number(Math.max(0, value).toFixed(3))
+}
+
+function resolveCurrentMonthWindowStartAtMs(referenceMs = Date.now()): number {
+  const now = new Date(referenceMs)
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)
+}
+
+function toAutoTopUpSettingsSnapshot(row: CreditBalanceProfileRow): AutoTopUpSettingsSnapshot {
+  const enabledRaw = toFiniteNumber(row.auto_top_up_enabled)
+  const thresholdCredits = toSafeCredits(
+    toFiniteNumber(row.auto_top_up_threshold_credits) ?? 0,
+    BILLING_SAFEGUARDS.blockingThresholdCredits,
+  )
+  const amountCredits = toSafeCredits(
+    toFiniteNumber(row.auto_top_up_amount_credits) ?? 25,
+    25,
+  )
+  const monthlyCapCredits = toSafeCredits(
+    toFiniteNumber(row.auto_top_up_monthly_cap_credits) ?? 250,
+    250,
+  )
+  const monthlySpentCredits = toSafeCredits(
+    toFiniteNumber(row.auto_top_up_monthly_spent_credits) ?? 0,
+    0,
+  )
+  const monthlyWindowStartAt = toIsoFromMs(toFiniteNumber(row.auto_top_up_monthly_window_start_at))
+
+  return {
+    enabled: enabledRaw === null ? true : enabledRaw !== 0,
+    thresholdCredits,
+    amountCredits,
+    monthlyCapCredits,
+    monthlySpentCredits,
+    monthlyWindowStartAt,
+  }
 }
 
 async function upsertBalanceRow(
@@ -218,6 +375,229 @@ export async function getStoredCreditBalance(
   return {
     balanceCredits: Number((toFiniteNumber(row.balance_credits) ?? 0).toFixed(3)),
     updatedAt: toIsoFromMs(toFiniteNumber(row.updated_at)),
+  }
+}
+
+export async function getStoredAutoTopUpSettings(
+  customerRef: string,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<AutoTopUpSettingsSnapshot | null> {
+  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
+  const db = options?.db ?? (await resolveBillingDb())
+  if (!db) {
+    return null
+  }
+
+  await ensureBillingTables(db)
+
+  const row = await selectBalanceProfileRow(db, normalizedCustomerRef)
+  if (!row) {
+    return null
+  }
+
+  return toAutoTopUpSettingsSnapshot(row)
+}
+
+export async function updateStoredAutoTopUpSettings(
+  input: {
+    customerRef: string
+    enabled: boolean
+    thresholdCredits: number
+    amountCredits: number
+    monthlyCapCredits: number
+  },
+  options?: { db?: D1DatabaseLike | null },
+): Promise<AutoTopUpSettingsSnapshot | null> {
+  const normalizedCustomerRef = sanitizeCustomerRef(input.customerRef)
+  const db = options?.db ?? (await resolveBillingDb())
+  if (!db) {
+    return null
+  }
+
+  await ensureBillingTables(db)
+
+  const now = Date.now()
+  const currentWindowStartAtMs = resolveCurrentMonthWindowStartAtMs(now)
+  const current = await selectBalanceProfileRow(db, normalizedCustomerRef)
+  const existingWindowStartAtMs = toFiniteNumber(current?.auto_top_up_monthly_window_start_at) ?? 0
+  const monthlySpentCredits =
+    existingWindowStartAtMs === currentWindowStartAtMs
+      ? toSafeCredits(toFiniteNumber(current?.auto_top_up_monthly_spent_credits) ?? 0, 0)
+      : 0
+
+  const currentBalanceCredits = toFiniteNumber(current?.balance_credits) ?? resolveConfiguredBalance()
+
+  await db
+    .prepare(
+      `
+      INSERT INTO credit_balance_profiles (
+        customer_ref,
+        balance_credits,
+        auto_top_up_enabled,
+        auto_top_up_threshold_credits,
+        auto_top_up_amount_credits,
+        auto_top_up_monthly_cap_credits,
+        auto_top_up_monthly_spent_credits,
+        auto_top_up_monthly_window_start_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(customer_ref) DO UPDATE SET
+        auto_top_up_enabled = excluded.auto_top_up_enabled,
+        auto_top_up_threshold_credits = excluded.auto_top_up_threshold_credits,
+        auto_top_up_amount_credits = excluded.auto_top_up_amount_credits,
+        auto_top_up_monthly_cap_credits = excluded.auto_top_up_monthly_cap_credits,
+        auto_top_up_monthly_spent_credits = excluded.auto_top_up_monthly_spent_credits,
+        auto_top_up_monthly_window_start_at = excluded.auto_top_up_monthly_window_start_at,
+        updated_at = excluded.updated_at
+      `,
+    )
+    .bind(
+      normalizedCustomerRef,
+      Number(currentBalanceCredits.toFixed(3)),
+      toBooleanInteger(input.enabled),
+      toSafeCredits(input.thresholdCredits, BILLING_SAFEGUARDS.blockingThresholdCredits),
+      toSafeCredits(input.amountCredits, 25),
+      toSafeCredits(input.monthlyCapCredits, 250),
+      monthlySpentCredits,
+      currentWindowStartAtMs,
+      now,
+    )
+    .run()
+
+  const updated = await selectBalanceProfileRow(db, normalizedCustomerRef)
+  if (!updated) {
+    return null
+  }
+
+  return toAutoTopUpSettingsSnapshot(updated)
+}
+
+export async function incrementStoredAutoTopUpMonthlySpent(
+  input: {
+    customerRef: string
+    spentDeltaCredits: number
+  },
+  options?: { db?: D1DatabaseLike | null },
+): Promise<AutoTopUpSettingsSnapshot | null> {
+  const normalizedCustomerRef = sanitizeCustomerRef(input.customerRef)
+  const db = options?.db ?? (await resolveBillingDb())
+  if (!db) {
+    return null
+  }
+
+  await ensureBillingTables(db)
+
+  const profile = await selectBalanceProfileRow(db, normalizedCustomerRef)
+  if (!profile) {
+    return null
+  }
+
+  const now = Date.now()
+  const currentWindowStartAtMs = resolveCurrentMonthWindowStartAtMs(now)
+  const existingWindowStartAtMs = toFiniteNumber(profile.auto_top_up_monthly_window_start_at) ?? 0
+  const existingSpent =
+    existingWindowStartAtMs === currentWindowStartAtMs
+      ? toSafeCredits(toFiniteNumber(profile.auto_top_up_monthly_spent_credits) ?? 0, 0)
+      : 0
+
+  const nextSpent = toSafeCredits(existingSpent + Math.max(0, input.spentDeltaCredits), existingSpent)
+
+  await db
+    .prepare(
+      `
+      UPDATE credit_balance_profiles
+      SET auto_top_up_monthly_spent_credits = ?,
+          auto_top_up_monthly_window_start_at = ?,
+          updated_at = ?
+      WHERE customer_ref = ?
+      `,
+    )
+    .bind(nextSpent, currentWindowStartAtMs, now, normalizedCustomerRef)
+    .run()
+
+  const updated = await selectBalanceProfileRow(db, normalizedCustomerRef)
+  if (!updated) {
+    return null
+  }
+
+  return toAutoTopUpSettingsSnapshot(updated)
+}
+
+export async function getLifetimeDepositedCredits(
+  customerRef: string,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<number | null> {
+  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
+  const db = options?.db ?? (await resolveBillingDb())
+  if (!db) {
+    return null
+  }
+
+  await ensureBillingTables(db)
+
+  const response = await db
+    .prepare(
+      `
+      SELECT COALESCE(SUM(CASE WHEN credits_delta > 0 THEN credits_delta ELSE 0 END), 0) AS lifetime_deposited_credits
+      FROM billing_credit_events
+      WHERE customer_ref = ?
+      `,
+    )
+    .bind(normalizedCustomerRef)
+    .all<CreditDepositAggregateRow>()
+
+  const lifetimeDepositedCredits = toFiniteNumber(response.results[0]?.lifetime_deposited_credits)
+  if (lifetimeDepositedCredits === null) {
+    return 0
+  }
+
+  return Number(Math.max(0, lifetimeDepositedCredits).toFixed(3))
+}
+
+export async function getStoredSubscriptionCredits(
+  customerRef: string,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<StoredSubscriptionCreditsSnapshot | null> {
+  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
+  const db = options?.db ?? (await resolveBillingDb())
+  if (!db) {
+    return null
+  }
+
+  await ensureBillingTables(db)
+
+  const balanceRow = await selectBalanceRow(db, normalizedCustomerRef)
+  if (!balanceRow) {
+    return null
+  }
+
+  const totalBalance = Number((toFiniteNumber(balanceRow.balance_credits) ?? 0).toFixed(3))
+
+  // Sum all subscription cycle grants for this user.
+  // Note: source for subscription grants is 'dryapi-dashboard-subscription'
+  const response = await db
+    .prepare(
+      `
+      SELECT COALESCE(SUM(credits_delta), 0) AS total_subscription_grants
+      FROM billing_credit_events
+      WHERE customer_ref = ? AND source = 'dryapi-dashboard-subscription'
+      `,
+    )
+    .bind(normalizedCustomerRef)
+    .all<{ total_subscription_grants: number | string | null }>()
+
+  const totalSubscriptionGrants = toFiniteNumber(response.results[0]?.total_subscription_grants) ?? 0
+
+  // We treat subscription credits as "first out" (already handled by total balance reduction)
+  // but for the UI split, we'll assume subscription credits remain until they are exhausted by the total balance.
+  // This is a naive split: subscriptionCredits = min(totalBalance, totalSubscriptionGrants)
+  // topUpCredits = totalBalance - subscriptionCredits
+  const subscriptionCredits = Number(Math.min(totalBalance, totalSubscriptionGrants).toFixed(3))
+  const topUpCredits = Number(Math.max(0, totalBalance - subscriptionCredits).toFixed(3))
+
+  return {
+    subscriptionCredits,
+    topUpCredits,
   }
 }
 

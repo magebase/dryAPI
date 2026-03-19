@@ -53,6 +53,7 @@ const KEY_RECORD = { id: "key_123", name: "Test Key", enabled: true }
 
 describe("GET /api/dashboard/api-keys/[keyId]", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     getDashboardSessionSnapshotMock.mockReset()
     getDashboardApiKeyForRequestMock.mockReset()
   })
@@ -79,10 +80,24 @@ describe("GET /api/dashboard/api-keys/[keyId]", () => {
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ data: KEY_RECORD })
   })
+
+  it("logs store failures", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue(authed())
+    getDashboardApiKeyForRequestMock.mockRejectedValue(new Error("boom"))
+
+    const res = await GET(req("GET"), makeContext("key_123"))
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({ error: "api_key_get_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to load API key",
+      expect.any(Error),
+    )
+  })
 })
 
 describe("DELETE /api/dashboard/api-keys/[keyId]", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     getDashboardSessionSnapshotMock.mockReset()
     deleteDashboardApiKeyMock.mockReset()
   })
@@ -116,10 +131,24 @@ describe("DELETE /api/dashboard/api-keys/[keyId]", () => {
       expect.objectContaining({ permanent: true }),
     )
   })
+
+  it("logs delete failures", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue(authed())
+    deleteDashboardApiKeyMock.mockRejectedValue(new Error("delete failed"))
+
+    const res = await DELETE(req("DELETE", {}), makeContext("key_123"))
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({ error: "api_key_delete_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to delete API key",
+      expect.any(Error),
+    )
+  })
 })
 
 describe("PATCH /api/dashboard/api-keys/[keyId]", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     getDashboardSessionSnapshotMock.mockReset()
     setDashboardApiKeyEnabledMock.mockReset()
   })
@@ -154,10 +183,24 @@ describe("PATCH /api/dashboard/api-keys/[keyId]", () => {
     const body = await res.json()
     expect(body.data.enabled).toBe(false)
   })
+
+  it("logs update failures", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue(authed())
+    setDashboardApiKeyEnabledMock.mockRejectedValue(new Error("update failed"))
+
+    const res = await PATCH(req("PATCH", { enabled: false }), makeContext("key_123"))
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({ error: "api_key_update_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to update API key",
+      expect.any(Error),
+    )
+  })
 })
 
 describe("POST /api/dashboard/api-keys/[keyId] (rotate)", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
     getDashboardSessionSnapshotMock.mockReset()
     rerollDashboardApiKeyMock.mockReset()
   })
@@ -183,10 +226,27 @@ describe("POST /api/dashboard/api-keys/[keyId] (rotate)", () => {
       key: "sk_live_rotated_xyz",
     })
 
-    const res = await POST(req("POST", { expiration: 0 }), makeContext("key_123"))
+    const res = await POST(req("POST", {}), makeContext("key_123"))
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.data.key).toBe("sk_live_rotated_xyz")
     expect(body.data.id).toBe("key_123")
+    expect(rerollDashboardApiKeyMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.not.objectContaining({ expirationMs: expect.anything() }),
+    )
+  })
+
+  it("logs rotation failures", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue(authed())
+    rerollDashboardApiKeyMock.mockRejectedValue(new Error("rotate failed"))
+
+    const res = await POST(req("POST", {}), makeContext("key_123"))
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({ error: "api_key_rotate_failed" })
+    expect(console.error).toHaveBeenCalledWith(
+      "[api-keys] Failed to rotate API key",
+      expect.any(Error),
+    )
   })
 })

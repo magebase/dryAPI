@@ -25,6 +25,10 @@ database_id = "33333333-3333-3333-3333-333333333333"
 binding = "QUEUE_METRICS_KV"
 id = "queue_metrics_kv_prod"
 
+[[analytics_engine_datasets]]
+binding = "RUNPOD_PRICING_ANALYTICS"
+dataset = "runpod_pricing_events"
+
 [[ratelimits]]
 name = "EDGE_IP_LIMITER"
 # Replace this with your real Cloudflare rate limit namespace id.
@@ -86,6 +90,16 @@ RUNPOD_PRICING_MIN_PROFIT_MULTIPLE = "3"
 RUNPOD_PRICING_LOOKBACK_HOURS = "24"
 RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "60"
 RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
+RUNPOD_PRICING_WORKER_TYPE_DEFAULT = "flex"
+RUNPOD_PRICING_BANDIT_ENABLED = "1"
+RUNPOD_PRICING_BANDIT_EXPLORE_PROBABILITY = "0.12"
+RUNPOD_PRICING_BANDIT_EXPLORATION_WEIGHT = "0.1"
+RUNPOD_PRICING_BANDIT_ALPHA_MARGIN = "0.75"
+RUNPOD_PRICING_BANDIT_BETA_GROWTH = "0.25"
+RUNPOD_PRICING_BANDIT_EMA_SMOOTHING = "0.2"
+RUNPOD_PRICING_BANDIT_MAX_STEP_UP_PCT = "0.15"
+RUNPOD_PRICING_BANDIT_MAX_STEP_DOWN_PCT = "0.08"
+RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.94,0.98,1.00,1.03,1.07"
 # Optional full pricing policy map (defaults/surfaces/models/endpoints).
 # RUNPOD_PRICING_CONFIG_JSON = '{"defaults":{"gpuCostPerSecondUsd":0.00055,"infraCostUsd":0.00005,"paymentFeeFraction":0.04,"retrySafetyFraction":0.12}}'
 RUNPOD_PRICING_CONFIG_JSON = ""
@@ -137,6 +151,10 @@ database_id = "44444444-4444-4444-4444-444444444444"
 binding = "QUEUE_METRICS_KV"
 id = "queue_metrics_kv_test"
 
+[[env.test.analytics_engine_datasets]]
+binding = "RUNPOD_PRICING_ANALYTICS"
+dataset = "runpod_pricing_events_test"
+
 [[env.test.ratelimits]]
 name = "EDGE_IP_LIMITER"
 namespace_id = "1001"
@@ -162,6 +180,16 @@ RUNPOD_PRICING_MIN_PROFIT_MULTIPLE = "3"
 RUNPOD_PRICING_LOOKBACK_HOURS = "24"
 RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "1"
 RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
+RUNPOD_PRICING_WORKER_TYPE_DEFAULT = "flex"
+RUNPOD_PRICING_BANDIT_ENABLED = "1"
+RUNPOD_PRICING_BANDIT_EXPLORE_PROBABILITY = "0.12"
+RUNPOD_PRICING_BANDIT_EXPLORATION_WEIGHT = "0.1"
+RUNPOD_PRICING_BANDIT_ALPHA_MARGIN = "0.75"
+RUNPOD_PRICING_BANDIT_BETA_GROWTH = "0.25"
+RUNPOD_PRICING_BANDIT_EMA_SMOOTHING = "0.2"
+RUNPOD_PRICING_BANDIT_MAX_STEP_UP_PCT = "0.15"
+RUNPOD_PRICING_BANDIT_MAX_STEP_DOWN_PCT = "0.08"
+RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.94,0.98,1.00,1.03,1.07"
 RUNPOD_PRICING_CONFIG_JSON = ""
 RUNPOD_BATCH_QUEUE_ENABLED = "1"
 RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
@@ -193,6 +221,10 @@ database_id = "55555555-5555-5555-5555-555555555555"
 binding = "QUEUE_METRICS_KV"
 id = "queue_metrics_kv_dev"
 
+[[env.dev.analytics_engine_datasets]]
+binding = "RUNPOD_PRICING_ANALYTICS"
+dataset = "runpod_pricing_events_dev"
+
 [[env.dev.ratelimits]]
 name = "EDGE_IP_LIMITER"
 namespace_id = "1001"
@@ -218,6 +250,16 @@ RUNPOD_PRICING_MIN_PROFIT_MULTIPLE = "3"
 RUNPOD_PRICING_LOOKBACK_HOURS = "24"
 RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "60"
 RUNPOD_PRICING_ROUND_STEP_USD = "0.0001"
+RUNPOD_PRICING_WORKER_TYPE_DEFAULT = "flex"
+RUNPOD_PRICING_BANDIT_ENABLED = "1"
+RUNPOD_PRICING_BANDIT_EXPLORE_PROBABILITY = "0.12"
+RUNPOD_PRICING_BANDIT_EXPLORATION_WEIGHT = "0.1"
+RUNPOD_PRICING_BANDIT_ALPHA_MARGIN = "0.75"
+RUNPOD_PRICING_BANDIT_BETA_GROWTH = "0.25"
+RUNPOD_PRICING_BANDIT_EMA_SMOOTHING = "0.2"
+RUNPOD_PRICING_BANDIT_MAX_STEP_UP_PCT = "0.15"
+RUNPOD_PRICING_BANDIT_MAX_STEP_DOWN_PCT = "0.08"
+RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.94,0.98,1.00,1.03,1.07"
 RUNPOD_PRICING_CONFIG_JSON = ""
 RUNPOD_BATCH_QUEUE_ENABLED = "0"
 RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'

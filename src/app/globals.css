@@ -55,6 +55,15 @@
   --font-geist: var(--font-geist);
   --font-geist-mono: var(--font-geist-mono);
 
+  --color-site-surface-0: var(--site-surface-0);
+  --color-site-surface-1: var(--site-surface-1);
+  --color-site-surface-2: var(--site-surface-2);
+  --color-site-surface-3: var(--site-surface-3);
+  --color-site-strong: var(--site-strong);
+  --color-site-muted: var(--site-muted);
+  --color-site-soft: var(--site-soft);
+  --color-site-text-soft: var(--site-soft);
+
   --animate-page-in: page-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 240ms ease-out both;
   --animate-slide-up: slide-up 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -66,9 +75,9 @@
   --site-surface-1: #eef5f9;
   --site-surface-2: #e4eef5;
   --site-surface-3: #d7e6f0;
-  --site-text-strong: #0f1f2d;
-  --site-text-muted: #3a556b;
-  --site-text-soft: #5f7a8f;
+  --site-strong: #0f1f2d;
+  --site-muted: #3a556b;
+  --site-soft: #5f7a8f;
   --site-text-inverse: #f4fbff;
   --site-text-inverse-muted: #d7e6f2;
   --site-text-inverse-soft: #bacbd9;
@@ -315,6 +324,15 @@
   code,
   pre {
     font-family: var(--font-mono);
+  }
+
+  /* Force Fumadocs Header to Full Width */
+  header#nd-subnav,
+  header#nd-subnav > div[data-header-body],
+  .docs-root #nd-subnav,
+  .docs-root div[data-header-body] {
+    max-width: 100% !important;
+    width: 100% !important;
   }
 }
 
@@ -698,11 +716,13 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+    column-gap: 3rem;
   }
 
   .docs-root div[class*="@4xl:sticky"][class*="@4xl:w-[400px]"] {
     position: sticky;
     top: calc(var(--fd-docs-row-1, 2rem) + 1rem);
+    margin-top: 1rem;
     width: 400px;
   }
 }

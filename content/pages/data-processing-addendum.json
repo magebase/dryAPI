@@ -1,0 +1,107 @@
+{
+  "slug": "/data-processing-addendum",
+  "navLabel": "Data Processing Addendum",
+  "seoTitle": "Data Processing Addendum | deAPI",
+  "seoDescription": "Review deAPI data processing terms, controller-processor boundaries, and security obligations for enterprise teams.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Data Processing Addendum"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "The DPA sets out data handling obligations, subprocessors, and security controls for enterprise workloads."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "View Privacy Policy",
+        "href": "/privacy-policy"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Legal",
+    "heading": "Data Processing Addendum",
+    "body": "Define controller and processor obligations for AI API traffic, account data, and support workflows.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Read Privacy Policy",
+        "href": "/privacy-policy",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "roles",
+      "title": "Roles and Processing Scope",
+      "body": "The DPA defines role boundaries and the categories of data processed to deliver the service.",
+      "cards": [
+        {
+          "id": "roles-card-1",
+          "title": "Controller and Processor Roles",
+          "description": "Clarify when customers act as controllers and when deAPI acts as a processor.",
+          "href": "/terms-of-service",
+          "ctaLabel": "Terms Details"
+        },
+        {
+          "id": "roles-card-2",
+          "title": "Data Categories",
+          "description": "Account, billing, and usage metadata are processed for service delivery and protection.",
+          "href": "/privacy-policy",
+          "ctaLabel": "Privacy Details"
+        },
+        {
+          "id": "roles-card-3",
+          "title": "Subprocessor Transparency",
+          "description": "Infrastructure subprocessors are managed under contractual and security controls.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Security Docs"
+        }
+      ]
+    },
+    {
+      "id": "safeguards",
+      "title": "Safeguards and Data Subject Rights",
+      "body": "We apply technical and organizational controls and support rights-management requests.",
+      "cards": [
+        {
+          "id": "safeguards-card-1",
+          "title": "Security Controls",
+          "description": "Encryption, access boundaries, and retention controls reduce data handling risk.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Security Overview"
+        },
+        {
+          "id": "safeguards-card-2",
+          "title": "Request Handling",
+          "description": "Coordinate data subject access or deletion requests with our support team.",
+          "href": "/contact-sales",
+          "ctaLabel": "Contact Team"
+        },
+        {
+          "id": "safeguards-card-3",
+          "title": "Contractual Updates",
+          "description": "Material updates are communicated through customer channels and policy notices.",
+          "href": "/changelog",
+          "ctaLabel": "Policy Updates"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need a DPA review package?",
+    "body": "We can help legal, security, and procurement teams review DPA terms for rollout readiness.",
+    "responseTime": "DPA requests answered in one business day"
+  }
+}

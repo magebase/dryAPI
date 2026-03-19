@@ -1,22 +1,22 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Quickstart
 
-**deAPI** is a high-performance inference platform built specifically for developers seeking a fast, reliable, and simple way to integrate cutting-edge AI capabilities into their applications. This guide will help you quickly set up your account, obtain your API key, load credits, and begin using our API.
+**dryAPI** is a high-performance inference platform built specifically for developers seeking a fast, reliable, and simple way to integrate cutting-edge AI capabilities into their applications. This guide will help you quickly set up your account, obtain your API key, load credits, and begin using our API.
 
 ***
 
 ### 1. Sign In to Your Account
 
-Create your free account at [deapi.ai](https://deapi.ai/register) to get started. All new users receive a **\$5 sign-up bonus** with a **Basic** account — no credit card required.
+Create your free account at [dryapi.dev](https://dryapi.dev/register) to get started. All new users receive a **\$5 sign-up bonus** with a **Basic** account — no credit card required.
 
 ***
 
 ### 2. Obtain Your API Key
 
-deAPI uses token-based authentication. Every request must include your personal API key, provided via an HTTP header:
+dryAPI uses token-based authentication. Every request must include your personal API key, provided via an HTTP header:
 
 ```
 Authorization: Bearer YOUR_API_KEY
@@ -33,7 +33,7 @@ To get your API key:
 
 ### 3. Load Credits to Your Account
 
-deAPI operates on a pay-as-you-go model.
+dryAPI operates on a pay-as-you-go model.
 
 | Account Type | Description                                             |
 | ------------ | ------------------------------------------------------- |
@@ -44,7 +44,7 @@ Your **\$5 bonus** is available immediately upon registration for testing with B
 
 To upgrade to **Premium** (300 RPM and unlimited daily requests), simply top up your account with any available amount (\$10, \$25, or \$50) via Stripe. Your remaining bonus balance carries over after upgrade.
 
-To add funds, go to your [Dashboard → Billing](https://deapi.ai/billing) section.
+To add funds, go to your [Dashboard → Billing](https://dryapi.dev/billing) section.
 
 <Info>
   For detailed rate limits per endpoint, see [Limits & Quotas](/limits-and-quotas).
@@ -54,7 +54,7 @@ To add funds, go to your [Dashboard → Billing](https://deapi.ai/billing) secti
 
 ### 4. Start Using the API
 
-Once your API key is activated and your account has sufficient credits, you can start making requests to deAPI immediately.
+Once your API key is activated and your account has sufficient credits, you can start making requests to dryAPI immediately.
 
 **Available Services:**
 
@@ -73,7 +73,7 @@ Once your API key is activated and your account has sufficient credits, you can 
 
 ***
 
-deAPI is actively evolving — new AI services, models, and features will be added regularly to expand what's possible with our platform. Stay up to date by following our announcements.
+dryAPI is actively evolving — new AI services, models, and features will be added regularly to expand what's possible with our platform. Stay up to date by following our announcements.
 
 
 Built with [Mintlify](https://mintlify.com).

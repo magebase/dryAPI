@@ -230,9 +230,9 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_18%_10%,rgba(255,140,56,0.24),transparent_36%),radial-gradient(circle_at_86%_4%,rgba(84,148,255,0.24),transparent_34%),linear-gradient(180deg,#071120_0%,#0b1728_52%,#0f1d31_100%)] px-4 py-6 text-slate-100 md:px-8 md:py-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_18%_10%,rgba(255,140,56,0.24),transparent_36%),radial-gradient(circle_at_86%_4%,rgba(84,148,255,0.24),transparent_34%),linear-gradient(180deg,#071120_0%,#0b1728_52%,#0f1d31_100%)] px-4 py-6 text-site-strong md:px-8 md:py-8">
       <section className="mx-auto w-full max-w-[1320px] space-y-6">
-        <Card className="border-white/10 bg-white/5 text-slate-100 shadow-[0_28px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+        <Card className="border-white/10 bg-white/5 text-site-strong shadow-[0_28px_80px_rgba(0,0,0,0.35)] backdrop-blur">
           <CardHeader className="gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-[#ff8b2b] text-black">CRM</Badge>
@@ -240,7 +240,7 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
               <Badge variant="outline">Updated {generatedAt}</Badge>
             </div>
             <CardTitle className="text-2xl tracking-tight md:text-3xl">GenFix Revenue Console</CardTitle>
-            <CardDescription className="max-w-3xl text-slate-300">
+            <CardDescription className="max-w-3xl text-site-soft">
               Prioritized lead intelligence, export-ready pipeline data, workflow automation, chat-derived context, and marketing sync in one place.
             </CardDescription>
             <div className="flex flex-wrap gap-2 pt-1">
@@ -274,10 +274,10 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Demand Momentum</CardTitle>
-              <CardDescription className="text-slate-300">New, qualified, and critical leads over the last 14 days.</CardDescription>
+              <CardDescription className="text-site-soft">New, qualified, and critical leads over the last 14 days.</CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer
@@ -339,10 +339,10 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Queue Heatmap</CardTitle>
-              <CardDescription className="text-slate-300">Volume and average quality by enquiry queue.</CardDescription>
+              <CardDescription className="text-site-soft">Volume and average quality by enquiry queue.</CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer
@@ -368,10 +368,10 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Lead Prioritization Board</CardTitle>
-              <CardDescription className="text-slate-300">High reward triage with instant workflow dispatch from each lead row.</CardDescription>
+              <CardDescription className="text-site-soft">High reward triage with instant workflow dispatch from each lead row.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.leads.slice(0, 10).map((lead) => (
@@ -384,8 +384,8 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
                         <Badge variant="outline">{lead.queue}</Badge>
                         <Badge variant="outline">Score {lead.score}</Badge>
                       </div>
-                      <p className="text-xs text-slate-300">{lead.email} {lead.company ? `• ${lead.company}` : ""}</p>
-                      <p className="text-xs text-slate-400">{lead.messagePreview || "No message preview."}</p>
+                      <p className="text-xs text-site-soft">{lead.email} {lead.company ? `• ${lead.company}` : ""}</p>
+                      <p className="text-xs text-site-soft">{lead.messagePreview || "No message preview."}</p>
                     </div>
                     <Button
                       className="bg-white/10 hover:bg-white/20"
@@ -403,15 +403,15 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Workflow Orchestrator</CardTitle>
-              <CardDescription className="text-slate-300">Cloudflare Workflows for scoring, follow-up, and KPI sync.</CardDescription>
+              <CardDescription className="text-site-soft">Cloudflare Workflows for scoring, follow-up, and KPI sync.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {workflowAutomationEnabled ? (
                 <>
-                  <label className="text-xs uppercase tracking-[0.14em] text-slate-400">Flow kind</label>
+                  <label className="text-xs uppercase tracking-[0.14em] text-site-soft">Flow kind</label>
                   <select
                     className="h-9 w-full rounded-md border border-white/15 bg-black/30 px-3 text-sm outline-none focus:border-[#ff8b2b]"
                     value={workflowKind}
@@ -423,10 +423,10 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
                       </option>
                     ))}
                   </select>
-                  <label className="text-xs uppercase tracking-[0.14em] text-slate-400">Optional run note</label>
+                  <label className="text-xs uppercase tracking-[0.14em] text-site-soft">Optional run note</label>
                   <Textarea
                     placeholder="Context for this automation run..."
-                    className="min-h-[88px] border-white/15 bg-black/30 text-slate-100"
+                    className="min-h-[88px] border-white/15 bg-black/30 text-site-strong"
                     value={selectedLeadNote}
                     onChange={(event) => setSelectedLeadNote(event.target.value)}
                   />
@@ -436,18 +436,18 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
                   </Button>
                 </>
               ) : (
-                <p className="text-xs text-slate-300">Workflow automation is disabled by env configuration.</p>
+                <p className="text-xs text-site-soft">Workflow automation is disabled by env configuration.</p>
               )}
-              {workflowStatus ? <p className="text-xs text-slate-300">{workflowStatus}</p> : null}
+              {workflowStatus ? <p className="text-xs text-site-soft">{workflowStatus}</p> : null}
             </CardContent>
           </Card>
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.25fr_1fr_1fr]">
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Conversation Timeline</CardTitle>
-              <CardDescription className="text-slate-300">Lead/chat history synthesized for fast context handoff.</CardDescription>
+              <CardDescription className="text-site-soft">Lead/chat history synthesized for fast context handoff.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.chatHistory.slice(0, 8).map((event) => (
@@ -458,42 +458,42 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
                       {event.priority}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-xs text-slate-300">{event.summary}</p>
-                  <p className="mt-1 text-[11px] text-slate-400">{new Date(event.at).toLocaleString("en-AU")} • {event.channel}</p>
+                  <p className="mt-1 text-xs text-site-soft">{event.summary}</p>
+                  <p className="mt-1 text-[11px] text-site-soft">{new Date(event.at).toLocaleString("en-AU")} • {event.channel}</p>
                 </div>
               ))}
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Marketing List Sync</CardTitle>
-              <CardDescription className="text-slate-300">Push high-value leads to Brevo in seconds.</CardDescription>
+              <CardDescription className="text-site-soft">Push high-value leads to Brevo in seconds.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2.5">
               {mailingListSyncEnabled ? (
                 <>
                   <Input
-                    className="border-white/15 bg-black/30 text-slate-100"
+                    className="border-white/15 bg-black/30 text-site-strong"
                     placeholder="Email"
                     type="email"
                     value={mailingForm.email}
                     onChange={(event) => setMailingForm((previous) => ({ ...previous, email: event.target.value }))}
                   />
                   <Input
-                    className="border-white/15 bg-black/30 text-slate-100"
+                    className="border-white/15 bg-black/30 text-site-strong"
                     placeholder="First name"
                     value={mailingForm.firstName}
                     onChange={(event) => setMailingForm((previous) => ({ ...previous, firstName: event.target.value }))}
                   />
                   <Input
-                    className="border-white/15 bg-black/30 text-slate-100"
+                    className="border-white/15 bg-black/30 text-site-strong"
                     placeholder="Last name"
                     value={mailingForm.lastName}
                     onChange={(event) => setMailingForm((previous) => ({ ...previous, lastName: event.target.value }))}
                   />
                   <Input
-                    className="border-white/15 bg-black/30 text-slate-100"
+                    className="border-white/15 bg-black/30 text-site-strong"
                     placeholder="Company"
                     value={mailingForm.company}
                     onChange={(event) => setMailingForm((previous) => ({ ...previous, company: event.target.value }))}
@@ -504,29 +504,29 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
                   </Button>
                 </>
               ) : (
-                <p className="text-xs text-slate-300">Mailing list sync is disabled by env configuration.</p>
+                <p className="text-xs text-site-soft">Mailing list sync is disabled by env configuration.</p>
               )}
-              {mailingStatus ? <p className="text-xs text-slate-300">{mailingStatus}</p> : null}
+              {mailingStatus ? <p className="text-xs text-site-soft">{mailingStatus}</p> : null}
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5 text-slate-100">
+          <Card className="border-white/10 bg-white/5 text-site-strong">
             <CardHeader>
               <CardTitle>Audience Snapshot</CardTitle>
-              <CardDescription className="text-slate-300">Mailing and geo segmentation at a glance.</CardDescription>
+              <CardDescription className="text-site-soft">Mailing and geo segmentation at a glance.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2.5 text-sm">
               <div className="rounded-md border border-white/10 bg-black/25 p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Unique emails</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-site-soft">Unique emails</p>
                 <p className="mt-1 text-xl font-semibold text-white">{data.marketing.uniqueEmails}</p>
               </div>
               <div className="rounded-md border border-white/10 bg-black/25 p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Mailable leads</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-site-soft">Mailable leads</p>
                 <p className="mt-1 text-xl font-semibold text-white">{data.marketing.mailableLeads}</p>
               </div>
               <div className="rounded-md border border-white/10 bg-black/25 p-3">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Top states</p>
-                <ul className="mt-2 space-y-1 text-xs text-slate-300">
+                <p className="text-xs uppercase tracking-[0.14em] text-site-soft">Top states</p>
+                <ul className="mt-2 space-y-1 text-xs text-site-soft">
                   {data.marketing.topStates.map((entry) => (
                     <li key={entry.state} className="flex items-center justify-between">
                       <span className="inline-flex items-center gap-1">
@@ -562,14 +562,14 @@ function MetricCard({ icon: Icon, label, value, tone }: MetricCardProps) {
         : "from-white/16 to-white/4"
 
   return (
-    <Card className={`border-white/10 bg-gradient-to-br ${toneClass} text-slate-100`}>
+    <Card className={`border-white/10 bg-gradient-to-br ${toneClass} text-site-strong`}>
       <CardContent className="flex items-center justify-between gap-3 pt-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.14em] text-slate-300">{label}</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-site-soft">{label}</p>
           <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
         </div>
         <span className="inline-flex size-10 items-center justify-center rounded-md border border-white/15 bg-black/20">
-          <Icon className="size-5 text-slate-200" />
+          <Icon className="size-5 text-site-soft" />
         </span>
       </CardContent>
     </Card>

@@ -1,16 +1,12 @@
 import "server-only";
 
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { drizzle } from "drizzle-orm/d1";
+import * as analyticsSchema from "@/db/schema-analytics";
+import { createCloudflareDbAccessors } from "@/lib/cloudflare-db";
 
-import { moderationRejections } from "@/db/schema-analytics";
-import {
-  D1_BINDING_PRIORITY,
-  formatExpectedBindings,
-  resolveD1Binding,
-} from "@/lib/d1-bindings";
-
-type D1Binding = Parameters<typeof drizzle>[0];
+const { getDbAsync } = createCloudflareDbAccessors(
+  "ANALYTICS_DB",
+  analyticsSchema,
+);
 
 type ModerationRejectionAttempt = {
   channel: "contact" | "quote" | "chat";
@@ -20,18 +16,13 @@ type ModerationRejectionAttempt = {
   categories: string[];
 };
 
-function resolveQuoteDbBinding(env: Record<string, unknown>): D1Binding | null {
-  return resolveD1Binding<D1Binding>(env, D1_BINDING_PRIORITY.analytics);
-}
-
 export async function persistModerationRejectionAttempt(
   attempt: ModerationRejectionAttempt,
 ): Promise<void> {
-  let quoteDb: D1Binding | null = null;
+  let quoteDb: Awaited<ReturnType<typeof getDbAsync>> | null = null;
 
   try {
-    const { env } = await getCloudflareContext({ async: true });
-    quoteDb = resolveQuoteDbBinding(env as Record<string, unknown>);
+    quoteDb = await getDbAsync();
   } catch {
     if (process.env.NODE_ENV === "production") {
       throw new Error("Cloudflare context is unavailable.");
@@ -40,17 +31,13 @@ export async function persistModerationRejectionAttempt(
 
   if (!quoteDb) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        `${formatExpectedBindings(D1_BINDING_PRIORITY.analytics)} binding is missing.`,
-      );
+      throw new Error("Cloudflare D1 binding ANALYTICS_DB is unavailable.");
     }
 
     return;
   }
 
-  const db = drizzle(quoteDb);
-
-  await db.insert(moderationRejections).values({
+  await quoteDb.insert(analyticsSchema.moderationRejections).values({
     id: crypto.randomUUID(),
     channel: attempt.channel,
     sourcePath: attempt.sourcePath,

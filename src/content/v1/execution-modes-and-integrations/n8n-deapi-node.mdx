@@ -1,19 +1,14 @@
 ---
-title: "n8n deAPI node"
+title: "n8n dryAPI node"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
 
-# n8n deAPI node
-
-This guide explains how to integrate deAPI with a **self-hosted n8n instance** using the official deAPI community node. The community node provides a simpler, no-code experience compared to the [HTTP Request-based approach](/docs/v1/execution-modes-and-integrations/n8n-integration).
+This guide explains how to integrate dryAPI with a **self-hosted n8n instance** using the official dryAPI community node. The community node provides a simpler, no-code experience compared to the [HTTP Request-based approach](/docs/v1/execution-modes-and-integrations/n8n-integration).
 
 ***
 
 ### Why Use the Community Node?
 
-The `n8n-nodes-deapi` community node offers several advantages over manually configuring HTTP Request nodes:
+The `n8n-nodes-dryapi` community node offers several advantages over manually configuring HTTP Request nodes:
 
 | Feature              | Community Node                  | HTTP Request Approach             |
 | -------------------- | ------------------------------- | --------------------------------- |
@@ -30,12 +25,12 @@ The `n8n-nodes-deapi` community node offers several advantages over manually con
 Before you begin, ensure you have:
 
 * A **self-hosted n8n instance** accessible via **HTTPS** (required for webhook callbacks)
-* A **deAPI API key** from the [deAPI Dashboard](/docs/v1/quickstart#2-obtain-your-api-key)
-* A **Webhook Secret** from [deAPI Webhook Settings](https://deapi.ai/settings/webhooks)
+* A **dryAPI API key** from the [dryAPI Dashboard](https://dryapi.dev/docs/quickstart#2-obtain-your-api-key)
+* A **Webhook Secret** from [dryAPI Webhook Settings](https://dryapi.dev/settings/webhooks)
 
-<Callout title="Warning" type="warn">
-The deAPI node uses webhooks to receive job completion notifications. Your n8n instance must be accessible via HTTPS for generation operations to work.
-</Callout>
+> **WARNING**
+>
+> The dryAPI node uses webhooks to receive job completion notifications. Your n8n instance must be accessible via HTTPS for generation operations to work.
 
 ***
 
@@ -45,7 +40,7 @@ The deAPI node uses webhooks to receive job completion notifications. Your n8n i
 
 1. In your n8n instance, go to **Settings** > **Community Nodes**
 2. Click **Install a community node**
-3. Enter `n8n-nodes-deapi` and click **Install**
+3. Enter `n8n-nodes-dryapi` and click **Install**
 4. Restart n8n if prompted
 
 #### Option 2: Manual Installation (docker)
@@ -56,7 +51,7 @@ If you're running n8n via docker:
 docker exec -it <n8n-docker> sh
 mkdir ~/.n8n/nodes
 cd ~/.n8n/nodes
-npm i n8n-nodes-deapi
+npm i n8n-nodes-dryapi
 ```
 
 Then restart your n8n instance.
@@ -65,30 +60,30 @@ Then restart your n8n instance.
 
 ### Credential Configuration
 
-After installation, configure your deAPI credentials:
+After installation, configure your dryAPI credentials:
 
 1. In n8n, go to **Credentials** > **Add Credential**
-2. Search for **deAPI API** and select it
+2. Search for **dryAPI API** and select it
 3. Fill in the required fields:
 
 | Field              | Description                             | Where to Get It                                                                  |
 | ------------------ | --------------------------------------- | -------------------------------------------------------------------------------- |
-| **API Key**        | Your deAPI API key for authentication   | [deAPI Quickstart Guide](/docs/v1/quickstart#2-obtain-your-api-key) |
-| **Webhook Secret** | Secret for verifying webhook signatures | [deAPI Webhook Settings](https://deapi.ai/settings/webhooks)                     |
+| **API Key**        | Your dryAPI API key for authentication   | [dryAPI Quickstart Guide](https://dryapi.dev/docs/quickstart#2-obtain-your-api-key) |
+| **Webhook Secret** | Secret for verifying webhook signatures | [dryAPI Webhook Settings](https://dryapi.dev/settings/webhooks)                     |
 
 4. Click **Save** to store the credentials
 
-<Callout>
-The Webhook Secret is used to verify that incoming webhook notifications are genuinely from deAPI. Keep it secure and never share it publicly.
-</Callout>
+> **NOTE**
+>
+> The Webhook Secret is used to verify that incoming webhook notifications are genuinely from dryAPI. Keep it secure and never share it publicly.
 
 ***
 
 ### Available Operations
 
-The deAPI node provides two node types:
+The dryAPI node provides two node types:
 
-#### Deapi Node (Regular Operations)
+#### dryAPI Node (Regular Operations)
 
 Use this node to perform AI operations within your workflow.
 
@@ -126,9 +121,9 @@ Audio transcription accepts AAC, MP3, OGG, WAV, WebM, and FLAC files up to 10 MB
 | **Image Prompt Booster** | Optimize prompts for text-to-image generation       |
 | **Video Prompt Booster** | Optimize prompts for text/image-to-video generation |
 
-#### DeapiTrigger Node (Webhook Trigger)
+#### dryAPITrigger Node (Webhook Trigger)
 
-Use this node to start workflows when deAPI sends job status updates. This is useful for:
+Use this node to start workflows when dryAPI sends job status updates. This is useful for:
 
 * Building event-driven workflows
 * Processing results from jobs submitted outside n8n
@@ -144,7 +139,7 @@ Generation operations (image, video, transcription) use an efficient webhook-bas
 1. Execute Phase
 
    +-----------+     POST /txt2img      +-----------+
-   |   Deapi   | ---------------------> |   deAPI   |
+   |  dryAPI   | ---------------------> |  dryAPI   |
    |   Node    |   (includes webhook)   |   Server  |
    +-----------+                        +-----------+
         |
@@ -155,14 +150,14 @@ Generation operations (image, video, transcription) use an efficient webhook-bas
 2. Processing Phase (no n8n resources used)
 
    +-----------+                        +-----------+
-   |    n8n    |  <-- job.processing    |   deAPI   |
+   |    n8n    |  <-- job.processing    |   dryAPI   |
    | (waiting) |     (acknowledged)     | (working) |
    +-----------+                        +-----------+
 
 3. Resume Phase
 
    +-----------+                        +-----------+
-   |    n8n    |  <-- job.completed     |   deAPI   |
+   |    n8n    |  <-- job.completed     |   dryAPI   |
    | (resumes) |   (with result_url)    |  (done)   |
    +-----------+                        +-----------+
         |
@@ -187,7 +182,7 @@ This example demonstrates a simple image generation workflow.
 
 ```text  theme={null}
 +------------------+      +-------------------+
-|  Manual Trigger  | ---> |    Deapi Node     |
+|  Manual Trigger  | ---> |   dryAPI Node     |
 |                  |      | (Image: Generate) |
 +------------------+      +-------------------+
                                    |
@@ -200,10 +195,10 @@ This example demonstrates a simple image generation workflow.
 
 Add a **Manual Trigger** (or Schedule, Webhook, etc.) to start your workflow.
 
-#### Step 2: Add the Deapi Node
+#### Step 2: Add the dryAPI Node
 
-1. Add a **Deapi** node to your workflow
-2. Select your **deAPI API** credentials
+1. Add a **dryAPI** node to your workflow
+2. Select your **dryAPI API** credentials
 3. Configure the operation:
 
 | Setting          | Value                                  |
@@ -224,7 +219,7 @@ Add a **Manual Trigger** (or Schedule, Webhook, etc.) to start your workflow.
 
 1. Click **Test Workflow** or **Execute Workflow**
 2. The node will:
-   * Submit the generation request to deAPI
+   * Submit the generation request to dryAPI
    * Pause the workflow while waiting
    * Resume automatically when the image is ready
 3. The output contains the generated image as binary data
@@ -240,14 +235,14 @@ The image is available in the `data` binary field. Connect downstream nodes to:
 
 ***
 
-### Using the DeapiTrigger Node
+### Using the dryAPITrigger Node
 
-The **DeapiTrigger** node listens for webhook events from deAPI, enabling event-driven workflows.
+The **dryAPITrigger** node listens for webhook events from dryAPI, enabling event-driven workflows.
 
 #### Setup
 
-1. Add a **DeapiTrigger** node to a new workflow
-2. Select your **deAPI API** credentials
+1. Add a **dryAPITrigger** node to a new workflow
+2. Select your **dryAPI API** credentials
 3. Configure event filtering:
 
 | Setting                    | Description                                                             |
@@ -257,7 +252,7 @@ The **DeapiTrigger** node listens for webhook events from deAPI, enabling event-
 
 4. **Activate the workflow** to make the webhook URL live
 5. Copy the **Webhook URL** displayed in the node
-6. Add this URL to your [deAPI Webhook Settings](https://deapi.ai/settings/webhooks)
+6. Add this URL to your [dryAPI Webhook Settings](https://dryapi.dev/settings/webhooks)
 
 #### Event Types
 
@@ -273,7 +268,7 @@ The **DeapiTrigger** node listens for webhook events from deAPI, enabling event-
 
 | Aspect                  | Community Node                | HTTP Request Approach                         |
 | ----------------------- | ----------------------------- | --------------------------------------------- |
-| **Nodes Required**      | 1 (Deapi node)                | 5+ (Submit, Poll loop, Check, Wait, Download) |
+| **Nodes Required**      | 1 (dryAPI node)                | 5+ (Submit, Poll loop, Check, Wait, Download) |
 | **Polling Logic**       | Automatic webhook             | Manual polling loop with Wait node            |
 | **Binary Handling**     | Auto-downloaded               | Manual HTTP Request to download               |
 | **Error Messages**      | Clear, contextual             | Raw API responses                             |
@@ -299,7 +294,7 @@ Generation operations require your n8n instance to be accessible via HTTPS for w
 
 If you see webhook signature verification errors:
 
-1. Verify your **Webhook Secret** matches the one in [deAPI Webhook Settings](https://deapi.ai/settings/webhooks)
+1. Verify your **Webhook Secret** matches the one in [dryAPI Webhook Settings](https://dryapi.dev/settings/webhooks)
 2. Ensure your n8n server clock is synchronized (signature includes timestamp)
 3. Check that no proxy is modifying the request body
 
@@ -314,24 +309,24 @@ Operations have a configurable **Wait Timeout** with defaults that vary by type:
 
 For long-running operations:
 
-1. Select the Deapi node
+1. Select the dryAPI node
 2. Expand **Options**
 3. Increase **Wait Timeout** to allow more time
 
 #### Rate Limiting
 
-If you see "upgrade your plan" errors, you've hit deAPI's rate limits. Consider upgrading your deAPI plan for higher limits.
+If you see "upgrade your plan" errors, you've hit dryAPI's rate limits. Consider upgrading your dryAPI plan for higher limits.
 
 ***
 
 ### Example Workflow Download
 
-An example n8n workflow demonstrating all available operations is available in the [GitHub repository](https://github.com/deapi-ai/n8n-nodes-deapi/blob/main/examples/deAPI_guide.json).
+An example n8n workflow demonstrating all available operations is available in the [GitHub repository](https://github.com/dryapi-ai/n8n-nodes-dryapi/blob/main/examples/dryAPI_guide.json).
 
-1. Download [`deAPI_guide.json`](https://raw.githubusercontent.com/deapi-ai/n8n-nodes-deapi/main/examples/deAPI_guide.json)
+1. Download [`dryAPI_guide.json`](https://raw.githubusercontent.com/dryapi-ai/n8n-nodes-dryapi/main/examples/dryAPI_guide.json)
 2. In n8n, go to **Workflows** > **Import from File**
 3. Select the downloaded file
-4. Configure your deAPI credentials
+4. Configure your dryAPI credentials
 5. Explore the example nodes and sticky notes
 
 ***
@@ -340,8 +335,8 @@ An example n8n workflow demonstrating all available operations is available in t
 
 * [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
 * [n8n Integration (HTTP Request approach)](/docs/v1/execution-modes-and-integrations/n8n-integration)
-* [deAPI API Reference](/docs/v1/api/overview)
+* [dryAPI API Reference](/docs/v1/api/overview)
 * [Execution Modes & HTTP Queue](/docs/v1/execution-modes-and-integrations/execution-modes-and-http-queue)
 * [Model Selection Guide](/docs/v1/api/utilities/model-selection)
-* [GitHub Repository](https://github.com/deapi-ai/n8n-nodes-deapi)
-* [NPM Package](https://www.npmjs.com/package/n8n-nodes-deapi)
+* [GitHub Repository](https://github.com/dryapi-ai/n8n-nodes-dryapi)
+* [NPM Package](https://www.npmjs.com/package/n8n-nodes-dryapi)

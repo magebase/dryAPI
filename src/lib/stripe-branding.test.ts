@@ -13,7 +13,7 @@ describe("stripe-branding", () => {
       flow: "topup",
     })
 
-    expect(url).toBe("https://dryapi.dev/success?flow=topup&session_id=%7BCHECKOUT_SESSION_ID%7D")
+    expect(url).toBe("https://dryapi.dev/success?flow=topup&session_id={CHECKOUT_SESSION_ID}")
   })
 
   it("builds subscription success URL with plan and period", () => {

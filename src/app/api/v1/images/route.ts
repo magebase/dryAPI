@@ -1,10 +1,15 @@
-import { NextRequest, NextResponse } from "next/server"
-import { z } from "zod"
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { dispatchToRunpodUpstream, resolveRunpodRoutingPlan } from "@/lib/runpod-runtime-routing"
-import { errorResponse, marginGuardrailError, upstreamFailureResponse } from "@/app/api/v1/_shared"
-
-export const runtime = "nodejs"
+import {
+  dispatchToRunpodUpstream,
+  resolveRunpodRoutingPlan,
+} from "@/lib/runpod-runtime-routing";
+import {
+  errorResponse,
+  marginGuardrailError,
+  upstreamFailureResponse,
+} from "@/app/api/v1/_shared";
 
 const imageRequestSchema = z.object({
   model: z.string().trim().optional(),
@@ -13,28 +18,38 @@ const imageRequestSchema = z.object({
   size: z.string().trim().optional().default("1024x1024"),
   expectedRpm: z.number().positive().optional(),
   allowLowMarginOverride: z.boolean().optional().default(false),
-})
+});
 
 export async function POST(request: NextRequest) {
-  const parsed = imageRequestSchema.safeParse(await request.json().catch(() => null))
+  const parsed = imageRequestSchema.safeParse(
+    await request.json().catch(() => null),
+  );
   if (!parsed.success) {
-    return errorResponse(400, "invalid_request", "Invalid image request payload")
+    return errorResponse(
+      400,
+      "invalid_request",
+      "Invalid image request payload",
+    );
   }
 
-  let plan
+  let plan;
   try {
     plan = resolveRunpodRoutingPlan("images", {
       requestedModel: parsed.data.model,
       expectedRpm: parsed.data.expectedRpm,
       requestCount: parsed.data.n,
       allowLowMarginOverride: parsed.data.allowLowMarginOverride,
-    })
+    });
   } catch (error) {
-    return errorResponse(400, "model_resolution_failed", error instanceof Error ? error.message : "Unable to resolve model")
+    return errorResponse(
+      400,
+      "model_resolution_failed",
+      error instanceof Error ? error.message : "Unable to resolve model",
+    );
   }
 
   if (!plan.guardrail.shouldDispatch) {
-    return marginGuardrailError(plan)
+    return marginGuardrailError(plan);
   }
 
   try {
@@ -42,13 +57,16 @@ export async function POST(request: NextRequest) {
       surface: "images",
       payload: parsed.data,
       routing: plan,
-    })
+    });
 
     if (!upstreamResponse.ok) {
-      return upstreamFailureResponse(upstreamResponse.status, await upstreamResponse.text())
+      return upstreamFailureResponse(
+        upstreamResponse.status,
+        await upstreamResponse.text(),
+      );
     }
 
-    return NextResponse.json(await upstreamResponse.json())
+    return NextResponse.json(await upstreamResponse.json());
   } catch {
     return NextResponse.json({
       created: Math.floor(Date.now() / 1000),
@@ -56,6 +74,6 @@ export async function POST(request: NextRequest) {
         url: `https://example.invalid/simulated/${plan.modelSlug}/${index + 1}`,
       })),
       routing: plan,
-    })
+    });
   }
 }

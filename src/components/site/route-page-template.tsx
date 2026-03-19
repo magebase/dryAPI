@@ -56,7 +56,7 @@ export function RoutePageTemplate({
           <p className="text-sm uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
-          <h1 className="text-site-inverse mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.06] tracking-[0.03em] sm:text-4xl md:text-6xl">
+          <h1 className="text-site-inverse mt-4 max-w-3xl font-display text-4xl uppercase leading-[1.06] tracking-[0.03em] sm:text-5xl md:text-7xl">
             <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
           </h1>
           <p className="text-site-inverse-muted mt-5 max-w-2xl text-sm sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>

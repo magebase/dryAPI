@@ -2,8 +2,8 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
 
-const INDEX_URL = "https://docs.deapi.ai/llms.txt"
-const DOCS_ORIGIN = "https://docs.deapi.ai"
+const INDEX_URL = "https://docs.dryapi.dev/llms.txt"
+const DOCS_ORIGIN = "https://docs.dryapi.dev"
 const CURRENT_VERSION = "v1"
 
 const outputRoot = path.join(process.cwd(), "docs", "deapi-mirror")
@@ -255,11 +255,72 @@ function frontmatterBlock(values) {
   return lines.join("\n")
 }
 
-function toFumadocsMarkdown(source, entry, docsPathSet) {
-  const stripped = stripMintlifyComponents(source)
+function stripDocumentationIndex(content) {
+  const marker1 = "## Documentation Index"
+  const marker2 = "Use this file to discover all available pages before exploring further."
+  
+  if (!content.includes(marker1) || !content.includes(marker2)) {
+    return content
+  }
+
+  const idx1 = content.indexOf(marker1)
+  const idx2 = content.indexOf(marker2)
+  
+  if (idx1 === -1 || idx2 === -1 || idx2 < idx1) {
+    return content
+  }
+
+  // Find the start of the line containing ## Documentation Index
+  let startOfBlock = idx1
+  while (startOfBlock > 0 && content[startOfBlock - 1] !== "\n") {
+    startOfBlock--
+  }
+
+  // Find the end of the line containing marker2
+  let endOfBlock = idx2 + marker2.length
+  while (endOfBlock < content.length && content[endOfBlock] !== "\n") {
+    endOfBlock++
+  }
+  if (content[endOfBlock] === "\n") {
+    endOfBlock++
+  }
+
+  const result = content.substring(0, startOfBlock) + content.substring(endOfBlock)
+  return result.trimStart()
+}
+
+function toFumadocsMarkdown(source, entry, docsPathSet, brand) {
+  const sourceWithoutIndex = stripDocumentationIndex(source)
+  const stripped = stripMintlifyComponents(sourceWithoutIndex)
+  
   const rewritten = rewriteLinks(stripped, entry.sourcePath, docsPathSet)
   const withApiPages = replaceOpenApiFenceWithApiPage(rewritten)
-  return `${frontmatterBlock({ title: entry.title })}${withApiPages.replace(/\n{3,}/g, "\n\n").trim()}\n`
+  
+  // Clean up title for regex and frontmatter
+  const titleText = entry.title.replace(/^"|"$/g, "")
+  
+  let finalizedContent = withApiPages.trim()
+
+  // Remove H1 title duplicated from frontmatter
+  const headerPattern = /^#\s+.+$/m
+  const firstHeaderMatch = finalizedContent.match(headerPattern)
+
+  if (firstHeaderMatch) {
+    const firstHeaderLine = firstHeaderMatch[0]
+    const headerTitleRaw = firstHeaderLine.replace(/^#\s+/, "").trim()
+    const headerTitle = headerTitleRaw.replace(/^"|"$/g, "")
+    
+    // If the H1 exactly matches or is very close to our title (handling quotes), remove it
+    if (headerTitle === titleText || 
+        headerTitle.toLowerCase() === titleText.toLowerCase() ||
+        headerTitleRaw === titleText ||
+        headerTitleRaw === `"${titleText}"`
+    ) {
+      finalizedContent = finalizedContent.replace(firstHeaderLine, "").trimStart()
+    }
+  }
+
+  return `${frontmatterBlock({ title: titleText })}${finalizedContent.replace(/\n{3,}/g, "\n\n").trim()}\n`
 }
 
 function toManualOpenApiPage() {
@@ -391,19 +452,31 @@ async function writeMetaFiles(manifestEntries) {
 }
 
 async function writeDocsContent(manifestEntries, markdownByPath, docsPathSet) {
+  const brand = {
+    mark: "dryAPI",
+    siteUrl: "https://dryapi.dev"
+  }
+
   await fs.rm(docsContentRoot, { recursive: true, force: true })
   await ensureDir(docsVersionRoot)
 
   for (const entry of manifestEntries) {
     if (entry.kind !== "markdown") continue
 
-    const source = markdownByPath.get(entry.sourcePath)
+    let source = markdownByPath.get(entry.sourcePath)
     if (!source) throw new Error(`Missing markdown source for ${entry.sourcePath}`)
+
+    // Handle branding replacement before any other processing
+    source = source
+      .replace(/https:\/\/deapi\.ai/g, brand.siteUrl)
+      .replace(/https:\/\/docs\.deapi\.ai/g, `${brand.siteUrl}/docs`)
+      .replace(/deapi\.ai/g, brand.siteUrl.replace(/^https?:\/\//, ""))
+      .replace(/deAPI/g, brand.mark)
 
     const targetRelativePath = entry.sourcePath.replace(/\.md$/i, ".mdx")
     const targetPath = path.join(docsVersionRoot, targetRelativePath)
     await ensureDir(path.dirname(targetPath))
-    await fs.writeFile(targetPath, toFumadocsMarkdown(source, entry, docsPathSet), "utf8")
+    await fs.writeFile(targetPath, toFumadocsMarkdown(source, entry, docsPathSet, brand), "utf8")
   }
 
   await fs.writeFile(path.join(docsVersionRoot, "openapi.mdx"), toManualOpenApiPage(), "utf8")
@@ -491,4 +564,7 @@ async function main() {
   console.log(`Fumadocs content output: ${docsVersionRoot}`)
 }
 
-await main()
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

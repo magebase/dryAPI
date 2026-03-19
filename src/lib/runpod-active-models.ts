@@ -1,10 +1,7 @@
-import "server-only"
-
-import { readFileSync } from "node:fs"
-import path from "node:path"
-
 import type { DeapiPricingSnapshot } from "@/types/deapi-pricing"
 import runpodManifestJson from "../../cloudflare/clients/runpod/runpod-image-endpoints.manifest.json"
+
+export const isServer = typeof window === "undefined"
 
 type RunpodManifestEndpoint = {
   endpointId: string
@@ -59,36 +56,8 @@ export type ActiveRunpodModel = {
   categories: string[]
 }
 
-function readPulumiProfileFromProdStack(): string | null {
-  try {
-    const filePath = path.join(
-      process.cwd(),
-      "cloudflare",
-      "clients",
-      "runpod",
-      "pulumi",
-      "Pulumi.prod.yaml",
-    )
-    const content = readFileSync(filePath, "utf8")
-    const match = content.match(/runpod-image-endpoints:endpointProfile:\s*([^\n#]+)/)
-    const profile = match?.[1]?.trim().replace(/^['"]|['"]$/g, "")
-
-    return profile && profile.length > 0 ? profile : null
-  } catch {
-    return null
-  }
-}
-
 function resolveEndpointProfileName(): string {
-  const fromEnv = process.env.RUNPOD_ENDPOINT_PROFILE?.trim()
-  const fromPulumi = readPulumiProfileFromProdStack()
-  const requested = fromEnv || fromPulumi || "serverless10"
-
-  if (requested in RUNPOD_ENDPOINT_PROFILES) {
-    return requested
-  }
-
-  return "serverless10"
+  return (typeof process !== "undefined" && process.env.RUNPOD_ENDPOINT_PROFILE?.trim()) || "serverless10"
 }
 
 function getManifest(): RunpodManifest {

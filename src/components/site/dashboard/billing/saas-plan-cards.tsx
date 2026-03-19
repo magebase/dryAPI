@@ -25,6 +25,13 @@ function formatUsd(value: number): string {
   }).format(value)
 }
 
+function formatCredits(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: value < 100 ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 function formatDateTime(iso: string): string {
   const parsed = new Date(iso)
   if (Number.isNaN(parsed.getTime())) return "--"
@@ -36,6 +43,28 @@ function formatDateTime(iso: string): string {
     minute: "2-digit",
     timeZoneName: "short",
   }).format(parsed)
+}
+
+function formatRelativeTime(iso: string): string {
+  const parsed = new Date(iso)
+  if (Number.isNaN(parsed.getTime())) return "at the end of the month"
+
+  const diffMs = parsed.getTime() - Date.now()
+  const absMs = Math.abs(diffMs)
+  const minuteMs = 60_000
+  const hourMs = 60 * minuteMs
+  const dayMs = 24 * hourMs
+  const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" })
+
+  if (absMs < hourMs) {
+    return rtf.format(Math.round(diffMs / minuteMs), "minute")
+  }
+
+  if (absMs < dayMs * 2) {
+    return rtf.format(Math.round(diffMs / hourMs), "hour")
+  }
+
+  return rtf.format(Math.round(diffMs / dayMs), "day")
 }
 
 type SaasPlanCardsProps = {
@@ -97,7 +126,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsPro
           <RefreshCw className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span>
             <strong>Monthly subscription credits reset on the first of each month (UTC)</strong> — unused
-            subscription credits do not carry over. Current cycle expires {formatDateTime(monthlyTokenExpiryIso)}.
+            subscription credits do not carry over. Current cycle expires {formatDateTime(monthlyTokenExpiryIso)} ({formatRelativeTime(monthlyTokenExpiryIso)}).
           </span>
         </div>
 
@@ -107,7 +136,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsPro
           const annualSavings = resolveAnnualSavingsUsd(plan)
           const displayMonthly = isAnnual ? annualMonthly : plan.monthlyPriceUsd
           const sampleTopUp = plan.defaultTopUpAmountUsd
-          const discountedTopUp = Number((sampleTopUp * (1 - plan.discountPercent / 100)).toFixed(2))
+          const topUpCredits = Number(sampleTopUp.toFixed(2))
 
           return (
             <div
@@ -155,7 +184,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsPro
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                       {plan.monthlyPriceUsd.toLocaleString("en-US")}
                     </span>{" "}
-                    — reset end of each calendar month
+                    — {formatCredits(plan.monthlyCredits)} subscription credits expire {formatRelativeTime(monthlyTokenExpiryIso)}
                   </span>
                 </p>
                 <p>
@@ -164,11 +193,10 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsPro
                 <p className="flex items-center gap-1">
                   <Zap className="size-3 shrink-0 text-zinc-400" aria-hidden="true" />
                   <span>
-                    Credit top-up example: {formatUsd(sampleTopUp)} value for{" "}
+                    Credit top-up example: {formatUsd(sampleTopUp)} ={" "}
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                      {formatUsd(discountedTopUp)}
-                    </span>{" "}
-                    ({plan.discountPercent}% off)
+                      {formatCredits(topUpCredits)} credits
+                    </span>
                   </span>
                 </p>
               </div>
@@ -187,7 +215,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsPro
                     href={`/api/dashboard/billing/top-up?amount=${plan.defaultTopUpAmountUsd}&plan=${plan.slug}`}
                     prefetch={false}
                   >
-                    Top-up with {plan.discountPercent}% off
+                    Top up {formatCredits(topUpCredits)} credits
                   </Link>
                 </Button>
               </div>

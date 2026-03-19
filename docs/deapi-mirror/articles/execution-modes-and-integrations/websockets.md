@@ -1,5 +1,5 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # WebSockets
@@ -31,14 +31,14 @@ const CLIENT_ID = 'your-client-id';      // From your dashboard
 const API_TOKEN = 'your-api-token';      // From authentication
 
 const pusher = new Pusher('depin-api-prod-key', {
-    wsHost: 'soketi.deapi.ai',
+    wsHost: 'soketi.dryapi.dev',
     wsPort: 443,
     forceTLS: true,
     cluster: 'mt1',
     enabledTransports: ['ws', 'wss'],
     authorizer: (channel) => ({
         authorize: async (socketId, callback) => {
-            const res = await fetch('https://api.deapi.ai/broadcasting/auth', {
+            const res = await fetch('https://api.dryapi.dev/broadcasting/auth', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,14 +79,14 @@ pusher.subscribe(`private-client.${CLIENT_ID}`)
 
 | Setting  | Value                |
 | -------- | -------------------- |
-| Host     | `soketi.deapi.ai`    |
+| Host     | `soketi.dryapi.dev`    |
 | Port     | `443`                |
 | Protocol | WSS (secure)         |
 | App Key  | `depin-api-prod-key` |
 
 ### Required Credentials
 
-* **Client ID:** Your unique identifier (from [dashboard](https://deapi.ai/dashboard))
+* **Client ID:** Your unique identifier (from [dashboard](https://dryapi.dev/dashboard))
 * **API Token:** Your authentication token (see [Authentication](/authentication))
 
 ## Connecting
@@ -104,7 +104,7 @@ window.Pusher = Pusher;
 const echo = new Echo({
     broadcaster: 'pusher',
     key: 'depin-api-prod-key',
-    wsHost: 'soketi.deapi.ai',
+    wsHost: 'soketi.dryapi.dev',
     wsPort: 443,
     wssPort: 443,
     forceTLS: true,
@@ -112,7 +112,7 @@ const echo = new Echo({
     cluster: 'mt1',
     authorizer: (channel) => ({
         authorize: (socketId, callback) => {
-            fetch('https://api.deapi.ai/broadcasting/auth', {
+            fetch('https://api.dryapi.dev/broadcasting/auth', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ echo.private(`client.${YOUR_CLIENT_ID}`)
   import Pusher from 'pusher-js';
 
   const pusher = new Pusher('depin-api-prod-key', {
-      wsHost: 'soketi.deapi.ai',
+      wsHost: 'soketi.dryapi.dev',
       wsPort: 443,
       wssPort: 443,
       forceTLS: true,
@@ -153,7 +153,7 @@ echo.private(`client.${YOUR_CLIENT_ID}`)
       authorizer: (channel) => ({
           authorize: async (socketId, callback) => {
               try {
-                  const response = await fetch('https://api.deapi.ai/broadcasting/auth', {
+                  const response = await fetch('https://api.dryapi.dev/broadcasting/auth', {
                       method: 'POST',
                       headers: {
                           'Content-Type': 'application/json',
@@ -187,10 +187,10 @@ echo.private(`client.${YOUR_CLIENT_ID}`)
 
   pusher = pysher.Pusher(
       key='depin-api-prod-key',
-      custom_host='soketi.deapi.ai',
+      custom_host='soketi.dryapi.dev',
       secure=True,
       port=443,
-      auth_endpoint='https://api.deapi.ai/broadcasting/auth',
+      auth_endpoint='https://api.dryapi.dev/broadcasting/auth',
       auth_endpoint_headers={
           'Authorization': f'Bearer {YOUR_API_TOKEN}'
       }
@@ -297,7 +297,7 @@ export function useJobUpdates(clientId: string, apiToken: string) {
     const echo = new Echo({
       broadcaster: 'pusher',
       key: 'depin-api-prod-key',
-      wsHost: 'soketi.deapi.ai',
+      wsHost: 'soketi.dryapi.dev',
       wsPort: 443,
       wssPort: 443,
       forceTLS: true,
@@ -305,7 +305,7 @@ export function useJobUpdates(clientId: string, apiToken: string) {
       cluster: 'mt1',
       authorizer: (channel) => ({
         authorize: (socketId, callback) => {
-          fetch('https://api.deapi.ai/broadcasting/auth', {
+          fetch('https://api.dryapi.dev/broadcasting/auth', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -348,11 +348,11 @@ export function useJobUpdates(clientId: string, apiToken: string) {
 ```javascript  theme={null}
 import Pusher from 'pusher-js';
 
-const CLIENT_ID = process.env.DEAPI_CLIENT_ID;
-const API_TOKEN = process.env.DEAPI_API_TOKEN;
+const CLIENT_ID = process.env.DRYAPI_CLIENT_ID;
+const API_TOKEN = process.env.DRYAPI_API_TOKEN;
 
 const pusher = new Pusher('depin-api-prod-key', {
-    wsHost: 'soketi.deapi.ai',
+    wsHost: 'soketi.dryapi.dev',
     wsPort: 443,
     wssPort: 443,
     forceTLS: true,
@@ -361,7 +361,7 @@ const pusher = new Pusher('depin-api-prod-key', {
     authorizer: (channel) => ({
         authorize: async (socketId, callback) => {
             try {
-                const response = await fetch('https://api.deapi.ai/broadcasting/auth', {
+                const response = await fetch('https://api.dryapi.dev/broadcasting/auth', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -400,7 +400,7 @@ process.on('SIGINT', () => { pusher.disconnect(); process.exit(); });
 
 Private channels require authorization via the broadcasting auth endpoint.
 
-**Endpoint:** `POST https://api.deapi.ai/broadcasting/auth`
+**Endpoint:** `POST https://api.dryapi.dev/broadcasting/auth`
 
 **Headers:**
 
@@ -457,7 +457,7 @@ pusher.disconnect();
 <AccordionGroup>
   <Accordion title="Connection fails immediately">
     * Verify your API token is valid
-    * Check that you're using `soketi.deapi.ai` as the host
+    * Check that you're using `soketi.dryapi.dev` as the host
     * Ensure port 443 is not blocked by your firewall
   </Accordion>
 

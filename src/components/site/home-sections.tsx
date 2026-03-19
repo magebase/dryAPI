@@ -1,12 +1,17 @@
 import Image from "next/image";
 import {
   ArrowRight,
-  Image as ImageGlyph,
+  Code2,
+  FileText,
+  Image as ImageIcon,
+  Layers,
   MessageSquare,
   Mic,
   Music,
+  ShieldAlert,
   ShieldCheck,
   TerminalSquare,
+  TrendingUp,
   Video,
 } from "lucide-react";
 import { tinaField } from "tinacms/dist/react";
@@ -17,6 +22,7 @@ import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text";
 import { SiteIcon } from "@/components/site/site-icon";
 import type { HomeContent, SiteConfig } from "@/lib/site-content-schema";
 import { HeroGradientCanvas } from "./hero-gradient-canvas";
+import { PricingPlanCards } from "./pricing/plan-cards";
 
 type HomeAction = HomeContent["hero"]["primaryAction"];
 
@@ -155,7 +161,7 @@ export function HomeSections({
     {
       title: "Images",
       body: "Switch between fast, cheap image models and higher-fidelity generation on the same API surface.",
-      icon: ImageGlyph,
+      icon: ImageIcon,
     },
     {
       title: "Speech",
@@ -207,21 +213,24 @@ export function HomeSections({
           <div className="relative z-10 mx-auto flex min-h-[calc(100vh-var(--site-header-height))] max-w-7xl flex-col px-4 pb-7 pt-6 md:pb-10 md:pt-8">
             <Reveal
               as="div"
-              className="relative overflow-hidden rounded-[28px] border border-white/34 bg-[linear-gradient(140deg,rgba(255,255,255,0.16)_0%,rgba(186,144,255,0.28)_36%,rgba(196,92,255,0.44)_66%,rgba(246,122,86,0.52)_100%)] px-6 pb-8 pt-7 md:px-12 md:pb-12 md:pt-11"
+              className="relative overflow-hidden rounded-[40px] border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent px-6 pb-12 pt-7 backdrop-blur-3xl md:px-16 md:pb-20 md:pt-16"
             >
-              <div className="pointer-events-none absolute -left-10 top-[-72px] h-56 w-56 rounded-full bg-[#cbe4ff]/18 blur-3xl" />
-              <div className="pointer-events-none absolute right-[-96px] top-[22%] h-72 w-72 rounded-full bg-[#c263ff]/34 blur-3xl" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_68%,rgba(255,255,255,0.22),transparent_44%)]" />
-              <div className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-soft-light [background-image:radial-gradient(rgba(255,255,255,0.92)_0.6px,transparent_0.9px)] [background-size:3px_3px]" />
+              <div className="pointer-events-none absolute -left-20 -top-20 h-80 w-80 rounded-full bg-indigo-500/20 blur-[100px]" />
+              <div className="pointer-events-none absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-orange-500/10 blur-[120px]" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(144,186,255,0.15),transparent_50%)]" />
+              <div className="pointer-events-none absolute inset-0 opacity-[0.03] mix-blend-overlay [background-image:linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:40px_40px]" />
 
-              <div className="relative grid gap-8 lg:grid-cols-[1.18fr_0.82fr] lg:items-end">
+              <div className="relative grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                 <div>
-                  <p
-                    className="text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary"
-                    data-tina-field={tinaField(home.hero, "kicker")}
-                  >
-                    {home.hero.kicker}
-                  </p>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 mb-6">
+                    <div className="size-1.5 animate-pulse rounded-full bg-indigo-400" />
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50"
+                      data-tina-field={tinaField(home.hero, "kicker")}
+                    >
+                      {home.hero.kicker}
+                    </p>
+                  </div>
                   <h1
                     className="mt-3 max-w-3xl whitespace-pre-line bg-gradient-to-b from-white via-[#dceeff] to-[#91cfff] bg-clip-text font-display text-4xl leading-[0.95] tracking-[-0.02em] text-transparent sm:text-5xl md:text-6xl"
                     data-tina-field={tinaField(home.hero, "heading")}
@@ -239,12 +248,12 @@ export function HomeSections({
                     <ActionLink
                       action={home.hero.primaryAction}
                       field={tinaField(home.hero, "primaryAction")}
-                      tone="dark"
+                      tone="ink"
                     />
                     <ActionLink
                       action={home.hero.secondaryAction}
                       field={tinaField(home.hero, "secondaryAction")}
-                      tone="light"
+                      tone="outline"
                     />
                     <ActionLink
                       action={home.hero.tertiaryAction}
@@ -253,14 +262,14 @@ export function HomeSections({
                     />
                   </div>
 
-                  <div className="mt-7 flex flex-wrap gap-2">
+                  <div className="mt-8 flex flex-wrap gap-2">
                     {capabilitySignals.map((signal) => (
                       <div
-                        className="text-site-inverse rounded-full border border-white/40 bg-white/12 px-3 py-1.5 text-[11px]"
+                        className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-[11px] text-white/80 backdrop-blur-md transition-colors hover:bg-white/10"
                         key={signal.label.value}
                       >
                         <span
-                          className="font-medium"
+                          className="font-medium opacity-60"
                           data-tina-field={signal.label.field}
                         >
                           {signal.label.value}:
@@ -275,16 +284,16 @@ export function HomeSections({
                     ))}
                   </div>
 
-                  <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                  <div className="mt-8 grid gap-1.5 sm:grid-cols-3">
                     {heroMetrics.map((metric) => (
                       <div
-                        className="rounded-lg border border-white/40 bg-white/15 px-3 py-2 backdrop-blur-sm"
+                        className="rounded-xl border border-white/10 bg-black/20 p-4 transition-colors hover:bg-black/30"
                         key={metric.label}
                       >
-                        <p className="text-site-inverse text-sm font-semibold">
+                        <p className="font-display text-2xl font-bold tracking-tight text-white">
                           {metric.value}
                         </p>
-                        <p className="text-site-inverse-soft text-[10px] font-semibold uppercase tracking-[0.12em]">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
                           {metric.label}
                         </p>
                       </div>
@@ -292,28 +301,26 @@ export function HomeSections({
                   </div>
                 </div>
 
-                <div className="relative">
-                  <div className="absolute -inset-4 rounded-[24px] bg-white/14 blur-2xl" />
-                  <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-3 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
-                    <Image
-                      alt={workflowStory?.title ?? "dryAPI product preview"}
-                      className="h-[260px] w-full rounded-xl object-cover md:h-[292px]"
-                      data-tina-field={tinaField(home.hero, "backgroundImage")}
-                      height={780}
-                      src={heroMediaImage}
-                      width={980}
-                    />
-                    <div className="mt-3 rounded-xl border border-white/45 bg-white/86 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
-                        Gateway Status
-                      </p>
-                      <p className="text-site-muted mt-1 text-xs">
-                        OpenAI/OpenRouter compatible, broad model catalog
-                        online, low-cost routing active.
-                      </p>
+                  <div className="relative">
+                    <div className="absolute -inset-4 rounded-[24px] bg-white/14 blur-2xl" />
+                    <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-2 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
+                      <div className="h-[280px] w-full md:h-[340px]">
+                        <MockWorkflowFrame className="h-full border-none shadow-none bg-white/40" />
+                      </div>
+                      <div className="mt-2 rounded-xl border border-white/45 bg-white/86 p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="size-2 animate-pulse rounded-full bg-emerald-500" />
+                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+                            Gateway Active • 150+ Models
+                          </p>
+                        </div>
+                        <p className="text-site-muted mt-1 text-xs">
+                          Single-surface API dispatch for Chat, Image, Speech and Embeddings.
+                          Optimized for profit margin and elastic scale.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
               </div>
             </Reveal>
 
@@ -374,29 +381,32 @@ export function HomeSections({
       ) : null}
 
       <section
-        className="bg-[#ececec] py-8 md:py-12"
+        className="bg-[#f2f2f2] py-12 md:py-24"
         data-landing-slot="spotlight"
         data-tina-field={tinaField(home, "spotlightSection")}
         id="landing-slot-spotlight"
       >
         <div className="mx-auto max-w-7xl px-4">
-          <div className="rounded-xl border border-[#dedede] bg-[#f2f2f2] p-5 md:p-8">
-            <Reveal as="div" className="max-w-4xl">
-              <p
-                className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#7b7b7b]"
-                data-tina-field={tinaField(home.spotlightSection, "kicker")}
-              >
-                {home.spotlightSection.kicker}
-              </p>
-              <h2
-                className="mt-2 text-3xl leading-tight text-[#1a1a1a] md:text-4xl"
-                data-tina-field={tinaField(home.spotlightSection, "title")}
-              >
-                {home.spotlightSection.title}
-              </h2>
-            </Reveal>
+          <Reveal as="div" className="mx-auto max-w-4xl text-center">
+            <p
+              className="text-[11px] font-bold uppercase tracking-[0.2em] text-[color:var(--cta-cool-a)]"
+              data-tina-field={tinaField(home.spotlightSection, "kicker")}
+            >
+              {home.spotlightSection.kicker}
+            </p>
+            <h2
+              className="mt-3 text-4xl font-display leading-[1.1] text-[#111111] md:text-5xl"
+              data-tina-field={tinaField(home.spotlightSection, "title")}
+            >
+              {home.spotlightSection.title}
+            </h2>
+            <p className="text-site-muted mt-5 text-lg">
+              Strategic inference control for teams that prioritize stability, performance, and unit economics.
+            </p>
+          </Reveal>
 
-            <div className="mt-6 grid gap-4 border-y border-[#dedede] py-4 sm:grid-cols-3">
+          <div className="mt-12 md:mt-20">
+            <div className="grid gap-6 border-y border-[#dedede] py-8 sm:grid-cols-3">
               {frameworkCells.map((cell, index) => (
                 <Reveal as="div" delay={index * 0.06} key={cell.label} y={12}>
                   <FrameworkCell body={cell.body} label={cell.label} />
@@ -404,45 +414,30 @@ export function HomeSections({
               ))}
             </div>
 
-            <div className="mt-7 grid gap-5">
+            <div className="mt-12 grid gap-8">
               <FeatureStory
                 actionLabel={spotlightAction1.value}
                 actionLabelField={spotlightAction1.field}
                 card={spotlightCards[0]}
-                image={stories[0]?.image ?? home.hero.backgroundImage}
-                imageField={
-                  stories[0]
-                    ? tinaField(stories[0], "image")
-                    : tinaField(home.hero, "backgroundImage")
-                }
                 linkHref={home.hero.primaryAction.href}
                 reverse={false}
+                type="policy"
               />
               <FeatureStory
                 actionLabel={spotlightAction2.value}
                 actionLabelField={spotlightAction2.field}
                 card={spotlightCards[1] ?? spotlightCards[0]}
-                image={resourcePreview?.image ?? home.hero.backgroundImage}
-                imageField={
-                  resourcePreview
-                    ? tinaField(resourcePreview, "image")
-                    : tinaField(home.hero, "backgroundImage")
-                }
                 linkHref={home.hero.secondaryAction.href}
                 reverse
+                type="audit"
               />
               <FeatureStory
                 actionLabel={spotlightAction3.value}
                 actionLabelField={spotlightAction3.field}
                 card={spotlightCards[2] ?? spotlightCards[0]}
-                image={stories[1]?.image ?? home.hero.backgroundImage}
-                imageField={
-                  stories[1]
-                    ? tinaField(stories[1], "image")
-                    : tinaField(home.hero, "backgroundImage")
-                }
                 linkHref={home.contactPanel.primaryAction.href}
                 reverse={false}
+                type="costs"
               />
             </div>
           </div>
@@ -488,10 +483,10 @@ export function HomeSections({
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     <div className="rounded-md bg-[var(--site-surface-0)] p-3">
-                      <MockUiPreview compact />
+                      <MockUiPreview compact type="chat" />
                     </div>
                     <div className="rounded-md bg-[var(--site-surface-0)] p-3">
-                      <MockUiPreview compact />
+                      <MockUiPreview compact type="embeddings" />
                     </div>
                   </div>
                 </div>
@@ -518,19 +513,28 @@ export function HomeSections({
               </h2>
             </Reveal>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
               {valueCards.map((card, index) => (
                 <Reveal
                   as="article"
-                  className="rounded-lg border border-[#dddddd] bg-white p-4"
+                  className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
                   delay={index * 0.08}
                   key={card.id}
                 >
-                  <div className="h-36 rounded-md border border-[#ececec] bg-gradient-to-br from-secondary/70 via-white to-accent/10">
-                    <MockUiPreview compact />
+                  <div className="h-40 rounded-lg border border-[#f0f0f0] overflow-hidden bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_50%,#fdfaff_100%)]">
+                    <MockUiPreview
+                      compact
+                      type={
+                        index === 0
+                          ? "chat"
+                          : index === 1
+                            ? "image"
+                            : "embeddings"
+                      }
+                    />
                   </div>
                   <h3
-                    className="text-site-strong mt-3 text-sm font-semibold"
+                    className="text-site-strong mt-4 text-base font-bold tracking-tight"
                     data-tina-field={tinaField(card, "title")}
                   >
                     {card.title}
@@ -573,16 +577,19 @@ export function HomeSections({
                 title="Policy Enforcement"
                 body="Stop unsafe outputs before they leave your stack."
                 accent="from-secondary/75 via-white to-accent/15"
+                type="policy"
               />
               <ValueCard
                 title="Audit Trails"
                 body="Immutable, queryable logs for compliance reviews."
                 accent="from-secondary/70 via-white to-primary/12"
+                type="audit"
               />
               <ValueCard
                 title="Predictable Costs"
                 body="Reserve GPU seconds and cache embeddings to save money."
                 accent="from-secondary/65 via-white to-accent/10"
+                type="costs"
               />
             </div>
           </Reveal>
@@ -610,20 +617,24 @@ export function HomeSections({
 
           <Reveal
             as="div"
-            className="mx-auto mt-7 max-w-3xl rounded-lg border border-[#d7d7d7] bg-white p-4 shadow-[0_18px_28px_rgba(0,0,0,0.08)]"
+            className="mx-auto mt-7 max-w-4xl rounded-xl border border-slate-200 bg-white p-2 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] md:p-4"
           >
-            <Image
-              alt={workflowStory?.title ?? "Workflow preview"}
-              className="h-[260px] w-full rounded-md border border-[#ececec] object-cover"
-              data-tina-field={
-                workflowStory
-                  ? tinaField(workflowStory, "image")
-                  : tinaField(home.hero, "backgroundImage")
-              }
-              height={860}
-              src={workflowStory?.image ?? home.hero.backgroundImage}
-              width={1320}
-            />
+            <div className="relative overflow-hidden rounded-lg bg-slate-950">
+              <MockCodePanel
+                code={`import OpenAI from "openai"
+
+const client = new OpenAI({
+  apiKey: "dry_sk_...",
+  baseURL: "https://api.deapi.ai/v1"
+})
+
+// Unified inference across 150+ models
+const res = await client.chat.completions.create({
+  model: "anthropic/claude-3-5-sonnet",
+  messages: [{ role: "user", content: "Optimize this workload" }]
+})`}
+              />
+            </div>
           </Reveal>
         </div>
       </section>
@@ -726,66 +737,69 @@ export function HomeSections({
 
       {/* Omnichannel coverage */}
       <section
-        className="bg-[#f8f9fb] py-12"
+        className="bg-white py-24"
         data-landing-slot="omnichannel"
         id="landing-slot-omnichannel"
       >
         <div className="mx-auto max-w-7xl px-4">
-          <Reveal
-            as="div"
-            className="relative overflow-hidden rounded-xl border border-[#e8ebef] bg-white p-6 md:p-8"
-          >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(84,126,232,0.14),transparent_40%)]" />
-
-            <div className="relative grid gap-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
-              <div>
-                <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
-                  Omnichannel
-                </p>
-                <h3 className="text-site-strong mt-2 text-2xl font-semibold md:text-3xl">
-                  Unified enforcement across channels
-                </h3>
-                <p
-                  className="text-site-muted mt-3 text-sm leading-relaxed"
-                  data-tina-field={omnichannelBody.field}
-                >
-                  {omnichannelBody.value}
+          <Reveal as="div" className="relative">
+            <div className="mb-16 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 mb-6">
+                <div className="size-1.5 rounded-full bg-slate-400" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                  Omnichannel Layer
                 </p>
               </div>
-
-              <div className="rounded-lg border border-[#e6edf4] bg-[linear-gradient(145deg,#f8fbff_0%,#fbfcff_56%,#ffffff_100%)] p-4">
-                <MockWorkflowFrame />
-              </div>
+              <h3 className="font-display text-4xl tracking-tight text-slate-900 md:text-5xl">
+                Unified Governance Across Every Channel
+              </h3>
+              <p
+                className="mt-6 text-base leading-relaxed text-slate-500 md:text-lg"
+                data-tina-field={omnichannelBody.field}
+              >
+                {omnichannelBody.value}
+              </p>
             </div>
 
-            <div className="relative mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {omnichannelTiles.map((tile) => (
-                <div
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {omnichannelTiles.map((tile, idx) => (
+                <Reveal
                   key={tile.title}
-                  className="rounded-lg border border-[#ececec] bg-[#fbfbfd] p-4"
+                  delay={idx * 0.05}
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-slate-300 hover:shadow-2xl"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-md bg-[#eef2ff] p-2">
-                      <tile.icon className="size-5 text-[#2b2b2b]" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  
+                  <div className="relative mb-6 flex items-center justify-between">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-xl ring-8 ring-slate-50 transition-transform duration-500 group-hover:scale-110">
+                      <tile.icon className="size-6" />
                     </div>
-                    <div>
-                      <p className="text-site-strong text-sm font-semibold">
-                        {tile.title}
-                      </p>
-                      <p className="text-site-muted mt-1 text-xs">{tile.body}</p>
-                      <div className="mt-2">
-                        <span className="inline-flex items-center gap-2 rounded-md border border-[#dfeaf8] bg-white px-2 py-1 text-[11px] font-semibold text-[#2b6cb0]">
-                          Preview
-                        </span>
-                      </div>
+                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 shadow-sm transition-colors group-hover:bg-emerald-100">
+                      Active
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <div className="rounded-md border border-[#eef3f8] p-2">
-                      <MockUiPreview compact />
-                    </div>
+
+                  <div className="relative flex-1">
+                    <h4 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+                      {tile.title}
+                    </h4>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                      {tile.body}
+                    </p>
                   </div>
-                </div>
+
+                  <div className="relative mt-8 aspect-[1.6/1] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 grayscale-[0.3] transition-all duration-700 group-hover:scale-[1.05] group-hover:bg-white group-hover:grayscale-0">
+                    <MockUiPreview
+                      compact
+                      type={tile.title.toLowerCase() as any}
+                    />
+                  </div>
+
+                  <div className="relative mt-6 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-colors group-hover:text-slate-900">
+                    <div className="h-px w-8 bg-slate-200 transition-all group-hover:w-12 group-hover:bg-slate-900" />
+                    Explorer {tile.title}
+                  </div>
+                </Reveal>
               ))}
             </div>
           </Reveal>
@@ -813,44 +827,46 @@ export function HomeSections({
 
       {/* Use cases grid */}
       <section
-        className="bg-white py-10"
+        className="bg-white py-24 md:py-32"
         data-landing-slot="use-cases"
         id="landing-slot-use-cases"
       >
         <div className="mx-auto max-w-7xl px-4">
-          <Reveal
-            as="div"
-            className="rounded-xl border border-[#eef0f2] bg-white p-6 md:p-8"
-          >
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
-                Use Cases
+          <Reveal as="div">
+            <div className="mb-20 text-center">
+              <p
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600"
+              >
+                Vertical Solutions
               </p>
-              <h3 className="text-site-strong mt-2 text-2xl font-semibold">
-                Real workflows that save time
+              <h3 className="mt-6 font-display text-4xl font-bold tracking-tight text-slate-900 md:text-6xl">
+                Built for Scalable AI Operations
               </h3>
+              <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-slate-500">
+                From automated support to high-volume media synthesis, we handle
+                the infrastructure so you can focus on the product.
+              </p>
             </div>
 
-            <div className="mt-6 grid gap-6 sm:grid-cols-3">
-              <div className="rounded-lg border border-[#ececec] p-4">
-                <p className="text-sm font-semibold">Customer Support</p>
-                <p className="text-site-muted mt-2 text-xs">
-                  Automated triage and safe responses across channels.
-                </p>
-              </div>
-              <div className="rounded-lg border border-[#ececec] p-4">
-                <p className="text-sm font-semibold">Document Processing</p>
-                <p className="text-site-muted mt-2 text-xs">
-                  OCR, embeddings, and retrieval to extract value from
-                  documents.
-                </p>
-              </div>
-              <div className="rounded-lg border border-[#ececec] p-4">
-                <p className="text-sm font-semibold">Image Generation</p>
-                <p className="text-site-muted mt-2 text-xs">
-                  High-volume, low-cost image pipelines with quality tiers.
-                </p>
-              </div>
+            <div className="grid gap-6 sm:grid-cols-3">
+              <UseCaseCard
+                body="Automated triage and safe responses across every customer touchpoint."
+                icon={MessageSquare}
+                title="Customer Support"
+                type="chat"
+              />
+              <UseCaseCard
+                body="OCR, embeddings, and retrieval to extract value from massive datasets."
+                icon={FileText}
+                title="Document Intelligence"
+                type="embeddings"
+              />
+              <UseCaseCard
+                body="High-volume, low-cost image pipelines with professional quality tiers."
+                icon={ImageIcon}
+                title="Image Generation"
+                type="image"
+              />
             </div>
           </Reveal>
         </div>
@@ -858,21 +874,22 @@ export function HomeSections({
 
       {/* Metrics / stats band */}
       <section
-        className="bg-[var(--site-surface-0)] py-10 text-site-strong"
+        className="relative overflow-hidden bg-white py-16 text-site-strong"
         data-landing-slot="metrics"
         id="landing-slot-metrics"
       >
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,118,255,0.06),transparent_70%)]" />
+        <div className="relative z-10 mx-auto max-w-7xl px-4">
           <Reveal as="div" className="text-center">
-            <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-site-soft">
               Reliability Snapshot
             </p>
           </Reveal>
-          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatBand label="Requests Served" value="1.2M+" />
-            <StatBand label="Models" value="150+" />
-            <StatBand label="Uptime" value="99.99%" />
-            <StatBand label="Customers" value="300+" />
+            <StatBand label="Models Supported" value="150+" />
+            <StatBand label="Gateway Uptime" value="99.99%" />
+            <StatBand label="Active Tenants" value="300+" />
           </div>
         </div>
       </section>
@@ -913,44 +930,15 @@ export function HomeSections({
       </section>
 
       {/* Pricing teaser */}
+      {/* Pricing band */}
       <section
-        className="bg-white py-10"
+        className="bg-white"
         data-landing-slot="pricing"
         id="landing-slot-pricing"
       >
         <div className="mx-auto max-w-7xl px-4">
-          <Reveal
-            as="div"
-            className="rounded-xl border border-[#eef0f2] bg-white p-6 md:p-8"
-          >
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
-                Pricing
-              </p>
-              <h3 className="text-site-strong mt-2 text-2xl font-semibold">
-                Start with credits, scale with confidence
-              </h3>
-            </div>
-            <div className="mt-6 grid gap-6 sm:grid-cols-3">
-              <div className="rounded-lg border p-5">
-                <p className="text-lg font-semibold">Starter</p>
-                <p className="text-site-muted mt-2 text-sm">
-                  Prepaid credits, limited models, great for early tests.
-                </p>
-              </div>
-              <div className="rounded-lg border p-5">
-                <p className="text-lg font-semibold">Pro</p>
-                <p className="text-site-muted mt-2 text-sm">
-                  Monthly plan with usage-based billing and priority support.
-                </p>
-              </div>
-              <div className="rounded-lg border p-5">
-                <p className="text-lg font-semibold">Enterprise</p>
-                <p className="text-site-muted mt-2 text-sm">
-                  Custom pricing, SSO, SLAs, and dedicated routing.
-                </p>
-              </div>
-            </div>
+          <Reveal as="div">
+            <PricingPlanCards />
           </Reveal>
         </div>
       </section>
@@ -994,7 +982,7 @@ export function HomeSections({
 
       {home.contactPanel.visible ? (
         <section
-          className="bg-[#ececec] py-10 md:py-14"
+          className="bg-white py-24 md:py-32"
           data-landing-slot="contact-panel"
           data-tina-field={tinaField(home, "contactPanel")}
           id="landing-slot-contact-panel"
@@ -1002,65 +990,93 @@ export function HomeSections({
           <div className="mx-auto max-w-7xl px-4">
             <Reveal
               as="div"
-              className="text-site-inverse overflow-hidden rounded-[20px] border border-[#7fb5ef] bg-[linear-gradient(120deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_54%,var(--cta-cool-b)_100%)] p-6 md:p-10"
+              className="relative overflow-hidden rounded-[48px] border border-white/20 bg-slate-900 px-8 py-16 text-white shadow-2xl md:px-20 md:py-24"
             >
-              <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+              {/* Decorative backgrounds */}
+              <div className="pointer-events-none absolute -right-20 -top-20 h-96 w-96 rounded-full bg-indigo-500/20 blur-[120px]" />
+              <div className="pointer-events-none absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-orange-500/10 blur-[120px]" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(144,186,255,0.1),transparent_50%)]" />
+
+              <div className="relative grid gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                 <div>
-                  <p
-                    className="text-site-inverse-soft text-[11px] font-semibold uppercase tracking-[0.16em]"
-                    data-tina-field={tinaField(home.contactPanel, "kicker")}
-                  >
-                    {home.contactPanel.kicker}
-                  </p>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 mb-8">
+                    <div className="size-1.5 animate-pulse rounded-full bg-indigo-400" />
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40"
+                      data-tina-field={tinaField(home.contactPanel, "kicker")}
+                    >
+                      {home.contactPanel.kicker}
+                    </p>
+                  </div>
                   <h2
-                    className="mt-2 text-3xl leading-tight md:text-4xl"
+                    className="font-display text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl"
                     data-tina-field={tinaField(home.contactPanel, "heading")}
                   >
                     {commandHeading.value}
                   </h2>
                   <p
-                    className="text-site-inverse-muted mt-3 max-w-2xl text-sm leading-relaxed"
+                    className="mt-8 max-w-xl text-lg leading-relaxed text-slate-400"
                     data-tina-field={tinaField(home.contactPanel, "body")}
                   >
                     {commandBody.value}
                   </p>
 
-                  <div className="mt-6 flex flex-wrap gap-2.5">
+                  <div className="mt-12 flex flex-wrap gap-4">
                     <ActionLink
                       action={home.contactPanel.primaryAction}
                       field={tinaField(home.contactPanel, "primaryAction")}
-                      tone="dark"
+                      tone="ink"
                     />
                     <ActionLink
-                      action={home.contactPanel.secondaryAction}
-                      field={tinaField(home.contactPanel, "secondaryAction")}
-                      tone="light"
+                      action={home.hero.secondaryAction}
+                      field={tinaField(home.hero, "secondaryAction")}
+                      tone="ghost"
                     />
                   </div>
-                  <p
-                    className="text-site-inverse-soft mt-4 text-[11px] uppercase tracking-[0.14em]"
-                    data-tina-field={supportPrompt.field}
-                  >
-                    {supportPrompt.value}
-                  </p>
                 </div>
 
-                <div className="rounded-xl border border-white/35 bg-white/16 p-4 backdrop-blur-sm">
-                  <p className="text-site-inverse-soft text-[10px] uppercase tracking-[0.15em]">
-                    Customer Note
-                  </p>
-                  <p className="text-site-inverse mt-2 text-sm leading-relaxed">
-                    {testimonial ? (
-                      <>
+                <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl md:p-12">
+                  <div className="mb-8 flex items-center gap-2">
+                    <div className="size-2 rounded-full bg-indigo-500" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+                      Customer Success
+                    </p>
+                  </div>
+                  
+                  {testimonial ? (
+                    <div className="space-y-6">
+                      <p className="font-display text-xl italic leading-relaxed text-white md:text-2xl">
                         &ldquo;{testimonial.quote}&rdquo;
-                        <span className="text-site-inverse-soft mt-2 block text-[11px] uppercase tracking-[0.14em]">
-                          {testimonial.company} / {testimonial.role}
-                        </span>
-                      </>
-                    ) : (
-                      "\u201cWe shipped faster because one API let us test more models without rebuilding the client layer every time.\u201d"
-                    )}
-                  </p>
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex size-12 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white/40">
+                          {testimonial.company.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold uppercase tracking-wider text-white">
+                            {testimonial.company}
+                          </p>
+                          <p className="text-xs font-medium text-white/40">
+                            {testimonial.role}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="font-display text-xl italic leading-relaxed text-white md:text-2xl">
+                      &ldquo;We replaced multiple provider integrations with dryAPI and cut onboarding time for new AI features dramatically.&rdquo;
+                    </p>
+                  )}
+
+                  <div className="mt-12 pt-10 border-t border-white/10">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">
+                      {supportPrompt.value}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-sm font-bold text-white transition-colors hover:text-indigo-400 cursor-pointer">
+                      Start Migration Flow
+                      <ArrowRight className="size-4" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </Reveal>
@@ -1086,18 +1102,26 @@ function FeatureStory({
   actionLabel,
   actionLabelField,
   card,
-  image,
-  imageField,
   linkHref,
   reverse,
+  type = "default",
 }: {
   actionLabel: string;
   actionLabelField?: string;
   card?: HomeContent["spotlightCards"][number];
-  image: string;
-  imageField: string;
   linkHref: string;
   reverse: boolean;
+  type?:
+    | "default"
+    | "chat"
+    | "image"
+    | "speech"
+    | "embeddings"
+    | "video"
+    | "music"
+    | "policy"
+    | "audit"
+    | "costs";
 }) {
   if (!card) {
     return null;
@@ -1106,48 +1130,109 @@ function FeatureStory({
   return (
     <Reveal
       as="article"
-      className={`grid gap-5 rounded-lg border border-[#dddddd] bg-white p-4 md:p-5 ${reverse ? "lg:grid-cols-[1fr_0.95fr]" : "lg:grid-cols-[0.95fr_1fr]"}`}
+      className={`group grid gap-8 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-[color:var(--cta-cool-a)] hover:shadow-2xl md:p-8 ${reverse ? "lg:grid-cols-[1.05fr_0.95fr]" : "lg:grid-cols-[0.95fr_1.05fr]"}`}
     >
-      <div className={reverse ? "lg:order-2" : ""}>
-        <p className="text-site-soft inline-flex items-center gap-2 rounded-full border border-[#dfdfdf] bg-[#f7f7f7] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">
-          <SiteIcon className="text-site-strong size-3.5" icon={card.icon} />
-          Section
-        </p>
+      <div className={`flex flex-col justify-center ${reverse ? "lg:order-2" : ""}`}>
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-slate-900 shadow-lg ring-1 ring-white/10 transition-transform group-hover:scale-110">
+            <SiteIcon className="size-5 text-white" icon={card.icon} />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--cta-cool-a)]">
+            Platform Protocol
+          </p>
+        </div>
         <h3
-          className="text-site-strong mt-3 text-2xl leading-tight"
+          className="text-site-strong mt-6 text-3xl font-display leading-[1.1] tracking-tight md:text-4xl"
           data-tina-field={tinaField(card, "title")}
         >
           {card.title}
         </h3>
         <p
-          className="text-site-muted mt-3 text-sm leading-relaxed"
+          className="text-site-muted mt-5 text-base leading-relaxed md:text-lg"
           data-tina-field={tinaField(card, "description")}
         >
           {card.description}
         </p>
-        <QuoteAwareLink
-          className="text-site-strong mt-5 inline-flex items-center gap-2 rounded-md bg-[var(--site-surface-1)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:bg-[color:var(--site-text-strong)] hover:text-[color:var(--primary-foreground)]"
-          href={linkHref}
-          quoteLabel={actionLabel}
-        >
-          <span data-tina-field={actionLabelField}>{actionLabel}</span>
-          <ArrowRight className="size-3.5" />
-        </QuoteAwareLink>
+        <div className="mt-10">
+          <QuoteAwareLink
+            className="inline-flex items-center gap-2.5 rounded-full bg-slate-950 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] transition-all hover:bg-slate-800 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4)] active:scale-95"
+            href={linkHref}
+            quoteLabel={actionLabel}
+          >
+            <span data-tina-field={actionLabelField}>{actionLabel}</span>
+            <ArrowRight className="size-4" />
+          </QuoteAwareLink>
+        </div>
       </div>
 
-      <div className={reverse ? "lg:order-1" : ""}>
-        <div className="h-full rounded-lg border border-[#ececec] bg-gradient-to-br from-secondary/70 via-white to-primary/10 p-3">
-          <Image
-            alt={card.title}
-            className="h-[240px] w-full rounded-md border border-[#ebebeb] object-cover"
-            data-tina-field={imageField}
-            height={680}
-            src={image}
-            width={1020}
-          />
+      <div className={`relative ${reverse ? "lg:order-1" : ""}`}>
+        {/* Decorative background glow */}
+        <div className="absolute -inset-20 bg-[radial-gradient(circle_at_center,rgba(84,126,232,0.08),transparent_70%)] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+        
+        <div className="relative aspect-[4/3] w-full transform overflow-hidden rounded-2xl bg-[#f8f9fb] p-1.5 shadow-inner transition-transform duration-700 group-hover:scale-[1.02] md:p-2.5">
+          <div className="h-full w-full overflow-hidden rounded-xl border border-white/80 bg-white/40 shadow-2xl backdrop-blur-sm">
+            <MockUiPreview
+              className="bg-transparent"
+              compact={false}
+              type={type}
+            />
+          </div>
         </div>
       </div>
     </Reveal>
+  );
+}
+
+function UseCaseCard({
+  title,
+  body,
+  icon: Icon,
+  type,
+}: {
+  title: string;
+  body: string;
+  icon: React.ElementType;
+  type: MockUiPreviewProps["type"];
+}) {
+  return (
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/5 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-black/10 hover:shadow-xl">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-slate-950 text-white shadow-lg transition-transform group-hover:scale-110">
+          <Icon className="size-5" />
+        </div>
+        <div className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+          Ready to scale
+        </div>
+      </div>
+
+      <h4 className="font-display text-lg font-semibold tracking-tight text-slate-900">
+        {title}
+      </h4>
+      <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
+
+      <div className="mt-6 aspect-[1.4/1] w-full overflow-hidden rounded-xl border border-black/5 bg-slate-50/50 grayscale-[0.2] transition-all duration-500 group-hover:bg-white group-hover:grayscale-0">
+        <MockUiPreview compact className="scale-[0.8] origin-top" type={type} />
+      </div>
+
+      <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-900">
+        Deploy pipeline
+        <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
+      </div>
+    </div>
+  );
+}
+
+function StatBand({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="group relative rounded-2xl border border-black/5 bg-slate-50/50 p-6 transition-colors hover:bg-white md:p-8 text-center">
+      <div className="absolute inset-x-0 bottom-0 h-1 w-full scale-x-0 bg-slate-950 transition-transform duration-500 group-hover:scale-x-100" />
+      <p className="text-3xl font-display font-bold tracking-tight text-slate-900 md:text-4xl">
+        {value}
+      </p>
+      <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+        {label}
+      </p>
+    </div>
   );
 }
 
@@ -1212,26 +1297,338 @@ function ActionLink({
   );
 }
 
-function MockUiPreview({ compact }: { compact?: boolean }) {
+interface MockUiPreviewProps {
+  compact?: boolean;
+  className?: string;
+  type?:
+    | "default"
+    | "chat"
+    | "image"
+    | "speech"
+    | "embeddings"
+    | "video"
+    | "music"
+    | "policy"
+    | "audit"
+    | "costs";
+}
+
+function MockUiPreview({
+  compact,
+  className,
+  type = "default",
+}: MockUiPreviewProps) {
   return (
-    <div className={`${compact ? "p-2" : "p-3"} h-full w-full`}>
-      <div className="relative h-full rounded-md border border-[#e8eef3] bg-gradient-to-b from-white to-[#fbfdff] p-3">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-          <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-          <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-          <div className="text-site-soft ml-auto text-[10px]">Preview</div>
+    <div
+      className={
+        "h-full w-full " +
+        (compact ? "p-3" : "p-4 md:p-6") +
+        (className ? " " + className : "")
+      }
+    >
+      <div className="relative h-full overflow-hidden rounded-xl border border-white/45 bg-white/76 shadow-sm backdrop-blur-sm">
+        {/* Browser Chrome */}
+        <div className="flex items-center gap-1.5 border-b border-black/5 bg-black/4 px-3 py-1.5">
+          <div className="flex gap-1">
+            <div className="size-1.5 rounded-full bg-red-400/60" />
+            <div className="size-1.5 rounded-full bg-yellow-400/60" />
+            <div className="size-1.5 rounded-full bg-green-400/60" />
+          </div>
+          <div className="ml-2 h-2.5 w-24 rounded bg-black/5" />
         </div>
 
-        <div className="mt-3 space-y-2">
-          <div className="h-6 w-3/4 rounded-md bg-[#eef6ff]" />
-          <div className="h-6 w-full rounded-md bg-[#f1fbf5]" />
-          <div className="h-6 w-5/6 rounded-md bg-[#f7f7f9]" />
+        <div className="p-3">
+          {type === "chat" && (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="size-5 shrink-0 rounded bg-indigo-500/10 flex items-center justify-center">
+                  <MessageSquare className="size-3 text-indigo-500/40" />
+                </div>
+                <div className="space-y-1 w-full">
+                  <div className="h-2 w-full rounded bg-indigo-50/60" />
+                  <div className="h-2 w-4/5 rounded bg-indigo-50/60" />
+                </div>
+              </div>
+              <div className="flex flex-row-reverse gap-2">
+                <div className="size-5 shrink-0 rounded bg-emerald-500/10 flex items-center justify-center">
+                  <ShieldCheck className="size-3 text-emerald-500/40" />
+                </div>
+                <div className="space-y-1 w-full flex flex-col items-end">
+                  <div className="h-2 w-full rounded bg-emerald-50/60" />
+                  <div className="h-4 w-full rounded bg-emerald-50/30 border border-emerald-500/5 mt-1" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {type === "image" && (
+            <div className="grid grid-cols-3 gap-1.5">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="relative aspect-square overflow-hidden rounded border border-black/5 bg-gradient-to-br from-slate-50 to-slate-100"
+                >
+                  <div className="absolute inset-0 bg-white/40" />
+                  {i === 1 && (
+                    <div className="absolute inset-1 rounded-sm bg-orange-200/20" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {type === "speech" && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 border-b border-black/5 pb-2">
+                <Mic className="size-3.5 text-rose-500/60" />
+                <div className="h-1.5 flex-1 rounded bg-black/5" />
+              </div>
+              <div className="flex h-8 items-end gap-0.5">
+                {Array.from({ length: 24 }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{ height: `${Math.random() * 80 + 20}%` }}
+                    className="flex-1 rounded-t-sm bg-indigo-400/20"
+                  />
+                ))}
+              </div>
+              <div className="h-6 rounded border border-black/5 bg-white/40 p-1">
+                <div className="h-full w-2/3 rounded bg-black/5" />
+              </div>
+            </div>
+          )}
+
+          {type === "embeddings" && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between border-b border-black/5 pb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <TerminalSquare className="size-3 text-indigo-500/40" />
+                  <div className="h-1.5 w-12 rounded bg-black/10" />
+                </div>
+                <div className="h-2 w-2 rounded-full bg-emerald-500/20" />
+              </div>
+              <div className="grid grid-cols-6 gap-1">
+                {Array.from({ length: 30 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-2 rounded-sm bg-black/5 transition-opacity duration-500"
+                    style={{ opacity: Math.random() * 0.5 + 0.5 }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {type === "policy" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-black/5 pb-1">
+                <div className="h-1.5 w-20 rounded bg-red-400/10" />
+                <ShieldAlert className="size-3 text-red-500/40" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <div className="size-3 rounded bg-red-500/20" />
+                  <div className="h-1.5 flex-1 rounded bg-black/5 pt-0.5">
+                    <div className="h-full w-full rounded bg-red-500/10" />
+                  </div>
+                </div>
+                {[1, 2].map((i) => (
+                  <div key={i} className="flex gap-2 opacity-50">
+                    <div className="size-3 rounded bg-black/10" />
+                    <div className="h-1.5 flex-1 rounded bg-black/5" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {type === "audit" && (
+            <div className="space-y-1 font-mono text-[8px] leading-none">
+              <div className="flex justify-between border-b border-black/5 pb-1 text-slate-400">
+                <span>TIMESTAMP</span>
+                <span>EVENT</span>
+              </div>
+              {[
+                { t: "12:04:11", e: "AUTH_SUCCESS", c: "bg-emerald-500/10" },
+                { t: "12:04:12", e: "ROUTE_SELECT", c: "bg-blue-500/10" },
+                { t: "12:04:15", e: "COMPLETION", c: "bg-indigo-500/10" },
+                { t: "12:05:01", e: "BILL_RESERVE", c: "bg-amber-500/10" },
+              ].map((row, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between border-b border-black/[0.02] py-0.5"
+                >
+                  <span className="text-slate-400">{row.t}</span>
+                  <span className={`rounded px-1 ${row.c}`}>{row.e}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {type === "costs" && (
+            <div className="space-y-2">
+              <div className="flex h-12 items-end justify-between gap-1 border-b border-black/5 pb-1">
+                {[30, 60, 45, 90, 70, 85, 40, 55, 75, 95].map((h, i) => (
+                  <div
+                    key={i}
+                    style={{ height: `${h}%` }}
+                    className={`flex-1 rounded-t-sm ${i === 9 ? "bg-amber-400" : "bg-black/10"}`}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center justify-between text-[10px] font-semibold">
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="size-3 text-amber-500" />
+                  <span className="text-slate-600">$124.50</span>
+                </div>
+                <div className="h-2 w-8 rounded bg-black/5" />
+              </div>
+            </div>
+          )}
+
+          {type === "default" && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="size-6 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 shadow-inner" />
+                <div className="space-y-1">
+                  <div className="h-1.5 w-16 rounded bg-black/10" />
+                  <div className="h-1 w-24 rounded bg-black/5" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="h-1.5 w-full rounded bg-black/5" />
+                <div className="h-1.5 w-full rounded bg-black/5" />
+                <div className="h-1.5 w-3/4 rounded bg-black/5" />
+                <div className="mt-2 h-6 w-full rounded border border-black/5 bg-black/[0.02]" />
+              </div>
+            </div>
+          )}
+
+          {/* Video/Music fallbacks */}
+          {(type === "video" || type === "music") && (
+            <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-black/10 bg-black/5">
+              <div className="flex size-8 items-center justify-center rounded-full bg-white/50">
+                {type === "video" ? (
+                  <Video className="size-4 text-black/40" />
+                ) : (
+                  <Music className="size-4 text-black/40" />
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="absolute right-3 bottom-3 flex items-center gap-2">
-          <div className="h-2 w-8 rounded-full bg-[#d7e6ff]" />
-          <div className="h-2 w-4 rounded-full bg-[#d8f0e0]" />
+        {/* Floating Accent */}
+        <div className="absolute -right-8 -top-8 size-24 rounded-full bg-indigo-500/5 blur-2xl" />
+        <div className="absolute -bottom-8 -left-8 size-24 rounded-full bg-purple-500/5 blur-2xl" />
+      </div>
+    </div>
+  );
+}
+
+function MockWorkflowFrame({ className }: { className?: string }) {
+  return (
+    <div
+      className={
+        "h-full w-full rounded-2xl border border-white/45 bg-white/76 shadow-sm backdrop-blur-sm p-4 md:p-6 flex flex-col " +
+        (className ? " " + className : "")
+      }
+    >
+      <div className="flex items-center gap-1.5 border-b border-black/5 pb-4">
+        <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/10 shrink-0">
+          <TerminalSquare className="size-4 text-indigo-600/60" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="h-2 w-32 rounded bg-indigo-900/10" />
+          <div className="h-1.5 w-24 rounded bg-indigo-900/5" />
+        </div>
+        <div className="ml-auto flex gap-1.5">
+          <div className="size-6 rounded-md bg-black/5" />
+          <div className="size-6 rounded-md bg-black/5" />
+        </div>
+      </div>
+
+      <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+        {/* Card 1: Multi-Model Pipeline */}
+        <div className="flex flex-col rounded-xl border border-indigo-500/10 bg-indigo-50/20 p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-600/70">
+              Pipeline
+            </span>
+            <div className="size-2 animate-pulse rounded-full bg-indigo-500/40" />
+          </div>
+          <div className="flex flex-1 flex-col justify-center space-y-2">
+            {[
+              { label: "LLAMA 3.3", color: "bg-blue-500/30", w: "w-full" },
+              { label: "FLUX.1", color: "bg-orange-500/30", w: "w-4/5" },
+              { label: "WHISPER", color: "bg-emerald-500/30", w: "w-11/12" },
+            ].map((m, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className={`h-1.5 ${m.w} rounded-full ${m.color}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card 2: Strategic Margin */}
+        <div className="flex flex-col rounded-xl border border-emerald-500/10 bg-emerald-50/20 p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600/70">
+              Profit
+            </span>
+            <TrendingUp className="size-3 text-emerald-500/40" />
+          </div>
+          <div className="flex flex-1 flex-col justify-end">
+            <div className="flex h-12 items-end gap-1">
+              {[40, 70, 45, 90, 60, 80].map((h, i) => (
+                <div
+                  key={i}
+                  style={{ height: `${h}%` }}
+                  className="flex-1 rounded-sm bg-emerald-500/30"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Security & Policy */}
+        <div className="flex flex-col rounded-xl border border-rose-500/10 bg-rose-50/20 p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600/70">
+              Compliance
+            </span>
+            <ShieldCheck className="size-3 text-rose-500/40" />
+          </div>
+          <div className="flex flex-1 flex-col space-y-2 pt-1">
+            <div className="h-1.5 w-full rounded bg-rose-900/10" />
+            <div className="h-1.5 w-3/4 rounded bg-rose-900/10" />
+            <div className="mt-auto flex items-center gap-1">
+              <div className="size-2 rounded-full bg-emerald-500/40" />
+              <div className="h-1 w-8 rounded bg-rose-900/5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Code Dispatch Panel */}
+      <div className="mt-4 shrink-0 rounded-xl border border-indigo-500/10 bg-indigo-900/[0.03] p-3 font-mono">
+        <div className="mb-2 flex items-center gap-2">
+          <div className="size-1.5 rounded-full bg-indigo-400" />
+          <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-400">
+            Request Router Dispatch
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex gap-2">
+            <span className="text-[10px] text-indigo-400 opacity-60">
+              POST
+            </span>
+            <div className="h-2 w-48 rounded bg-indigo-900/10" />
+          </div>
+          <div className="flex gap-2 pl-4">
+            <div className="h-1.5 w-32 rounded bg-indigo-900/10" />
+            <div className="h-1.5 w-12 rounded bg-indigo-900/20" />
+          </div>
         </div>
       </div>
     </div>
@@ -1242,68 +1639,66 @@ function ValueCard({
   title,
   body,
   accent,
+  type,
 }: {
   title: string;
   body: string;
   accent: string;
+  type?:
+    | "default"
+    | "chat"
+    | "image"
+    | "speech"
+    | "embeddings"
+    | "policy"
+    | "audit"
+    | "costs";
 }) {
   return (
-    <div className="rounded-lg border border-[#ececec] p-5">
+    <div className="group rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
       <div
-        className={`rounded-md p-3 ${"bg-gradient-to-br " + accent} border border-[#f3f3f3]`}
+        className={`rounded-lg p-2 bg-gradient-to-br ${accent} shadow-inner transition-transform group-hover:scale-[1.02]`}
       >
-        <MockUiPreview />
+        <MockUiPreview compact type={type} />
       </div>
-      <h3 className="text-site-strong mt-4 text-lg font-semibold">{title}</h3>
-      <p className="text-site-muted mt-2 text-sm">{body}</p>
+      <h3 className="text-site-strong mt-5 text-lg font-bold tracking-tight">
+        {title}
+      </h3>
+      <p className="text-site-muted mt-2 text-sm leading-relaxed">{body}</p>
     </div>
   );
 }
 
-function MockCodePanel() {
+function MockCodePanel({ code }: { code?: string }) {
+  const defaultCode = `// Fetch chat completion
+const stream = await dryapi.chat.completions.create({
+  model: "meta-llama/llama-3.3-70b-instruct",
+  messages: [{ role: "user", content: "Analyze risk" }],
+  stream: true,
+});`;
+
   return (
-    <div className="text-site-strong text-xs font-mono">
-      <div className="rounded-md bg-[var(--site-surface-0)] p-3">
-        <div className="mb-2 h-3 w-24 rounded-full bg-[var(--site-surface-0)]" />
-        <div className="space-y-1">
-          <div className="h-3 w-full rounded bg-[var(--site-surface-0)]" />
-          <div className="h-3 w-5/6 rounded bg-[var(--site-surface-0)]" />
-          <div className="h-3 w-4/6 rounded bg-[var(--site-surface-0)]" />
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#0b0e14] shadow-2xl">
+      <div className="flex items-center justify-between border-b border-white/5 bg-white/5 px-4 py-2.5">
+        <div className="flex gap-1.5">
+          <div className="size-2.5 rounded-full bg-white/10" />
+          <div className="size-2.5 rounded-full bg-white/10" />
+          <div className="size-2.5 rounded-full bg-white/10" />
         </div>
+        <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
+          typescript
+        </div>
+      </div>
+      <div className="p-4 font-mono text-[11px] leading-relaxed">
+        <pre className="text-indigo-300">
+          <code>{code || defaultCode}</code>
+        </pre>
       </div>
     </div>
   );
 }
 
-function MockWorkflowFrame() {
-  return (
-    <div className="rounded-lg border border-[#eef3f8] bg-white p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md border bg-gradient-to-br from-secondary/75 to-primary/15" />
-          <div>
-            <p className="text-sm font-semibold">Compose</p>
-            <p className="text-site-muted text-xs">Message with policy check</p>
-          </div>
-        </div>
-        <div className="text-site-muted text-xs">
-          Enforced • <strong className="text-[#2b6cb0]">Policy: Safety</strong>
-        </div>
-      </div>
-
-      <div className="mt-3 grid gap-2">
-        <div className="h-10 rounded-md bg-[#f7fbff]" />
-        <div className="h-10 rounded-md bg-[#f3fff6]" />
-        <div className="mt-2 flex items-center gap-2">
-          <div className="h-2 w-32 rounded-full bg-[#dbeafe]" />
-          <div className="h-2 w-20 rounded-full bg-[#dff6e9]" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatBand({ label, value }: { label: string; value: string }) {
+function LegacyStatBand({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-white/12 bg-white/4 px-4 py-3 text-center">
       <div className="text-site-strong text-2xl font-bold">{value}</div>

@@ -1,7 +1,11 @@
 "use client"
+/* eslint-disable react/no-children-prop */
 
 import { useEffect, useState } from "react"
+import { useForm } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -71,6 +75,29 @@ type OrganizationDetailsResponse = {
 }
 
 const ORGANIZATION_ROLES = ["owner", "admin", "member"] as const
+
+const createOrganizationSchema = z.object({
+  name: z.string().trim().min(1, "Workspace name is required."),
+  slug: z.string().trim().min(1, "Workspace slug is required."),
+})
+
+const inviteMemberSchema = z.object({
+  email: z.string().trim().email("Invite email is required."),
+  role: z.enum(ORGANIZATION_ROLES),
+})
+
+type CreateOrganizationFormValues = z.infer<typeof createOrganizationSchema>
+type InviteMemberFormValues = z.infer<typeof inviteMemberSchema>
+
+const CREATE_ORGANIZATION_DEFAULTS: CreateOrganizationFormValues = {
+  name: "",
+  slug: "",
+}
+
+const INVITE_MEMBER_DEFAULTS: InviteMemberFormValues = {
+  email: "",
+  role: "member",
+}
 
 function toRoleLabel(role: (typeof ORGANIZATION_ROLES)[number]): string {
   return role.charAt(0).toUpperCase() + role.slice(1)
@@ -157,17 +184,111 @@ export function OrganizationSettingsPanel() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
-  const [name, setName] = useState("")
-  const [slug, setSlug] = useState("")
   const [slugTouched, setSlugTouched] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState("")
-  const [inviteRole, setInviteRole] = useState<(typeof ORGANIZATION_ROLES)[number]>("member")
-  const [creating, setCreating] = useState(false)
-  const [inviting, setInviting] = useState(false)
   const [switchingId, setSwitchingId] = useState<string | null>(null)
   const [memberActionId, setMemberActionId] = useState<string | null>(null)
   const [invitationActionId, setInvitationActionId] = useState<string | null>(null)
   const [userInvitationActionId, setUserInvitationActionId] = useState<string | null>(null)
+
+  const createOrganizationMutation = useMutation({
+    mutationFn: async (values: CreateOrganizationFormValues) => {
+      const trimmedName = values.name.trim()
+      const normalizedSlug = toSlug(values.slug || values.name)
+
+      if (!trimmedName || !normalizedSlug) {
+        throw new Error("Workspace name and slug are required")
+      }
+
+      const response = await fetch("/api/auth/organization/create", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name: trimmedName,
+          slug: normalizedSlug,
+        }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as { message?: string; name?: string } | null
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Unable to create workspace")
+      }
+
+      return payload
+    },
+    onSuccess: (payload) => {
+      createOrganizationForm.reset(CREATE_ORGANIZATION_DEFAULTS)
+      setSlugTouched(false)
+      setReloadToken((current) => current + 1)
+      toast.success(payload?.name ? `Workspace ${payload.name} created` : "Workspace created")
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Unable to create workspace")
+    },
+  })
+
+  const inviteMemberMutation = useMutation({
+    mutationFn: async (values: InviteMemberFormValues) => {
+      if (!activeOrganizationId) {
+        throw new Error("Select an active workspace before inviting members")
+      }
+
+      const response = await fetch("/api/auth/organization/invite-member", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          email: values.email.trim().toLowerCase(),
+          role: values.role,
+          organizationId: activeOrganizationId,
+        }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Unable to create invitation")
+      }
+
+      return payload
+    },
+    onSuccess: async () => {
+      if (activeOrganizationId) {
+        await loadOrganizationDetails(activeOrganizationId)
+      }
+
+      inviteMemberForm.reset(INVITE_MEMBER_DEFAULTS)
+      toast.success("Invitation created")
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Unable to create invitation")
+    },
+  })
+
+  const createOrganizationForm = useForm({
+    defaultValues: CREATE_ORGANIZATION_DEFAULTS,
+    validators: {
+      onSubmit: createOrganizationSchema,
+    },
+    onSubmit: async ({ value }) => {
+      await createOrganizationMutation.mutateAsync(value)
+    },
+  })
+
+  const inviteMemberForm = useForm({
+    defaultValues: INVITE_MEMBER_DEFAULTS,
+    validators: {
+      onSubmit: inviteMemberSchema,
+    },
+    onSubmit: async ({ value }) => {
+      await inviteMemberMutation.mutateAsync(value)
+    },
+  })
 
   async function loadOrganizationDetails(organizationId: string) {
     const response = await fetch(
@@ -268,58 +389,6 @@ export function OrganizationSettingsPanel() {
     }
   }, [reloadToken])
 
-  function handleNameChange(value: string) {
-    setName(value)
-    if (!slugTouched) {
-      setSlug(toSlug(value))
-    }
-  }
-
-  async function handleCreateOrganization(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const trimmedName = name.trim()
-    const normalizedSlug = toSlug(slug || name)
-
-    if (!trimmedName || !normalizedSlug) {
-      toast.error("Workspace name and slug are required")
-      return
-    }
-
-    setCreating(true)
-
-    try {
-      const response = await fetch("/api/auth/organization/create", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          name: trimmedName,
-          slug: normalizedSlug,
-        }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as { message?: string; name?: string } | null
-
-      if (!response.ok) {
-        toast.error(payload?.message || "Unable to create workspace")
-        return
-      }
-
-      setName("")
-      setSlug("")
-      setSlugTouched(false)
-      setReloadToken((value) => value + 1)
-      toast.success(payload?.name ? `Workspace ${payload.name} created` : "Workspace created")
-    } catch {
-      toast.error("Unable to create workspace")
-    } finally {
-      setCreating(false)
-    }
-  }
-
   async function handleSetActiveOrganization(organizationId: string) {
     if (switchingId) {
       return
@@ -351,54 +420,6 @@ export function OrganizationSettingsPanel() {
       toast.error("Unable to switch workspace")
     } finally {
       setSwitchingId(null)
-    }
-  }
-
-  async function handleInviteMember(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (!activeOrganizationId) {
-      toast.error("Select an active workspace before inviting members")
-      return
-    }
-
-    const email = inviteEmail.trim().toLowerCase()
-    if (!email) {
-      toast.error("Invite email is required")
-      return
-    }
-
-    setInviting(true)
-
-    try {
-      const response = await fetch("/api/auth/organization/invite-member", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          role: inviteRole,
-          organizationId: activeOrganizationId,
-        }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null
-
-      if (!response.ok) {
-        toast.error(payload?.message || "Unable to create invitation")
-        return
-      }
-
-      setInviteEmail("")
-      setInviteRole("member")
-      await loadOrganizationDetails(activeOrganizationId)
-      toast.success("Invitation created")
-    } catch {
-      toast.error("Unable to create invitation")
-    } finally {
-      setInviting(false)
     }
   }
 
@@ -619,44 +640,82 @@ export function OrganizationSettingsPanel() {
 
       <form
         className="grid gap-4 rounded-lg border border-zinc-200/80 bg-white p-4 dark:border-zinc-700/80 dark:bg-zinc-900/70 md:grid-cols-2"
-        onSubmit={handleCreateOrganization}
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault()
+          void createOrganizationForm.handleSubmit()
+        }}
       >
-        <div className="space-y-2">
-          <Label htmlFor="organization-name">Workspace name</Label>
-          <Input
-            id="organization-name"
-            value={name}
-            onChange={(event) => handleNameChange(event.target.value)}
-            placeholder="dryAPI Ops"
-          />
-        </div>
+        <createOrganizationForm.Field
+          name="name"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || createOrganizationForm.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
 
-        <div className="space-y-2">
-          <Label htmlFor="organization-slug">Workspace slug</Label>
-          <Input
-            id="organization-slug"
-            value={slug}
-            onChange={(event) => {
-              setSlugTouched(true)
-              setSlug(toSlug(event.target.value))
-            }}
-            placeholder="dryapi-ops"
-          />
-        </div>
+            return (
+              <div className="space-y-2">
+                <Label htmlFor={field.name}>Workspace name</Label>
+                <Input
+                  id={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => {
+                    const nextValue = event.target.value
+                    field.handleChange(nextValue)
+                    if (!slugTouched) {
+                      createOrganizationForm.setFieldValue("slug", toSlug(nextValue))
+                    }
+                  }}
+                  placeholder="dryAPI Ops"
+                />
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </div>
+            )
+          }}
+        />
+
+        <createOrganizationForm.Field
+          name="slug"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || createOrganizationForm.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+
+            return (
+              <div className="space-y-2">
+                <Label htmlFor={field.name}>Workspace slug</Label>
+                <Input
+                  id={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => {
+                    setSlugTouched(true)
+                    field.handleChange(toSlug(event.target.value))
+                  }}
+                  placeholder="dryapi-ops"
+                />
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </div>
+            )
+          }}
+        />
 
         <div className="md:col-span-2 flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-4 dark:border-zinc-700/80">
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Creating a workspace also sets it as your active Better Auth organization by default.
           </p>
-          <Button type="submit" disabled={creating}>
-            {creating ? "Creating..." : "Create workspace"}
+          <Button type="submit" disabled={createOrganizationMutation.isPending || createOrganizationForm.state.isSubmitting}>
+            {createOrganizationMutation.isPending || createOrganizationForm.state.isSubmitting ? "Creating..." : "Create workspace"}
           </Button>
         </div>
       </form>
 
       <form
         className="grid gap-4 rounded-lg border border-zinc-200/80 bg-white p-4 dark:border-zinc-700/80 dark:bg-zinc-900/70 md:grid-cols-3"
-        onSubmit={handleInviteMember}
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault()
+          void inviteMemberForm.handleSubmit()
+        }}
       >
         <div className="md:col-span-3 flex items-center justify-between gap-3 border-b border-zinc-200/80 pb-3 dark:border-zinc-700/80">
           <div>
@@ -671,36 +730,53 @@ export function OrganizationSettingsPanel() {
           </div>
         </div>
 
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="organization-invite-email">Invite email</Label>
-          <Input
-            id="organization-invite-email"
-            type="email"
-            value={inviteEmail}
-            onChange={(event) => setInviteEmail(event.target.value)}
-            placeholder="teammate@company.com"
-          />
-        </div>
+        <inviteMemberForm.Field
+          name="email"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || inviteMemberForm.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
 
-        <div className="space-y-2">
-          <Label htmlFor="organization-invite-role">Role</Label>
-          <Select value={inviteRole} onValueChange={(value) => setInviteRole(normalizeOrganizationRole(value))}>
-            <SelectTrigger id="organization-invite-role" className="w-full">
-              <SelectValue placeholder="Role" />
-            </SelectTrigger>
-            <SelectContent>
-              {ORGANIZATION_ROLES.map((role) => (
-                <SelectItem key={`invite-role-${role}`} value={role}>
-                  {toRoleLabel(role)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            return (
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor={field.name}>Invite email</Label>
+                <Input
+                  id={field.name}
+                  type="email"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  placeholder="teammate@company.com"
+                />
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </div>
+            )
+          }}
+        />
+
+        <inviteMemberForm.Field
+          name="role"
+          children={(field) => (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>Role</Label>
+              <Select value={field.state.value} onValueChange={(value) => field.handleChange(normalizeOrganizationRole(value))}>
+                <SelectTrigger id={field.name} className="w-full">
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ORGANIZATION_ROLES.map((role) => (
+                    <SelectItem key={`invite-role-${role}`} value={role}>
+                      {toRoleLabel(role)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        />
 
         <div className="md:col-span-3 flex justify-end border-t border-zinc-200/80 pt-4 dark:border-zinc-700/80">
-          <Button type="submit" disabled={!activeOrganizationId || inviting}>
-            {inviting ? "Inviting..." : "Invite member"}
+          <Button type="submit" disabled={!activeOrganizationId || inviteMemberMutation.isPending || inviteMemberForm.state.isSubmitting}>
+            {inviteMemberMutation.isPending || inviteMemberForm.state.isSubmitting ? "Inviting..." : "Invite member"}
           </Button>
         </div>
       </form>

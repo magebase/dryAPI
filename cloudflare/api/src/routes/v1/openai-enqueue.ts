@@ -40,6 +40,7 @@ type EnqueueResponseBody = {
   pricing: {
     unit_price_usd: number
     source: 'snapshot' | 'fallback'
+    worker_type: 'active' | 'flex'
     price_key: string
     sample_size: number
     p95_execution_seconds: number
@@ -50,9 +51,60 @@ type EnqueueResponseBody = {
   runpod: unknown
 }
 
+function normalizeOrigin(value: unknown): string {
+  const raw = typeof value === 'string' ? value.trim() : ''
+  if (!raw) {
+    return ''
+  }
+
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+  return withProtocol.replace(/\/$/, '')
+}
+
+async function tryAutoTopUpAndReserve(args: {
+  c: AppContext
+  creditUserId: string
+  quotedPriceUsd: number
+}): Promise<{ ok: true; reservation: CreditReservation } | { ok: false; response: Response }> {
+  const origin = normalizeOrigin(args.c.env.ORIGIN_URL)
+  const internalKey = typeof args.c.env.INTERNAL_API_KEY === 'string' ? args.c.env.INTERNAL_API_KEY.trim() : ''
+  if (!origin || !internalKey || !args.creditUserId.includes('@')) {
+    return { ok: false, response: jsonError(args.c, 402, 'insufficient_credits', 'Insufficient credits') }
+  }
+
+  const autoTopUpResponse = await fetch(`${origin}/api/internal/billing/auto-top-up`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json',
+      authorization: `Bearer ${internalKey}`,
+    },
+    body: JSON.stringify({
+      customerEmail: args.creditUserId,
+      requiredAmountCredits: args.quotedPriceUsd,
+    }),
+  }).catch(() => null)
+
+  if (!autoTopUpResponse?.ok) {
+    return { ok: false, response: jsonError(args.c, 402, 'insufficient_credits', 'Insufficient credits') }
+  }
+
+  const retryReserve = await reserveCredits({
+    c: args.c,
+    userId: args.creditUserId,
+    amount: args.quotedPriceUsd,
+  })
+
+  return retryReserve
+}
+
 export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<Response> {
   const { c, surface, payload } = options
   const modelSlug = options.modelSlug ?? null
+  const requestedWorkerType =
+    typeof payload.worker_type === 'string' && (payload.worker_type === 'active' || payload.worker_type === 'flex')
+      ? payload.worker_type
+      : null
 
   const endpointId = resolveRunpodEndpointId({
     c,
@@ -83,6 +135,7 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     surface,
     endpointId,
     modelSlug,
+    workerType: requestedWorkerType,
   })
   const payloadMultiplier = computePayloadPriceMultiplier({
     surface,
@@ -100,19 +153,35 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
   const shouldUseQueueFirst = queueBatchEnabled && typeof c.env.RUNPOD_BATCH_QUEUE?.send === 'function'
   let creditReservation: CreditReservation | null = null
 
-  const explicitUserId = typeof payload.user === 'string' ? payload.user : null
+  const contextCreditUserIdRaw = c.get('creditUserId')
+  const contextCreditUserId = typeof contextCreditUserIdRaw === 'string' ? contextCreditUserIdRaw : null
+  const explicitUserId = contextCreditUserId ?? (typeof payload.user === 'string' ? payload.user : null)
   const creditUserId = await resolveCreditUserId({
     c,
     explicitUserId,
   })
-  const reserveResult = await reserveCredits({
+  let reserveResult = await reserveCredits({
     c,
     userId: creditUserId,
     amount: quotedPriceUsd,
   })
 
   if (!reserveResult.ok) {
-    return reserveResult.response
+    if (reserveResult.response.status === 402) {
+      const retryReserve = await tryAutoTopUpAndReserve({
+        c,
+        creditUserId,
+        quotedPriceUsd,
+      })
+
+      if (retryReserve.ok) {
+        reserveResult = retryReserve
+      } else {
+        return reserveResult.response
+      }
+    } else {
+      return reserveResult.response
+    }
   }
 
   creditReservation = reserveResult.reservation
@@ -124,6 +193,7 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       surface,
       endpointId,
       modelSlug,
+      workerType: pricingQuote.workerType,
       payload,
       webhookUrl,
       requestHash,
@@ -165,6 +235,8 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       quotedPriceUsd,
       priceKey: pricingQuote.priceKey,
       pricingSource: pricingQuote.source,
+      workerType: pricingQuote.workerType,
+      banditArmId: pricingQuote.banditArmId,
     })
 
     if (c.executionCtx?.waitUntil) {
@@ -215,6 +287,7 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       pricing: {
         unit_price_usd: quotedPriceUsd,
         source: pricingQuote.source,
+        worker_type: pricingQuote.workerType,
         price_key: pricingQuote.priceKey,
         sample_size: pricingQuote.sampleSize,
         p95_execution_seconds: pricingQuote.p95ExecutionSeconds,
@@ -241,6 +314,7 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       'x-dryapi-unit-price-usd': String(quotedPriceUsd),
       'x-dryapi-price-key': pricingQuote.priceKey,
       'x-dryapi-price-source': pricingQuote.source,
+      'x-dryapi-worker-type': pricingQuote.workerType,
       'x-dryapi-batch-window-seconds': String(queueBatchPolicy.batchWindowSeconds),
       'x-dryapi-max-batch-size': String(queueBatchPolicy.maxBatchSize),
       'x-dryapi-batch-queue-enabled': queueBatchEnabled ? '1' : '0',
@@ -301,6 +375,8 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
       quotedPriceUsd,
       priceKey: pricingQuote.priceKey,
       pricingSource: pricingQuote.source,
+      workerType: pricingQuote.workerType,
+      banditArmId: pricingQuote.banditArmId,
     })
 
     if (c.executionCtx?.waitUntil) {
@@ -352,6 +428,7 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     pricing: {
       unit_price_usd: quotedPriceUsd,
       source: pricingQuote.source,
+      worker_type: pricingQuote.workerType,
       price_key: pricingQuote.priceKey,
       sample_size: pricingQuote.sampleSize,
       p95_execution_seconds: pricingQuote.p95ExecutionSeconds,
@@ -373,6 +450,7 @@ export async function enqueueOpenAiCompatible(options: EnqueueOptions): Promise<
     'x-dryapi-unit-price-usd': String(quotedPriceUsd),
     'x-dryapi-price-key': pricingQuote.priceKey,
     'x-dryapi-price-source': pricingQuote.source,
+    'x-dryapi-worker-type': pricingQuote.workerType,
     'x-dryapi-batch-window-seconds': String(queueBatchPolicy.batchWindowSeconds),
     'x-dryapi-max-batch-size': String(queueBatchPolicy.maxBatchSize),
     'x-dryapi-batch-queue-enabled': queueBatchEnabled ? '1' : '0',

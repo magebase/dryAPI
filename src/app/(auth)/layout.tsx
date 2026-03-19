@@ -1,11 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { DryApiLogo } from "@/components/site/dryapi-logo";
+import { BrandLogo } from "@/components/site/brand-logo";
 import { buildTakumiMetadata } from "@/lib/og/metadata";
 import { readSiteConfig } from "@/lib/site-content-loader";
 
-export const dynamic = "force-static";
+;
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig();
@@ -39,7 +39,7 @@ export default function AuthLayout({
               href="/"
               className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2"
             >
-              <DryApiLogo size="sm" tone="light" className="!gap-2" />
+              <BrandLogo size="sm" tone="light" className="!gap-2" />
             </Link>
           </header>
           {children}

@@ -1,20 +1,14 @@
 ---
 title: "Audio-to-Video"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
-
-# Audio-to-Video
-
 > Endpoint for requesting audio2video inference
 
 Audio-to-Video generates video clips conditioned on an audio file and a text prompt. You can optionally provide first and last frame images to control the visual start and end points. The endpoint returns a task ID to track processing status.
 
-<Callout>
-**Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**.
-</Callout>
+> **NOTE**
+>
+> **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**.
 
 ## OpenAPI
 
-<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/aud2video","method":"post"}]} showTitle={true} />
+<APIPage document={"/home/aqua/Projects/dryapi/docs/dryapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/aud2video","method":"post"}]} showTitle={true} />

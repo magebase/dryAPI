@@ -91,12 +91,12 @@ export function PwaInstallCta() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">Install App</p>
-            <p className="mt-1 text-xs text-slate-200">Add GenFix to your home screen for faster access.</p>
+            <p className="mt-1 text-xs text-site-soft">Add GenFix to your home screen for faster access.</p>
           </div>
           <button
             type="button"
             aria-label="Dismiss install prompt"
-            className="shrink-0 rounded-sm border border-white/15 p-1 text-slate-300 transition hover:border-white hover:text-white"
+            className="shrink-0 rounded-sm border border-white/15 p-1 text-site-soft transition hover:border-white hover:text-white"
             onClick={handleDismiss}
           >
             <X className="size-3.5" />

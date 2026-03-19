@@ -1,12 +1,12 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # API Overview
 
-> Complete reference of all deAPI endpoints
+> Complete reference of all dryAPI endpoints
 
-All endpoints use base URL `https://api.deapi.ai` and require authentication via `Authorization: Bearer <API_KEY>` header.
+All endpoints use base URL `https://api.dryapi.dev` and require authentication via `Authorization: Bearer <API_KEY>` header.
 
 <Note>
   Each generation/analysis endpoint has a corresponding `/price-calculation` endpoint to estimate costs before execution.

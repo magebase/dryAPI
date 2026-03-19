@@ -31,7 +31,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
   const explorePrefix = resolveSiteUiText(site, "blogList.explorePrefix", "Explore")
 
   return (
-    <main className="overflow-x-clip bg-[var(--site-surface-0)] pb-16 text-slate-900 md:pb-20">
+    <main className="overflow-x-clip bg-[var(--site-surface-0)] pb-16 text-site-strong md:pb-20">
       <section className="relative isolate overflow-hidden border-b border-slate-200">
         <Image
           alt={page.hero.heading}
@@ -48,7 +48,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
           <p className="text-xs uppercase tracking-[0.22em] text-primary" data-tina-field={tinaField(page.hero, "kicker")}>
             {page.hero.kicker}
           </p>
-          <h1 className="text-site-inverse mt-4 max-w-3xl font-display text-3xl uppercase leading-[1.05] tracking-[0.03em] sm:text-4xl md:text-6xl">
+          <h1 className="text-site-inverse mt-4 max-w-3xl font-display text-4xl uppercase leading-[1.05] tracking-[0.03em] sm:text-5xl md:text-7xl">
             <KeywordGradientText dataTinaField={tinaField(page.hero, "heading")} text={page.hero.heading} />
           </h1>
           <p className="text-site-inverse-muted mt-5 max-w-2xl text-sm sm:text-base md:text-lg" data-tina-field={tinaField(page.hero, "body")}>
@@ -97,7 +97,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
       {page.sections.map((section) => (
         <section key={section.id} className="mx-auto mt-12 max-w-7xl px-4">
           <Reveal as="div" className={`${getGradientVariant(2)} rounded-md border border-slate-200 px-6 py-7`}>
-            <h2 className="text-2xl font-semibold uppercase tracking-[0.1em] text-slate-900 md:text-3xl">
+            <h2 className="text-2xl font-semibold uppercase tracking-[0.1em] text-site-strong md:text-3xl">
               <KeywordGradientText dataTinaField={tinaField(section, "title")} text={section.title} />
             </h2>
             <p className="mt-3 max-w-3xl text-slate-600" data-tina-field={tinaField(section, "body")}>{section.body}</p>
@@ -122,7 +122,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
                     />
                   ) : null}
                   <div className="p-5">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-900">
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-site-strong">
                       <KeywordGradientText dataTinaField={tinaField(card, "title")} text={card.title} />
                     </h3>
                     <p className="mt-3 text-sm text-slate-600" data-tina-field={tinaField(card, "description")}>
@@ -152,7 +152,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               <MessageSquare className="size-4" />
               <span>{ctaKicker.value}</span>
             </p>
-            <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-slate-900">
+            <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-site-strong">
               <KeywordGradientText dataTinaField={ctaHeading.field} text={ctaHeading.value} />
             </h2>
             <p className="mt-2 text-sm text-slate-600" data-tina-field={ctaBody.field}>{ctaBody.value}</p>
@@ -169,7 +169,7 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
               <ArrowRight className="size-4" />
             </QuoteAwareLink>
             <QuoteAwareLink
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-700 transition hover:border-white hover:text-slate-900 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-700 transition hover:border-white hover:text-site-strong sm:w-auto"
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
               href={productsLink?.href ?? "/products"}
             >

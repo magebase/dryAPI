@@ -2,6 +2,15 @@ import "server-only"
 
 import { getAuth } from "@/lib/auth"
 
+type CreateApiKeyInput = {
+  userId: string
+  name?: string
+  prefix?: string
+  expiresIn?: number
+  permissions?: Record<string, string[]>
+  metadata?: Record<string, unknown>
+}
+
 type InvokeAuthHandlerInput = {
   request?: Request
   path: string
@@ -34,7 +43,26 @@ function normalizeBaseUrl(value: string | undefined): string | undefined {
   }
 }
 
+function resolveConfiguredAuthOrigin(): string | undefined {
+  return (
+    normalizeBaseUrl(process.env.BETTER_AUTH_URL)
+    || normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL)
+    || normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL)
+  )
+}
+
 export function resolveAuthInvocationOrigin(request?: Request): string {
+  const configuredOrigin = resolveConfiguredAuthOrigin()
+  if (configuredOrigin) {
+    return configuredOrigin
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Missing auth origin configuration. Set BETTER_AUTH_URL, NEXT_PUBLIC_APP_URL, or NEXT_PUBLIC_SITE_URL."
+    )
+  }
+
   if (request) {
     try {
       return new URL(request.url).origin
@@ -43,17 +71,13 @@ export function resolveAuthInvocationOrigin(request?: Request): string {
     }
   }
 
-  return (
-    normalizeBaseUrl(process.env.BETTER_AUTH_URL)
-    || normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL)
-    || normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL)
-    || "http://localhost:3000"
-  )
+  return "http://localhost:3000"
 }
 
 export async function invokeAuthHandler<T = unknown>(input: InvokeAuthHandlerInput): Promise<InvokeAuthHandlerResult<T>> {
   const origin = resolveAuthInvocationOrigin(input.request)
   const headers = new Headers(input.headers)
+  headers.set("origin", origin)
 
   const forwardedCookie = input.request?.headers.get("cookie")
   if (forwardedCookie) {
@@ -76,4 +100,18 @@ export async function invokeAuthHandler<T = unknown>(input: InvokeAuthHandlerInp
 
   const data = (await response.clone().json().catch(() => null)) as T | null
   return { response, data }
+}
+
+export async function createAuthApiKey<T = unknown>(input: CreateApiKeyInput): Promise<T> {
+  return getAuth().api.createApiKey({
+    method: "POST",
+    body: {
+      userId: input.userId,
+      ...(input.name ? { name: input.name } : {}),
+      ...(input.prefix ? { prefix: input.prefix } : {}),
+      ...(input.expiresIn ? { expiresIn: input.expiresIn } : {}),
+      ...(input.permissions ? { permissions: input.permissions } : {}),
+      ...(input.metadata ? { metadata: input.metadata } : {}),
+    },
+  }) as Promise<T>
 }

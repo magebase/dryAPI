@@ -1,190 +1,251 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useMemo, useState } from "react"
-import { ArrowRight, Clock3, Filter, RefreshCcw, Search } from "lucide-react"
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import {
+  ArrowRight,
+  Clock3,
+  Filter,
+  RefreshCcw,
+  Search,
+  ChevronRight,
+  Layers,
+  CreditCard,
+  LayoutGrid,
+} from "lucide-react";
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   findPricingCategoryBySlug,
   listPricingCategories,
   toCategorySummaryRows,
   toPricingCategoryLabel,
   toPricingCategorySlug,
-} from "@/lib/deapi-pricing-utils"
-import type { DeapiPricingPermutation, DeapiPricingSnapshot } from "@/types/deapi-pricing"
+} from "@/lib/deapi-pricing-utils";
+import type {
+  DeapiPricingPermutation,
+  DeapiPricingSnapshot,
+} from "@/types/deapi-pricing";
 
-const EMPTY_PERMUTATIONS: DeapiPricingPermutation[] = []
-const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
+const EMPTY_PERMUTATIONS: DeapiPricingPermutation[] = [];
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 
 type GroupedPricingRow = {
-  id: string
-  modelName: string
-  categories: string[]
-  categorySummary: string
-  representative: DeapiPricingPermutation
-  representativeParamText: string
-  commonParamCount: number
-  rows: DeapiPricingPermutation[]
-  latestScrapedAt: string
-}
+  id: string;
+  modelName: string;
+  categories: string[];
+  categorySummary: string;
+  representative: DeapiPricingPermutation;
+  representativeParamText: string;
+  commonParamCount: number;
+  rows: DeapiPricingPermutation[];
+  latestScrapedAt: string;
+};
 
 function formatUsd(amount: number | null): string {
   if (amount === null || !Number.isFinite(amount)) {
-    return "N/A"
+    return "N/A";
   }
 
   if (amount >= 1) {
-    return `$${amount.toFixed(3)}`
+    return `$${amount.toFixed(3)}`;
   }
 
-  return `$${amount.toFixed(6)}`
+  return `$${amount.toFixed(6)}`;
 }
 
 function formatCredits(amount: number | null): string {
   if (amount === null || !Number.isFinite(amount)) {
-    return "N/A"
+    return "N/A";
   }
 
   if (amount >= 1) {
-    return `${amount.toFixed(3)} credits`
+    return `${amount.toFixed(3)} credits`;
   }
 
-  return `${amount.toFixed(6)} credits`
+  return `${amount.toFixed(6)} credits`;
 }
 
 function toParamText(params: DeapiPricingPermutation["params"]): string {
-  const entries = Object.entries(params)
+  const entries = Object.entries(params);
   if (entries.length === 0) {
-    return "-"
+    return "-";
   }
 
-  const preview = entries.slice(0, 3).map(([key, value]) => `${key}=${String(value)}`)
-  const suffix = entries.length > 3 ? ` (+${entries.length - 3} more)` : ""
+  const preview = entries
+    .slice(0, 3)
+    .map(([key, value]) => `${key}=${String(value)}`);
+  const suffix = entries.length > 3 ? ` (+${entries.length - 3} more)` : "";
 
-  return preview.join(", ") + suffix
+  return preview.join(", ") + suffix;
 }
 
 function toParamSignature(params: DeapiPricingPermutation["params"]): string {
-  const entries = Object.entries(params).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
-  return entries.map(([key, value]) => `${key}=${String(value)}`).join("|")
+  const entries = Object.entries(params).sort(([leftKey], [rightKey]) =>
+    leftKey.localeCompare(rightKey),
+  );
+  return entries.map(([key, value]) => `${key}=${String(value)}`).join("|");
 }
 
-function compareNullableNumberAsc(left: number | null, right: number | null): number {
+function compareNullableNumberAsc(
+  left: number | null,
+  right: number | null,
+): number {
   if (left === null && right === null) {
-    return 0
+    return 0;
   }
 
   if (left === null) {
-    return 1
+    return 1;
   }
 
   if (right === null) {
-    return -1
+    return -1;
   }
 
-  return left - right
+  return left - right;
 }
 
-function pickRepresentativeRow(rows: DeapiPricingPermutation[]): { representative: DeapiPricingPermutation; commonParamCount: number } {
-  const bySignature = new Map<string, { count: number; representative: DeapiPricingPermutation }>()
+function pickRepresentativeRow(rows: DeapiPricingPermutation[]): {
+  representative: DeapiPricingPermutation;
+  commonParamCount: number;
+} {
+  const bySignature = new Map<
+    string,
+    { count: number; representative: DeapiPricingPermutation }
+  >();
 
   for (const row of rows) {
-    const signature = toParamSignature(row.params)
-    const existing = bySignature.get(signature)
+    const signature = toParamSignature(row.params);
+    const existing = bySignature.get(signature);
 
     if (existing) {
-      existing.count += 1
+      existing.count += 1;
 
-      const currentCandidate = existing.representative
-      const currentPrice = currentCandidate.priceUsd ?? null
-      const nextPrice = row.priceUsd ?? null
-      const priceComparison = compareNullableNumberAsc(nextPrice, currentPrice)
+      const currentCandidate = existing.representative;
+      const currentPrice = currentCandidate.priceUsd ?? null;
+      const nextPrice = row.priceUsd ?? null;
+      const priceComparison = compareNullableNumberAsc(nextPrice, currentPrice);
 
       if (priceComparison < 0) {
-        existing.representative = row
+        existing.representative = row;
       }
-      continue
+      continue;
     }
 
-    bySignature.set(signature, { count: 1, representative: row })
+    bySignature.set(signature, { count: 1, representative: row });
   }
 
-  let best: { count: number; representative: DeapiPricingPermutation } | null = null
+  let best: { count: number; representative: DeapiPricingPermutation } | null =
+    null;
   for (const candidate of bySignature.values()) {
     if (!best) {
-      best = candidate
-      continue
+      best = candidate;
+      continue;
     }
 
     if (candidate.count > best.count) {
-      best = candidate
-      continue
+      best = candidate;
+      continue;
     }
 
     if (candidate.count === best.count) {
-      const candidatePrice = candidate.representative.priceUsd ?? null
-      const bestPrice = best.representative.priceUsd ?? null
+      const candidatePrice = candidate.representative.priceUsd ?? null;
+      const bestPrice = best.representative.priceUsd ?? null;
       if (compareNullableNumberAsc(candidatePrice, bestPrice) < 0) {
-        best = candidate
+        best = candidate;
       }
     }
   }
 
   if (!best) {
-    return { representative: rows[0], commonParamCount: 1 }
+    return { representative: rows[0], commonParamCount: 1 };
   }
 
   return {
     representative: best.representative,
     commonParamCount: best.count,
-  }
+  };
 }
 
-function toGroupedPricingRows(permutations: DeapiPricingPermutation[]): GroupedPricingRow[] {
-  const groups = new Map<string, DeapiPricingPermutation[]>()
+function toGroupedPricingRows(
+  permutations: DeapiPricingPermutation[],
+): GroupedPricingRow[] {
+  const groups = new Map<string, DeapiPricingPermutation[]>();
 
   for (const row of permutations) {
-    const modelName = row.modelLabel || row.model
-    const key = modelName
-    const existing = groups.get(key) ?? []
-    existing.push(row)
-    groups.set(key, existing)
+    const modelName = row.modelLabel || row.model;
+    const key = modelName;
+    const existing = groups.get(key) ?? [];
+    existing.push(row);
+    groups.set(key, existing);
   }
 
   return [...groups.values()].map((rows) => {
     const sortedRows = [...rows].sort((left, right) => {
-      const categoryCompare = left.category.localeCompare(right.category)
+      const categoryCompare = left.category.localeCompare(right.category);
       if (categoryCompare !== 0) {
-        return categoryCompare
+        return categoryCompare;
       }
 
-      const leftPrice = left.priceUsd ?? Number.POSITIVE_INFINITY
-      const rightPrice = right.priceUsd ?? Number.POSITIVE_INFINITY
+      const leftPrice = left.priceUsd ?? Number.POSITIVE_INFINITY;
+      const rightPrice = right.priceUsd ?? Number.POSITIVE_INFINITY;
       if (leftPrice !== rightPrice) {
-        return leftPrice - rightPrice
+        return leftPrice - rightPrice;
       }
 
-      return toParamText(left.params).localeCompare(toParamText(right.params))
-    })
+      return toParamText(left.params).localeCompare(toParamText(right.params));
+    });
 
-    const { representative, commonParamCount } = pickRepresentativeRow(sortedRows)
-    const categories = [...new Set(sortedRows.map((row) => row.category))]
-      .sort((left, right) => left.localeCompare(right))
+    const { representative, commonParamCount } =
+      pickRepresentativeRow(sortedRows);
+    const categories = [...new Set(sortedRows.map((row) => row.category))].sort(
+      (left, right) => left.localeCompare(right),
+    );
 
     const categorySummary =
       categories.length <= 1
         ? toPricingCategoryLabel(categories[0] ?? "")
-        : `${toPricingCategoryLabel(categories[0] ?? "")} +${categories.length - 1}`
+        : `${toPricingCategoryLabel(categories[0] ?? "")} +${categories.length - 1}`;
 
     const latestTimestamp = sortedRows.reduce((latest, row) => {
-      const timestamp = Date.parse(row.scrapedAt)
+      const timestamp = Date.parse(row.scrapedAt);
       if (!Number.isFinite(timestamp)) {
-        return latest
+        return latest;
       }
 
-      return Math.max(latest, timestamp)
-    }, 0)
+      return Math.max(latest, timestamp);
+    }, 0);
 
     return {
       id: rows[0]?.modelLabel || rows[0]?.model || "model",
@@ -195,142 +256,170 @@ function toGroupedPricingRows(permutations: DeapiPricingPermutation[]): GroupedP
       representativeParamText: toParamText(representative.params),
       commonParamCount,
       rows: sortedRows,
-      latestScrapedAt: latestTimestamp > 0 ? new Date(latestTimestamp).toISOString() : representative.scrapedAt,
-    }
-  })
+      latestScrapedAt:
+        latestTimestamp > 0
+          ? new Date(latestTimestamp).toISOString()
+          : representative.scrapedAt,
+    };
+  });
 }
 
-type SortKey = "category" | "model" | "priceUsd" | "credits" | "scrapedAt"
-type SortDirection = "asc" | "desc"
+type SortKey = "category" | "model" | "priceUsd" | "credits" | "scrapedAt";
+type SortDirection = "asc" | "desc";
 
 function normalizeSearch(value: string): string {
-  return value.trim().toLowerCase()
+  return value.trim().toLowerCase();
 }
 
-function resolveSortValue(entry: GroupedPricingRow, key: SortKey): string | number {
+function resolveSortValue(
+  entry: GroupedPricingRow,
+  key: SortKey,
+): string | number {
   if (key === "category") {
-    return entry.categorySummary.toLowerCase()
+    return entry.categorySummary.toLowerCase();
   }
 
   if (key === "model") {
-    return entry.modelName.toLowerCase()
+    return entry.modelName.toLowerCase();
   }
 
   if (key === "priceUsd") {
-    return entry.representative.priceUsd ?? Number.POSITIVE_INFINITY
+    return entry.representative.priceUsd ?? Number.POSITIVE_INFINITY;
   }
 
   if (key === "credits") {
-    return entry.representative.credits ?? Number.POSITIVE_INFINITY
+    return entry.representative.credits ?? Number.POSITIVE_INFINITY;
   }
 
-  const timestamp = Date.parse(entry.latestScrapedAt)
-  return Number.isFinite(timestamp) ? timestamp : 0
+  const timestamp = Date.parse(entry.latestScrapedAt);
+  return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
-function compareEntries(left: GroupedPricingRow, right: GroupedPricingRow, key: SortKey, direction: SortDirection): number {
-  const leftValue = resolveSortValue(left, key)
-  const rightValue = resolveSortValue(right, key)
+function compareEntries(
+  left: GroupedPricingRow,
+  right: GroupedPricingRow,
+  key: SortKey,
+  direction: SortDirection,
+): number {
+  const leftValue = resolveSortValue(left, key);
+  const rightValue = resolveSortValue(right, key);
 
-  let comparison = 0
+  let comparison = 0;
 
   if (typeof leftValue === "number" && typeof rightValue === "number") {
-    comparison = leftValue - rightValue
+    comparison = leftValue - rightValue;
   } else {
-    comparison = String(leftValue).localeCompare(String(rightValue))
+    comparison = String(leftValue).localeCompare(String(rightValue));
   }
 
-  return direction === "asc" ? comparison : comparison * -1
+  return direction === "asc" ? comparison : comparison * -1;
 }
 
 function getSortLabel(key: SortKey): string {
   if (key === "category") {
-    return "Category"
+    return "Category";
   }
 
   if (key === "model") {
-    return "Model"
+    return "Model";
   }
 
   if (key === "priceUsd") {
-    return "Price"
+    return "Price";
   }
 
   if (key === "credits") {
-    return "Credits"
+    return "Credits";
   }
 
-  return "Updated"
+  return "Updated";
 }
 
 export function PricingTable({
   snapshot,
   lockedCategory,
 }: {
-  snapshot?: DeapiPricingSnapshot | null
-  lockedCategory?: string | null
+  snapshot?: DeapiPricingSnapshot | null;
+  lockedCategory?: string | null;
 }) {
-  const permutations = snapshot?.permutations ?? EMPTY_PERMUTATIONS
-  const categories = useMemo(() => listPricingCategories(snapshot), [snapshot])
+  const permutations = snapshot?.permutations ?? EMPTY_PERMUTATIONS;
+  const categories = useMemo(() => listPricingCategories(snapshot), [snapshot]);
   const resolvedLockedCategory = useMemo(() => {
     if (!lockedCategory) {
-      return null
+      return null;
     }
 
-    return findPricingCategoryBySlug(categories, lockedCategory)
-  }, [categories, lockedCategory])
+    return findPricingCategoryBySlug(categories, lockedCategory);
+  }, [categories, lockedCategory]);
 
-  const allGroupedRows = useMemo(() => toGroupedPricingRows(permutations), [permutations])
-  const categorySummary = useMemo(() => toCategorySummaryRows(permutations), [permutations])
+  const allGroupedRows = useMemo(
+    () => toGroupedPricingRows(permutations),
+    [permutations],
+  );
+  const categorySummary = useMemo(
+    () => toCategorySummaryRows(permutations),
+    [permutations],
+  );
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [selectedModel, setSelectedModel] = useState<string>("all")
-  const [searchInput, setSearchInput] = useState<string>("")
-  const [sortKey, setSortKey] = useState<SortKey>("priceUsd")
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-  const [currentPage, setCurrentPage] = useState<number>(1)
-  const [rowsPerPage, setRowsPerPage] = useState<number>(PAGE_SIZE_OPTIONS[0])
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedModel, setSelectedModel] = useState<string>("all");
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [sortKey, setSortKey] = useState<SortKey>("priceUsd");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(PAGE_SIZE_OPTIONS[0]);
 
-  const effectiveSelectedCategory = resolvedLockedCategory ?? selectedCategory
+  const effectiveSelectedCategory = resolvedLockedCategory ?? selectedCategory;
 
   const categoryScopedPermutations = useMemo(() => {
     if (effectiveSelectedCategory === "all") {
-      return permutations
+      return permutations;
     }
 
-    return permutations.filter((row) => row.category === effectiveSelectedCategory)
-  }, [effectiveSelectedCategory, permutations])
+    return permutations.filter(
+      (row) => row.category === effectiveSelectedCategory,
+    );
+  }, [effectiveSelectedCategory, permutations]);
 
-  const groupedRows = useMemo(() => toGroupedPricingRows(categoryScopedPermutations), [categoryScopedPermutations])
+  const groupedRows = useMemo(
+    () => toGroupedPricingRows(categoryScopedPermutations),
+    [categoryScopedPermutations],
+  );
 
   const modelOptions = useMemo(() => {
-    const rows = effectiveSelectedCategory === "all"
-      ? allGroupedRows
-      : groupedRows
+    const rows =
+      effectiveSelectedCategory === "all" ? allGroupedRows : groupedRows;
 
-    return [...new Set(rows.map((entry) => entry.modelName))].sort((left, right) => left.localeCompare(right))
-  }, [allGroupedRows, effectiveSelectedCategory, groupedRows])
+    return [...new Set(rows.map((entry) => entry.modelName))].sort(
+      (left, right) => left.localeCompare(right),
+    );
+  }, [allGroupedRows, effectiveSelectedCategory, groupedRows]);
 
   const filteredRows = useMemo(() => {
-    const search = normalizeSearch(searchInput)
+    const search = normalizeSearch(searchInput);
 
     const rows = groupedRows.filter((entry) => {
-      const modelName = entry.modelName
+      const modelName = entry.modelName;
       if (selectedModel !== "all" && modelName !== selectedModel) {
-        return false
+        return false;
       }
 
       if (!search) {
-        return true
+        return true;
       }
 
-      const representativeParamText = entry.representativeParamText.toLowerCase()
+      const representativeParamText =
+        entry.representativeParamText.toLowerCase();
       const anyParamText = entry.rows
         .map((row) => toParamText(row.params).toLowerCase())
-        .join(" | ")
-      const representativePriceText = String(entry.representative.priceText || "").toLowerCase()
-      const categorySearchText = entry.categories.map((category) => toPricingCategoryLabel(category).toLowerCase()).join(" | ")
-      const rawCategorySearchText = entry.categories.join(" | ").toLowerCase()
+        .join(" | ");
+      const representativePriceText = String(
+        entry.representative.priceText || "",
+      ).toLowerCase();
+      const categorySearchText = entry.categories
+        .map((category) => toPricingCategoryLabel(category).toLowerCase())
+        .join(" | ");
+      const rawCategorySearchText = entry.categories.join(" | ").toLowerCase();
 
       return (
         rawCategorySearchText.includes(search) ||
@@ -339,21 +428,31 @@ export function PricingTable({
         representativeParamText.includes(search) ||
         anyParamText.includes(search) ||
         representativePriceText.includes(search)
-      )
-    })
+      );
+    });
 
-    return rows.sort((left, right) => compareEntries(left, right, sortKey, sortDirection))
-  }, [groupedRows, searchInput, selectedModel, sortDirection, sortKey])
+    return rows.sort((left, right) =>
+      compareEntries(left, right, sortKey, sortDirection),
+    );
+  }, [groupedRows, searchInput, selectedModel, sortDirection, sortKey]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage))
-  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
 
-  const pageStart = (safeCurrentPage - 1) * rowsPerPage
-  const visibleRows = filteredRows.slice(pageStart, pageStart + rowsPerPage)
-  const visibleStart = filteredRows.length === 0 ? 0 : pageStart + 1
-  const visibleEnd = filteredRows.length === 0 ? 0 : Math.min(pageStart + rowsPerPage, filteredRows.length)
-  const lockedCategoryLabel = resolvedLockedCategory ? toPricingCategoryLabel(resolvedLockedCategory) : null
-  const filteredModelCount = useMemo(() => new Set(filteredRows.map((row) => row.modelName)).size, [filteredRows])
+  const pageStart = (safeCurrentPage - 1) * rowsPerPage;
+  const visibleRows = filteredRows.slice(pageStart, pageStart + rowsPerPage);
+  const visibleStart = filteredRows.length === 0 ? 0 : pageStart + 1;
+  const visibleEnd =
+    filteredRows.length === 0
+      ? 0
+      : Math.min(pageStart + rowsPerPage, filteredRows.length);
+  const lockedCategoryLabel = resolvedLockedCategory
+    ? toPricingCategoryLabel(resolvedLockedCategory)
+    : null;
+  const filteredModelCount = useMemo(
+    () => new Set(filteredRows.map((row) => row.modelName)).size,
+    [filteredRows],
+  );
 
   const filtersDirty =
     selectedModel !== "all" ||
@@ -361,17 +460,17 @@ export function PricingTable({
     sortKey !== "priceUsd" ||
     sortDirection !== "asc" ||
     rowsPerPage !== PAGE_SIZE_OPTIONS[0] ||
-    (!resolvedLockedCategory && effectiveSelectedCategory !== "all")
+    (!resolvedLockedCategory && effectiveSelectedCategory !== "all");
 
   const resetFilters = () => {
-    setSelectedCategory("all")
-    setSelectedModel("all")
-    setSearchInput("")
-    setSortKey("priceUsd")
-    setSortDirection("asc")
-    setRowsPerPage(PAGE_SIZE_OPTIONS[0])
-    setCurrentPage(1)
-  }
+    setSelectedCategory("all");
+    setSelectedModel("all");
+    setSearchInput("");
+    setSortKey("priceUsd");
+    setSortDirection("asc");
+    setRowsPerPage(PAGE_SIZE_OPTIONS[0]);
+    setCurrentPage(1);
+  };
 
   if (!snapshot || permutations.length === 0) {
     return (
@@ -381,342 +480,592 @@ export function PricingTable({
             <Filter className="size-3.5" />
             Pricing Snapshot
           </p>
-          <h2 className="text-site-strong mt-2 font-display text-2xl uppercase tracking-[0.08em] md:text-3xl">Pricing Data Unavailable</h2>
+          <h2 className="text-site-strong mt-2 font-display text-2xl uppercase tracking-[0.08em] md:text-3xl">
+            Pricing Data Unavailable
+          </h2>
           <p className="text-site-muted mt-3 max-w-3xl text-sm leading-6 md:text-base">
-            No pricing snapshot was found in the current runtime. Run the pricing sync job or check D1 connectivity to populate scraped permutations.
+            No pricing snapshot was found in the current runtime. Run the
+            pricing sync job or check D1 connectivity to populate scraped
+            permutations.
           </p>
         </div>
       </section>
-    )
+    );
   }
 
   return (
-    <section className="border-b border-slate-200 bg-[radial-gradient(circle_at_top,_#ffffff_0%,_var(--site-surface-0)_58%)] py-10 md:py-14">
+    <section className="relative overflow-hidden bg-[var(--site-surface-0)] py-12 md:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-[var(--site-surface-0)] to-slate-100/80 p-5 shadow-sm md:p-7">
-          <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-          <div className="relative">
-            <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-primary">
-              <Clock3 className="size-3.5" />
-              Pricing Snapshot
-            </p>
-            <h2 className="text-site-strong mt-2 font-display text-3xl uppercase tracking-[0.08em] md:text-4xl">
-              {lockedCategoryLabel ? `${lockedCategoryLabel} Pricing (USD)` : "Model Pricing (USD)"}
-            </h2>
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-site-muted">
-              <Filter className="size-3.5" />
-              Filter And Sort
-            </p>
-            <button
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-site-muted transition hover:border-primary/50 hover:text-[color:var(--site-text-strong)] disabled:cursor-not-allowed disabled:opacity-40"
-              disabled={!filtersDirty}
-              onClick={resetFilters}
-              type="button"
-            >
-              <RefreshCcw className="size-3.5" />
-              Reset
-            </button>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
-              Category
-              <select
-                className="text-site-strong mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-primary"
-                disabled={Boolean(resolvedLockedCategory)}
-                onChange={(event) => {
-                  setSelectedCategory(event.target.value)
-                  setSelectedModel("all")
-                  setCurrentPage(1)
-                }}
-                value={effectiveSelectedCategory}
-              >
-                {resolvedLockedCategory ? (
-                  <option value={resolvedLockedCategory}>{toPricingCategoryLabel(resolvedLockedCategory)}</option>
-                ) : (
-                  <>
-                    <option value="all">All categories</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {toPricingCategoryLabel(category)}
-                      </option>
-                    ))}
-                  </>
-                )}
-              </select>
-            </label>
-
-            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
-              Model
-              <select
-                className="text-site-strong mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-primary"
-                onChange={(event) => {
-                  setSelectedModel(event.target.value)
-                  setCurrentPage(1)
-                }}
-                value={selectedModel}
-              >
-                <option value="all">All models</option>
-                {modelOptions.map((model) => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
-              Sort By
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <select
-                  className="text-site-strong rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-primary"
-                  onChange={(event) => {
-                    setSortKey(event.target.value as SortKey)
-                    setCurrentPage(1)
-                  }}
-                  value={sortKey}
-                >
-                  <option value="priceUsd">Price (USD)</option>
-                  <option value="category">Category</option>
-                  <option value="model">Model</option>
-                  <option value="credits">Credits</option>
-                  <option value="scrapedAt">Updated</option>
-                </select>
-                <select
-                  className="text-site-strong rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-primary"
-                  onChange={(event) => {
-                    setSortDirection(event.target.value as SortDirection)
-                    setCurrentPage(1)
-                  }}
-                  value={sortDirection}
-                >
-                  <option value="asc">Asc</option>
-                  <option value="desc">Desc</option>
-                </select>
-              </div>
-            </label>
-
-            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
-              Search
-              <div className="relative mt-2">
-                <Search className="text-site-soft pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-                <input
-                  className="text-site-strong w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-primary"
-                  onChange={(event) => {
-                    setSearchInput(event.target.value)
-                    setCurrentPage(1)
-                  }}
-                  placeholder="Search model, category, params"
-                  type="search"
-                  value={searchInput}
-                />
-              </div>
-            </label>
-
-            <label className="text-site-muted text-xs uppercase tracking-[0.12em]">
-              Rows Per Page
-              <select
-                className="text-site-strong mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-primary"
-                onChange={(event) => {
-                  setRowsPerPage(Number(event.target.value))
-                  setCurrentPage(1)
-                }}
-                value={rowsPerPage}
-              >
-                {PAGE_SIZE_OPTIONS.map((size) => (
-                  <option key={size} value={size}>
-                    {size} rows
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <p className="text-site-soft mt-3 text-xs">
-            Models: {filteredModelCount} | Rows: {filteredRows.length} | Sort: {getSortLabel(sortKey)} ({sortDirection.toUpperCase()})
+        <div className="mb-10 text-center">
+          <Badge
+            className="mb-4 gap-1.5 border-primary/20 bg-primary/5 px-3 py-1 font-medium uppercase tracking-wider text-primary"
+            variant="outline"
+          >
+            <Clock3 className="size-3.5" />
+            Pricing Snapshot
+          </Badge>
+          <h1 className="text-site-strong font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            {lockedCategoryLabel || "Model Pricing (USD)"}
+          </h1>
+          <p className="text-site-muted mx-auto mt-4 max-w-2xl text-lg sm:text-xl">
+            {lockedCategoryLabel
+              ? `Unified pricing for ${lockedCategoryLabel} models with full parameter permutations and cost breakdowns.`
+              : "Compare inference costs across the entire model catalog. One API, simple prepaid billing."}
           </p>
         </div>
 
-        {filteredRows.length === 0 ? (
-          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-            <p className="text-site-strong text-base font-semibold">No pricing rows match these filters</p>
-            <p className="text-site-muted mt-2 text-sm">Try broadening the search text, resetting filters, or switching to all categories.</p>
-            <button
-              className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-site-muted transition hover:border-primary/50 hover:text-[color:var(--site-text-strong)]"
-              onClick={resetFilters}
-              type="button"
-            >
-              <RefreshCcw className="size-3.5" />
-              Clear Filters
-            </button>
-          </div>
-        ) : (
-          <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="text-site-muted hidden border-b border-slate-200 bg-slate-50 px-3 py-3 text-xs uppercase tracking-[0.12em] md:grid md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:gap-3">
-              <p>Category</p>
-              <p>Model</p>
-              <p>Parameters</p>
-              <p>Price (USD)</p>
-              <p>Credits</p>
-              <p>Permutations</p>
+        <Card className="mb-8 border-slate-200 shadow-xl shadow-slate-200/50 backdrop-blur-sm">
+          <CardHeader className="border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-site-muted">
+                <Filter className="size-4" />
+                Filter & Sort
+              </CardTitle>
+              <Button
+                disabled={!filtersDirty}
+                onClick={resetFilters}
+                size="sm"
+                variant="ghost"
+                className="h-8 gap-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-slate-100"
+              >
+                <RefreshCcw className="size-3.5" />
+                Reset
+              </Button>
             </div>
-            <div className="max-h-[640px] overflow-auto">
-              <Accordion className="w-full" type="multiple">
-                {visibleRows.map((entry) => {
-                  const representative = entry.representative
-                  const totalRows = entry.rows.length
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-12">
+              <div className="lg:col-span-3">
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-site-soft">
+                  Category
+                </label>
+                <Select
+                  disabled={Boolean(resolvedLockedCategory)}
+                  onValueChange={(value) => {
+                    setSelectedCategory(value);
+                    setSelectedModel("all");
+                    setCurrentPage(1);
+                  }}
+                  value={effectiveSelectedCategory}
+                >
+                  <SelectTrigger className="w-full bg-slate-50/50">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {resolvedLockedCategory ? (
+                      <SelectItem value={resolvedLockedCategory}>
+                        {toPricingCategoryLabel(resolvedLockedCategory)}
+                      </SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="all">All categories</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {toPricingCategoryLabel(category)}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  return (
-                    <AccordionItem key={entry.id} className="border-b border-slate-200 last:border-b-0" value={entry.id}>
-                      <AccordionTrigger className="px-3 py-3 text-left transition hover:bg-slate-50 hover:no-underline data-[state=open]:bg-slate-50">
-                        <div className="grid w-full gap-2 md:grid-cols-[1.2fr_1.7fr_2.4fr_1fr_1fr_1.2fr] md:items-start md:gap-3">
-                          <div>
-                            <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Category</p>
-                            <p className="text-xs uppercase tracking-[0.12em] text-primary">{entry.categorySummary || "Uncategorized"}</p>
-                            {entry.categories.length > 1 ? <p className="text-site-soft mt-1 text-[11px]">{entry.categories.length} categories</p> : null}
-                          </div>
+              <div className="lg:col-span-3">
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-site-soft">
+                  Model
+                </label>
+                <Select
+                  onValueChange={(value) => {
+                    setSelectedModel(value);
+                    setCurrentPage(1);
+                  }}
+                  value={selectedModel}
+                >
+                  <SelectTrigger className="w-full bg-slate-50/50">
+                    <SelectValue placeholder="All Models" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All models</SelectItem>
+                    {modelOptions.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                          <div>
-                            <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Model</p>
-                            <p className="text-site-strong text-sm font-medium">{entry.modelName}</p>
-                          </div>
+              <div className="lg:col-span-3">
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-site-soft">
+                  Search
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-site-soft" />
+                  <Input
+                    className="bg-slate-50/50 pl-9"
+                    onChange={(event) => {
+                      setSearchInput(event.target.value);
+                      setCurrentPage(1);
+                    }}
+                    placeholder="Search model, category, params"
+                    type="search"
+                    value={searchInput}
+                  />
+                </div>
+              </div>
 
-                          <div>
-                            <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Parameters</p>
-                            <p className="text-site-muted text-xs">{entry.representativeParamText}</p>
-                            <p className="text-site-soft mt-1 text-[11px]">Most common params in {entry.commonParamCount} of {totalRows} rows</p>
-                          </div>
+              <div className="lg:col-span-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-site-soft">
+                      Sort By
+                    </label>
+                    <Select
+                      onValueChange={(value) => {
+                        setSortKey(value as SortKey);
+                        setCurrentPage(1);
+                      }}
+                      value={sortKey}
+                    >
+                      <SelectTrigger className="w-full bg-slate-50/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="priceUsd">Price (USD)</SelectItem>
+                        <SelectItem value="category">Category</SelectItem>
+                        <SelectItem value="model">Model</SelectItem>
+                        <SelectItem value="credits">Credits</SelectItem>
+                        <SelectItem value="scrapedAt">Updated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-site-soft">
+                      Order
+                    </label>
+                    <Select
+                      onValueChange={(value) => {
+                        setSortDirection(value as SortDirection);
+                        setCurrentPage(1);
+                      }}
+                      value={sortDirection}
+                    >
+                      <SelectTrigger className="w-full bg-slate-50/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="asc">Asc</SelectItem>
+                        <SelectItem value="desc">Desc</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                          <div>
-                            <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Price (USD)</p>
-                            <p className="text-site-strong text-sm font-semibold">{formatUsd(representative.priceUsd)}</p>
-                          </div>
+            <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+              <div className="flex gap-4">
+                <span className="text-xs font-medium text-site-muted">
+                  <span className="text-site-strong">{filteredModelCount}</span>{" "}
+                  Models
+                </span>
+                <span className="text-xs font-medium text-site-muted">
+                  <span className="text-site-strong">{filteredRows.length}</span>{" "}
+                  Permutations
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-site-soft">
+                  Show
+                </span>
+                <Select
+                  onValueChange={(value) => {
+                    setRowsPerPage(Number(value));
+                    setCurrentPage(1);
+                  }}
+                  value={String(rowsPerPage)}
+                >
+                  <SelectTrigger className="h-8 w-[80px] bg-slate-50/50 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-                          <div>
-                            <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Credits</p>
-                            <p className="text-site-muted text-xs">{formatCredits(representative.credits)}</p>
-                          </div>
+        {filteredRows.length === 0 ? (
+          <Card className="flex flex-col items-center justify-center border-dashed border-slate-300 bg-slate-50/50 py-16 text-center">
+            <div className="mb-4 rounded-full bg-slate-100 p-4">
+              <Search className="size-8 text-site-soft" />
+            </div>
+            <h3 className="text-lg font-semibold text-site-strong">
+              No models found
+            </h3>
+            <p className="mt-1 text-sm text-site-muted">
+              Try broadening your search or resetting all filters.
+            </p>
+            <Button
+              className="mt-6 gap-2"
+              onClick={resetFilters}
+              variant="outline"
+            >
+              <RefreshCcw className="size-4" />
+              Reset All Filters
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50">
+              <Table className="hidden md:table">
+                <TableHeader className="bg-slate-50/50">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-[180px] text-[10px] font-bold uppercase tracking-widest text-site-muted">
+                      Category
+                    </TableHead>
+                    <TableHead className="w-[200px] text-[10px] font-bold uppercase tracking-widest text-site-muted">
+                      Model
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-site-muted">
+                      Preview Parameters
+                    </TableHead>
+                    <TableHead className="w-[140px] text-right text-[10px] font-bold uppercase tracking-widest text-site-muted">
+                      Price (USD)
+                    </TableHead>
+                    <TableHead className="w-[140px] text-right text-[10px] font-bold uppercase tracking-widest text-site-muted">
+                      Credits
+                    </TableHead>
+                    <TableHead className="w-[160px] text-right text-[10px] font-bold uppercase tracking-widest text-site-muted">
+                      Variations
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <Accordion className="contents" type="multiple">
+                    {visibleRows.map((entry) => {
+                      const representative = entry.representative;
+                      const totalRows = entry.rows.length;
 
-                          <div>
-                            <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Permutations</p>
-                            <p className="text-xs text-primary">View {totalRows} rows</p>
-                          </div>
-                        </div>
-                      </AccordionTrigger>
-
-                      <AccordionContent className="px-3 pb-3">
-                        <div className="overflow-hidden rounded-md border border-slate-200 bg-white">
-                          <div className="text-site-soft hidden border-b border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.12em] md:grid md:grid-cols-[1.2fr_1.7fr_3fr_1fr_1fr] md:gap-3">
-                            <p>Category</p>
-                            <p>Model</p>
-                            <p>Permutation</p>
-                            <p>Price</p>
-                            <p>Credits</p>
-                          </div>
-
-                          <div className="divide-y divide-slate-200">
-                            {entry.rows.map((row) => {
-                              const rowCategorySlug = toPricingCategorySlug(row.category)
-
-                              return (
-                                <div key={row.id} className="grid gap-2 px-3 py-2 md:grid-cols-[1.2fr_1.7fr_3fr_1fr_1fr] md:items-start md:gap-3">
-                                  <div>
-                                    <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Category</p>
-                                    <Link className="text-[11px] uppercase tracking-[0.1em] text-primary transition hover:text-[color:var(--site-text-strong)]" href={`/pricing/${rowCategorySlug}`}>
-                                      {toPricingCategoryLabel(row.category)}
-                                    </Link>
-                                  </div>
-
-                                  <div>
-                                    <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Model</p>
-                                    <p className="text-site-muted text-xs">{entry.modelName}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Permutation</p>
-                                    <p className="text-site-muted text-xs">{toParamText(row.params)}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Price</p>
-                                    <p className="text-site-strong text-xs font-semibold">{formatUsd(row.priceUsd)}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="text-site-soft text-[10px] uppercase tracking-[0.12em] md:hidden">Credits</p>
-                                    <p className="text-site-muted text-xs">{formatCredits(row.credits)}</p>
-                                  </div>
+                      return (
+                        <div key={entry.id}>
+                        <AccordionItem
+                          className="border-none"
+                          value={entry.id}
+                        >
+                          <TableRow className="group cursor-pointer border-slate-100 hover:bg-slate-50/50 data-[state=open]:bg-slate-50/80">
+                              <TableCell className="py-4">
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-primary/5 text-[10px] font-bold tracking-wider text-primary hover:bg-primary/10 transition-colors uppercase"
+                                >
+                                  {entry.categorySummary || "Uncategorized"}
+                                </Badge>
+                                {entry.categories.length > 1 && (
+                                  <p className="mt-1 text-[10px] font-medium text-site-soft">
+                                    +{entry.categories.length - 1} more
+                                  </p>
+                                )}
+                              </TableCell>
+                              <TableCell className="py-4 text-sm font-semibold text-site-strong">
+                                {entry.modelName}
+                              </TableCell>
+                              <TableCell className="py-4">
+                                <div className="max-w-[300px]">
+                                  <p
+                                    className="truncate text-xs text-slate-600"
+                                    title={entry.representativeParamText}
+                                  >
+                                    {entry.representativeParamText}
+                                  </p>
+                                  <p className="mt-1 text-[10px] text-site-soft">
+                                    Default for {entry.commonParamCount} of{" "}
+                                    {totalRows}
+                                  </p>
                                 </div>
-                              )
-                            })}
-                          </div>
+                              </TableCell>
+                              <TableCell className="py-4 text-right font-mono text-sm font-bold text-site-strong">
+                                {formatUsd(representative.priceUsd)}
+                              </TableCell>
+                              <TableCell className="py-4 text-right text-xs font-medium text-site-muted">
+                                {formatCredits(representative.credits)}
+                              </TableCell>
+                              <TableCell className="py-4 text-right">
+                                <AccordionTrigger className="inline-flex py-0 font-semibold text-primary hover:no-underline">
+                                  <span className="mr-2 text-xs">
+                                    Explore {totalRows} rows
+                                  </span>
+                                </AccordionTrigger>
+                              </TableCell>
+                            </TableRow>
+                            <AccordionContent
+                              className="p-0 border-t border-slate-100 bg-slate-50/30"
+                              asChild
+                            >
+                              <TableCell colSpan={6} className="p-0">
+                                <div className="p-6">
+                                  <Table className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                                    <TableHeader className="bg-slate-50/80">
+                                      <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-[9px] font-bold uppercase text-site-soft">
+                                          Permutation
+                                        </TableHead>
+                                        <TableHead className="w-[120px] text-right text-[9px] font-bold uppercase text-site-soft">
+                                          Price (USD)
+                                        </TableHead>
+                                        <TableHead className="w-[120px] text-right text-[9px] font-bold uppercase text-site-soft">
+                                          Credits
+                                        </TableHead>
+                                        <TableHead className="w-[80px] text-right text-[9px] font-bold uppercase text-site-soft">
+                                          Action
+                                        </TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {entry.rows.map((row) => (
+                                        <TableRow
+                                          key={row.id}
+                                          className="border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors"
+                                        >
+                                          <TableCell className="py-2.5 text-[11px] font-medium text-slate-600">
+                                            {toParamText(row.params)}
+                                          </TableCell>
+                                          <TableCell className="py-2.5 text-right font-mono text-[11px] font-bold text-site-strong">
+                                            {formatUsd(row.priceUsd)}
+                                          </TableCell>
+                                          <TableCell className="py-2.5 text-right text-[11px] text-site-muted">
+                                            {formatCredits(row.credits)}
+                                          </TableCell>
+                                          <TableCell className="py-2.5 text-right">
+                                            <Button
+                                              size="icon"
+                                              variant="ghost"
+                                              className="size-6 text-site-soft hover:text-primary transition-colors"
+                                            >
+                                              <ArrowRight className="size-3.5" />
+                                            </Button>
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              </TableCell>
+                            </AccordionContent>
+                        </AccordionItem>
                         </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  )
-                })}
-              </Accordion>
+                      );
+                    })}
+                  </Accordion>
+                </TableBody>
+              </Table>
+
+              {/* Mobile Card List Implementation */}
+              <div className="md:hidden space-y-4 p-4">
+                {visibleRows.map((entry) => (
+                  <Card
+                    key={entry.id}
+                    className="overflow-hidden border-slate-200"
+                  >
+                    <CardHeader className="bg-slate-50/50 p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/5 text-[9px] font-bold tracking-wider text-primary uppercase"
+                        >
+                          {entry.categorySummary}
+                        </Badge>
+                        <span className="text-[10px] font-bold text-site-soft">
+                          {entry.rows.length} Variations
+                        </span>
+                      </div>
+                      <CardTitle className="text-base font-bold">
+                        {entry.modelName}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-4">
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-site-soft mb-1">
+                            Baseline Price
+                          </p>
+                          <p className="text-xl font-bold text-site-strong">
+                            {formatUsd(entry.representative.priceUsd)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-site-soft mb-1">
+                            In Credits
+                          </p>
+                          <p className="text-xs font-medium text-slate-600">
+                            {formatCredits(entry.representative.credits)}
+                          </p>
+                        </div>
+                      </div>
+                      <Accordion type="single" collapsible>
+                        <AccordionItem value="details" className="border-none">
+                          <AccordionTrigger className="py-2 text-primary font-semibold text-xs border-t border-slate-100 hover:no-underline">
+                            View all {entry.rows.length} permutations
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-2">
+                            <div className="space-y-2">
+                              {entry.rows.map((row) => (
+                                <div
+                                  key={row.id}
+                                  className="p-2 rounded-lg bg-slate-50/50 border border-slate-100 flex justify-between items-center text-[10px]"
+                                >
+                                  <span className="text-slate-600 truncate mr-4 flex-1">
+                                    {toParamText(row.params)}
+                                  </span>
+                                  <span className="font-bold text-site-strong whitespace-nowrap">
+                                    {formatUsd(row.priceUsd)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 px-2">
+              <p className="text-[11px] font-medium text-site-soft uppercase tracking-widest">
+                Showing{" "}
+                <span className="text-site-strong">
+                  {visibleStart}-{visibleEnd}
+                </span>{" "}
+                of <span className="text-site-strong">{filteredRows.length}</span>{" "}
+                models
+              </p>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  disabled={safeCurrentPage <= 1}
+                  onClick={() =>
+                    setCurrentPage(Math.max(1, safeCurrentPage - 1))
+                  }
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-20 text-xs font-bold uppercase tracking-wider"
+                >
+                  Prev
+                </Button>
+                <div className="flex items-center gap-1 px-4">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum = i + 1;
+                    if (totalPages > 5 && safeCurrentPage > 3) {
+                      pageNum = safeCurrentPage - 3 + i + 1;
+                    }
+                    if (pageNum > totalPages) return null;
+                    return (
+                      <Button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        size="icon"
+                        variant={
+                          safeCurrentPage === pageNum ? "default" : "ghost"
+                        }
+                        className="size-8 text-xs font-bold"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <Button
+                  disabled={safeCurrentPage >= totalPages}
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))
+                  }
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-20 text-xs font-bold uppercase tracking-wider"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </div>
         )}
-        {filteredRows.length > 0 ? (
-          <>
-            <p className="text-site-soft mt-3 text-xs">
-              Showing {visibleStart}-{visibleEnd} of {filteredRows.length} filtered model rows. Each row expands into full-width permutation rows.
-            </p>
-
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm">
-              <p className="text-site-muted text-xs uppercase tracking-[0.12em]">
-                Page {safeCurrentPage} of {totalPages}
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  className="text-site-muted rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition hover:border-primary/50 hover:text-[color:var(--site-text-strong)] disabled:cursor-not-allowed disabled:opacity-40"
-                  disabled={safeCurrentPage <= 1}
-                  onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
-                  type="button"
-                >
-                  Prev
-                </button>
-                <button
-                  className="text-site-muted rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition hover:border-primary/50 hover:text-[color:var(--site-text-strong)] disabled:cursor-not-allowed disabled:opacity-40"
-                  disabled={safeCurrentPage >= totalPages}
-                  onClick={() => setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))}
-                  type="button"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </>
-        ) : null}
 
         {resolvedLockedCategory ? null : (
-          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
-            <p className="text-site-muted inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em]">
-              <Filter className="size-3.5" />
-              Categories
-            </p>
-            <p className="text-site-soft mt-2 text-xs">Review category-level price bands and open a dedicated category view.</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-20">
+            <div className="mb-10 text-center">
+              <Badge
+                className="mb-4 gap-1.5 px-3 py-1 font-medium uppercase tracking-wider"
+                variant="outline"
+              >
+                <LayoutGrid className="size-3.5" />
+                Categories
+              </Badge>
+              <h2 className="text-site-strong font-display text-3xl font-bold tracking-tight sm:text-4xl">
+                Browse by Category
+              </h2>
+              <p className="text-site-muted mx-auto mt-4 max-w-2xl text-base">
+                Discover specific model groups with optimized price bands for
+                your specialized workloads.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {categorySummary.map((summary) => (
                 <Link
                   key={summary.category}
-                  className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-primary/45"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5"
                   href={`/pricing/${toPricingCategorySlug(summary.category)}`}
                 >
-                  <p className="text-xs uppercase tracking-[0.14em] text-primary">{toPricingCategoryLabel(summary.category)}</p>
-                  <p className="text-site-muted mt-2 text-sm">Models: {summary.modelCount} | Rows: {summary.rowCount}</p>
-                  <p className="text-site-muted mt-1 text-sm">From: {formatUsd(summary.minPriceUsd)} | Median: {formatUsd(summary.medianPriceUsd)}</p>
-                  <p className="text-site-soft mt-3 inline-flex items-center gap-1 text-xs uppercase tracking-[0.12em] transition group-hover:text-primary">
-                    Open category page
-                    <ArrowRight className="size-3.5" />
-                  </p>
+                  <div className="flex items-start justify-between">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/5 text-[10px] font-bold tracking-wider text-primary group-hover:bg-primary group-hover:text-white transition-colors uppercase px-2.5 py-0.5"
+                    >
+                      {toPricingCategoryLabel(summary.category)}
+                    </Badge>
+                    <ChevronRight className="size-4 text-site-soft transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  </div>
+
+                  <div className="my-6 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-site-soft mb-1">
+                        Starting From
+                      </p>
+                      <p className="text-lg font-bold text-site-strong">
+                        {formatUsd(summary.minPriceUsd)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-site-soft mb-1">
+                        Median Cost
+                      </p>
+                      <p className="text-lg font-bold text-site-strong">
+                        {formatUsd(summary.medianPriceUsd)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto border-t border-slate-50 pt-4 flex items-center justify-between">
+                    <div className="flex gap-3">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-site-muted uppercase tracking-wider">
+                        <Layers className="size-3 text-site-soft" />
+                        {summary.modelCount} Models
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-site-muted uppercase tracking-wider">
+                        <LayoutGrid className="size-3 text-site-soft" />
+                        {summary.rowCount} Rows
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 h-1 grow scale-x-0 bg-primary transition-transform duration-500 group-hover:scale-x-100" />
                 </Link>
               ))}
             </div>
@@ -724,5 +1073,5 @@ export function PricingTable({
         )}
       </div>
     </section>
-  )
+  );
 }

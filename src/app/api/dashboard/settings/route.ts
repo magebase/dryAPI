@@ -1,19 +1,18 @@
-import { NextRequest, NextResponse } from "next/server"
-import { z } from "zod"
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing"
+import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing";
 import {
   getDashboardSettingsForUser,
   updateDashboardSettingsSection,
   type DashboardSettingsSection,
-} from "@/lib/dashboard-settings-store"
-
-export const runtime = "nodejs"
+} from "@/lib/dashboard-settings-store";
+import { dashboardSettingsSectionSchema } from "@/lib/dashboard-settings-schema";
 
 const updatePayloadSchema = z.object({
-  section: z.enum(["general", "security", "webhooks"]),
+  section: dashboardSettingsSectionSchema,
   values: z.unknown(),
-})
+});
 
 function unauthorizedResponse() {
   return NextResponse.json(
@@ -22,30 +21,30 @@ function unauthorizedResponse() {
       message: "Sign in to manage dashboard settings.",
     },
     { status: 401 },
-  )
+  );
 }
 
 function serializeErrorMessage(error: unknown): string {
   if (error instanceof z.ZodError) {
-    return error.issues[0]?.message || "Invalid settings payload."
+    return error.issues[0]?.message || "Invalid settings payload.";
   }
 
   if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
+    return error.message;
   }
 
-  return "Unable to process dashboard settings request."
+  return "Unable to process dashboard settings request.";
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getDashboardSessionSnapshot(request)
+  const session = await getDashboardSessionSnapshot(request);
   if (!session.authenticated || !session.email) {
-    return unauthorizedResponse()
+    return unauthorizedResponse();
   }
 
   try {
-    const settings = await getDashboardSettingsForUser(session.email)
-    return NextResponse.json({ data: settings })
+    const settings = await getDashboardSettingsForUser(session.email);
+    return NextResponse.json({ data: settings });
   } catch (error) {
     return NextResponse.json(
       {
@@ -53,27 +52,28 @@ export async function GET(request: NextRequest) {
         message: serializeErrorMessage(error),
       },
       { status: 500 },
-    )
+    );
   }
 }
 
 export async function PATCH(request: NextRequest) {
-  const session = await getDashboardSessionSnapshot(request)
+  const session = await getDashboardSessionSnapshot(request);
   if (!session.authenticated || !session.email) {
-    return unauthorizedResponse()
+    return unauthorizedResponse();
   }
 
-  const payload = await request.json().catch(() => null)
-  const parsedPayload = updatePayloadSchema.safeParse(payload)
+  const payload = await request.json().catch(() => null);
+  const parsedPayload = updatePayloadSchema.safeParse(payload);
 
   if (!parsedPayload.success) {
     return NextResponse.json(
       {
         error: "invalid_payload",
-        message: parsedPayload.error.issues[0]?.message || "Invalid settings payload.",
+        message:
+          parsedPayload.error.issues[0]?.message || "Invalid settings payload.",
       },
       { status: 400 },
-    )
+    );
   }
 
   try {
@@ -81,11 +81,11 @@ export async function PATCH(request: NextRequest) {
       userEmail: session.email,
       section: parsedPayload.data.section as DashboardSettingsSection,
       values: parsedPayload.data.values,
-    })
+    });
 
-    return NextResponse.json({ data: settings })
+    return NextResponse.json({ data: settings });
   } catch (error) {
-    const status = error instanceof z.ZodError ? 400 : 500
+    const status = error instanceof z.ZodError ? 400 : 500;
 
     return NextResponse.json(
       {
@@ -93,6 +93,6 @@ export async function PATCH(request: NextRequest) {
         message: serializeErrorMessage(error),
       },
       { status },
-    )
+    );
   }
 }

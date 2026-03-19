@@ -3,16 +3,15 @@ import { DocumentationLayout } from "@/components/docs/docs-layout"
 import { DEFAULT_LOCALE } from "@/lib/i18n"
 import { buildTakumiMetadata } from "@/lib/og/metadata"
 import { readSiteConfig } from "@/lib/site-content-loader"
-
-export const dynamic = "force-static"
+import { resolveActiveBrand } from "@/lib/brand-catalog"
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig()
 
   return buildTakumiMetadata({
-    title: "dryAPI Docs",
+    title: `${site.brand.mark} Docs`,
     description:
-      "Reference documentation for the dryAPI platform, including versioned API docs and integration guides.",
+      `Reference documentation for the ${site.brand.mark} platform, including versioned API docs and integration guides.`,
     canonicalPath: "/docs",
     template: "marketing",
     siteName: site.brand.name || site.brand.mark,
@@ -21,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   })
 }
 
-export default function DocsLayout({ children }: { children: React.ReactNode }) {
-  return <DocumentationLayout locale={DEFAULT_LOCALE}>{children}</DocumentationLayout>
+export default async function DocsLayout({ children }: { children: React.ReactNode }) {
+  const brand = await resolveActiveBrand()
+  return <DocumentationLayout locale={DEFAULT_LOCALE} brand={brand}>{children}</DocumentationLayout>
 }

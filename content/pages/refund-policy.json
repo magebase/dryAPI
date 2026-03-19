@@ -1,0 +1,107 @@
+{
+  "slug": "/refund-policy",
+  "navLabel": "Refund Policy",
+  "seoTitle": "Refund Policy | deAPI",
+  "seoDescription": "Review eligibility, process, and timelines for credit and subscription refund requests on deAPI.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Refund Policy"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "This policy explains when refunds may apply and how to submit requests with the required billing details."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Review Pricing",
+        "href": "/pricing"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Legal",
+    "heading": "Refund Policy",
+    "body": "Understand eligibility windows, review criteria, and processing timelines for billing-related refunds.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "Open Pricing",
+        "href": "/pricing",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Billing",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "eligibility",
+      "title": "Refund Eligibility",
+      "body": "Eligibility depends on purchase type, usage status, and timing of the request.",
+      "cards": [
+        {
+          "id": "eligibility-card-1",
+          "title": "Unused Credits",
+          "description": "Unused prepaid credits may be eligible within applicable review windows.",
+          "href": "/pricing",
+          "ctaLabel": "Pricing Details"
+        },
+        {
+          "id": "eligibility-card-2",
+          "title": "Subscription Charges",
+          "description": "Subscription charge disputes are evaluated based on account activity and billing records.",
+          "href": "/terms-of-service",
+          "ctaLabel": "Billing Terms"
+        },
+        {
+          "id": "eligibility-card-3",
+          "title": "Incident Cases",
+          "description": "Verified platform incidents may qualify for remediation under policy terms.",
+          "href": "/service-level-agreement",
+          "ctaLabel": "View SLA"
+        }
+      ]
+    },
+    {
+      "id": "process",
+      "title": "Request and Review Process",
+      "body": "Submit requests with account and invoice details so our billing team can verify quickly.",
+      "cards": [
+        {
+          "id": "process-card-1",
+          "title": "Required Information",
+          "description": "Include account email, invoice ID, and a concise reason for the request.",
+          "href": "/contact-sales",
+          "ctaLabel": "Submit Request"
+        },
+        {
+          "id": "process-card-2",
+          "title": "Review Timeline",
+          "description": "Most requests are reviewed within one to three business days.",
+          "href": "/changelog",
+          "ctaLabel": "Service Updates"
+        },
+        {
+          "id": "process-card-3",
+          "title": "Resolution Details",
+          "description": "Approved refunds are returned to the original payment method when possible.",
+          "href": "/privacy-policy",
+          "ctaLabel": "Data Handling"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need help with a billing dispute?",
+    "body": "Our billing support team can review refund eligibility and required documentation.",
+    "responseTime": "Billing inquiries answered in one business day"
+  }
+}

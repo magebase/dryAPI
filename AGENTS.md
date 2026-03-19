@@ -1,4 +1,4 @@
-# AGENTS.md
+# DO NOT WRITE FALLBACKS: fail fast on unexpected states, prohibit/minimize impossible-state guards, remove legacy/deprecated flags and symbols, allow breaking changes during development, and delete superseded code/docs instead of keeping shims
 
 Project: dryAPI unified AI inference platform
 Stack: Next.js App Router, TypeScript, TinaCMS, Fumadocs, Tailwind CSS, ShadCN UI, Cloudflare Workers/OpenNext, Stripe, Vitest
@@ -32,6 +32,8 @@ Reference goals:
   - Credits, subscriptions, webhook-driven balance updates.
 - State and storage:
   - Cloudflare KV / Durable Objects for keys, limits, counters, and balances.
+  - Cloudflare Analytics Engine (Wrangler dataset bindings) for high-cardinality per-request pricing and margin telemetry.
+  - Cloudflare D1 for current pricing state and snapshots (`price_key`, active quote, refresh state), not raw high-volume pricing event streams.
   - R2 or S3-compatible storage for generated assets and signed URLs.
 
 ## Repo Map
@@ -82,6 +84,7 @@ Compatibility requirements:
 
 ## Utility Libraries and i18n
 
+- Use `nuqs` for query-string state in App Router pages and client components; prefer it over custom URL parsing or serialization.
 - Use `lodash` for focused data/object utilities when native JS is verbose or error-prone.
 - Prefer path imports to keep bundle impact low, for example:
   - `import get from "lodash/get"`
@@ -95,12 +98,15 @@ Compatibility requirements:
 - For localization and number/date internationalization behavior, follow MDN guidance:
   - `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Internationalization`
 - Prefer built-in `Intl` APIs for locale-aware formatting in UI and API responses, and use `date-fns` for non-locale date math/composition.
+- Use `zod` for schema validation and canonical request parsing, `@tanstack/react-form` for typed forms, `@tanstack/react-query` for client mutations/cache, `next-seo` for JSON-LD, and `next-safe-action` for typed server-action wrappers when needed.
+- Prefer package-provided behavior over bespoke helpers when a package already exists in `package.json`; consult [docs/package-use-case-guide.md](docs/package-use-case-guide.md) before introducing new utility code.
 
 ## Working Rules
 
 - Favor small, testable, low-regression changes over broad rewrites.
 - Keep changes scoped to the request; avoid opportunistic refactors.
 - Do not introduce formatting-only churn.
+- Prefer existing packages in `package.json` over custom helpers when they cover the problem cleanly; the package guide is the first reference for choosing a dependency.
 - For `pnpm` script entrypoints in this repository, use TypeScript files (`.ts`) only. Do not add or call `.mjs`, `.cjs`, or custom `.js` script files.
 - Preserve existing Tina preview/edit paths (`/admin/index.html`, Tina API routes).
 - If schema changes are required, follow schema-first workflow:
@@ -132,6 +138,7 @@ This repo supports multiple public brands and domains from one codebase. Brand w
 - Keep component structure shared across brands. Brandify through props, content, tokens, and helper functions before creating brand-specific component forks.
 - Prefer semantic design tokens and CSS variables for brand accents, gradients, marks, and illustration treatments so ShadCN/Tailwind primitives stay reusable.
 - ShadCN theme changes must be token-driven. Adjust brand colors, accent surfaces, and visual identity through shared theme variables instead of duplicating component markup or utility-class trees.
+- When a visible surface renders the brand wordmark or `brand.mark`, pair it with the shared `BrandLogo` lockup and the brand display name together. Do not render the wordmark alone in headers, cards, CTAs, success screens, or empty states unless the surface is metadata, structured data, or another machine-readable context.
 - Keep neutral surfaces, forms, tables, and skeleton loaders visually consistent across brands unless a deliberate brand-level design requirement says otherwise. Loading skeletons remain neutral gray.
 - Isolate brand-specific logos, marks, and hero visuals in content/configuration or dedicated assets instead of embedding them into generic UI primitives.
 - If a component needs brand-specific copy or styling, pass a normalized brand object or theme data into the shared component, or resolve brand-aware site config at the boundary.
@@ -405,6 +412,61 @@ Set `metadataBase` once in the root `src/app/layout.tsx` via `generateMetadata`.
   - Prioritize nav items, section headers, CTA rows, metadata chips, status blocks, and feature lists.
   - Prefer `lucide-react` icons and keep sizing consistent (`size-4` inline, `size-5` for emphasis).
   - Pair icons with text labels (avoid ambiguous icon-only affordances unless accessibility labels are explicit).
+
+### Form Architecture Standards (Strict)
+
+Use a single modern form stack across product surfaces:
+
+- `TanStack Form` for typed client form state.
+- `Zod` for validation schemas and canonical payload parsing.
+- `Server Actions` for secure server-side mutations that require auth context, secrets, or direct DB access.
+- `TanStack Query` for client mutation orchestration, cache invalidation, optimistic updates, and dependent refreshes.
+
+#### Required implementation rules
+
+- Every non-trivial interactive form should be implemented with `@tanstack/react-form` plus a `zod` schema.
+- Keep validation deterministic:
+  - Parse with `safeParse` for client-side field feedback.
+  - Parse again on the server boundary (server action or API route) before writes.
+- Do not duplicate business rules in ad hoc string checks when a schema can express the rule.
+- Keep form defaults explicit and typed; avoid implicit `undefined`-driven behavior in submit payloads.
+- Keep loading and submit states explicit (`idle`, `submitting`, `success`, `error`) and user-visible.
+- Prefer icon-safe controls and existing ShadCN components for consistency and accessibility.
+
+#### Server Actions vs TanStack Query decision matrix
+
+| Scenario | Use Server Action | Use TanStack Query |
+| --- | --- | --- |
+| Secure DB mutation / secret-backed operation | Yes | Optional wrapper |
+| Simple one-off form submit with no optimistic UI | Yes | Optional |
+| Optimistic updates or cache mutation needed | No (alone) | Yes |
+| Dependent views requiring cache invalidation | Optional | Yes |
+| Highly interactive client mutation workflow | Optional | Yes |
+
+#### Rule of thumb
+
+- Use `Server Actions` for trust boundaries and sensitive mutations.
+- Use `TanStack Query` for client-side mutation lifecycle and cache synchronization.
+- Use a hybrid submit path by default for app/dashboard forms:
+  - `TanStack Form` handles field state and validation.
+  - `useMutation` executes the submit function.
+  - The mutation function can call a `Server Action` when security constraints require server-only execution.
+  - On success, invalidate or refresh relevant query keys.
+
+#### Public forms vs authenticated dashboard forms
+
+- Public marketing/contact forms may submit to API routes when multipart payloads or anti-abuse middleware are required.
+- Authenticated dashboard settings and account mutations should prefer server actions for privileged writes.
+- For file uploads, keep transport concerns (multipart/FormData) separate from structured validation schema.
+
+#### Testing expectations for forms
+
+- Add regression tests for schema behavior whenever form validation or payload shape changes.
+- For submit path changes, verify:
+  - success flow
+  - field validation errors
+  - server failure handling
+  - cache invalidation behavior when Query is used.
 
 ### Design Principles and UX Best Practices
 
@@ -917,6 +979,21 @@ Use these rules for all transactional, lifecycle, internal alert, and marketing/
 - Normalize provider-specific payloads into stable response contracts.
 - Log request metadata for analytics without leaking secrets/PII.
 
+## Security Best Practices for Cloudflare/OpenNext
+
+- Treat every request header, host value, callback URL, and redirect target as untrusted. Resolve internal fetch origins from explicit configuration such as `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`, or `NEXT_PUBLIC_SITE_URL`; do not trust `request.url`, `Host`, or `X-Forwarded-Host` in production when building privileged internal requests.
+- Allow only local-path callback URLs for sign-in, sign-up, reset, and verification flows. Reject absolute URLs that point off-site, and strip any external origin before redirecting or persisting the target.
+- Put auth in front of every state-changing or secret-bearing route, including upload signing, media mutation, admin utilities, webhook replay helpers, and internal proxy endpoints. Public routes should be read-only unless there is a verified business need.
+- Scope R2 keys by purpose and prefix. Upload signing should issue short-lived URLs with exact `Content-Type` and size bounds; delete and list operations must stay inside their own prefix and never accept arbitrary object keys.
+- Keep Cloudflare CDN and `r2.dev`/custom CDN exposure aligned with object sensitivity. Public assets may be cached aggressively only when the path is immutable or content-addressed; private or user-specific assets must stay behind signed URLs or an auth gate.
+- Pin allowed hostnames and zones in Cloudflare DNS, Workers, and OpenNext routing. Reject unknown brand hosts, do not branch privileged logic on a raw request host, and keep canonical/public URLs sourced from the brand registry.
+- Keep Durable Objects single-purpose and tenant-scoped. Use explicit entity keys, never multiplex privileged and public state in one object, and never use a DO as a fallback store for auth, billing, or access-control state.
+- Keep D1 segmented by workload. Auth, billing, analytics, and metadata must stay on their dedicated bindings; never fall back from an auth binding to a broader app database, and never co-mingle secret-bearing or high-churn writes with public content reads.
+- Use exact CORS and cookie settings for authenticated flows: explicit origins, no wildcard credentials, `HttpOnly`, `Secure`, and `SameSite` matching the trust boundary. Do not relax cookies or CORS to make local development easier.
+- Verify every webhook, signed token, and bearer assertion with strict `iss`, `aud`, expiration, and replay checks. Fail closed when a secret, binding, or verification key is missing.
+- Keep logs non-sensitive. Never log session tokens, cookies, presigned URLs, full authorization headers, or raw payloads that may contain secrets.
+- Every security fix must add a regression test. Prioritize tests for unauthorized access, host spoofing, open redirect handling, cross-prefix object access, and any route that proxies to an internal origin.
+
 Additional gateway and docs guidance:
 
 - Use a single, dedicated Hono-based Cloudflare Worker as the public API gateway. The worker should:
@@ -931,6 +1008,22 @@ Additional gateway and docs guidance:
   - Preserve the local `/openapi.json` Next route as a same-origin mirror of `docs/deapi-mirror/articles/openapi.json` so docs previews work during Next-only development.
   - Keep the interactive OpenAPI preview available through the MDX component registered in `mdx-components.tsx` (example: `src/components/docs/OpenApiViewer.tsx`) and the generated Fumadocs OpenAPI reference under `/docs/v1/api-reference`.
   - Add a prebuild step that generates an `content/llm-text.txt` artifact containing the API base and summary (script: `scripts/generate-llm-text.ts`). The prebuild hook runs before `pnpm build` so the site deploy bundle includes the LLM text.
+
+- Margin-aware dynamic pricing telemetry (required):
+  - Use a Wrangler `analytics_engine_datasets` binding as the primary per-request event sink for pricing and cost telemetry.
+  - Emit event-level fields required for margin analytics: `price_key`, `surface`, `endpoint_id`, `model_slug`, `revenue`, `estimated_cost`, execution/queue timings, and status.
+  - Keep D1 focused on materialized pricing state (current quote/snapshots and refresh bookkeeping), not as the primary high-cardinality event store.
+  - Do not use Durable Objects as the default global pricing aggregator; reserve DOs for specialized sub-second coordination use cases only.
+
+- Multi-armed bandit pricing architecture (required):
+  - Treat each `price_key` as an independent arm group with configurable candidate multipliers (for example via `RUNPOD_PRICING_BANDIT_ARMS_CSV`).
+  - Keep bandit arm statistics in D1 (`runpod_price_bandit_arms`) and current selected arm/config state in D1 (`runpod_price_bandit_state`).
+  - Use Worker-side UCB/epsilon-style selection during snapshot recompute to balance exploration and exploitation while respecting margin floors.
+  - Persist selected arm identity (`bandit_arm_id`) with snapshots and enqueued jobs so terminal events can attribute rewards to the exact arm that priced the request.
+  - Compute reward as weighted margin and growth signals (`alpha * margin + beta * growth`) with env-driven weights (`RUNPOD_PRICING_BANDIT_ALPHA_MARGIN`, `RUNPOD_PRICING_BANDIT_BETA_GROWTH`).
+  - Update arm reward totals and EMAs only on terminal job events; never block request dispatch on heavy bandit queries.
+  - Enforce guardrails on price movement per refresh window (max step-up / step-down) and always keep selected prices above hard minimum-profit floor prices.
+  - Keep Analytics Engine as the canonical high-cardinality event stream for telemetry and future offline model tuning; use RunPod billing API only for delayed coefficient reconciliation.
 
 ## RunPod Unit Economics and Profitability Rules
 

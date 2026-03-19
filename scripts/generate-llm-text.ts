@@ -18,6 +18,10 @@ Endpoints provided (OpenAI/OpenRouter-compatible shapes):
 Use these endpoints with an Authorization: Bearer $API_KEY header.
 `
 
-await fs.mkdir(path.dirname(outPath), { recursive: true })
-await fs.writeFile(outPath, content, 'utf8')
-console.log('Wrote', outPath)
+async function main() {
+  await fs.mkdir(path.dirname(outPath), { recursive: true })
+  await fs.writeFile(outPath, content, 'utf8')
+  console.log('Wrote', outPath)
+}
+
+main().catch(console.error)

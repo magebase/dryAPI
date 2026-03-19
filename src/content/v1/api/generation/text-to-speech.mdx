@@ -1,12 +1,6 @@
 ---
 title: "Text-to-Speech (TTS)"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
-
-# Text-to-Speech (TTS)
-
 > Endpoint for requesting text2audio inference
 
 Text-to-Speech converts text into natural-sounding audio. The endpoint supports three TTS modes via the `mode` parameter:
@@ -15,20 +9,20 @@ Text-to-Speech converts text into natural-sounding audio. The endpoint supports 
 * **`voice_clone`** — Clone a voice from a short reference audio clip. Requires the `ref_audio` parameter (3–10 seconds, max 10 MB). Optionally provide `ref_text` with a transcript of the reference audio for improved accuracy.
 * **`voice_design`** — Create a new voice from a natural language description. Requires the `instruct` parameter (e.g. `"A warm female voice with a British accent"`).
 
-<Callout>
-**Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify available **languages** and **voices**.
-</Callout>
+> **NOTE**
+>
+> **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify available **languages** and **voices**.
 
-<Callout title="Warning" type="warn">
-**Mode-specific required fields:**
-
-* `custom_voice` — `voice` is required.
-* `voice_clone` — `ref_audio` is required. `ref_text` is optional but recommended.
-* `voice_design` — `instruct` is required.
-
-If `mode` is omitted, the API defaults to `custom_voice`.
-</Callout>
+> **WARNING**
+>
+> **Mode-specific required fields:**
+> 
+> * `custom_voice` — `voice` is required.
+> * `voice_clone` — `ref_audio` is required. `ref_text` is optional but recommended.
+> * `voice_design` — `instruct` is required.
+> 
+> If `mode` is omitted, the API defaults to `custom_voice`.
 
 ## OpenAPI
 
-<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/txt2audio","method":"post"}]} showTitle={true} />
+<APIPage document={"/home/aqua/Projects/dryapi/docs/dryapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/txt2audio","method":"post"}]} showTitle={true} />

@@ -1,10 +1,10 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Payment Methods
 
-deAPI uses a prepaid credit balance. All API usage is charged against your credits, and you can top up your balance directly from the dashboard using Stripe.
+dryAPI uses a prepaid credit balance. All API usage is charged against your credits, and you can top up your balance directly from the dashboard using Stripe.
 
 ### Single payments (one-off top-ups)
 
@@ -23,7 +23,7 @@ Use this option if you prefer to control every top-up manually.
 You can also enable **automatic top-ups** to keep your projects running without interruption:
 
 * Pick a recurring top-up amount (e.g. **10 USD**, **25 USD**, **50 USD**).
-* When your balance drops below **2.00 USD**, deAPI will automatically:
+* When your balance drops below **2.00 USD**, dryAPI will automatically:
   * charge the selected amount via Stripe, and
   * add the corresponding credits to your account.
 * You can turn automatic top-ups on or off at any time from the **Balance** page.
@@ -34,10 +34,10 @@ This is recommended for production workloads where you don't want jobs to fail d
 
 ### Other payment options & B2B billing
 
-At the moment, **Stripe** is the primary payment provider for deAPI.
+At the moment, **Stripe** is the primary payment provider for dryAPI.
 
 For **B2B customers**, payment terms and billing methods (e.g. custom invoices, larger commitments) are discussed individually.
-If you are interested in a B2B agreement, please contact us at **[support@deapi.ai](mailto:support@deapi.ai)**.
+If you are interested in a B2B agreement, please contact us at **[support@dryapi.dev](mailto:support@dryapi.dev)**.
 
 
 Built with [Mintlify](https://mintlify.com).

@@ -15,6 +15,7 @@ import { ModelPricingConfigurator } from "@/components/site/model-pricing-config
 import { WebPageJsonLd } from "@/components/site/seo-jsonld";
 import { SiteFrame } from "@/components/site/site-frame";
 import { SummarizeWithAi } from "@/components/site/summarize-with-ai";
+import { toRoute } from "@/lib/route";
 import { getModelDetail } from "@/lib/deapi-model-details";
 import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
 import {
@@ -42,7 +43,7 @@ type ModelPricingPageProps = {
   }>;
 };
 
-export const dynamic = "force-static";
+;
 
 export function generateStaticParams() {
   return toRoutePairs().map((pair) => ({
@@ -154,7 +155,7 @@ export default async function ModelPricingPage({
             <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-slate-500">
               <Link
                 className="inline-flex items-center gap-1 text-primary transition hover:text-slate-900"
-                href={detailHref}
+                href={toRoute(detailHref)}
               >
                 <ArrowLeft className="size-3.5" />
                 <span>Model Detail</span>
@@ -162,7 +163,7 @@ export default async function ModelPricingPage({
               <span>/</span>
               <Link
                 className="text-primary transition hover:text-slate-900"
-                href={categoryHref}
+                href={toRoute(categoryHref)}
               >
                 {categoryLabel}
               </Link>
@@ -194,13 +195,13 @@ export default async function ModelPricingPage({
                 className="h-9 rounded-md border-slate-300 bg-white px-3 text-xs text-slate-700 hover:bg-slate-100"
               />
               <Link
-                href={detailHref}
+                href={toRoute(detailHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-slate-100"
               >
                 <span>Model Detail</span>
               </Link>
               <Link
-                href={categoryHref}
+                href={toRoute(categoryHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-slate-100"
               >
                 <span>Category Pricing</span>
@@ -353,13 +354,13 @@ export default async function ModelPricingPage({
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
-                href={detailHref}
+                href={toRoute(detailHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md bg-slate-900 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-slate-700"
               >
                 <span>Model Detail</span>
                 <ArrowUpRight className="size-3.5" />
               </Link>
-              <Link
+              <a
                 href={
                   detail?.huggingFaceUrl ??
                   `https://huggingface.co/models?search=${encodeURIComponent(routePair.model)}`
@@ -370,7 +371,7 @@ export default async function ModelPricingPage({
               >
                 <span>Hugging Face</span>
                 <ExternalLink className="size-3.5" />
-              </Link>
+              </a>
             </div>
 
             <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
@@ -405,14 +406,14 @@ export default async function ModelPricingPage({
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link
-                href={detailHref}
+                href={toRoute(detailHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-900 transition hover:bg-slate-100"
               >
                 <span>Open model profile</span>
                 <ArrowUpRight className="size-3.5" />
               </Link>
               <Link
-                href={categoryHref}
+                href={toRoute(categoryHref)}
                 className="inline-flex h-9 items-center gap-1 rounded-md border border-white/45 bg-white/10 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white/20"
               >
                 <span>Compare category pricing</span>

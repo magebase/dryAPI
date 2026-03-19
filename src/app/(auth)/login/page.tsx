@@ -1,9 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { type FormEvent, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { useForm } from "@tanstack/react-form"
+import { parseAsString, useQueryStates } from "nuqs"
 import { toast } from "sonner"
+import { z } from "zod"
 
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 
@@ -13,6 +16,11 @@ const LOGIN_PASSWORD_RESET_TOAST_ID = "login-password-reset"
 const LOGIN_SUCCESS_TOAST_ID = "login-success"
 
 type SocialProvider = "google" | "github"
+
+const loginFormSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address."),
+  password: z.string().min(1, "Password is required."),
+})
 
 function resolveAuthErrorMessage(
   payload: { message?: string; error?: string } | null,
@@ -52,17 +60,140 @@ async function hasActiveSession(): Promise<boolean> {
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const serializedSearchParams = searchParams?.toString() || ""
+  const [authQuery, setAuthQuery] = useQueryStates(
+    {
+      registered: parseAsString,
+      reset: parseAsString,
+      verify: parseAsString,
+      email: parseAsString,
+      password: parseAsString,
+    },
+    {
+      history: "replace",
+      scroll: false,
+      shallow: true,
+    },
+  )
 
-  const registered = searchParams?.get("registered") === "1"
-  const passwordReset = searchParams?.get("reset") === "1"
-  const requiresVerification = searchParams?.get("verify") === "1"
-  const prefillEmail = searchParams?.get("email") || ""
+  const registered = authQuery.registered === "1"
+  const passwordReset = authQuery.reset === "1"
+  const requiresVerification = authQuery.verify === "1"
+  const prefillEmail = authQuery.email || ""
 
   const [error, setError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [socialProviderPending, setSocialProviderPending] = useState<SocialProvider | null>(null)
+  const defaultValues = useMemo(
+    () => ({
+      email: prefillEmail,
+      password: "",
+    }),
+    [prefillEmail],
+  )
+
+  const form = useForm({
+    defaultValues,
+    validators: {
+      onSubmit: loginFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      const traceId = createAuthTraceId(undefined)
+      const email = value.email.trim().toLowerCase()
+      const password = value.password
+
+      setError(null)
+
+      logClientAuthEvent("log", "login.submit.start", {
+        traceId,
+        email: redactEmail(email),
+      })
+
+      try {
+        const response = await fetch("/api/auth/sign-in/email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            email,
+            password,
+            rememberMe: true,
+          }),
+        })
+
+        const payload = (await response.json().catch(() => null)) as
+          | { token?: string; url?: string | null; message?: string; error?: string }
+          | null
+
+        logClientAuthEvent("log", "login.submit.response", {
+          traceId,
+          status: response.status,
+          ok: response.ok,
+          payloadKeys: payload && typeof payload === "object" ? Object.keys(payload) : [],
+        })
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            logClientAuthEvent("warn", "login.submit.email-unverified", {
+              traceId,
+              email: redactEmail(email),
+            })
+            setError("Please verify your email before signing in. We sent a verification link to your inbox.")
+            return
+          }
+
+          logClientAuthEvent("warn", "login.submit.non-ok", {
+            traceId,
+            status: response.status,
+            email: redactEmail(email),
+          })
+
+          setError(
+            resolveAuthErrorMessage(
+              payload,
+              "Unable to sign in. Please check your credentials.",
+            ),
+          )
+          return
+        }
+
+        const authenticated = await hasActiveSession()
+        logClientAuthEvent("log", "login.submit.session-check", {
+          traceId,
+          authenticated,
+        })
+
+        if (!authenticated) {
+          logClientAuthEvent("error", "login.submit.session-missing", {
+            traceId,
+            status: response.status,
+          })
+          setError("Sign-in succeeded but session could not be confirmed. Please try again.")
+          return
+        }
+
+        const redirectTarget = "/dashboard"
+
+        toast.success("Signed in successfully", {
+          id: LOGIN_SUCCESS_TOAST_ID,
+        })
+
+        logClientAuthEvent("log", "login.submit.redirect", {
+          traceId,
+          redirectTarget,
+        })
+
+        window.location.assign(redirectTarget)
+        router.refresh()
+      } catch {
+        logClientAuthEvent("error", "login.submit.error", {
+          traceId,
+          email: redactEmail(email),
+        })
+        setError("Unable to sign in right now. Please try again.")
+      }
+    },
+  })
 
   useEffect(() => {
     if (!registered) {
@@ -81,14 +212,8 @@ export default function LoginPage() {
       },
     )
 
-    const nextParams = new URLSearchParams(serializedSearchParams)
-    nextParams.delete("registered")
-    nextParams.delete("verify")
-
-    const nextQuery = nextParams.toString()
-    const nextUrl = nextQuery ? `/login?${nextQuery}` : "/login"
-    router.replace(nextUrl, { scroll: false })
-  }, [registered, requiresVerification, router, serializedSearchParams])
+    void setAuthQuery({ registered: null, verify: null })
+  }, [registered, requiresVerification, setAuthQuery])
 
   useEffect(() => {
     if (!passwordReset) {
@@ -100,32 +225,21 @@ export default function LoginPage() {
       description: "Sign in with your new password.",
     })
 
-    const nextParams = new URLSearchParams(serializedSearchParams)
-    nextParams.delete("reset")
-
-    const nextQuery = nextParams.toString()
-    const nextUrl = nextQuery ? `/login?${nextQuery}` : "/login"
-    router.replace(nextUrl, { scroll: false })
-  }, [passwordReset, router, serializedSearchParams])
+    void setAuthQuery({ reset: null })
+  }, [passwordReset, setAuthQuery])
 
   useEffect(() => {
-    if (!searchParams?.get("password")) {
+    if (!authQuery.password) {
       return
     }
 
-    const params = new URLSearchParams(serializedSearchParams)
-    params.delete("password")
-
-    const nextQuery = params.toString()
-    const nextUrl = nextQuery ? `/login?${nextQuery}` : "/login"
-
     logClientAuthEvent("warn", "login.sensitive-query-stripped", {
       hadPasswordParam: true,
-      hadEmailParam: Boolean(searchParams?.get("email")),
+      hadEmailParam: Boolean(authQuery.email),
     })
 
-    router.replace(nextUrl, { scroll: false })
-  }, [router, searchParams, serializedSearchParams])
+    void setAuthQuery({ password: null })
+  }, [authQuery.email, authQuery.password, setAuthQuery])
 
   useEffect(() => {
     if (!error) {
@@ -138,137 +252,10 @@ export default function LoginPage() {
     })
   }, [error])
 
-  async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const traceId = createAuthTraceId(undefined)
-
-    if (isSubmitting) {
-      logClientAuthEvent("warn", "login.submit.ignored-already-submitting", { traceId })
-      return
-    }
-
-    setError(null)
-    setIsSubmitting(true)
-
-    const form = event.currentTarget
-    const formData = new FormData(form)
-
-    const email = String(formData.get("email") || "").trim().toLowerCase()
-    const password = String(formData.get("password") || "")
-
-    if (!email || !password) {
-      logClientAuthEvent("warn", "login.submit.invalid-empty-fields", {
-        traceId,
-        emailPresent: email.length > 0,
-        passwordPresent: password.length > 0,
-      })
-      setError("Please enter your email and password.")
-      setIsSubmitting(false)
-      return
-    }
-
-    logClientAuthEvent("log", "login.submit.start", {
-      traceId,
-      email: redactEmail(email),
-    })
-
-    try {
-      const response = await fetch("/api/auth/sign-in/email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email,
-          password,
-          rememberMe: true,
-        }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { token?: string; url?: string | null; message?: string; error?: string }
-        | null
-
-      logClientAuthEvent("log", "login.submit.response", {
-        traceId,
-        status: response.status,
-        ok: response.ok,
-        payloadKeys: payload && typeof payload === "object" ? Object.keys(payload) : [],
-      })
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          logClientAuthEvent("warn", "login.submit.email-unverified", {
-            traceId,
-            email: redactEmail(email),
-          })
-          setError("Please verify your email before signing in. We sent a verification link to your inbox.")
-          setIsSubmitting(false)
-          return
-        }
-
-        logClientAuthEvent("warn", "login.submit.non-ok", {
-          traceId,
-          status: response.status,
-          email: redactEmail(email),
-        })
-
-        setError(
-          resolveAuthErrorMessage(
-            payload,
-            "Unable to sign in. Please check your credentials.",
-          ),
-        )
-        setIsSubmitting(false)
-        return
-      }
-
-      const authenticated = await hasActiveSession()
-      logClientAuthEvent("log", "login.submit.session-check", {
-        traceId,
-        authenticated,
-      })
-
-      if (!authenticated) {
-        logClientAuthEvent("error", "login.submit.session-missing", {
-          traceId,
-          status: response.status,
-        })
-        setError("Sign-in succeeded but session could not be confirmed. Please try again.")
-        setIsSubmitting(false)
-        return
-      }
-
-      // Force redirect to the dashboard regardless of payload or query params.
-      const redirectTarget = "/dashboard"
-
-      toast.success("Signed in successfully", {
-        id: LOGIN_SUCCESS_TOAST_ID,
-      })
-
-      logClientAuthEvent("log", "login.submit.redirect", {
-        traceId,
-        redirectTarget,
-      })
-
-      // Hard navigate after successful login so auth cookies are always honored on the destination request.
-      window.location.assign(redirectTarget)
-      router.refresh()
-    } catch {
-      logClientAuthEvent("error", "login.submit.error", {
-        traceId,
-        email: redactEmail(email),
-      })
-      setError("Unable to sign in right now. Please try again.")
-      setIsSubmitting(false)
-    }
-  }
-
   async function handleSocialSignIn(provider: SocialProvider) {
     const traceId = createAuthTraceId(undefined)
 
-    if (isSubmitting || socialProviderPending) {
+    if (form.state.isSubmitting || socialProviderPending) {
       return
     }
 
@@ -330,7 +317,7 @@ export default function LoginPage() {
       <div className="grid grid-cols-2 gap-4 mb-8">
         <button
           type="button"
-          disabled={Boolean(socialProviderPending)}
+          disabled={Boolean(socialProviderPending) || form.state.isSubmitting}
           onClick={() => void handleSocialSignIn("google")}
           className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -344,7 +331,7 @@ export default function LoginPage() {
         </button>
         <button
           type="button"
-          disabled={Boolean(socialProviderPending)}
+          disabled={Boolean(socialProviderPending) || form.state.isSubmitting}
           onClick={() => void handleSocialSignIn("github")}
           className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -364,7 +351,15 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <form className="space-y-5" method="post" onSubmit={handleLoginSubmit}>
+      <form
+        className="space-y-5"
+        method="post"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault()
+          void form.handleSubmit()
+        }}
+      >
         {registered ? (
           <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
             {requiresVerification
@@ -373,34 +368,73 @@ export default function LoginPage() {
           </p>
         ) : null}
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
-          <input
-            name="email"
-            type="email"
-            placeholder="name@company.com"
-            defaultValue={prefillEmail}
-            required
-            className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
-          />
-        </div>
+        <form.Field
+          name="email"
+          children={(field) => {
+            const isInvalid =
+              (field.state.meta.isTouched || form.state.isSubmitted) &&
+              !field.state.meta.isValid
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-sm font-semibold text-slate-700">Password</label>
-            <Link href="/forgot" className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors">Forgot password?</Link>
-          </div>
-          <input
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            required
-            className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
-          />
-        </div>
+            return (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
+                <input
+                  aria-invalid={isInvalid}
+                  className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
+                  name={field.name}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  placeholder="name@company.com"
+                  required
+                  type="email"
+                  value={field.state.value}
+                />
+                {isInvalid ? (
+                  <p className="mt-1.5 text-sm font-medium text-red-700">
+                    {(field.state.meta.errors[0] as { message?: string } | undefined)?.message}
+                  </p>
+                ) : null}
+              </div>
+            )
+          }}
+        />
 
-        <button type="submit" disabled={isSubmitting} className="w-full px-4 py-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-all shadow-sm">
-          {isSubmitting ? "Signing in..." : "Sign in"}
+        <form.Field
+          name="password"
+          children={(field) => {
+            const isInvalid =
+              (field.state.meta.isTouched || form.state.isSubmitted) &&
+              !field.state.meta.isValid
+
+            return (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-slate-700">Password</label>
+                  <Link href="/forgot" className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors">Forgot password?</Link>
+                </div>
+                <input
+                  aria-invalid={isInvalid}
+                  className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
+                  name={field.name}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  placeholder="••••••••"
+                  required
+                  type="password"
+                  value={field.state.value}
+                />
+                {isInvalid ? (
+                  <p className="mt-1.5 text-sm font-medium text-red-700">
+                    {(field.state.meta.errors[0] as { message?: string } | undefined)?.message}
+                  </p>
+                ) : null}
+              </div>
+            )
+          }}
+        />
+
+        <button type="submit" disabled={form.state.isSubmitting} className="w-full px-4 py-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-all shadow-sm">
+          {form.state.isSubmitting ? "Signing in..." : "Sign in"}
         </button>
 
         {error ? (

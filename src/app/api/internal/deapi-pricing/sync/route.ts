@@ -1,65 +1,77 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
 
-import { persistDeapiPricingSnapshot } from "@/lib/deapi-pricing-store"
-import type { DeapiPricingSnapshot } from "@/types/deapi-pricing"
-
-export const runtime = "nodejs"
+import { persistDeapiPricingSnapshot } from "@/lib/deapi-pricing-store";
+import type { DeapiPricingSnapshot } from "@/types/deapi-pricing";
 
 function isAuthorized(request: NextRequest): boolean {
-  const expectedToken = (process.env.DEAPI_PRICING_SYNC_TOKEN || "").trim()
+  const expectedToken = (process.env.DEAPI_PRICING_SYNC_TOKEN || "").trim();
   if (!expectedToken) {
-    return true
+    return true;
   }
 
-  const authHeader = request.headers.get("authorization") || ""
-  const token = authHeader.replace(/^Bearer\s+/i, "").trim()
+  const authHeader = request.headers.get("authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
-  return token === expectedToken
+  return token === expectedToken;
 }
 
-function hasValidShape(snapshot: DeapiPricingSnapshot | null): snapshot is DeapiPricingSnapshot {
+function hasValidShape(
+  snapshot: DeapiPricingSnapshot | null,
+): snapshot is DeapiPricingSnapshot {
   if (!snapshot || typeof snapshot !== "object") {
-    return false
+    return false;
   }
 
   if (!Array.isArray(snapshot.permutations)) {
-    return false
+    return false;
   }
 
-  if (typeof snapshot.source !== "string" || typeof snapshot.syncedAt !== "string") {
-    return false
+  if (
+    typeof snapshot.source !== "string" ||
+    typeof snapshot.syncedAt !== "string"
+  ) {
+    return false;
   }
 
-  return true
+  return true;
 }
 
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401 },
+    );
   }
 
   try {
-    const payload = (await request.json().catch(() => null)) as DeapiPricingSnapshot | null
+    const payload = (await request
+      .json()
+      .catch(() => null)) as DeapiPricingSnapshot | null;
 
     if (!hasValidShape(payload)) {
-      return NextResponse.json({ ok: false, error: "Invalid snapshot payload" }, { status: 400 })
+      return NextResponse.json(
+        { ok: false, error: "Invalid snapshot payload" },
+        { status: 400 },
+      );
     }
 
-    const persisted = await persistDeapiPricingSnapshot(payload)
+    const persisted = await persistDeapiPricingSnapshot(payload);
 
     return NextResponse.json({
       ok: true,
       persisted,
       totalPermutations: payload.permutations.length,
       syncedAt: payload.syncedAt,
-    })
+    });
   } catch (error) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unable to persist snapshot",
+        error:
+          error instanceof Error ? error.message : "Unable to persist snapshot",
       },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

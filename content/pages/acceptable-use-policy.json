@@ -1,0 +1,107 @@
+{
+  "slug": "/acceptable-use-policy",
+  "navLabel": "Acceptable Use Policy",
+  "seoTitle": "Acceptable Use Policy | deAPI",
+  "seoDescription": "Review acceptable use rules for API traffic, content safety, and lawful operation on deAPI.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Acceptable Use Policy"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "This policy defines prohibited activity, abuse controls, and required safeguards for production workloads."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "View Terms of Service",
+        "href": "/terms-of-service"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Legal",
+    "heading": "Acceptable Use Policy",
+    "body": "Use deAPI for lawful, compliant workloads and follow controls that protect the platform and its users.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "View Terms",
+        "href": "/terms-of-service",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "prohibited",
+      "title": "Prohibited Activity",
+      "body": "We prohibit unlawful use, abuse patterns, and attempts to bypass platform safeguards.",
+      "cards": [
+        {
+          "id": "prohibited-card-1",
+          "title": "Abuse and Fraud",
+          "description": "Do not use the API for fraud, account takeover attempts, or harmful automation.",
+          "href": "/terms-of-service",
+          "ctaLabel": "Read Terms"
+        },
+        {
+          "id": "prohibited-card-2",
+          "title": "Safety Evasion",
+          "description": "Do not circumvent moderation, auth, or rate-limit controls on any endpoint.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Security Guidance"
+        },
+        {
+          "id": "prohibited-card-3",
+          "title": "Unauthorized Access",
+          "description": "Do not probe, scan, or attempt unauthorized access to internal systems.",
+          "href": "/privacy-policy",
+          "ctaLabel": "Privacy Commitments"
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "title": "Operational Responsibilities",
+      "body": "Customers are responsible for securing credentials and monitoring usage within their organizations.",
+      "cards": [
+        {
+          "id": "operations-card-1",
+          "title": "Credential Management",
+          "description": "Protect API keys and rotate credentials according to internal security standards.",
+          "href": "/docs",
+          "ctaLabel": "Developer Docs"
+        },
+        {
+          "id": "operations-card-2",
+          "title": "Usage Monitoring",
+          "description": "Track request activity, billing signals, and anomalies to reduce operational risk.",
+          "href": "/pricing",
+          "ctaLabel": "Billing Overview"
+        },
+        {
+          "id": "operations-card-3",
+          "title": "Policy Escalation",
+          "description": "Contact us if you need guidance on specific compliance boundaries.",
+          "href": "/contact-sales",
+          "ctaLabel": "Get Support"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need an acceptable-use review?",
+    "body": "We can help security and legal teams validate policy alignment for new deployments.",
+    "responseTime": "Policy guidance available within one business day"
+  }
+}

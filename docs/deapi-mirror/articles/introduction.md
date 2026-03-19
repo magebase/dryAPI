@@ -1,26 +1,26 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Introduction
 
 > Fast and affordable inference for open-source AI models
 
-## What is deAPI?
+## What is dryAPI?
 
-deAPI provides fast and affordable inference for open-source AI models — without infrastructure overhead.
+dryAPI provides fast and affordable inference for open-source AI models — without infrastructure overhead.
 
 Run image, video, audio, and text workloads through a single, consistent API.
 
-deAPI handles GPU orchestration, execution, and scaling so you can focus on building applications, not managing infrastructure.
+dryAPI handles GPU orchestration, execution, and scaling so you can focus on building applications, not managing infrastructure.
 
-Under the hood, deAPI runs on a global, decentralized GPU network, allowing significantly lower inference costs compared to traditional cloud providers.
+Under the hood, dryAPI runs on a global, decentralized GPU network, allowing significantly lower inference costs compared to traditional cloud providers.
 
 ***
 
 ## What you can build
 
-With deAPI, you can power a wide range of AI applications:
+With dryAPI, you can power a wide range of AI applications:
 
 * **Image generation** — Create and edit images using modern diffusion models
 * **Text-to-speech** — Generate natural-sounding speech with preset voices, voice cloning, or voice design
@@ -40,12 +40,12 @@ A full, up-to-date list of supported models is available here:
 
 ## API Reference for AI Assistants
 
-If you are building an AI agent or integrating AI assistance into your development workflow, you can use the `llms.txt` file below to give your model structured access to the complete deAPI reference.
+If you are building an AI agent or integrating AI assistance into your development workflow, you can use the `llms.txt` file below to give your model structured access to the complete dryAPI reference.
 
-The file provides canonical API endpoints, usage documentation, and stable links to all relevant sections of the platform. Simply include or link to this file in your AI tooling or agent configuration to enable accurate and up-to-date access to the deAPI API.
+The file provides canonical API endpoints, usage documentation, and stable links to all relevant sections of the platform. Simply include or link to this file in your AI tooling or agent configuration to enable accurate and up-to-date access to the dryAPI API.
 
-<Card icon="robot" href="https://deapi.ai/llms.txt" title="llms.txt">
-  [https://deapi.ai/llms.txt](https://deapi.ai/llms.txt)
+<Card icon="robot" href="https://dryapi.dev/llms.txt" title="llms.txt">
+  [https://dryapi.dev/llms.txt](https://dryapi.dev/llms.txt)
 </Card>
 
 

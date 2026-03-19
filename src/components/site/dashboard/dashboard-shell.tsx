@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { modelCategories } from "@/components/site/dashboard/model-categories";
 import { buildModelTaskSectionId } from "@/components/site/dashboard/model-section-id";
 import { cn } from "@/lib/utils";
-import { DryApiLogo } from "../dryapi-logo";
+import { BrandLogo } from "../brand-logo";
 
 type DashboardShellProps = {
   children: ReactNode;
@@ -75,6 +75,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
     try {
       await fetch("/api/auth/sign-out", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         cache: "no-store",
       });
@@ -135,7 +136,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             className="mb-1 me-5 flex items-center space-x-2 rtl:space-x-reverse"
             onClick={() => setMobileSidebarOpen(false)}
           >
-            <DryApiLogo size="sm" tone="light" className="!gap-2" />
+            <BrandLogo size="sm" tone="light" className="!gap-2" />
           </Link>
 
           <nav
@@ -328,18 +329,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 Documentation
               </span>
             </Link>
-
-            <button
-              type="button"
-              onClick={() => void handleSignOut()}
-              className={getNavItemClass(false)}
-              disabled={signOutPending}
-            >
-              <LogOut className="size-4" />
-              <span className="flex-1 whitespace-nowrap text-sm font-medium leading-none">
-                {signOutPending ? "Signing out..." : "Sign out"}
-              </span>
-            </button>
           </nav>
         </aside>
 
@@ -385,7 +374,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
             ) : null}
           </header>
 
-          <main className="flex-1 animate-page-in overflow-y-auto p-4 lg:p-8">{children}</main>
+          <main className="flex-1 animate-page-in overflow-y-auto p-4 lg:p-8">
+            {children}
+          </main>
         </section>
       </div>
     </div>

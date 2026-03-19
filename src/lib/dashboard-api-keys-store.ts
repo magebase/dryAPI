@@ -2,7 +2,7 @@ import "server-only"
 
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 
-import { invokeAuthHandler } from "@/lib/auth-handler-proxy"
+import { createAuthApiKey, invokeAuthHandler } from "@/lib/auth-handler-proxy"
 import { sendApiKeyCreatedNotification } from "@/lib/dashboard-api-key-emails"
 import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
 
@@ -162,14 +162,6 @@ function resolveAbsoluteExpiryToSeconds(expiresAtMs: number | undefined): number
   return Math.max(1, Math.ceil(diffMs / 1000))
 }
 
-function resolveRelativeExpiryToSeconds(durationMs: number | undefined): number | undefined {
-  if (!Number.isFinite(durationMs) || !durationMs || durationMs <= 0) {
-    return undefined
-  }
-
-  return Math.max(1, Math.ceil(durationMs / 1000))
-}
-
 async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
   try {
     const { env } = await getCloudflareContext({ async: true })
@@ -207,6 +199,27 @@ async function getUserEmailByReferenceId(referenceId: string): Promise<string | 
     .all<AuthUserRow>()
 
   return response.results[0]?.email?.trim().toLowerCase() || null
+}
+
+async function getUserIdByEmail(email: string): Promise<string | null> {
+  const db = await resolveAuthDb()
+  if (!db) {
+    return null
+  }
+
+  const response = await db
+    .prepare(
+      `
+      SELECT id
+      FROM user
+      WHERE lower(email) = ?
+      LIMIT 1
+      `,
+    )
+    .bind(email.trim().toLowerCase())
+    .all<{ id: string }>()
+
+  return response.results[0]?.id?.trim() || null
 }
 
 async function isApiKeyOwnedByUser(keyId: string, userEmail: string): Promise<boolean> {
@@ -332,21 +345,28 @@ export async function createDashboardApiKey(
   const metadata = encodeMetadata({ roles: input.roles, meta: input.meta })
   const expiresIn = resolveAbsoluteExpiryToSeconds(input.expires)
 
-  const { response, data } = await invokeAuthHandler<BetterAuthApiKey>({
-    request,
-    path: "/api/auth/api-key/create",
-    method: "POST",
-    body: {
+  const userId = await getUserIdByEmail(input.userEmail)
+  if (!userId) {
+    throw new Error(`Failed to resolve user id for ${input.userEmail}`)
+  }
+
+  let data: BetterAuthApiKey
+  try {
+    data = await createAuthApiKey<BetterAuthApiKey>({
+      userId,
       ...(input.name?.trim() ? { name: input.name.trim() } : {}),
       ...(input.prefix?.trim() ? { prefix: input.prefix.trim() } : {}),
       ...(expiresIn ? { expiresIn } : {}),
       ...(permissions ? { permissions } : {}),
       ...(metadata ? { metadata } : {}),
-    },
-  })
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`Failed to create API key with Better Auth: ${message}`)
+  }
 
-  if (!response.ok || !data?.key) {
-    throw new Error("Failed to create API key with Better Auth")
+  if (!data.key) {
+    throw new Error("Failed to create API key with Better Auth: missing key in response")
   }
 
   const record = mapApiKeyRecord(data, input.userEmail)
@@ -449,7 +469,7 @@ export async function deleteDashboardApiKey(
 
 export async function rerollDashboardApiKey(
   request: Request,
-  params: { userEmail: string; keyId: string; expirationMs?: number },
+  params: { userEmail: string; keyId: string },
 ): Promise<{ key: string; record: DashboardApiKeyRecord } | null> {
   const current = await getOwnedApiKeyForRequest(request, params.userEmail, params.keyId)
   if (!current) {
@@ -466,19 +486,17 @@ export async function rerollDashboardApiKey(
     meta: metadata.meta,
   })
 
-  const expiresIn = resolveRelativeExpiryToSeconds(params.expirationMs)
-  const { response } = await invokeAuthHandler<BetterAuthApiKey>({
+  const { response } = await invokeAuthHandler<{ success: boolean }>({
     request,
-    path: "/api/auth/api-key/update",
+    path: "/api/auth/api-key/delete",
     method: "POST",
     body: {
       keyId: params.keyId,
-      ...(expiresIn ? { expiresIn } : { enabled: false }),
     },
   })
 
   if (!response.ok) {
-    throw new Error("Failed to retire previous API key after rotation")
+    throw new Error("Failed to revoke previous API key after rotation")
   }
 
   return rotated
@@ -513,10 +531,6 @@ export async function verifyDashboardApiKeyToken(params: {
     ? true
     : permissions.some((permission) => permissionMatchesPath(permission.toLowerCase(), path, method))
 
-  if (!authorized) {
-    return { valid: true, authorized: false }
-  }
-
   const userEmail = await getUserEmailByReferenceId(data.key.referenceId)
   if (!userEmail) {
     return { valid: false, authorized: false }
@@ -525,7 +539,7 @@ export async function verifyDashboardApiKeyToken(params: {
   const metadata = decodeMetadata(data.key.metadata)
   return {
     valid: true,
-    authorized: true,
+    authorized,
     principal: {
       keyId: data.key.id,
       userEmail,
@@ -569,7 +583,7 @@ export async function getPlatformDailyRequestSeries(days: number): Promise<Array
         `
       SELECT substr(created_at, 1, 10) AS day, COUNT(*) AS requests
       FROM runpod_request_analytics
-      WHERE created_at >= datetime('now', ?)
+      WHERE created_at >= datetime("now", ?)
       GROUP BY day
       ORDER BY day ASC
       `,
@@ -603,7 +617,7 @@ export async function getPlatformRequests24h(): Promise<number | null> {
         `
       SELECT COUNT(*) AS total
       FROM runpod_request_analytics
-      WHERE created_at >= datetime('now', '-24 hour')
+      WHERE created_at >= datetime("now", "-24 hour")
       `,
       )
       .all<{ total: number | string }>()

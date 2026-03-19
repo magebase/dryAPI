@@ -26,6 +26,8 @@ type CheckoutBrandResolution = {
   hostname: string | null
 }
 
+const STRIPE_CHECKOUT_SESSION_PLACEHOLDER = "{CHECKOUT_SESSION_ID}"
+
 function parseUrl(input: string | null | undefined): URL | null {
   const value = (input || "").trim()
   if (!value) {
@@ -62,9 +64,6 @@ export function buildBrandedCheckoutSuccessUrl(input: BuildBrandedCheckoutSucces
   const url = new URL(`${origin}/success`)
 
   url.searchParams.set("flow", input.flow)
-  if (input.flow === "topup") {
-    url.searchParams.set("session_id", "{CHECKOUT_SESSION_ID}")
-  }
 
   const planSlug = readPlanSlug(input.planSlug)
   if (planSlug) {
@@ -74,6 +73,11 @@ export function buildBrandedCheckoutSuccessUrl(input: BuildBrandedCheckoutSucces
   const billingPeriod = readBillingPeriod(input.billingPeriod)
   if (billingPeriod) {
     url.searchParams.set("period", billingPeriod)
+  }
+
+  if (input.flow === "topup") {
+    const query = url.searchParams.toString()
+    return `${url.origin}${url.pathname}?${query}&session_id=${STRIPE_CHECKOUT_SESSION_PLACEHOLDER}`
   }
 
   return url.toString()

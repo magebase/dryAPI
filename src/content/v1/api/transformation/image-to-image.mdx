@@ -1,18 +1,12 @@
 ---
 title: "Image-to-Image"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
-
-# Image-to-Image
-
 > Endpoint for requesting img2img inference. Accepts either a single image via "image" or multiple images via "images[]" (mutually exclusive).
 
-<Callout>
-**Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability. Please **omit** the LoRA parameter by default during initial testing.
-</Callout>
+> **NOTE**
+>
+> **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability. Please **omit** the LoRA parameter by default during initial testing.
 
 ## OpenAPI
 
-<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/img2img","method":"post"}]} showTitle={true} />
+<APIPage document={"/home/aqua/Projects/dryapi/docs/dryapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/img2img","method":"post"}]} showTitle={true} />

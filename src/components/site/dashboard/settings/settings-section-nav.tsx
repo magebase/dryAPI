@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useEffect, useMemo, useState, type ComponentType } from "react"
 import { BellRing, Building2, KeyRound, Settings2, Shield, ShieldCheck, UserRound } from "lucide-react"
 
+import { toRoute } from "@/lib/route"
 import { cn } from "@/lib/utils"
 
 type SettingsNavItem = {
@@ -110,7 +111,8 @@ export function SettingsSectionNav() {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={toRoute(item.href)}
+              prefetch={false}
               className={cn(
                 "flex h-9 items-center gap-2 rounded-lg border px-2.5 text-sm font-medium transition-colors",
                 active

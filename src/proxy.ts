@@ -13,6 +13,7 @@ import {
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 
 const PROTECTED_PREFIXES = ["/crm", "/api/cms", "/api/crm", "/api/media"]
+const SUCCESS_PATH = "/success"
 const CRM_HOSTNAMES = new Set(["crm.genfix.com.au", "www.crm.genfix.com.au"])
 const DASHBOARD_PREFIX = "/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
@@ -70,6 +71,34 @@ function isDashboardPath(pathname: string): boolean {
 
 function isAuthPagePath(pathname: string): boolean {
   return AUTH_PAGE_PATHS.has(pathname)
+}
+
+function createSuccessRequestHeaders(request: NextRequest): Headers {
+  const headers = new Headers(request.headers)
+  const params = request.nextUrl.searchParams
+
+  const flow = params.get("flow")?.trim()
+  const sessionId = params.get("session_id")?.trim()
+  const plan = params.get("plan")?.trim()
+  const period = params.get("period")?.trim()
+
+  if (flow) {
+    headers.set("x-success-flow", flow)
+  }
+
+  if (sessionId) {
+    headers.set("x-success-session-id", sessionId)
+  }
+
+  if (plan) {
+    headers.set("x-success-plan", plan)
+  }
+
+  if (period) {
+    headers.set("x-success-period", period)
+  }
+
+  return headers
 }
 
 function isRscRequest(request: NextRequest): boolean {
@@ -312,6 +341,24 @@ export async function proxy(request: NextRequest) {
       pathname,
       search: request.nextUrl.search,
       cookie: summarizeCookieHeader(request.headers.get("cookie")),
+    })
+  }
+
+  if (pathname === SUCCESS_PATH) {
+    const flow = request.nextUrl.searchParams.get("flow")?.trim()
+
+    if (flow === "topup" || flow === "subscription") {
+      const rewriteUrl = request.nextUrl.clone()
+      rewriteUrl.pathname = `/success/${flow}`
+      return NextResponse.rewrite(rewriteUrl)
+    }
+
+    const headers = createSuccessRequestHeaders(request)
+
+    return NextResponse.next({
+      request: {
+        headers,
+      },
     })
   }
 

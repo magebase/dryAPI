@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const MIN_DEPOSIT_AMOUNT_CENTS = 100
+export const MIN_DEPOSIT_AMOUNT_CENTS = 1_000
 export const MAX_DEPOSIT_AMOUNT_CENTS = 99_999
 export const CREDIT_TOP_UP_PRESET_AMOUNTS_CENTS = [1_000, 2_500, 5_000, 10_000] as const
 export const DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS = 500
@@ -39,7 +39,21 @@ export function parseAutoTopUpThresholdToCents(input: number | string | undefine
     return DEFAULT_AUTO_TOP_UP_THRESHOLD_CENTS
   }
 
-  return parseDepositAmountToCents(input)
+  if (typeof input === "number") {
+    if (!Number.isFinite(input) || input < 0) {
+      throw new Error("Auto top-up threshold must be zero or higher")
+    }
+
+    return Math.round(input * 100)
+  }
+
+  const normalized = majorAmountStringSchema.parse(input)
+  const parsed = Number(normalized)
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error("Auto top-up threshold must be zero or higher")
+  }
+
+  return Math.round(parsed * 100)
 }
 
 export function resolveTopUpCharge(

@@ -1,6 +1,17 @@
 pre-commit:
   parallel: true
   commands:
+    large-files:
+      run: |
+        git diff --cached --name-only | while IFS= read -r f; do
+          [ -f "$f" ] || continue
+          [[ "$f" == artifacts/landing-capture/videos/* ]] && continue
+          size=$(stat -c "%s" "$f" 2>/dev/null) || continue
+          if [ "$size" -gt 5242880 ]; then
+            printf "ERROR: staged file exceeds 5 MB limit: %s (%d bytes)\n" "$f" "$size"
+            exit 1
+          fi
+        done
     models-detail-routes:
       run: pnpm run -s models:check:detail-routes
     sync-github-en:

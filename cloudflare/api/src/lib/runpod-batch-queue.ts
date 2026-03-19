@@ -12,6 +12,7 @@ export type RunpodBatchQueueMessage = {
   surface: 'chat' | 'images' | 'embeddings' | 'transcribe'
   endpointId: string
   modelSlug: string | null
+  workerType: 'active' | 'flex'
   payload: Record<string, unknown>
   webhookUrl: string | null
   requestHash: string | null

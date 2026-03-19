@@ -76,6 +76,12 @@ jobs:
       - name: Verify Takumi OG metadata coverage
         run: pnpm og:verify
 
+      - name: Run main app tests
+        run: pnpm test
+
+      - name: Run Cloudflare API integration tests
+        run: pnpm test:cf:integration
+
       - name: Prepare Stripe portal outputs
         id: stripe_portal
         env:
@@ -281,3 +287,58 @@ jobs:
 
       - name: Deploy hub to Cloudflare Workers
         run: pnpm cf:deploy
+
+  test-hub:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/hub
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.3.0
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+          cache: pnpm
+          cache-dependency-path: apps/hub/pnpm-lock.yaml
+
+      - name: Install hub dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run hub tests
+        run: pnpm test
+
+  test-cf-e2e:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.3.0
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 25
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Cloudflare API E2E tests
+        run: pnpm test:cf:e2e

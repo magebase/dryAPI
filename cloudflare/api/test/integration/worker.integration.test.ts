@@ -260,20 +260,31 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     workerEnv.RUNPOD_PRICING_LOOKBACK_HOURS = "24";
     workerEnv.RUNPOD_PRICING_RECALC_MIN_INTERVAL_SECONDS = "1";
     workerEnv.RUNPOD_PRICING_ROUND_STEP_USD = "0.0001";
+    workerEnv.RUNPOD_PRICING_WORKER_TYPE_DEFAULT = "flex";
+    workerEnv.RUNPOD_PRICING_BANDIT_ENABLED = "1";
+    workerEnv.RUNPOD_PRICING_BANDIT_EXPLORE_PROBABILITY = "0.1";
+    workerEnv.RUNPOD_PRICING_BANDIT_EXPLORATION_WEIGHT = "0.1";
+    workerEnv.RUNPOD_PRICING_BANDIT_ALPHA_MARGIN = "0.75";
+    workerEnv.RUNPOD_PRICING_BANDIT_BETA_GROWTH = "0.25";
+    workerEnv.RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.95,1.00,1.05";
     workerEnv.RUNPOD_BATCH_QUEUE_ENABLED = "0";
     workerEnv.RUNPOD_BATCHING_CONFIG_JSON = "";
     workerEnv.RUNPOD_PRICING_CONFIG_JSON = JSON.stringify({
       defaults: {
-        gpuCostPerSecondUsd: 0.00055,
+        workerType: "flex",
+        gpuCostPerSecondUsd: {
+          active: 0.0009,
+          flex: 0.0004,
+        },
         infraCostUsd: 0.00005,
         paymentFeeFraction: 0.04,
         retrySafetyFraction: 0.12,
         startupSeconds: 0.4,
         idleHoldSeconds: 0.2,
       },
-      endpoints: {
-        "chat-endpoint": {
-          gpuCostPerSecondUsd: 0.00051,
+      models: {
+        Llama3_8B_Instruct: {
+          workerType: "active",
         },
       },
     });
@@ -412,6 +423,17 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
   });
 
   it("records pricing analytics and enforces a 200% profit floor", async () => {
+    const analyticsDataset = (
+      env as unknown as {
+        RUNPOD_PRICING_ANALYTICS?: {
+          writeDataPoint: (dataPoint: unknown) => void | Promise<void>;
+        };
+      }
+    ).RUNPOD_PRICING_ANALYTICS;
+    expect(analyticsDataset).toBeDefined();
+
+    const analyticsWriteSpy = analyticsDataset ? vi.spyOn(analyticsDataset, "writeDataPoint") : null;
+
     const enqueueResponse = await SELF.fetch(`${BASE_URL}/v1/chat/completions`, {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
@@ -428,12 +450,15 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       pricing?: {
         unit_price_usd?: number;
         min_profit_multiple?: number;
+        worker_type?: "active" | "flex";
       };
     };
 
     expect(typeof enqueuePayload.id).toBe("string");
     expect((enqueuePayload.pricing?.unit_price_usd ?? 0) > 0).toBe(true);
     expect((enqueuePayload.pricing?.min_profit_multiple ?? 0) >= 3).toBe(true);
+    expect(enqueuePayload.pricing?.worker_type).toBe("active");
+    expect(enqueueResponse.headers.get("x-dryapi-worker-type")).toBe("active");
 
     const jobId = enqueuePayload.id as string;
     const statusResponse = await SELF.fetch(`${BASE_URL}/v1/jobs/chat/${jobId}`, {
@@ -445,12 +470,15 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
 
     expect(statusResponse.status).toBe(200);
 
-    const pricingResponse = await SELF.fetch(`${BASE_URL}/v1/pricing/chat?endpointId=chat-endpoint`, {
+    const pricingResponse = await SELF.fetch(
+      `${BASE_URL}/v1/pricing/chat?endpointId=chat-endpoint&workerType=active`,
+      {
       method: "GET",
       headers: {
         authorization: "Bearer test-api-key",
       },
-    });
+      },
+    );
 
     expect(pricingResponse.status).toBe(200);
     const pricingPayload = (await pricingResponse.json()) as {
@@ -459,6 +487,9 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
         min_price_usd?: number;
         min_profit_multiple?: number;
         sample_size?: number;
+        price_key?: string;
+        bandit_arm_id?: string | null;
+        worker_type?: "active" | "flex";
       } | null;
       snapshots?: unknown[];
     };
@@ -468,6 +499,26 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     expect((pricingPayload.active_quote?.unit_price_usd ?? 0) >= (pricingPayload.active_quote?.min_price_usd ?? 0)).toBe(true);
     expect((pricingPayload.active_quote?.sample_size ?? 0) >= 0).toBe(true);
     expect((pricingPayload.snapshots ?? []).length >= 1).toBe(true);
+    expect(pricingPayload.active_quote?.bandit_arm_id !== undefined).toBe(true);
+    expect(pricingPayload.active_quote?.worker_type).toBe("active");
+
+    const priceKey = pricingPayload.active_quote?.price_key ?? "";
+    expect(priceKey.length > 0).toBe(true);
+
+    expect(analyticsWriteSpy).not.toBeNull();
+    expect(analyticsWriteSpy).toHaveBeenCalled();
+
+    const lastAnalyticsCall = analyticsWriteSpy?.mock.calls.at(-1)?.[0] as
+      | {
+          indexes?: string[];
+          doubles?: number[];
+        }
+      | undefined;
+
+    expect((lastAnalyticsCall?.indexes?.length ?? 0) >= 6).toBe(true);
+    expect((lastAnalyticsCall?.doubles?.length ?? 0) >= 10).toBe(true);
+
+    analyticsWriteSpy?.mockRestore();
   });
 
   it("queues image generations against RunPod", async () => {
@@ -484,6 +535,25 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     const payload = (await response.json()) as { surface?: string };
     expect(payload.surface).toBe("images");
     expect(runpodCalls.at(-1)?.path).toBe("/v2/images-endpoint/run");
+  });
+
+  it("returns flex worker-type quote when model-specific active override is absent", async () => {
+    const pricingResponse = await SELF.fetch(`${BASE_URL}/v1/pricing/chat?endpointId=chat-endpoint`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+      },
+    });
+
+    expect(pricingResponse.status).toBe(200);
+
+    const payload = (await pricingResponse.json()) as {
+      active_quote?: {
+        worker_type?: "active" | "flex";
+      } | null;
+    };
+
+    expect(payload.active_quote?.worker_type).toBe("flex");
   });
 
   it("queues audio transcriptions against RunPod", async () => {
@@ -783,5 +853,122 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
     const payload = (await response.json()) as { status?: string };
     expect(payload.status).toBe("healthy");
     expect(runpodCalls.at(-1)?.path).toBe("/v2/transcribe-endpoint/health");
+  });
+});
+
+describe("Cloudflare API worker integration (full contract checks)", () => {
+  type ProtectedRequestCase = {
+    method: "GET" | "POST";
+    path: string;
+    body?: unknown;
+  };
+
+  const protectedRequestCases: ProtectedRequestCase[] = [
+    { method: "GET", path: "/v1/client/balance" },
+    { method: "GET", path: "/v1/pricing/chat" },
+    { method: "GET", path: "/v1/queue/metrics" },
+    {
+      method: "POST",
+      path: "/v1/chat/completions",
+      body: { messages: [{ role: "user", content: "auth matrix" }] },
+    },
+    {
+      method: "POST",
+      path: "/v1/images/generations",
+      body: { prompt: "auth matrix image" },
+    },
+    {
+      method: "POST",
+      path: "/v1/audio/transcriptions",
+      body: { audioUrl: "https://cdn.example.com/sample.mp3" },
+    },
+    {
+      method: "POST",
+      path: "/v1/embeddings",
+      body: { input: "auth matrix embedding" },
+    },
+    {
+      method: "POST",
+      path: "/v1/webhooks/test",
+      body: { webhook_url: "https://example.com/webhook" },
+    },
+    { method: "GET", path: "/v1/jobs/chat/job_auth_probe" },
+    { method: "GET", path: "/v1/runpod/chat/health" },
+  ];
+
+  it("enforces bearer authentication across protected route families", async () => {
+    for (const requestCase of protectedRequestCases) {
+      const response = await SELF.fetch(`${BASE_URL}${requestCase.path}`, {
+        method: requestCase.method,
+        headers: requestCase.body
+          ? {
+              "content-type": "application/json",
+            }
+          : undefined,
+        body: requestCase.body ? JSON.stringify(requestCase.body) : undefined,
+      });
+
+      expect(response.status).toBe(401);
+      const payload = (await response.json()) as {
+        error?: {
+          code?: string;
+        };
+      };
+      expect(payload.error?.code).toBe("unauthorized");
+    }
+  });
+
+  it("returns hourly queue aggregates when includeHourly is enabled", async () => {
+    const response = await SELF.fetch(`${BASE_URL}/v1/queue/metrics?minutes=60&limit=10&includeHourly=1`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+      },
+    });
+
+    expect(response.status).toBe(200);
+
+    const payload = (await response.json()) as {
+      lookback_minutes?: number;
+      snapshots?: unknown[];
+      hourly?: unknown[];
+    };
+
+    expect(payload.lookback_minutes).toBe(60);
+    expect(Array.isArray(payload.snapshots)).toBe(true);
+    expect(Array.isArray(payload.hourly)).toBe(true);
+  });
+
+  it("streams the requested number of queue SSE events", async () => {
+    const response = await SELF.fetch(
+      `${BASE_URL}/v1/queue/batch-scaling/stream?runtimeWindowMinutes=60&snapshotWindowMinutes=60&pollSeconds=1&maxEvents=2`,
+      {
+        method: "GET",
+        headers: {
+          authorization: "Bearer test-api-key",
+        },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type") ?? "").toContain("text/event-stream");
+
+    const bodyText = await response.text();
+    const eventCount = bodyText
+      .split("\n")
+      .filter((line: string) => line.startsWith("data: ")).length;
+
+    expect(eventCount).toBe(2);
+  });
+
+  it("rejects out-of-range pricing limits", async () => {
+    const response = await SELF.fetch(`${BASE_URL}/v1/pricing/chat?limit=101`, {
+      method: "GET",
+      headers: {
+        authorization: "Bearer test-api-key",
+      },
+    });
+
+    expect(response.status).toBe(400);
   });
 });

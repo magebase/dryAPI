@@ -1,30 +1,24 @@
 ---
 title: "Text-to-Music"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
-
-# Text-to-Music
-
 > Endpoint for requesting text2music inference
 
 Text-to-Music generates music tracks from text descriptions. You can control genre, tempo, key, time signature, and even provide lyrics. Optionally upload a `reference_audio` file for style transfer — the model will use it as a stylistic reference for the generated track. The endpoint returns a task ID to track processing status. Ideal for apps needing automated music creation — background tracks, jingles, or full songs with vocals.
 
-<Callout>
-**Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug` and check specific **limits**.
-</Callout>
+> **NOTE**
+>
+> **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/docs/v1/api/utilities/model-selection) endpoint to identify a valid model `slug` and check specific **limits**.
 
-<Callout title="Warning" type="warn">
-**Reference audio requirements (optional):**
-
-* Supported formats: MP3, WAV, FLAC, OGG, M4A
-* Maximum file size: 10 MB
-* Duration must be within model-specific limits
-
-This endpoint uses `multipart/form-data` content type to support file uploads.
-</Callout>
+> **WARNING**
+>
+> **Reference audio requirements (optional):**
+> 
+> * Supported formats: MP3, WAV, FLAC, OGG, M4A
+> * Maximum file size: 10 MB
+> * Duration must be within model-specific limits
+> 
+> This endpoint uses `multipart/form-data` content type to support file uploads.
 
 ## OpenAPI
 
-<APIPage document={"/home/aqua/Projects/dryapi/docs/deapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/txt2music","method":"post"}]} showTitle={true} />
+<APIPage document={"/home/aqua/Projects/dryapi/docs/dryapi-mirror/articles/openapi.json"} webhooks={[]} operations={[{"path":"/api/v1/client/txt2music","method":"post"}]} showTitle={true} />

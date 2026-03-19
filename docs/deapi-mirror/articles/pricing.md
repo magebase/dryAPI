@@ -1,12 +1,12 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Pricing
 
 Example pricing is shown below for reference; exact, up-to-date rates are always available from the API.
 
-**deAPI** uses a **pay-as-you-go pricing model**, where costs are calculated dynamically per task based on the resource usage, such as resolution, steps, duration, or number of output characters. The pricing examples shown on the public site ([https://deapi.ai/#pricing](https://deapi.ai/#pricing)) serve as reference points; final cost is determined by the API at runtime depending on the selected model and parameters.
+**dryAPI** uses a **pay-as-you-go pricing model**, where costs are calculated dynamically per task based on the resource usage, such as resolution, steps, duration, or number of output characters. The pricing examples shown on the public site ([https://dryapi.dev/#pricing](https://dryapi.dev/#pricing)) serve as reference points; final cost is determined by the API at runtime depending on the selected model and parameters.
 
 ### Pricing Overview
 
@@ -112,7 +112,7 @@ Example pricing is shown below for reference; exact, up-to-date rates are always
 
 ***
 
-**Link to live pricing page for reference:** [https://deapi.ai/#pricing](https://deapi.ai/#pricing)
+**Link to live pricing page for reference:** [https://dryapi.dev/#pricing](https://dryapi.dev/#pricing)
 
 
 Built with [Mintlify](https://mintlify.com).

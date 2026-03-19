@@ -1,4 +1,5 @@
-"use client";
+"use client"
+/* eslint-disable react/no-children-prop */
 
 /*
  UI Guidelines — Modals vs Drawers
@@ -37,8 +38,13 @@
  the app.
 */
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react"
+import { useForm } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { z } from "zod"
+
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -46,328 +52,323 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
-import { toast } from "sonner";
-import ApiKeyCopyIconButton from "./ApiKeyCopyIconButton";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
+import ApiKeyCopyIconButton from "./ApiKeyCopyIconButton"
 
 type Props = {
-  open: boolean;
-  onClose(): void;
-  onCreated?(): void;
-};
-
-type PermissionPreset =
-  | "all"
-  | "read-only"
-  | "models:infer"
-  | "billing:read"
-  | "custom";
-type ExpirationPreset = "never" | "7d" | "30d" | "90d";
-
-type CreatedKeyState = {
-  secret: string;
-  start: string;
-};
-
-function formatKeyPrefix(start?: string) {
-  if (!start) return "-";
-  if (start.length <= 8) return `${start}****`;
-  return `${start}****${start.slice(-4)}`;
+  open: boolean
+  onClose(): void
+  onCreated?(): void
 }
 
-function resolveStartFromSecret(secret: string) {
-  return secret.slice(0, 16);
+type PermissionPreset = "all" | "read-only" | "models:infer" | "billing:read" | "custom"
+type ExpirationPreset = "never" | "7d" | "30d" | "90d"
+
+type CreatedKeyState = {
+  secret: string
+}
+
+const permissionPresets = ["all", "read-only", "models:infer", "billing:read", "custom"] as const
+const expirationPresets = ["never", "7d", "30d", "90d"] as const
+
+const createKeySchema = z
+  .object({
+    name: z.string().trim(),
+    environment: z.enum(["production", "staging", "local", "ci"]),
+    permissionPreset: z.enum(permissionPresets),
+    customPermissions: z.string().trim(),
+    expirationPreset: z.enum(expirationPresets),
+  })
+  .superRefine((values, ctx) => {
+    if (values.permissionPreset === "custom") {
+      const permissions = parseCustomCsv(values.customPermissions)
+      if (permissions.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["customPermissions"],
+          message: "Add at least one custom permission or choose a preset.",
+        })
+      }
+    }
+  })
+
+type CreateKeyFormValues = z.infer<typeof createKeySchema>
+
+const INITIAL_VALUES: CreateKeyFormValues = {
+  name: "",
+  environment: "production",
+  permissionPreset: "all",
+  customPermissions: "",
+  expirationPreset: "never",
 }
 
 function parseCustomCsv(value: string) {
   return value
     .split(",")
     .map((part) => part.trim())
-    .filter(Boolean);
+    .filter(Boolean)
 }
 
 function getExpiresAt(preset: ExpirationPreset) {
-  if (preset === "never") return undefined;
-  const days = preset === "7d" ? 7 : preset === "30d" ? 30 : 90;
-  return Date.now() + days * 24 * 60 * 60 * 1000;
+  if (preset === "never") return undefined
+  const days = preset === "7d" ? 7 : preset === "30d" ? 30 : 90
+  return Date.now() + days * 24 * 60 * 60 * 1000
 }
 
 function getPermissions(preset: PermissionPreset, customPermissions: string) {
   if (preset === "custom") {
-    return parseCustomCsv(customPermissions);
+    return parseCustomCsv(customPermissions)
   }
 
-  if (preset === "all") return ["all"];
-  return [preset];
+  if (preset === "all") return ["all"]
+  return [preset]
 }
 
 export default function CreateKeyDrawer({ open, onClose, onCreated }: Props) {
-  const [name, setName] = useState("");
-  const [environment, setEnvironment] = useState("production");
-  const [prefix, setPrefix] = useState("");
-  const [permissionPreset, setPermissionPreset] =
-    useState<PermissionPreset>("all");
-  const [customPermissions, setCustomPermissions] = useState("");
-  const [expirationPreset, setExpirationPreset] =
-    useState<ExpirationPreset>("90d");
-  const [creating, setCreating] = useState(false);
-  const [createdKey, setCreatedKey] = useState<CreatedKeyState | null>(null);
-  const [createError, setCreateError] = useState<string | null>(null);
+  const [createdKey, setCreatedKey] = useState<CreatedKeyState | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
+
+  const createKeyMutation = useMutation({
+    mutationFn: async (values: CreateKeyFormValues) => {
+      const permissions = getPermissions(values.permissionPreset, values.customPermissions)
+
+      const response = await fetch("/api/dashboard/api-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name || undefined,
+          permissions,
+          expires: getExpiresAt(values.expirationPreset),
+          meta: {
+            environment: values.environment,
+          },
+        }),
+      })
+
+      const json = (await response.json().catch(() => null)) as { data?: { key?: string; start?: string }; message?: string } | null
+      const keyStr = typeof json?.data?.key === "string" ? json.data.key : null
+
+      if (!response.ok || !keyStr) {
+        throw new Error(json?.message || "Failed to create key. Please try again.")
+      }
+
+      return {
+        secret: keyStr,
+      }
+    },
+    onSuccess: (key) => {
+      setCreatedKey(key)
+      setCreateError(null)
+    },
+    onError: (mutationError) => {
+      setCreatedKey(null)
+      setCreateError(mutationError instanceof Error ? mutationError.message : "Error creating key. Please try again.")
+    },
+  })
+
+  const form = useForm({
+    defaultValues: INITIAL_VALUES,
+    validators: {
+      onSubmit: createKeySchema,
+    },
+    onSubmit: async ({ value }) => {
+      setCreatedKey(null)
+      setCreateError(null)
+      await createKeyMutation.mutateAsync(value)
+    },
+  })
+
+  const isBusy = createKeyMutation.isPending || form.state.isSubmitting
 
   function resetForm() {
-    setName("");
-    setEnvironment("production");
-    setPrefix("");
-    setPermissionPreset("all");
-    setCustomPermissions("");
-    setExpirationPreset("never");
-    setCreateError(null);
+    form.reset(INITIAL_VALUES)
+    setCreatedKey(null)
+    setCreateError(null)
   }
 
   function handleClose() {
-    setCreatedKey(null);
-    resetForm();
-    onClose();
-  }
-
-  async function handleCreate(e?: React.FormEvent) {
-    e?.preventDefault();
-    setCreating(true);
-    setCreatedKey(null);
-    setCreateError(null);
-
-    try {
-      const permissions = getPermissions(permissionPreset, customPermissions);
-
-      if (permissionPreset === "custom" && permissions.length === 0) {
-        setCreateError(
-          "Add at least one custom permission or choose a preset.",
-        );
-        return;
-      }
-
-      const body = {
-        name: name || undefined,
-        prefix: prefix || undefined,
-        permissions,
-        expires: getExpiresAt(expirationPreset),
-        meta: {
-          environment,
-        },
-      };
-
-      const res = await fetch("/api/dashboard/api-keys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const json = await res.json();
-      const keyStr = typeof json?.data?.key === "string" ? json.data.key : null;
-      const keyStart =
-        typeof json?.data?.start === "string"
-          ? json.data.start
-          : keyStr
-            ? resolveStartFromSecret(keyStr)
-            : null;
-      if (keyStr) {
-        setCreatedKey({
-          secret: keyStr,
-          start: keyStart ?? resolveStartFromSecret(keyStr),
-        });
-      } else {
-        setCreatedKey(null);
-        console.error("create key failed", json);
-        setCreateError("Failed to create key. Please try again.");
-      }
-    } catch (err) {
-      console.error(err);
-      setCreateError("Error creating key. Please try again.");
-    } finally {
-      setCreating(false);
-    }
+    resetForm()
+    onClose()
   }
 
   return (
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) handleClose();
+        if (!nextOpen) handleClose()
       }}
     >
-      <DialogContent className="sm:max-w-xl" showCloseButton={!creating}>
+      <DialogContent className="sm:max-w-xl" showCloseButton={!isBusy}>
         <DialogHeader>
-          <DialogTitle>
-            {createdKey ? "Your API Key" : "Create API Key"}
-          </DialogTitle>
-          <DialogDescription>
+          <DialogTitle>{createdKey ? "Save your secret key" : "Create API key"}</DialogTitle>
+          <DialogDescription className="text-sm">
             {createdKey
-              ? "This key is shown once. Use the icon to store it securely before closing this dialog."
+              ? "This secret will only be shown once. If you lose it, you'll need to rotate the key."
               : "Create a scoped API key for a specific environment and service."}
           </DialogDescription>
         </DialogHeader>
 
         {createdKey ? (
           <div className="space-y-4">
-            <div className="rounded-md border bg-muted/30 p-3">
-              <p className="mb-2 text-sm font-medium">Secret key</p>
+            <div className="rounded-md border bg-muted/30 p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Secret key</p>
               <div className="flex items-center gap-2">
-                <Input readOnly value={formatKeyPrefix(createdKey.start)} />
+                <Input readOnly type="password" value={createdKey.secret} className="font-mono text-sm" />
                 <ApiKeyCopyIconButton
                   value={createdKey.secret}
                   label="Copy new API key"
                   variant="outline"
                   size="icon-sm"
                   onCopyError={() => {
-                    toast.error("Failed to copy API key.");
+                    toast.error("Failed to copy API key.")
                   }}
                 />
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Only the prefix is shown here.
+              <p className="mt-3 text-[10px] text-muted-foreground italic leading-relaxed">
+                Copy it now. For security, we never store full keys and cannot show them again.
               </p>
             </div>
 
             <DialogFooter>
               <Button
                 type="button"
+                className="w-full sm:w-auto"
                 onClick={() => {
-                  onCreated?.();
-                  handleClose();
+                  onCreated?.()
+                  handleClose()
                 }}
               >
-                Done
+                I've copied the key
               </Button>
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="api-key-name">Name</Label>
-              <Input
-                id="api-key-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Production Server"
-              />
-            </div>
+          <form
+            className="space-y-4"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault()
+              void form.handleSubmit()
+            }}
+          >
+            <form.Field
+              name="name"
+              children={(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor={field.name}>Name</Label>
+                  <Input
+                    id={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    placeholder="Production Server"
+                  />
+                </div>
+              )}
+            />
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="api-key-environment">Environment</Label>
-                <NativeSelect
-                  id="api-key-environment"
-                  className="w-full"
-                  value={environment}
-                  onChange={(e) => setEnvironment(e.target.value)}
-                >
-                  <NativeSelectOption value="production">
-                    Production
-                  </NativeSelectOption>
-                  <NativeSelectOption value="staging">
-                    Staging
-                  </NativeSelectOption>
-                  <NativeSelectOption value="local">Local</NativeSelectOption>
-                  <NativeSelectOption value="ci">CI/CD</NativeSelectOption>
-                </NativeSelect>
-              </div>
+              <form.Field
+                name="environment"
+                children={(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Environment</Label>
+                    <NativeSelect
+                      id={field.name}
+                      className="w-full"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value as CreateKeyFormValues["environment"])}
+                    >
+                      <NativeSelectOption value="production">Production</NativeSelectOption>
+                      <NativeSelectOption value="staging">Staging</NativeSelectOption>
+                      <NativeSelectOption value="local">Local</NativeSelectOption>
+                      <NativeSelectOption value="ci">CI/CD</NativeSelectOption>
+                    </NativeSelect>
+                  </div>
+                )}
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="api-key-expiration">Expiration</Label>
-                <NativeSelect
-                  id="api-key-expiration"
-                  className="w-full"
-                  value={expirationPreset}
-                  onChange={(e) =>
-                    setExpirationPreset(e.target.value as ExpirationPreset)
-                  }
-                >
-                  <NativeSelectOption value="never">Never</NativeSelectOption>
-                  <NativeSelectOption value="7d">7 days</NativeSelectOption>
-                  <NativeSelectOption value="30d">30 days</NativeSelectOption>
-                  <NativeSelectOption value="90d">90 days</NativeSelectOption>
-                </NativeSelect>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="api-key-permissions">Permissions</Label>
-              <NativeSelect
-                id="api-key-permissions"
-                className="w-full"
-                value={permissionPreset}
-                onChange={(e) =>
-                  setPermissionPreset(e.target.value as PermissionPreset)
-                }
-              >
-                <NativeSelectOption value="all">All</NativeSelectOption>
-                <NativeSelectOption value="read-only">
-                  Read-only
-                </NativeSelectOption>
-                <NativeSelectOption value="models:infer">
-                  models:infer
-                </NativeSelectOption>
-                <NativeSelectOption value="billing:read">
-                  billing:read
-                </NativeSelectOption>
-                <NativeSelectOption value="custom">
-                  Custom list
-                </NativeSelectOption>
-              </NativeSelect>
-            </div>
-
-            {permissionPreset === "custom" && (
-              <div className="space-y-2">
-                <Label htmlFor="api-key-custom-permissions">
-                  Custom permissions
-                </Label>
-                <Input
-                  id="api-key-custom-permissions"
-                  value={customPermissions}
-                  onChange={(e) => setCustomPermissions(e.target.value)}
-                  placeholder="models:infer,billing:read"
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="api-key-prefix">Key prefix (optional)</Label>
-              <Input
-                id="api-key-prefix"
-                value={prefix}
-                onChange={(e) => setPrefix(e.target.value)}
-                placeholder="sk_live"
+              <form.Field
+                name="expirationPreset"
+                children={(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Expiration</Label>
+                    <NativeSelect
+                      id={field.name}
+                      className="w-full"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value as CreateKeyFormValues["expirationPreset"])}
+                    >
+                      <NativeSelectOption value="never">Never</NativeSelectOption>
+                      <NativeSelectOption value="7d">7 days</NativeSelectOption>
+                      <NativeSelectOption value="30d">30 days</NativeSelectOption>
+                      <NativeSelectOption value="90d">90 days</NativeSelectOption>
+                    </NativeSelect>
+                  </div>
+                )}
               />
             </div>
 
-            {createError ? (
-              <p className="text-sm text-red-600 dark:text-red-300">
-                {createError}
-              </p>
-            ) : null}
+            <form.Field
+              name="permissionPreset"
+              children={(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor={field.name}>Permissions</Label>
+                  <NativeSelect
+                    id={field.name}
+                    className="w-full"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value as CreateKeyFormValues["permissionPreset"])}
+                  >
+                    <NativeSelectOption value="all">All</NativeSelectOption>
+                    <NativeSelectOption value="read-only">Read-only</NativeSelectOption>
+                    <NativeSelectOption value="models:infer">models:infer</NativeSelectOption>
+                    <NativeSelectOption value="billing:read">billing:read</NativeSelectOption>
+                    <NativeSelectOption value="custom">Custom list</NativeSelectOption>
+                  </NativeSelect>
+                </div>
+              )}
+            />
+
+            <form.Field
+              name="customPermissions"
+              children={(field) => {
+                const isCustom = form.state.values.permissionPreset === "custom"
+                const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+                const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+
+                return isCustom ? (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Custom permissions</Label>
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      placeholder="models:infer,billing:read"
+                    />
+                    {isInvalid ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+                  </div>
+                ) : null
+              }}
+            />
+
+            {createError ? <p className="text-sm text-red-600 dark:text-red-300">{createError}</p> : null}
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={creating}
-              >
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isBusy}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
-                {creating ? "Creating..." : "Create"}
+              <Button type="submit" disabled={isBusy}>
+                {isBusy ? "Creating..." : "Create"}
               </Button>
             </DialogFooter>
           </form>
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }

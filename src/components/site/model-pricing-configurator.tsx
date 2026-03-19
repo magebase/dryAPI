@@ -139,12 +139,12 @@ export function ModelPricingConfigurator({ modelName, rows }: ModelPricingConfig
 
   return (
     <article className="overflow-hidden rounded-md border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 bg-[linear-gradient(102deg,rgba(16,53,79,0.96)_0%,rgba(15,77,118,0.9)_48%,rgba(30,117,142,0.82)_100%)] p-5 text-slate-100">
+      <div className="border-b border-slate-200 bg-[linear-gradient(102deg,rgba(16,53,79,0.96)_0%,rgba(15,77,118,0.9)_48%,rgba(30,117,142,0.82)_100%)] p-5 text-site-strong">
         <h2 className="inline-flex items-center gap-2 text-base font-semibold uppercase tracking-[0.1em] text-white">
           <SlidersHorizontal className="size-4" />
           <span>Unique Price Configurator</span>
         </h2>
-        <p className="mt-2 max-w-3xl text-sm text-slate-200">
+        <p className="mt-2 max-w-3xl text-sm text-site-soft">
           Set every supported request parameter for <span className="font-semibold text-white">{modelName}</span> to resolve the exact captured price for that configuration.
           This is the fastest way to decide if a specific parameter mix fits your target margin before rollout.
         </p>
@@ -162,7 +162,7 @@ export function ModelPricingConfigurator({ modelName, rows }: ModelPricingConfig
                 <select
                   value={selected}
                   onChange={(event) => onSelectParam(key, event.target.value)}
-                  className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none transition focus:border-primary"
+                  className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-site-strong outline-none transition focus:border-primary"
                 >
                   <option value="">Any value</option>
                   {options.map((option) => (
@@ -185,7 +185,7 @@ export function ModelPricingConfigurator({ modelName, rows }: ModelPricingConfig
             <RotateCcw className="size-3.5" />
             <span>Reset Params</span>
           </button>
-          <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.12em] text-site-muted">
             Selected: {selectedCount}/{paramKeys.length}
           </p>
         </div>
@@ -197,13 +197,13 @@ export function ModelPricingConfigurator({ modelName, rows }: ModelPricingConfig
                 <Sparkles className="size-3.5" />
                 <span>Unique configuration price</span>
               </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">{formatUsd(uniqueMatch.priceUsd)}</p>
+              <p className="mt-2 text-2xl font-semibold text-site-strong">{formatUsd(uniqueMatch.priceUsd)}</p>
               <p className="mt-1 text-sm text-slate-600">{formatCredits(uniqueMatch.credits)} • captured {formatDate(uniqueMatch.scrapedAt)}</p>
             </div>
           ) : (
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">Current pricing scope</p>
-              <p className="mt-2 text-base font-semibold text-slate-900">
+              <p className="mt-2 text-base font-semibold text-site-strong">
                 {matchingRows.length === 0
                   ? "No captured rows match this parameter set."
                   : minMatchPrice === null

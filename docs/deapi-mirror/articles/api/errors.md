@@ -1,12 +1,12 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Errors
 
-> HTTP status codes and error responses returned by deAPI
+> HTTP status codes and error responses returned by dryAPI
 
-deAPI uses conventional HTTP response codes to indicate the success or failure of an API request. Codes in the `2xx` range indicate success. Codes in the `4xx` range indicate an error from the provided information (e.g., missing required parameter, unauthorized access). Codes in the `5xx` range indicate an error with deAPI servers.
+dryAPI uses conventional HTTP response codes to indicate the success or failure of an API request. Codes in the `2xx` range indicate success. Codes in the `4xx` range indicate an error from the provided information (e.g., missing required parameter, unauthorized access). Codes in the `5xx` range indicate an error with dryAPI servers.
 
 ## HTTP Status Codes
 
@@ -141,7 +141,7 @@ Returned when an unexpected error occurs on our servers.
 }
 ```
 
-**Solution:** Wait a moment and retry your request. If the problem persists, check [status.deapi.ai](https://status.deapi.ai/) or contact support on [Discord](https://discord.com/invite/UFfK5YRBsr).
+**Solution:** Wait a moment and retry your request. If the problem persists, check [status.dryapi.dev](https://status.dryapi.dev/) or contact support on [Discord](https://discord.com/invite/UFfK5YRBsr).
 
 ## Best Practices
 
@@ -170,7 +170,7 @@ Returned when an unexpected error occurs on our servers.
   import requests
 
   response = requests.post(
-      "https://api.deapi.ai/api/v1/client/txt2img",
+      "https://api.dryapi.dev/api/v1/client/txt2img",
       headers={
           "Authorization": "Bearer YOUR_API_KEY",
           "Accept": "application/json"
@@ -205,7 +205,7 @@ Returned when an unexpected error occurs on our servers.
   ```
 
   ```javascript JavaScript theme={null}
-  const response = await fetch("https://api.deapi.ai/api/v1/client/txt2img", {
+  const response = await fetch("https://api.dryapi.dev/api/v1/client/txt2img", {
     method: "POST",
     headers: {
       "Authorization": "Bearer YOUR_API_KEY",

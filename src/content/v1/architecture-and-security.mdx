@@ -1,15 +1,9 @@
 ---
 title: "Architecture & Security"
 ---
-> ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
-> Use this file to discover all available pages before exploring further.
-
-# Architecture & Security
-
 'Under the Hood' details, encryption mechanisms, and privacy levels.
 
-Understanding data processing protocols is critical for ensuring security and privacy. The deAPI architecture utilizes a decentralized network of verified Workers, maintaining a balance between high-performance inference and robust data protection.
+Understanding data processing protocols is critical for ensuring security and privacy. The dryAPI architecture utilizes a decentralized network of verified Workers, maintaining a balance between high-performance inference and robust data protection.
 
 ### 1. Under the Hood: Security Architecture
 
@@ -17,7 +11,7 @@ The following section outlines the data flow for a standard inference job (using
 
 **Data Flow**
 
-1. Client → deAPI Server (HTTPS Encrypted) Requests are initiated via the API. All data transmission is encrypted in transit using HTTPS protocols.
+1. Client → dryAPI Server (HTTPS Encrypted) Requests are initiated via the API. All data transmission is encrypted in transit using HTTPS protocols.
 2. Server → Worker The central server designates an appropriate Worker node and transmits the model, parameters, and task specifications.
 3. Worker (Processing) The Worker node receives the payload (image, prompt, settings). Data is processed by a local, isolated Python server.
 4. Result → Client The generated or modified asset returns to the client via the same encrypted return path.
@@ -37,7 +31,7 @@ Security in the distributed environment is maintained through a reputation syste
 
 **Data Visibility**
 
-* deAPI Server: Accesses prompts and metadata required for job coordination. No long-term storage of sensitive payload data occurs.
+* dryAPI Server: Accesses prompts and metadata required for job coordination. No long-term storage of sensitive payload data occurs.
 * Worker: Receives the full payload (e.g., input image), but data resides exclusively in RAM. No disk writes occur, and there is no exposure via a UI. Data extraction would require advanced, real-time reverse engineering.
 
 **Additional Safeguards**
@@ -63,4 +57,4 @@ For Enterprise clients handling sensitive data (internal documentation, prototyp
 * Full infrastructure isolation, audited operators, NDAs, and legal accountability.
 * Certified privacy standards (at a higher price point)
 
-**Additional request** - contact support for more information: [support@deapi.ai](mailto:support@deapi.ai)
+**Additional request** - contact support for more information: [support@dryapi.dev](mailto:support@dryapi.dev)

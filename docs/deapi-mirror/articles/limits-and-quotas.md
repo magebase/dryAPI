@@ -1,12 +1,12 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Limits & Quotas
 
 This section contains a description of rate limits and file upload specifications.
 
-deAPI is engineered for High Throughput capability upon deployment. Unlike traditional providers, API scalability is not restricted by complex access levels during the initial integration phase.
+dryAPI is engineered for High Throughput capability upon deployment. Unlike traditional providers, API scalability is not restricted by complex access levels during the initial integration phase.
 
 ***
 
@@ -140,26 +140,26 @@ The following endpoints have no rate limits for all accounts:
 
 ***
 
-### deAPI vs. Traditional Providers
+### dryAPI vs. Traditional Providers
 
 Many AI infrastructure providers enforce restrictive initial limits, necessitating complex queue management systems for developers.
 
 **Getting Started**
 
 * Traditional Providers: Often require credit card verification or initial payment before any API access.
-* deAPI: Immediate access with \$5 bonus upon registration — no payment required to start testing.
+* dryAPI: Immediate access with \$5 bonus upon registration — no payment required to start testing.
 
 **Scaling to Production**
 
 * Traditional Providers: Typically require specific monetary spend thresholds (e.g., \$50+) and time delays (weeks/months) to unlock higher rate limits.
-* deAPI: Instant upgrade to Premium (300 RPM, unlimited daily requests) with any available top-up amount (\$10, \$25, or \$50).
+* dryAPI: Instant upgrade to Premium (300 RPM, unlimited daily requests) with any available top-up amount (\$10, \$25, or \$50).
 
 **Limit Structure**
 
 * Traditional Providers: Often utilize separate quotas for tokens (TPM), requests (RPM), daily limits (RPD), and per-model restrictions.
-* deAPI Premium: Simple unified structure — 300 RPM across all endpoints with unlimited daily requests.
+* dryAPI Premium: Simple unified structure — 300 RPM across all endpoints with unlimited daily requests.
 
-For High Volume Production requirements beyond Premium limits, please contact support via: [support@deapi.ai](mailto:support@deapi.ai)
+For High Volume Production requirements beyond Premium limits, please contact support via: [support@dryapi.dev](mailto:support@dryapi.dev)
 
 ***
 
@@ -194,7 +194,7 @@ Certain parameters — such as maximum character count, image resolution, frame 
 These limits are returned dynamically via the [Models endpoint](/api/utilities/model-selection):
 
 ```bash  theme={null}
-GET https://api.deapi.ai/api/v1/client/models
+GET https://api.dryapi.dev/api/v1/client/models
 ```
 
 Check the `limits` field in each model object to see the applicable constraints before submitting a request. This ensures your inputs stay within the accepted bounds for the specific model you're using.
@@ -224,7 +224,7 @@ When you exceed your rate limit, the API returns a `429 Too Many Requests` respo
 
 1. **RPM exceeded** — Wait 60 seconds before retrying
 2. **RPD exceeded** — Wait until midnight UTC for daily reset
-3. **Need higher limits?** — [Upgrade to Premium](https://deapi.ai/billing) with any payment for 300 RPM and unlimited daily requests
+3. **Need higher limits?** — [Upgrade to Premium](https://dryapi.dev/billing) with any payment for 300 RPM and unlimited daily requests
 
 
 Built with [Mintlify](https://mintlify.com).

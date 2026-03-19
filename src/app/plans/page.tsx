@@ -6,7 +6,7 @@ import { buildTakumiMetadata } from "@/lib/og/metadata"
 import { SiteFrame } from "@/components/site/site-frame"
 import { readSiteConfig } from "@/lib/site-content-loader"
 
-export const dynamic = "force-static"
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig()

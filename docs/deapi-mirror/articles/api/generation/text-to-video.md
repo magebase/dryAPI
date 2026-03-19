@@ -1,6 +1,5 @@
 > ## Documentation Index
->
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Text-to-Video
@@ -11,22 +10,23 @@
   **Prerequisite:** To ensure a successful request, you must first consult the [Model Selection](/api/utilities/model-selection) endpoint to identify a valid model `slug`, check specific **limits** and **features**, and verify **LoRA** availability.
 </Note>
 
+
 ## OpenAPI
 
-```yaml openapi.json post /api/v1/client/txt2video
+````yaml openapi.json post /api/v1/client/txt2video
 openapi: 3.0.0
 info:
-  title: deAPI REST API
+  title: dryAPI REST API
   description: >-
     Decentralized AI inference API for image generation, video processing, audio
     transcription, and more.
   contact:
-    name: deAPI Support
-    url: https://deapi.ai
-    email: support@deapi.ai
+    name: dryAPI Support
+    url: https://dryapi.dev
+    email: support@dryapi.dev
   version: 0.0.1
 servers:
-  - url: https://api.deapi.ai
+  - url: https://api.dryapi.dev
     description: Production API Server base URL
 security:
   - bearerAuth: []
@@ -41,7 +41,7 @@ paths:
       description: Endpoint for requesting text2video inference
       operationId: requestTxt2Video
       parameters:
-        - $ref: "#/components/parameters/AcceptHeader"
+        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         description: Text to video conversion parameters
         required: true
@@ -111,32 +111,32 @@ paths:
                   type: string
                   format: uri
                   maxLength: 2048
-                  example: https://your-server.com/webhooks/deapi
+                  example: https://your-server.com/webhooks/dryapi
                   nullable: true
               type: object
       responses:
-        "200":
+        '200':
           description: ID of the inference request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobRequestResponseResource"
-        "401":
+                $ref: '#/components/schemas/JobRequestResponseResource'
+        '401':
           description: Unauthorized user.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/response_error_default"
-        "404":
+                $ref: '#/components/schemas/response_error_default'
+        '404':
           description: Not found.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/response_error_default"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/RateLimitExceeded"
+                $ref: '#/components/schemas/response_error_default'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
       security:
         - bearerAuth: []
 components:
@@ -252,12 +252,13 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/response_error_rate_limit"
+            $ref: '#/components/schemas/response_error_rate_limit'
   securitySchemes:
     bearerAuth:
       type: http
       bearerFormat: JWT
       scheme: bearer
-```
+
+````
 
 Built with [Mintlify](https://mintlify.com).

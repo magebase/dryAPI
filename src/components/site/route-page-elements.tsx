@@ -35,7 +35,7 @@ function PageElement({ element }: { element: RoutePageElement }) {
   switch (element.type) {
     case "heading":
       return (
-        <h2 className="font-display text-2xl uppercase tracking-[0.08em] text-slate-900 sm:text-3xl md:text-4xl">
+        <h2 className="font-display text-2xl uppercase tracking-[0.08em] text-site-strong sm:text-3xl md:text-4xl">
           <KeywordGradientText dataTinaField={tinaField(element, "text")} text={element.text ?? ""} />
         </h2>
       )

@@ -186,6 +186,8 @@ async function installFeatureStyles(page) {
   });
 
   await page.evaluate(() => {
+        if (typeof window.__name === 'undefined') { window.__name = (t, v) => t; }
+
     if (!document.getElementById("landing-cinema-action-chip")) {
       const chip = document.createElement("div");
       chip.id = "landing-cinema-action-chip";

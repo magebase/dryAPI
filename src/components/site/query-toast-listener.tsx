@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
 type ToastKind = "success" | "error" | "info"
@@ -35,7 +35,6 @@ function showToast(kind: ToastKind, title: string, description: string | null, i
 }
 
 export function QueryToastListener() {
-  const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const lastToastKeyRef = useRef<string | null>(null)
@@ -103,8 +102,17 @@ export function QueryToastListener() {
 
     const nextQuery = params.toString()
     const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname
-    router.replace(nextUrl, { scroll: false })
-  }, [pathname, router, searchParams])
+    const currentQuery = searchParams.toString()
+    const currentUrl = currentQuery ? `${pathname}?${currentQuery}` : pathname
+
+    if (nextUrl === currentUrl) {
+      return
+    }
+
+    // Use a history replacement to clear ephemeral toast params without
+    // triggering a full App Router navigation.
+    window.history.replaceState(window.history.state, "", nextUrl)
+  }, [pathname, searchParams])
 
   return null
 }

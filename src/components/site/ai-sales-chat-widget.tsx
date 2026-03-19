@@ -485,7 +485,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     Pricing & Credits
                   </button>
                   <button
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900 transition hover:border-blue-400"
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-site-strong transition hover:border-blue-400"
                     onClick={() => {
                       sendQuickPrompt("Help me choose dryAPI models for chat, image generation, and embeddings.")
                     }}
@@ -494,7 +494,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     Model Selection
                   </button>
                   <button
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900 transition hover:border-blue-400"
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-site-strong transition hover:border-blue-400"
                     onClick={() => {
                       sendQuickPrompt("Show me an OpenAI-compatible request example for dryAPI.")
                     }}
@@ -503,7 +503,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                     Integration Help
                   </button>
                   <button
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900 transition hover:border-blue-400"
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-site-strong transition hover:border-blue-400"
                     onClick={() => {
                       openQuoteDialog()
                     }}
@@ -531,7 +531,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                       message.role === "assistant"
                         ? message.isError
                           ? "border border-red-200 bg-red-50 text-red-700"
-                          : "border border-slate-200 bg-white text-slate-900 shadow-sm"
+                          : "border border-slate-200 bg-white text-site-strong shadow-sm"
                         : "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
                     }`}
                   >
@@ -552,7 +552,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                 {shouldRenderTimestamp(messages, index) ? (
                   <p
                     className={cn(
-                      "mt-1 text-[10px] text-slate-500",
+                      "mt-1 text-[10px] text-site-muted",
                       message.role === "assistant" ? "pl-11" : "pr-1 text-right"
                     )}
                   >
@@ -593,14 +593,14 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                 <p className="mb-2 text-xs text-slate-700">Leave your email or mobile number so our team can follow up after you leave the site.</p>
                 <div className="grid gap-2">
                   <input
-                    className="h-9 rounded-md border border-slate-300 bg-white px-2 text-xs text-slate-900 placeholder:text-slate-500"
+                    className="h-9 rounded-md border border-slate-300 bg-white px-2 text-xs text-site-strong placeholder:text-site-muted"
                     onChange={(event) => setCaptureEmail(event.target.value)}
                     placeholder="Email"
                     type="email"
                     value={captureEmail}
                   />
                   <input
-                    className="h-9 rounded-md border border-slate-300 bg-white px-2 text-xs text-slate-900 placeholder:text-slate-500"
+                    className="h-9 rounded-md border border-slate-300 bg-white px-2 text-xs text-site-strong placeholder:text-site-muted"
                     onChange={(event) => setCapturePhone(event.target.value)}
                     placeholder="Mobile number"
                     value={capturePhone}
@@ -622,7 +622,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
             <div className="flex items-end gap-2">
               <textarea
                 ref={composerRef}
-                className="min-h-[44px] flex-1 resize-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-blue-500"
+                className="min-h-[44px] flex-1 resize-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-site-strong outline-none transition placeholder:text-site-muted focus:border-blue-500"
                 onChange={(event) => setInputValue(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {

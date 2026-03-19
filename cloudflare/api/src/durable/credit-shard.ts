@@ -367,13 +367,15 @@ export class CreditShardDurableObject {
     }
 
     const balance = await this.loadBalance(userId)
-    if (balance < amount) {
+    const projectedBalance = Number((balance - amount).toFixed(6))
+
+    if (projectedBalance <= 0) {
       return jsonResponse(
         {
           ok: false,
           error: {
             code: 'insufficient_credits',
-            message: 'Insufficient credits',
+            message: 'Request would reduce credits to zero or below',
           },
           user_id: userId,
           balance,

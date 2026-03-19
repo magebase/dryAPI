@@ -249,20 +249,21 @@ export default function KeyTable() {
         <h3 className="flex items-center gap-2 text-lg font-semibold">
           <KeyRound className="size-4" /> API Keys
         </h3>
-        <Button onClick={() => setShowCreate(true)}>+ Create API Key</Button>
+        <Button onClick={() => setShowCreate(true)} size="sm">
+          + Create API Key
+        </Button>
       </div>
 
-      <div className="rounded-lg border bg-white p-3 shadow-sm dark:bg-zinc-900">
+      <div className="rounded-lg border bg-card shadow-sm">
         <Table aria-busy={loading}>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Key Prefix</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-[180px]">Name</TableHead>
+              <TableHead className="w-[140px]">Key Prefix</TableHead>
               <TableHead>Permissions</TableHead>
-              <TableHead>Last Used</TableHead>
-              <TableHead>24h Usage</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="w-[120px]">Last Used</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -270,63 +271,87 @@ export default function KeyTable() {
               Array.from({ length: 5 }, (_, index) => (
                 <TableRow key={`api-key-skeleton-${index}`} aria-hidden="true">
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-44" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-40 max-w-full" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-44" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                  <TableCell><Skeleton className="ml-auto h-8 w-8 rounded-full" /></TableCell>
                 </TableRow>
               ))
             ) : loadError ? (
               <TableRow>
-                <TableCell colSpan={7} className="space-y-2">
-                  <p className="text-sm text-red-600 dark:text-red-300">{loadError}</p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      void loadKeys()
-                    }}
-                  >
-                    Retry
-                  </Button>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <p className="text-sm text-destructive">{loadError}</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        void loadKeys()
+                      }}
+                    >
+                      Retry
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : keys.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7}>No keys found</TableCell>
+                <TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">
+                  No API keys found. Create one to get started.
+                </TableCell>
               </TableRow>
             ) : (
               keys.map((key) => {
                 const status = getStatus(key)
+                const usage = usageByKey[key.keyId]
+                
                 return (
-                  <TableRow key={key.keyId}>
+                  <TableRow key={key.keyId} className="group">
                     <TableCell>
-                      <div className="space-y-1">
-                        <p className="font-medium">{key.name ?? "Unnamed key"}</p>
-                        <p className="text-xs text-muted-foreground">{getEnvironmentLabel(key)}</p>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium text-sm leading-none">{key.name || "Unnamed key"}</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                          {getEnvironmentLabel(key)}
+                        </span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{formatKeyPrefix(key.start)}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">{formatPermissions(key)}</TableCell>
                     <TableCell>
-                      {usageLoading && !usageByKey[key.keyId] ? <Skeleton className="h-4 w-20" /> : usageByKey[key.keyId]?.lastUsed ?? "Never"}
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium text-muted-foreground">
+                        {formatKeyPrefix(key.start)}
+                      </code>
                     </TableCell>
                     <TableCell>
-                      {usageLoading && !usageByKey[key.keyId] ? <Skeleton className="h-4 w-16" /> : usageByKey[key.keyId]?.usage24h ?? "-"}
+                      <span className="text-xs text-muted-foreground line-clamp-1">
+                        {formatPermissions(key)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-muted-foreground">
+                        {usageLoading && !usage ? (
+                          <Skeleton className="h-3 w-16" />
+                        ) : (
+                          usage?.lastUsed || "Never"
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell>
                       {status === "Active" ? (
-                        <Badge variant="secondary">Active</Badge>
+                        <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-tight bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
+                          Active
+                        </Badge>
                       ) : status === "Expired" ? (
-                        <Badge variant="destructive">Expired</Badge>
+                        <Badge variant="destructive" className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-tight">
+                          Expired
+                        </Badge>
                       ) : (
-                        <Badge variant="outline">Disabled</Badge>
+                        <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-tight text-muted-foreground">
+                          Disabled
+                        </Badge>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                       <KeyRowActions
                         keyId={key.keyId}
                         keyPrefix={key.start ?? key.keyId}

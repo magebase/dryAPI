@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm"
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
 
 export const user = sqliteTable(
@@ -248,8 +249,12 @@ export const subscription = sqliteTable(
     billingInterval: text("billingInterval"),
     stripeScheduleId: text("stripeScheduleId"),
     limits: text("limits"),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(CAST(strftime('%s', 'now') AS INTEGER) * 1000)`),
+    updatedAt: integer("updatedAt", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(CAST(strftime('%s', 'now') AS INTEGER) * 1000)`),
   },
   (table) => ({
     referenceIdIndex: index("idx_better_auth_subscription_reference_id").on(table.referenceId),

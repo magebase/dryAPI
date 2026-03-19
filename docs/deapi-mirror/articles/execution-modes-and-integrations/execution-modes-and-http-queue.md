@@ -1,12 +1,12 @@
 > ## Documentation Index
-> Fetch the complete documentation index at: https://docs.deapi.ai/llms.txt
+> Fetch the complete documentation index at: https://dryapi.dev/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
 # Execution Modes & HTTP Queue
 
 > How to receive job results via webhooks, WebSockets, or polling
 
-All deAPI model endpoints use an **asynchronous job queue**. You submit a request, receive a `request_id`, and retrieve results using one of three methods:
+All dryAPI model endpoints use an **asynchronous job queue**. You submit a request, receive a `request_id`, and retrieve results using one of three methods:
 
 <CardGroup cols={3}>
   <Card title="Webhooks" icon="bell" href="/execution-modes-and-integrations/webhooks">
@@ -30,11 +30,11 @@ All deAPI model endpoints use an **asynchronous job queue**. You submit a reques
   For most integrations, use webhooks. They're the most reliable way to receive results without maintaining persistent connections or implementing polling logic.
 </Info>
 
-With webhooks, deAPI sends an HTTP POST to your server when a job completes. Configure a global webhook URL in [account settings](https://deapi.ai/settings/webhooks), or override per-request:
+With webhooks, dryAPI sends an HTTP POST to your server when a job completes. Configure a global webhook URL in [account settings](https://dryapi.dev/settings/webhooks), or override per-request:
 
 ```bash  theme={null}
 # 1. Submit job with webhook_url
-curl -X POST https://api.deapi.ai/api/v1/client/txt2img \
+curl -X POST https://api.dryapi.dev/api/v1/client/txt2img \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -45,13 +45,13 @@ curl -X POST https://api.deapi.ai/api/v1/client/txt2img \
     "guidance": 3.5,
     "steps": 4,
     "seed": -1,
-    "webhook_url": "https://your-server.com/webhooks/deapi"
+    "webhook_url": "https://your-server.com/webhooks/dryapi"
   }'
 
 # 2. Response contains request_id
 # {"data": {"request_id": "123e4567-e89b-12d3-a456-426614174000"}}
 
-# 3. deAPI POSTs to your webhook when done
+# 3. dryAPI POSTs to your webhook when done
 ```
 
 **Webhook payload (job.completed):**
@@ -63,7 +63,7 @@ curl -X POST https://api.deapi.ai/api/v1/client/txt2img \
     "job_request_id": "123e4567-e89b-12d3-a456-426614174000",
     "status": "done",
     "job_type": "txt2img",
-    "result_url": "https://storage.deapi.ai/results/.../output.png",
+    "result_url": "https://storage.dryapi.dev/results/.../output.png",
     "processing_time_ms": 45000
   }
 }
@@ -88,14 +88,14 @@ For interactive applications that need instant feedback and live previews during
 import Pusher from 'pusher-js';
 
 const pusher = new Pusher('depin-api-prod-key', {
-    wsHost: 'soketi.deapi.ai',
+    wsHost: 'soketi.dryapi.dev',
     wsPort: 443,
     forceTLS: true,
     cluster: 'mt1',
     enabledTransports: ['ws', 'wss'],
     authorizer: (channel) => ({
         authorize: async (socketId, callback) => {
-            const res = await fetch('https://api.deapi.ai/broadcasting/auth', {
+            const res = await fetch('https://api.dryapi.dev/broadcasting/auth', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ If webhooks or WebSockets aren't feasible, poll the status endpoint:
 
 ```bash  theme={null}
 # 1. Submit job (without webhook_url)
-curl -X POST https://api.deapi.ai/api/v1/client/txt2img \
+curl -X POST https://api.dryapi.dev/api/v1/client/txt2img \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -149,7 +149,7 @@ curl -X POST https://api.deapi.ai/api/v1/client/txt2img \
 # Response: {"data": {"request_id": "abc123..."}}
 
 # 2. Poll for results
-curl https://api.deapi.ai/api/v1/client/request-status/abc123 \
+curl https://api.dryapi.dev/api/v1/client/request-status/abc123 \
   -H "Authorization: Bearer $API_KEY"
 ```
 
@@ -228,7 +228,7 @@ This queued model:
 | `POST /api/v1/client/{task}`                     | Submit a job                 |
 | `GET /api/v1/client/request-status/{request_id}` | Check job status (polling)   |
 | `POST {your_webhook_url}`                        | Receive webhook notification |
-| `wss://soketi.deapi.ai`                          | WebSocket connection         |
+| `wss://soketi.dryapi.dev`                          | WebSocket connection         |
 
 
 Built with [Mintlify](https://mintlify.com).

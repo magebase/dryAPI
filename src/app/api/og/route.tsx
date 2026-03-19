@@ -1,7 +1,7 @@
 import { ImageResponse } from "@takumi-rs/image-response/wasm"
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { initSync, Renderer } from "@takumi-rs/wasm"
-import takumiWasmModule from "@takumi-rs/wasm/takumi_wasm_bg.wasm"
+import takumiWasmModule from "@takumi-rs/wasm/next"
 
 import {
   OG_IMAGE_HEIGHT,
@@ -215,7 +215,6 @@ export async function GET(request: Request) {
     width: OG_IMAGE_WIDTH,
     height: OG_IMAGE_HEIGHT,
     format: "png",
-      module: takumiWasmModule,
     renderer,
   })
 

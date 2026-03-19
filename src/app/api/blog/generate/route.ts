@@ -10,8 +10,6 @@ import { isAutomaticBlogEnabled } from "@/lib/feature-flags";
 import { blogPostSchema, type BlogPost } from "@/lib/site-content-schema";
 import { recordStripeMeterUsage } from "@/lib/stripe-metering";
 
-export const runtime = "nodejs";
-
 type GeneratedPostDraft = {
   title: string;
   excerpt: string;

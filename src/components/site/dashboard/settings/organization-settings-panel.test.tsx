@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const { toastSuccess, toastError } = vi.hoisted(() => ({
@@ -92,6 +93,14 @@ function createFetchMock(state: MockState) {
       return jsonResponse(state.userInvitations)
     }
 
+    if (path === "/api/auth/organization/create" && method === "POST") {
+      const body = JSON.parse(String(init?.body || "{}")) as { name: string; slug: string }
+      const id = `org_${state.organizations.length + 1}`
+      state.organizations.push({ id, name: body.name, slug: body.slug })
+      state.session.session.activeOrganizationId = id
+      return jsonResponse({ id, name: body.name, slug: body.slug })
+    }
+
     if (path === "/api/auth/organization/invite-member" && method === "POST") {
       const body = JSON.parse(String(init?.body || "{}")) as { email: string; role: string; organizationId: string }
       state.invitations.push({
@@ -171,6 +180,25 @@ function createDefaultState(): MockState {
   }
 }
 
+function renderOrganizationSettingsPanel() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  })
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <OrganizationSettingsPanel />
+    </QueryClientProvider>,
+  )
+}
+
 describe("OrganizationSettingsPanel invitation flows", () => {
   const originalFetch = global.fetch
 
@@ -184,12 +212,44 @@ describe("OrganizationSettingsPanel invitation flows", () => {
     vi.restoreAllMocks()
   })
 
+  it("submits create workspace requests and auto-fills the slug", async () => {
+    const state = createDefaultState()
+    const fetchMock = createFetchMock(state)
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderOrganizationSettingsPanel()
+
+    await screen.findByText("Workspace name")
+
+    const nameInput = screen.getByLabelText("Workspace name")
+    fireEvent.change(nameInput, { target: { value: "DryAPI Ops" } })
+
+    expect((screen.getByLabelText("Workspace slug") as HTMLInputElement).value).toBe("dryapi-ops")
+
+    fireEvent.click(screen.getByRole("button", { name: "Create workspace" }))
+
+    await waitFor(() => {
+      expect(toastSuccess).toHaveBeenCalled()
+    })
+
+    const createCall = fetchMock.mock.calls.find(([input, init]) => {
+      return getRequestPath(input) === "/api/auth/organization/create"
+        && (init?.method || "GET").toUpperCase() === "POST"
+    })
+
+    expect(createCall).toBeTruthy()
+    expect(JSON.parse(String(createCall?.[1]?.body || "{}"))).toEqual({
+      name: "DryAPI Ops",
+      slug: "dryapi-ops",
+    })
+  })
+
   it("submits invite-member requests and reloads organization invitations", async () => {
     const state = createDefaultState()
     const fetchMock = createFetchMock(state)
     global.fetch = fetchMock as unknown as typeof fetch
 
-    render(<OrganizationSettingsPanel />)
+    renderOrganizationSettingsPanel()
 
     await screen.findByText("Member access")
 
@@ -226,7 +286,7 @@ describe("OrganizationSettingsPanel invitation flows", () => {
     const fetchMock = createFetchMock(state)
     global.fetch = fetchMock as unknown as typeof fetch
 
-    render(<OrganizationSettingsPanel />)
+    renderOrganizationSettingsPanel()
 
     await screen.findByText("Pending invitations")
     fireEvent.click(screen.getByRole("button", { name: "Cancel invite" }))
@@ -251,7 +311,7 @@ describe("OrganizationSettingsPanel invitation flows", () => {
     const fetchMock = createFetchMock(state)
     global.fetch = fetchMock as unknown as typeof fetch
 
-    render(<OrganizationSettingsPanel />)
+    renderOrganizationSettingsPanel()
 
     await screen.findByText("Invitations for you")
     fireEvent.click(screen.getByRole("button", { name: "Accept" }))
@@ -276,7 +336,7 @@ describe("OrganizationSettingsPanel invitation flows", () => {
     const fetchMock = createFetchMock(state)
     global.fetch = fetchMock as unknown as typeof fetch
 
-    render(<OrganizationSettingsPanel />)
+    renderOrganizationSettingsPanel()
 
     await screen.findByText("Invitations for you")
     fireEvent.click(screen.getByRole("button", { name: "Reject" }))

@@ -13,6 +13,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     exclude: [
+      "**/node_modules/**",
       "cloudflare/api/test/e2e/**",
       "cloudflare/api/test/integration/**",
       "**/.wrangler/**",

@@ -1,5 +1,7 @@
 import { SignJWT, jwtVerify } from "jose"
 
+import { resolveAuthInvocationOrigin } from "@/lib/auth-handler-proxy"
+
 type BetterAuthUser = {
   email?: string | null
   name?: string | null
@@ -136,7 +138,7 @@ export async function getBetterAuthSession(request: Request): Promise<{
   session: BetterAuthSessionResponse
   setCookieHeader: string | null
 }> {
-  const response = await fetch(new URL("/api/auth/get-session", request.url), {
+  const response = await fetch(new URL("/api/auth/get-session", resolveAuthInvocationOrigin(request)), {
     method: "GET",
     headers: {
       cookie: request.headers.get("cookie") || "",

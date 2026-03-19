@@ -1,7 +1,7 @@
 type EnvLike = Record<string, unknown>
 
 export const D1_BINDING_PRIORITY = {
-  auth: ["AUTH_DB", "APP_DB", "TINA_DB"],
+  auth: ["AUTH_DB"],
   billing: ["BILLING_DB", "APP_DB"],
   analytics: ["ANALYTICS_DB", "APP_DB", "TINA_DB"],
   metadata: ["METADATA_DB", "TINA_DB", "APP_DB"],

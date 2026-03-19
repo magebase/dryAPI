@@ -4,6 +4,17 @@ import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { z } from "zod"
 
 import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
+import {
+  DASHBOARD_SETTINGS_DEFAULTS,
+  dashboardGeneralSettingsSchema,
+  dashboardSecuritySettingsSchema,
+  dashboardWebhooksSettingsSchema,
+  type DashboardGeneralSettings,
+  type DashboardSecuritySettings,
+  type DashboardSettingsBundle,
+  type DashboardSettingsSection,
+  type DashboardWebhooksSettings,
+} from "@/lib/dashboard-settings-schema"
 
 type D1PreparedResult<T> = {
   results: T[]
@@ -19,76 +30,18 @@ type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
 }
 
-const generalSettingsSchema = z.object({
-  username: z.string().max(80).default(""),
-  fullName: z.string().max(120).default(""),
-  email: z.string().email().or(z.literal("")),
-  company: z.string().max(160).default(""),
-  timezone: z.string().min(1).max(120).default("UTC"),
-  defaultModelScope: z.enum(["balanced", "latency", "quality"]).default("balanced"),
-})
-
-const securitySettingsSchema = z.object({
-  requireMfa: z.boolean().default(false),
-  rotateKeysMonthly: z.boolean().default(true),
-  newDeviceAlerts: z.boolean().default(true),
-  ipAllowlistEnabled: z.boolean().default(false),
-  sessionTimeoutMinutes: z.string().regex(/^\d+$/).default("120"),
-  ipAllowlist: z.string().max(8000).default(""),
-})
-
-const webhooksSettingsSchema = z.object({
-  endpointUrl: z.string().max(2048).default(""),
-  signingSecret: z.string().max(512).default(""),
-  sendOnCompleted: z.boolean().default(true),
-  sendOnFailed: z.boolean().default(true),
-  sendOnQueued: z.boolean().default(false),
-  includeFullPayload: z.boolean().default(false),
-})
-
-export type DashboardGeneralSettings = z.infer<typeof generalSettingsSchema>
-export type DashboardSecuritySettings = z.infer<typeof securitySettingsSchema>
-export type DashboardWebhooksSettings = z.infer<typeof webhooksSettingsSchema>
-
-export type DashboardSettingsBundle = {
-  general: DashboardGeneralSettings
-  security: DashboardSecuritySettings
-  webhooks: DashboardWebhooksSettings
+export type {
+  DashboardGeneralSettings,
+  DashboardSecuritySettings,
+  DashboardSettingsBundle,
+  DashboardSettingsSection,
+  DashboardWebhooksSettings,
 }
-
-export type DashboardSettingsSection = keyof DashboardSettingsBundle
 
 type DashboardSettingsRow = {
   general_json: string
   security_json: string
   webhooks_json: string
-}
-
-export const DASHBOARD_SETTINGS_DEFAULTS: DashboardSettingsBundle = {
-  general: {
-    username: "",
-    fullName: "",
-    email: "",
-    company: "",
-    timezone: "UTC",
-    defaultModelScope: "balanced",
-  },
-  security: {
-    requireMfa: false,
-    rotateKeysMonthly: true,
-    newDeviceAlerts: true,
-    ipAllowlistEnabled: false,
-    sessionTimeoutMinutes: "120",
-    ipAllowlist: "",
-  },
-  webhooks: {
-    endpointUrl: "",
-    signingSecret: "",
-    sendOnCompleted: true,
-    sendOnFailed: true,
-    sendOnQueued: false,
-    includeFullPayload: false,
-  },
 }
 
 const CREATE_SETTINGS_TABLE_SQL = `
@@ -152,19 +105,19 @@ function normalizeBundleFromRow(row: DashboardSettingsRow | null | undefined): D
   }
 
   return {
-    general: parseSectionJson(row.general_json, DASHBOARD_SETTINGS_DEFAULTS.general, generalSettingsSchema),
-    security: parseSectionJson(row.security_json, DASHBOARD_SETTINGS_DEFAULTS.security, securitySettingsSchema),
-    webhooks: parseSectionJson(row.webhooks_json, DASHBOARD_SETTINGS_DEFAULTS.webhooks, webhooksSettingsSchema),
+    general: parseSectionJson(row.general_json, DASHBOARD_SETTINGS_DEFAULTS.general, dashboardGeneralSettingsSchema),
+    security: parseSectionJson(row.security_json, DASHBOARD_SETTINGS_DEFAULTS.security, dashboardSecuritySettingsSchema),
+    webhooks: parseSectionJson(row.webhooks_json, DASHBOARD_SETTINGS_DEFAULTS.webhooks, dashboardWebhooksSettingsSchema),
   }
 }
 
 function normalizeSectionValue(section: DashboardSettingsSection, value: unknown): DashboardSettingsBundle[DashboardSettingsSection] {
   switch (section) {
     case "general": {
-      return generalSettingsSchema.parse(value)
+      return dashboardGeneralSettingsSchema.parse(value)
     }
     case "security": {
-      const parsed = securitySettingsSchema.parse(value)
+      const parsed = dashboardSecuritySettingsSchema.parse(value)
       const timeout = Number(parsed.sessionTimeoutMinutes)
       if (!Number.isFinite(timeout) || timeout < 5 || timeout > 1440) {
         throw new Error("Session timeout must be between 5 and 1440 minutes")
@@ -173,7 +126,7 @@ function normalizeSectionValue(section: DashboardSettingsSection, value: unknown
       return parsed
     }
     case "webhooks": {
-      return webhooksSettingsSchema.parse(value)
+      return dashboardWebhooksSettingsSchema.parse(value)
     }
     default: {
       throw new Error(`Unknown settings section: ${String(section)}`)

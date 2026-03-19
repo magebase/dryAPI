@@ -1,18 +1,21 @@
 "use client"
+/* eslint-disable react/no-children-prop */
 
 import { useEffect, useMemo, useState } from "react"
+import { useForm } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
 import { parseAsString, useQueryStates } from "nuqs"
 import { toast } from "sonner"
+import { z } from "zod"
 
-import { FileDropzone } from "@/components/ui/file-dropzone"
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { buildContactFormData } from "@/lib/contact-form-submission"
 import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
-import { contactSubmissionSchema } from "@/lib/contact-schema"
 import {
   formatFileSize,
   MAX_FORM_FILE_BYTES,
@@ -22,33 +25,32 @@ import {
 } from "@/lib/form-file-utils"
 import type { SiteConfig } from "@/lib/site-content-schema"
 
+const defaultEnquiryTypes = ["Sales", "Rental", "Service", "Parts", "Other"] as const
+const defaultContactMethods = ["Call me", "Email me"] as const
+const stateOptions = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"] as const
+
+const contactPageSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required."),
+  lastName: z.string().trim().min(1, "Last name is required."),
+  email: z.string().trim().email("Please enter a valid email address."),
+  phone: z.string().trim(),
+  company: z.string().trim(),
+  state: z.string().trim(),
+  enquiryType: z.string().trim().min(1, "Please choose an enquiry type."),
+  preferredContactMethod: z.string().trim().min(1, "Please choose a contact method."),
+  message: z.string().trim().min(10, "Please share more project details."),
+})
+
+type ContactPageFormValues = z.infer<typeof contactPageSchema>
+
 type ContactPageFormProps = {
   responseTime: string
   site: SiteConfig
 }
 
-type FormErrors = Partial<Record<"name" | "email" | "message", string>>
-
-const defaultEnquiryTypes = ["Sales", "Rental", "Service", "Parts", "Other"] as const
-const defaultContactMethods = ["Call me", "Email me"] as const
-const stateOptions = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"] as const
-
 export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
-  const [formValues, setFormValues] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    state: "",
-    enquiryType: "",
-    preferredContactMethod: "",
-    message: "",
-  })
-  const [errors, setErrors] = useState<FormErrors>({})
   const [files, setFiles] = useState<File[]>([])
   const [fileError, setFileError] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [statusTone, setStatusTone] = useState<"success" | "error" | "neutral">("neutral")
   const [statusMessage, setStatusMessage] = useState("")
   const [showTurnstile, setShowTurnstile] = useState(false)
@@ -72,13 +74,13 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
       history: "replace",
       scroll: false,
       shallow: true,
-    }
+    },
   )
 
   const introText = resolveSiteUiText(
     site,
     "contactPageForm.introText",
-    "Complete the fields below and we will route your enquiry to the right specialist."
+    "Complete the fields below and we will route your enquiry to the right specialist.",
   )
   const firstNameLabel = resolveSiteUiText(site, "contactPageForm.firstNameLabel", "First name")
   const firstNamePlaceholder = resolveSiteUiText(site, "contactPageForm.firstNamePlaceholder", "First name")
@@ -93,24 +95,12 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
   const stateLabel = resolveSiteUiText(site, "contactPageForm.stateLabel", "State")
   const statePlaceholder = resolveSiteUiText(site, "contactPageForm.statePlaceholder", "Please select")
   const enquiryTypeLabel = resolveSiteUiText(site, "contactPageForm.enquiryTypeLabel", "Enquiry type")
-  const bestContactLabel = resolveSiteUiText(
-    site,
-    "contactPageForm.bestContactLabel",
-    "What is the best way to contact you?"
-  )
+  const bestContactLabel = resolveSiteUiText(site, "contactPageForm.bestContactLabel", "What is the best way to contact you?")
   const messageLabel = resolveSiteUiText(site, "contactPageForm.messageLabel", "Message")
-  const messagePlaceholder = resolveSiteUiText(
-    site,
-    "contactPageForm.messagePlaceholder",
-    "Tell us about your project requirements"
-  )
+  const messagePlaceholder = resolveSiteUiText(site, "contactPageForm.messagePlaceholder", "Tell us about your project requirements")
   const submitIdleLabel = resolveSiteUiText(site, "contactPageForm.submitIdleLabel", "Submit")
   const submitBusyLabel = resolveSiteUiText(site, "contactPageForm.submitBusyLabel", "Sending...")
-  const submitErrorMessage = resolveSiteUiText(
-    site,
-    "contactPageForm.submitErrorMessage",
-    "We could not submit your request right now."
-  )
+  const submitErrorMessage = resolveSiteUiText(site, "contactPageForm.submitErrorMessage", "We could not submit your request right now.")
   const enquiryTypes = defaultEnquiryTypes.map((option) => ({
     option,
     ...resolveSiteUiText(site, `contactPageForm.enquiryType.${option.toLowerCase()}`, option),
@@ -119,173 +109,63 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
     option,
     ...resolveSiteUiText(site, `contactPageForm.contactMethod.${option.toLowerCase().replaceAll(" ", "-")}`, option),
   }))
+
   const enquiryValueByKey = useMemo(() => {
     const map = new Map<string, string>()
-
     for (const item of enquiryTypes) {
       map.set(item.option.toLowerCase(), item.value)
       map.set(item.value.toLowerCase(), item.value)
     }
-
     return map
   }, [enquiryTypes])
+
   const contactMethodValueByKey = useMemo(() => {
     const map = new Map<string, string>()
-
     for (const item of contactMethods) {
       map.set(item.option.toLowerCase().replaceAll(" ", ""), item.value)
       map.set(item.value.toLowerCase().replaceAll(" ", ""), item.value)
     }
-
     map.set("call", contactMethods[0]?.value ?? "Call me")
     map.set("email", contactMethods[1]?.value ?? "Email me")
-
     return map
   }, [contactMethods])
 
-  const fullName = useMemo(
-    () => [formValues.firstName.trim(), formValues.lastName.trim()].filter(Boolean).join(" "),
-    [formValues.firstName, formValues.lastName]
-  )
-
-  useEffect(() => {
-    setFormValues((previous) => {
-      const next = { ...previous }
-      let changed = false
-
-      if (!next.firstName && contactPrefill.firstName?.trim()) {
-        next.firstName = contactPrefill.firstName.trim()
-        changed = true
+  const submitMutation = useMutation({
+    mutationFn: async (values: ContactPageFormValues) => {
+      if (showTurnstile && turnstileEnabled && !turnstileToken) {
+        throw new Error("Please complete the verification challenge before submitting again.")
       }
 
-      if (!next.lastName && contactPrefill.lastName?.trim()) {
-        next.lastName = contactPrefill.lastName.trim()
-        changed = true
+      const nextFileError = validateFiles(files)
+      if (nextFileError) {
+        throw new Error(nextFileError)
       }
 
-      if ((!next.firstName || !next.lastName) && contactPrefill.name?.trim()) {
-        const nameParts = contactPrefill.name.trim().split(/\s+/)
-        const firstName = nameParts[0] ?? ""
-        const lastName = nameParts.slice(1).join(" ")
-
-        if (!next.firstName && firstName) {
-          next.firstName = firstName
-          changed = true
-        }
-
-        if (!next.lastName && lastName) {
-          next.lastName = lastName
-          changed = true
-        }
-      }
-
-      if (!next.email && contactPrefill.email?.trim()) {
-        next.email = contactPrefill.email.trim()
-        changed = true
-      }
-
-      if (!next.phone && contactPrefill.phone?.trim()) {
-        next.phone = contactPrefill.phone.trim()
-        changed = true
-      }
-
-      if (!next.company && contactPrefill.company?.trim()) {
-        next.company = contactPrefill.company.trim()
-        changed = true
-      }
-
-      const normalizedState = contactPrefill.state?.trim().toUpperCase()
-      if (!next.state && normalizedState && stateOptions.includes(normalizedState as (typeof stateOptions)[number])) {
-        next.state = normalizedState
-        changed = true
-      }
-
-      const enquiryKey = contactPrefill.enquiry?.trim().toLowerCase()
-      if (!next.enquiryType && enquiryKey) {
-        const mapped = enquiryValueByKey.get(enquiryKey)
-        if (mapped) {
-          next.enquiryType = mapped
-          changed = true
-        }
-      }
-
-      const contactKey = contactPrefill.contact?.trim().toLowerCase().replaceAll(" ", "")
-      if (!next.preferredContactMethod && contactKey) {
-        const mapped = contactMethodValueByKey.get(contactKey)
-        if (mapped) {
-          next.preferredContactMethod = mapped
-          changed = true
-        }
-      }
-
-      if (!next.message && contactPrefill.message?.trim()) {
-        next.message = contactPrefill.message.trim()
-        changed = true
-      }
-
-      return changed ? next : previous
-    })
-  }, [contactMethodValueByKey, contactPrefill, enquiryValueByKey])
-
-  function updateFiles(nextFiles: File[]) {
-    setFiles(nextFiles)
-    setFileError(validateFiles(nextFiles) || "")
-  }
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setStatusTone("neutral")
-    setStatusMessage("")
-
-    if (showTurnstile && turnstileEnabled && !turnstileToken) {
-      const verificationMessage = "Please complete the verification challenge before submitting again."
-      setStatusTone("error")
-      setStatusMessage(verificationMessage)
-      toast.error("Verification required", {
-        description: verificationMessage,
+      const parsed = z.object({
+        name: z.string().trim().min(2),
+        email: z.string().trim().email(),
+        company: z.string().trim(),
+        phone: z.string().trim(),
+        state: z.string().trim(),
+        enquiryType: z.string().trim(),
+        preferredContactMethod: z.string().trim(),
+        message: z.string().trim().min(10),
+      }).safeParse({
+        name: [values.firstName.trim(), values.lastName.trim()].filter(Boolean).join(" "),
+        email: values.email,
+        company: values.company,
+        phone: values.phone,
+        state: values.state,
+        enquiryType: values.enquiryType,
+        preferredContactMethod: values.preferredContactMethod,
+        message: values.message,
       })
-      return
-    }
 
-    const nextFileError = validateFiles(files)
-    if (nextFileError) {
-      setFileError(nextFileError)
-      setStatusTone("error")
-      toast.error("Please fix file attachments", {
-        description: nextFileError,
-      })
-      return
-    }
+      if (!parsed.success) {
+        throw new Error(parsed.error.issues[0]?.message || submitErrorMessage.value)
+      }
 
-    const parsed = contactSubmissionSchema.safeParse({
-      name: fullName,
-      email: formValues.email,
-      company: formValues.company,
-      phone: formValues.phone,
-      state: formValues.state,
-      enquiryType: formValues.enquiryType,
-      preferredContactMethod: formValues.preferredContactMethod,
-      message: formValues.message,
-    })
-
-    if (!parsed.success) {
-      const fieldErrors = parsed.error.flatten().fieldErrors
-      setErrors({
-        name: fieldErrors.name?.[0],
-        email: fieldErrors.email?.[0],
-        message: fieldErrors.message?.[0],
-      })
-      setStatusTone("error")
-      toast.error("Please correct the highlighted fields")
-      return
-    }
-
-    setErrors({})
-    setIsSubmitting(true)
-
-    try {
       const formData = buildContactFormData(parsed.data as Record<string, string>, files, turnstileToken)
-
       const response = await fetch("/api/contact", {
         method: "POST",
         body: formData,
@@ -299,35 +179,23 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
       }
 
       if (response.status === 429 && body.requiresTurnstile) {
-        const verificationError = body.error || "Please complete verification before submitting again."
-        setShowTurnstile(true)
-        setTurnstileToken("")
-        setTurnstileResetKey((previous) => previous + 1)
-        setStatusTone("error")
-        setStatusMessage(verificationError)
-        toast.error("Verification required", {
-          description: verificationError,
-        })
-        return
+        throw new Error(body.error || "Please complete verification before submitting again.")
       }
 
       if (!response.ok || !body.ok) {
-        const failureMessage = body.error || submitErrorMessage.value
-        setStatusTone("error")
-        setStatusMessage(failureMessage)
-        toast.error("Message not sent", {
-          description: failureMessage,
-        })
-        return
+        throw new Error(body.error || submitErrorMessage.value)
       }
 
+      return body
+    },
+    onSuccess: (body) => {
       const successMessage = body.message ?? "Thanks, your message has been sent."
       setStatusTone("success")
       setStatusMessage(successMessage)
       toast.success("Message sent", {
         description: successMessage,
       })
-      setFormValues({
+      form.reset({
         firstName: "",
         lastName: "",
         email: "",
@@ -338,170 +206,340 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
         preferredContactMethod: "",
         message: "",
       })
-      updateFiles([])
+      setFiles([])
+      setFileError("")
       if (showTurnstile) {
         setShowTurnstile(false)
         setTurnstileToken("")
         setTurnstileResetKey((previous) => previous + 1)
       }
-    } catch {
+    },
+    onError: (mutationError) => {
+      const message = mutationError instanceof Error ? mutationError.message : submitErrorMessage.value
       setStatusTone("error")
-      setStatusMessage(submitErrorMessage.value)
+      setStatusMessage(message)
       toast.error("Message not sent", {
-        description: submitErrorMessage.value,
+        description: message,
       })
-    } finally {
-      setIsSubmitting(false)
+    },
+  })
+
+  const form = useForm({
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      company: "",
+      state: "",
+      enquiryType: "",
+      preferredContactMethod: "",
+      message: "",
+    },
+    validators: {
+      onSubmit: contactPageSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setStatusTone("neutral")
+      setStatusMessage("")
+      await submitMutation.mutateAsync(value)
+    },
+  })
+
+  useEffect(() => {
+    setStatusMessage("")
+    setFormFieldFromPrefill("firstName", contactPrefill.firstName)
+    setFormFieldFromPrefill("lastName", contactPrefill.lastName)
+    setFormFieldFromPrefill("email", contactPrefill.email)
+    setFormFieldFromPrefill("phone", contactPrefill.phone)
+    setFormFieldFromPrefill("company", contactPrefill.company)
+    setFormFieldFromPrefill("message", contactPrefill.message)
+
+    const normalizedState = contactPrefill.state?.trim().toUpperCase()
+    if (normalizedState && stateOptions.includes(normalizedState as (typeof stateOptions)[number])) {
+      form.setFieldValue("state", normalizedState)
+    }
+
+    const enquiryKey = contactPrefill.enquiry?.trim().toLowerCase()
+    if (enquiryKey) {
+      const mapped = enquiryValueByKey.get(enquiryKey)
+      if (mapped) {
+        form.setFieldValue("enquiryType", mapped)
+      }
+    }
+
+    const contactKey = contactPrefill.contact?.trim().toLowerCase().replaceAll(" ", "")
+    if (contactKey) {
+      const mapped = contactMethodValueByKey.get(contactKey)
+      if (mapped) {
+        form.setFieldValue("preferredContactMethod", mapped)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactPrefill, enquiryValueByKey, contactMethodValueByKey])
+
+  function setFormFieldFromPrefill(field: keyof ContactPageFormValues, value: string | null | undefined) {
+    if (value?.trim()) {
+      form.setFieldValue(field, value.trim())
     }
   }
 
+  function updateFiles(nextFiles: File[]) {
+    setFiles(nextFiles)
+    setFileError(validateFiles(nextFiles) || "")
+  }
+
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <p className="text-xs uppercase tracking-[0.16em] text-slate-500" data-tina-field={introText.field}>{introText.value}</p>
+    <form
+      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <p className="text-xs uppercase tracking-[0.16em] text-site-muted" data-tina-field={introText.field}>
+        {introText.value}
+      </p>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="firstName" data-tina-field={firstNameLabel.field}>{firstNameLabel.value}</Label>
-          <Input
-            className="h-10 rounded-sm border-slate-200 bg-white text-slate-900"
-            id="firstName"
-            name="firstName"
-            onChange={(event) => setFormValues((previous) => ({ ...previous, firstName: event.target.value }))}
-            placeholder={firstNamePlaceholder.value}
-            value={formValues.firstName}
-          />
-        </div>
+        <form.Field
+          name="firstName"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+            return (
+              <div className="space-y-2">
+                <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={firstNameLabel.field}>
+                  {firstNameLabel.value}
+                </Label>
+                <Input
+                  className="h-10 rounded-sm border-slate-200 bg-white text-site-strong"
+                  id={field.name}
+                  name={field.name}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  placeholder={firstNamePlaceholder.value}
+                  value={field.state.value}
+                />
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </div>
+            )
+          }}
+        />
 
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="lastName" data-tina-field={lastNameLabel.field}>{lastNameLabel.value}</Label>
-          <Input
-            className="h-10 rounded-sm border-slate-200 bg-white text-slate-900"
-            id="lastName"
-            name="lastName"
-            onChange={(event) => setFormValues((previous) => ({ ...previous, lastName: event.target.value }))}
-            placeholder={lastNamePlaceholder.value}
-            value={formValues.lastName}
-          />
-        </div>
+        <form.Field
+          name="lastName"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+            return (
+              <div className="space-y-2">
+                <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={lastNameLabel.field}>
+                  {lastNameLabel.value}
+                </Label>
+                <Input
+                  className="h-10 rounded-sm border-slate-200 bg-white text-site-strong"
+                  id={field.name}
+                  name={field.name}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  placeholder={lastNamePlaceholder.value}
+                  value={field.state.value}
+                />
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </div>
+            )
+          }}
+        />
       </div>
-      {errors.name ? <p className="text-xs text-primary">{errors.name}</p> : null}
 
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="email" data-tina-field={emailLabel.field}>{emailLabel.value}</Label>
-          <Input
-            className="h-10 rounded-sm border-slate-200 bg-white text-slate-900"
-            id="email"
-            name="email"
-            onChange={(event) => setFormValues((previous) => ({ ...previous, email: event.target.value }))}
-            placeholder={emailPlaceholder.value}
-            type="email"
-            value={formValues.email}
-          />
-          {errors.email ? <p className="text-xs text-primary">{errors.email}</p> : null}
-        </div>
+        <form.Field
+          name="email"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+            return (
+              <div className="space-y-2">
+                <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={emailLabel.field}>
+                  {emailLabel.value}
+                </Label>
+                <Input
+                  className="h-10 rounded-sm border-slate-200 bg-white text-site-strong"
+                  id={field.name}
+                  name={field.name}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  placeholder={emailPlaceholder.value}
+                  type="email"
+                  value={field.state.value}
+                />
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </div>
+            )
+          }}
+        />
 
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="phone" data-tina-field={phoneLabel.field}>{phoneLabel.value}</Label>
-          <Input
-            className="h-10 rounded-sm border-slate-200 bg-white text-slate-900"
-            id="phone"
-            name="phone"
-            onChange={(event) => setFormValues((previous) => ({ ...previous, phone: event.target.value }))}
-            placeholder={phonePlaceholder.value}
-            value={formValues.phone}
-          />
-        </div>
+        <form.Field
+          name="phone"
+          children={(field) => (
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={phoneLabel.field}>
+                {phoneLabel.value}
+              </Label>
+              <Input
+                className="h-10 rounded-sm border-slate-200 bg-white text-site-strong"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                placeholder={phonePlaceholder.value}
+                value={field.state.value}
+              />
+            </div>
+          )}
+        />
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="company" data-tina-field={companyLabel.field}>{companyLabel.value}</Label>
-          <Input
-            className="h-10 rounded-sm border-slate-200 bg-white text-slate-900"
-            id="company"
-            name="company"
-            onChange={(event) => setFormValues((previous) => ({ ...previous, company: event.target.value }))}
-            placeholder={companyPlaceholder.value}
-            value={formValues.company}
-          />
-        </div>
+        <form.Field
+          name="company"
+          children={(field) => (
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={companyLabel.field}>
+                {companyLabel.value}
+              </Label>
+              <Input
+                className="h-10 rounded-sm border-slate-200 bg-white text-site-strong"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                placeholder={companyPlaceholder.value}
+                value={field.state.value}
+              />
+            </div>
+          )}
+        />
 
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="state" data-tina-field={stateLabel.field}>{stateLabel.value}</Label>
-          <select
-            className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none ring-primary transition focus:ring-2"
-            id="state"
-            name="state"
-            onChange={(event) => setFormValues((previous) => ({ ...previous, state: event.target.value }))}
-            value={formValues.state}
-          >
-            <option value="">{statePlaceholder.value}</option>
-            {stateOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
+        <form.Field
+          name="state"
+          children={(field) => (
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={stateLabel.field}>
+                {stateLabel.value}
+              </Label>
+              <select
+                className="h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-site-strong outline-none ring-primary transition focus:ring-2"
+                id={field.name}
+                name={field.name}
+                onChange={(event) => field.handleChange(event.target.value)}
+                value={field.state.value}
+              >
+                <option value="">{statePlaceholder.value}</option>
+                {stateOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <fieldset className="space-y-2">
-          <legend className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" data-tina-field={enquiryTypeLabel.field}>{enquiryTypeLabel.value}</legend>
-          <div className="space-y-1">
-            {enquiryTypes.map((item) => (
-              <label key={item.option} className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                <input
-                  checked={formValues.enquiryType === item.value}
-                  className="size-3.5 accent-primary"
-                  name="enquiryType"
-                  onChange={() => setFormValues((previous) => ({ ...previous, enquiryType: item.value }))}
-                  type="radio"
-                  value={item.value}
-                />
-                <span data-tina-field={item.field}>{item.value}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset className="space-y-2">
-          <legend className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" data-tina-field={bestContactLabel.field}>{bestContactLabel.value}</legend>
-          <div className="space-y-1">
-            {contactMethods.map((item) => (
-              <label key={item.option} className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                <input
-                  checked={formValues.preferredContactMethod === item.value}
-                  className="size-3.5 accent-primary"
-                  name="preferredContactMethod"
-                  onChange={() => setFormValues((previous) => ({ ...previous, preferredContactMethod: item.value }))}
-                  type="radio"
-                  value={item.value}
-                />
-                <span data-tina-field={item.field}>{item.value}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor="message" data-tina-field={messageLabel.field}>{messageLabel.value}</Label>
-        <Textarea
-          className="min-h-28 rounded-sm border-slate-200 bg-white text-slate-900"
-          id="message"
-          name="message"
-          onChange={(event) => setFormValues((previous) => ({ ...previous, message: event.target.value }))}
-          placeholder={messagePlaceholder.value}
-          rows={5}
-          value={formValues.message}
+        <form.Field
+          name="enquiryType"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+            return (
+              <fieldset className="space-y-2">
+                <legend className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" data-tina-field={enquiryTypeLabel.field}>
+                  {enquiryTypeLabel.value}
+                </legend>
+                <div className="space-y-1">
+                  {enquiryTypes.map((item) => (
+                    <label key={item.option} className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+                      <input
+                        checked={field.state.value === item.value}
+                        className="size-3.5 accent-primary"
+                        name={field.name}
+                        onChange={() => field.handleChange(item.value)}
+                        type="radio"
+                        value={item.value}
+                      />
+                      <span data-tina-field={item.field}>{item.value}</span>
+                    </label>
+                  ))}
+                </div>
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </fieldset>
+            )
+          }}
         />
-        {errors.message ? <p className="text-xs text-primary">{errors.message}</p> : null}
+
+        <form.Field
+          name="preferredContactMethod"
+          children={(field) => {
+            const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+            const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+            return (
+              <fieldset className="space-y-2">
+                <legend className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" data-tina-field={bestContactLabel.field}>
+                  {bestContactLabel.value}
+                </legend>
+                <div className="space-y-1">
+                  {contactMethods.map((item) => (
+                    <label key={item.option} className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+                      <input
+                        checked={field.state.value === item.value}
+                        className="size-3.5 accent-primary"
+                        name={field.name}
+                        onChange={() => field.handleChange(item.value)}
+                        type="radio"
+                        value={item.value}
+                      />
+                      <span data-tina-field={item.field}>{item.value}</span>
+                    </label>
+                  ))}
+                </div>
+                {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+              </fieldset>
+            )
+          }}
+        />
       </div>
+
+      <form.Field
+        name="message"
+        children={(field) => {
+          const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+          const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+          return (
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600" htmlFor={field.name} data-tina-field={messageLabel.field}>
+                {messageLabel.value}
+              </Label>
+              <Textarea
+                className="min-h-28 rounded-sm border-slate-200 bg-white text-site-strong"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+                placeholder={messagePlaceholder.value}
+                rows={5}
+                value={field.state.value}
+              />
+              {isInvalid ? <p className="text-xs text-primary">{errorMessage}</p> : null}
+            </div>
+          )
+        }}
+      />
 
       <FileDropzone
-        disabled={isSubmitting}
+        disabled={submitMutation.isPending || form.state.isSubmitting}
         error={fileError || undefined}
         files={files}
         hint={`Up to ${MAX_FORM_FILE_COUNT} files, max ${formatFileSize(MAX_FORM_FILE_BYTES)} each.`}
@@ -516,13 +554,13 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{responseTime}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-site-muted">{responseTime}</p>
         <Button
           className="rounded-sm bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-primary-foreground hover:bg-accent"
-          disabled={isSubmitting}
+          disabled={submitMutation.isPending || form.state.isSubmitting}
           type="submit"
         >
-          {isSubmitting ? submitBusyLabel.value : submitIdleLabel.value}
+          {submitMutation.isPending || form.state.isSubmitting ? submitBusyLabel.value : submitIdleLabel.value}
         </Button>
       </div>
 
@@ -538,7 +576,7 @@ export function ContactPageForm({ responseTime, site }: ContactPageFormProps) {
             onTokenChange={setTurnstileToken}
             resetKey={turnstileResetKey}
           />
-          <p className="text-xs text-slate-500">Verification is required after frequent submissions.</p>
+          <p className="text-xs text-site-muted">Verification is required after frequent submissions.</p>
         </div>
       ) : null}
 

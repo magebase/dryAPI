@@ -111,11 +111,11 @@ export function DeapiPricingCategoryDetail({
           <h1 className="mt-2 font-display text-2xl uppercase tracking-[0.08em] text-white md:text-4xl">
             {heading} Model Pricing (USD)
           </h1>
-          <p className="mt-3 max-w-4xl text-sm text-slate-300 md:text-base">
+          <p className="mt-3 max-w-4xl text-sm text-site-soft md:text-base">
             Explore model-level pricing for the {heading.toLowerCase()} category, including typical cost ranges and per-configuration references from
             the latest synchronized snapshot.
           </p>
-          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-400">
+          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-site-soft">
             Models: {summaries.length} | Rows: {rows.length}
           </p>
           <div className="mt-5">
@@ -132,10 +132,10 @@ export function DeapiPricingCategoryDetail({
           {summaries.map((summary) => (
             <article key={summary.modelLabel} className="rounded-md border border-white/10 bg-[#15233a] p-4">
               <p className="text-xs uppercase tracking-[0.13em] text-primary">{summary.modelLabel}</p>
-              <p className="mt-2 text-sm text-slate-300">Rows: {summary.rowCount}</p>
-              <p className="mt-1 text-sm text-slate-300">Min: {formatUsd(summary.minPriceUsd)} | Median: {formatUsd(summary.medianPriceUsd)}</p>
-              <p className="mt-1 text-sm text-slate-300">Max: {formatUsd(summary.maxPriceUsd)}</p>
-              <p className="mt-2 text-xs text-slate-400">Params: {summary.params.slice(0, 8).join(", ") || "N/A"}</p>
+              <p className="mt-2 text-sm text-site-soft">Rows: {summary.rowCount}</p>
+              <p className="mt-1 text-sm text-site-soft">Min: {formatUsd(summary.minPriceUsd)} | Median: {formatUsd(summary.medianPriceUsd)}</p>
+              <p className="mt-1 text-sm text-site-soft">Max: {formatUsd(summary.maxPriceUsd)}</p>
+              <p className="mt-2 text-xs text-site-soft">Params: {summary.params.slice(0, 8).join(", ") || "N/A"}</p>
             </article>
           ))}
         </div>
@@ -143,13 +143,13 @@ export function DeapiPricingCategoryDetail({
 
       <section className="mx-auto max-w-7xl px-4 pb-12 md:pb-16">
         <h2 className="text-lg font-semibold uppercase tracking-[0.12em] text-white md:text-xl">Pricing Rows</h2>
-        <p className="mt-2 text-sm text-slate-300">
+        <p className="mt-2 text-sm text-site-soft">
           Prices are listed in USD for each captured parameter combination.
         </p>
         <div className="mt-4 overflow-hidden rounded-md border border-white/10">
           <div className="max-h-[680px] overflow-auto">
-            <table className="min-w-full divide-y divide-white/10 text-left text-sm text-slate-200">
-              <thead className="sticky top-0 bg-[#17273d] text-xs uppercase tracking-[0.12em] text-slate-300">
+            <table className="min-w-full divide-y divide-white/10 text-left text-sm text-site-soft">
+              <thead className="sticky top-0 bg-[#17273d] text-xs uppercase tracking-[0.12em] text-site-soft">
                 <tr>
                   <th className="px-3 py-3">Model</th>
                   <th className="px-3 py-3">Price (USD)</th>
@@ -164,10 +164,10 @@ export function DeapiPricingCategoryDetail({
                   <tr key={row.id} className="align-top">
                     <td className="px-3 py-2 text-sm text-white">{row.modelLabel || row.model}</td>
                     <td className="px-3 py-2 font-semibold text-white">{formatUsd(row.priceUsd)}</td>
-                    <td className="px-3 py-2 text-xs text-slate-300">{formatCredits(row.credits)}</td>
-                    <td className="px-3 py-2 text-xs text-slate-300">{toParamText(row.params)}</td>
-                    <td className="px-3 py-2 text-xs text-slate-400">{row.sourceUrl}</td>
-                    <td className="px-3 py-2 text-xs text-slate-400">{row.excerpts[0] || row.descriptions[0] || row.priceText || "-"}</td>
+                    <td className="px-3 py-2 text-xs text-site-soft">{formatCredits(row.credits)}</td>
+                    <td className="px-3 py-2 text-xs text-site-soft">{toParamText(row.params)}</td>
+                    <td className="px-3 py-2 text-xs text-site-soft">{row.sourceUrl}</td>
+                    <td className="px-3 py-2 text-xs text-site-soft">{row.excerpts[0] || row.descriptions[0] || row.priceText || "-"}</td>
                   </tr>
                 ))}
               </tbody>

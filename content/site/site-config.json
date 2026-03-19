@@ -102,6 +102,10 @@
           {
             "label": "Changelog",
             "href": "/changelog"
+          },
+          {
+            "label": "API Reference",
+            "href": "/docs/v1/api-reference"
           }
         ]
       },
@@ -111,6 +115,10 @@
           {
             "label": "Blog",
             "href": "/blog"
+          },
+          {
+            "label": "Documentation",
+            "href": "/docs"
           },
           {
             "label": "Text to Image",
@@ -138,12 +146,127 @@
             "href": "/contact-sales"
           },
           {
+            "label": "Architecture & Security",
+            "href": "/docs/architecture-and-security"
+          },
+          {
+            "label": "Trust & Reliability",
+            "href": "/blog/ai-api-auth-billing-and-security-checklist"
+          }
+        ]
+      },
+      {
+        "title": "Legal",
+        "links": [
+          {
+            "label": "Terms of Service",
+            "href": "/terms-of-service"
+          },
+          {
             "label": "Privacy Policy",
             "href": "/privacy-policy"
           },
           {
-            "label": "Terms of Service",
-            "href": "/terms-of-service"
+            "label": "Cookie Policy",
+            "href": "/cookie-policy"
+          },
+          {
+            "label": "Acceptable Use Policy",
+            "href": "/acceptable-use-policy"
+          },
+          {
+            "label": "Refund Policy",
+            "href": "/refund-policy"
+          },
+          {
+            "label": "Service Level Agreement",
+            "href": "/service-level-agreement"
+          },
+          {
+            "label": "Data Processing Addendum",
+            "href": "/data-processing-addendum"
+          }
+        ]
+      },
+      {
+        "title": "Popular AI API Articles",
+        "links": [
+          {
+            "label": "OpenAI Alternatives: Cheap AI API Options",
+            "href": "/blog/openai-alternatives-cheap-ai-api-options"
+          },
+          {
+            "label": "Build OpenAI Compatible API Gateway",
+            "href": "/blog/build-openai-compatible-api-gateway"
+          },
+          {
+            "label": "AI API Token Cost Calculator Method",
+            "href": "/blog/ai-api-token-cost-calculator-method"
+          },
+          {
+            "label": "RunPod vs OpenRouter vs Direct Hosting",
+            "href": "/blog/runpod-vs-openrouter-vs-direct-hosting-costs"
+          },
+          {
+            "label": "Serverless GPU AI API Cost Optimization",
+            "href": "/blog/serverless-gpu-ai-api-cost-optimization"
+          },
+          {
+            "label": "Cold Start Reduction for Serverless LLM APIs",
+            "href": "/blog/cold-start-reduction-for-serverless-llm-apis"
+          },
+          {
+            "label": "AI API Fallback Strategies Without Downtime",
+            "href": "/blog/ai-api-fallback-strategies-without-downtime"
+          },
+          {
+            "label": "AI API Caching for Lower Inference Cost",
+            "href": "/blog/ai-api-caching-for-lower-inference-cost"
+          },
+          {
+            "label": "Batch Inference Techniques for Cheaper AI APIs",
+            "href": "/blog/batch-inference-techniques-for-cheaper-ai-apis"
+          },
+          {
+            "label": "Migrate to Unified AI API Gateway",
+            "href": "/blog/migrate-to-unified-ai-api-gateway"
+          }
+        ]
+      },
+      {
+        "title": "Popular by Use Case",
+        "links": [
+          {
+            "label": "Image Generation APIs",
+            "href": "/blog/model-flux1schnell-flux-1-schnell-image-api"
+          },
+          {
+            "label": "Speech to Text APIs (Whisper)",
+            "href": "/blog/whisper-api-cost-optimization-at-scale"
+          },
+          {
+            "label": "Text to Speech APIs (Kokoro)",
+            "href": "/blog/model-kokoro-kokoro-inference-api"
+          },
+          {
+            "label": "Text to Speech APIs (Chatterbox)",
+            "href": "/blog/model-chatterbox-chatterbox-inference-api"
+          },
+          {
+            "label": "Embeddings APIs for Retrieval",
+            "href": "/blog/model-bge-m3-fp16-bge-m3-inference-api"
+          },
+          {
+            "label": "Embeddings at Scale Playbook",
+            "href": "/blog/embeddings-api-margin-and-scale-playbook"
+          },
+          {
+            "label": "OCR and Document Extraction APIs",
+            "href": "/blog/nanonets-ocr-s-unified-inference-c2vyt"
+          },
+          {
+            "label": "Cheap Image API Scaling Guide",
+            "href": "/blog/cheap-image-generation-api-scaling-guide"
           }
         ]
       }
@@ -156,6 +279,26 @@
       {
         "label": "Privacy Policy",
         "href": "/privacy-policy"
+      },
+      {
+        "label": "Cookie Policy",
+        "href": "/cookie-policy"
+      },
+      {
+        "label": "Acceptable Use Policy",
+        "href": "/acceptable-use-policy"
+      },
+      {
+        "label": "Refund Policy",
+        "href": "/refund-policy"
+      },
+      {
+        "label": "Service Level Agreement",
+        "href": "/service-level-agreement"
+      },
+      {
+        "label": "Data Processing Addendum",
+        "href": "/data-processing-addendum"
       }
     ]
   },

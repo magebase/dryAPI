@@ -9,8 +9,6 @@ import {
 } from "@/lib/auth-debug"
 import { resolveConfiguredBalance } from "@/lib/configured-balance"
 
-export const runtime = "nodejs"
-
 const authHandlers = toNextJsHandler(auth)
 
 const AUTH_COOKIES_TO_CLEAR = [

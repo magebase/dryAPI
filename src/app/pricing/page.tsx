@@ -1,18 +1,16 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { PricingTable } from "@/components/site/pricing-table"
-import { SummarizeWithAi } from "@/components/site/summarize-with-ai"
-import { WebPageJsonLd } from "@/components/site/seo-jsonld"
-import { getLatestDeapiPricingSnapshot } from "@/lib/deapi-pricing-store"
-import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata"
-import { filterPricingSnapshotToActiveModels } from "@/lib/runpod-active-models"
-import { SiteFrame } from "@/components/site/site-frame"
-import { readSiteConfig } from "@/lib/site-content-loader"
-
-export const dynamic = "force-static"
+import { PricingTable } from "@/components/site/pricing-table";
+import { SummarizeWithAi } from "@/components/site/summarize-with-ai";
+import { WebPageJsonLd } from "@/components/site/seo-jsonld";
+import { getLatestDeapiPricingSnapshot } from "@/lib/deapi-pricing-store";
+import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
+import { filterPricingSnapshotToActiveModels } from "@/lib/runpod-active-models";
+import { SiteFrame } from "@/components/site/site-frame";
+import { readSiteConfig } from "@/lib/site-content-loader";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const site = await readSiteConfig()
+  const site = await readSiteConfig();
 
   return buildTakumiMetadata({
     title: "Model Pricing (USD) | deAPI",
@@ -23,17 +21,19 @@ export async function generateMetadata(): Promise<Metadata> {
     siteName: site.brand.name || site.brand.mark,
     label: "Pricing Page",
     seed: "pricing-index",
-  })
+  });
 }
 
 export default async function PricingPage() {
   const [site, snapshot] = await Promise.all([
     readSiteConfig(),
     getLatestDeapiPricingSnapshot(),
-  ])
+  ]);
 
-  const filteredSnapshot = snapshot ? filterPricingSnapshotToActiveModels(snapshot) : null
-  const pageUrl = `${normalizeSiteUrl()}/pricing`
+  const filteredSnapshot = snapshot
+    ? filterPricingSnapshotToActiveModels(snapshot)
+    : null;
+  const pageUrl = `${normalizeSiteUrl()}/pricing`;
 
   return (
     <SiteFrame site={site}>
@@ -59,5 +59,5 @@ export default async function PricingPage() {
         <PricingTable snapshot={filteredSnapshot} />
       </main>
     </SiteFrame>
-  )
+  );
 }

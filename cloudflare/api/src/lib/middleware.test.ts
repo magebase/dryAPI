@@ -104,6 +104,18 @@ describe('verifyApiKeyViaOrigin', () => {
     expect(result).toEqual({ ok: true, quotaKey: 'key_abc123' })
   })
 
+  it('returns principal minuteLimit when verification payload includes rateLimitPerMinute', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ principal: { keyId: 'key_abc123', rateLimitPerMinute: 25 } }),
+    })
+    const c = makeCtx({}, { ORIGIN_URL: 'https://app.test' })
+
+    const result = await verifyApiKeyViaOrigin(c, 'user-token')
+
+    expect(result).toEqual({ ok: true, quotaKey: 'key_abc123', minuteLimit: 25 })
+  })
+
   it('falls back to raw token as quotaKey when principal.keyId is absent', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
@@ -176,7 +188,7 @@ describe('authenticateSessionViaOrigin', () => {
 
     const result = await authenticateSessionViaOrigin(c)
 
-    expect(result).toEqual({ ok: true, quotaKey: 'user@example.com' })
+    expect(result).toEqual({ ok: true, quotaKey: 'user@example.com', creditUserId: 'user@example.com' })
   })
 
   it('returns { ok: false } when session endpoint returns non-2xx', async () => {
@@ -255,7 +267,7 @@ describe('authorizeRequest', () => {
 
     const result = await authorizeRequest(c)
 
-    expect(result).toEqual({ ok: true, quotaKey: 'cookie@example.com' })
+    expect(result).toEqual({ ok: true, quotaKey: 'cookie@example.com', creditUserId: 'cookie@example.com' })
   })
 
   it('returns { ok: false } when no bearer and no cookie', async () => {

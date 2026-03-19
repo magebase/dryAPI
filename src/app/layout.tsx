@@ -1,18 +1,16 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import {
-  IBM_Plex_Mono,
-  Sora,
   Manrope,
   DM_Sans,
   Fira_Code,
-  Geist,
-  Geist_Mono,
 } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { isPwaEnabledServer } from "@/lib/feature-flags";
 import { AosProvider } from "@/components/site/aos-provider";
 import { AppToaster } from "@/components/site/app-toaster";
+import { AppProviders } from "@/components/site/app-providers";
 import { SerwistRegister } from "@/components/site/serwist-register";
 import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
 import "./globals.css";
@@ -63,21 +61,9 @@ const manrope = Manrope({
   variable: "--font-manrope",
 });
 
-export const dynamic = "force-static";
+;
 
 const FALLBACK_SITE_URL = "https://dryapi.dev";
-
-const geist = Geist({
-  subsets: ["latin-ext"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-geist",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin-ext"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-geist-mono",
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig();
@@ -145,6 +131,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "font-manrope",
         "font-dm-sans",
@@ -158,9 +145,13 @@ export default function RootLayout({
         className={`${manrope.variable} ${dmSans.variable} ${firaCode.variable} antialiased`}
       >
         <NuqsAdapter>
-          {pwaEnabled ? <SerwistRegister /> : null}
-          <AosProvider>{children}</AosProvider>
-          <AppToaster />
+          <AppProviders>
+            {pwaEnabled ? <SerwistRegister /> : null}
+            <Suspense fallback={null}>
+              <AosProvider>{children}</AosProvider>
+            </Suspense>
+            <AppToaster />
+          </AppProviders>
         </NuqsAdapter>
       </body>
     </html>

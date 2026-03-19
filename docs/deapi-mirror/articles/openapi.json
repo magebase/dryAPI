@@ -1,18 +1,18 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "deAPI REST API",
+        "title": "dryAPI REST API",
         "description": "Decentralized AI inference API for image generation, video processing, audio transcription, and more.",
         "contact": {
-            "name": "deAPI Support",
-            "url": "https://deapi.ai",
-            "email": "support@deapi.ai"
+            "name": "dryAPI Support",
+            "url": "https://dryapi.dev",
+            "email": "support@dryapi.dev"
         },
         "version": "0.0.1"
     },
     "servers": [
         {
-            "url": "https://api.deapi.ai",
+            "url": "https://api.dryapi.dev",
             "description": "Production API Server base URL"
         }
     ],
@@ -118,7 +118,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -340,7 +340,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -559,7 +559,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -883,7 +883,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -1142,7 +1142,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -1451,7 +1451,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -1663,7 +1663,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -1881,7 +1881,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -2159,7 +2159,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -3398,7 +3398,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -3661,7 +3661,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -3911,7 +3911,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -4189,7 +4189,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -4395,7 +4395,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -4615,7 +4615,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -4844,7 +4844,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -5037,7 +5037,7 @@
                                         "type": "string",
                                         "format": "uri",
                                         "maxLength": 2048,
-                                        "example": "https://your-server.com/webhooks/deapi",
+                                        "example": "https://your-server.com/webhooks/dryapi",
                                         "nullable": true
                                     }
                                 },
@@ -5292,17 +5292,17 @@
                 "title": "Webhook Request Headers",
                 "description": "Headers included in all webhook notification requests. Use these to verify authenticity and process events.",
                 "properties": {
-                    "X-DeAPI-Signature": {
+                    "X-dryAPI-Signature": {
                         "description": "HMAC-SHA256 signature for payload verification. Format: sha256=<hex-encoded-hmac>. Calculate as: HMAC-SHA256(key: webhook_secret, message: timestamp + \".\" + raw_json_payload)",
                         "type": "string",
                         "example": "sha256=5d41402abc4b2a76b9719d911017c592ae3b1e3c8a89f5f8c9d7e6f5a4b3c2d1"
                     },
-                    "X-DeAPI-Timestamp": {
+                    "X-dryAPI-Timestamp": {
                         "description": "Unix timestamp when the webhook was sent. Use for replay attack prevention - reject requests older than 5 minutes.",
                         "type": "integer",
                         "example": 1705315800
                     },
-                    "X-DeAPI-Event": {
+                    "X-dryAPI-Event": {
                         "description": "The type of event that triggered this webhook",
                         "type": "string",
                         "enum": [
@@ -5312,7 +5312,7 @@
                         ],
                         "example": "job.completed"
                     },
-                    "X-DeAPI-Delivery-Id": {
+                    "X-dryAPI-Delivery-Id": {
                         "description": "Unique identifier for this webhook delivery. Use for idempotency handling.",
                         "type": "string",
                         "format": "uuid",
@@ -5495,7 +5495,7 @@
                                 "description": "URL to download the job result",
                                 "type": "string",
                                 "format": "uri",
-                                "example": "https://storage.deapi.ai/results/123e4567-e89b-12d3-a456-426614174000/output.png"
+                                "example": "https://storage.dryapi.dev/results/123e4567-e89b-12d3-a456-426614174000/output.png"
                             },
                             "processing_time_ms": {
                                 "description": "Total processing time in milliseconds",

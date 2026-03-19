@@ -1,0 +1,107 @@
+{
+  "slug": "/cookie-policy",
+  "navLabel": "Cookie Policy",
+  "seoTitle": "Cookie Policy | deAPI",
+  "seoDescription": "Review how deAPI uses cookies and similar technologies for security, authentication, and product analytics.",
+  "pageContent": {
+    "elements": [
+      {
+        "id": "intro-heading",
+        "type": "heading",
+        "text": "Cookie Policy"
+      },
+      {
+        "id": "intro-paragraph",
+        "type": "paragraph",
+        "text": "This policy explains how we use cookies to secure sessions, improve reliability, and measure product performance."
+      },
+      {
+        "id": "intro-link",
+        "type": "link",
+        "text": "Read Privacy Policy",
+        "href": "/privacy-policy"
+      }
+    ]
+  },
+  "hero": {
+    "kicker": "Legal",
+    "heading": "Cookie Policy",
+    "body": "Learn which cookies we set, why they are used, and how your team can manage cookie preferences.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
+    "actions": [
+      {
+        "label": "View Privacy Policy",
+        "href": "/privacy-policy",
+        "style": "solid"
+      },
+      {
+        "label": "Contact Sales",
+        "href": "/contact-sales",
+        "style": "outline"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "categories",
+      "title": "Cookie Categories",
+      "body": "We use a small set of cookie categories to keep product behavior predictable and secure.",
+      "cards": [
+        {
+          "id": "categories-card-1",
+          "title": "Essential Cookies",
+          "description": "Required for authentication, fraud prevention, and secure account access.",
+          "href": "/terms-of-service",
+          "ctaLabel": "Review Terms"
+        },
+        {
+          "id": "categories-card-2",
+          "title": "Preference Cookies",
+          "description": "Store language and interface preferences for a consistent user experience.",
+          "href": "/docs",
+          "ctaLabel": "Explore Docs"
+        },
+        {
+          "id": "categories-card-3",
+          "title": "Analytics Cookies",
+          "description": "Help us understand product usage trends without exposing sensitive payloads.",
+          "href": "/docs/architecture-and-security",
+          "ctaLabel": "Read Security Docs"
+        }
+      ]
+    },
+    {
+      "id": "controls",
+      "title": "Control and Retention",
+      "body": "You can manage cookie behavior in browser settings and with account-level controls where available.",
+      "cards": [
+        {
+          "id": "controls-card-1",
+          "title": "Browser Controls",
+          "description": "Disable or remove cookies through browser privacy settings at any time.",
+          "href": "/privacy-policy",
+          "ctaLabel": "Privacy Details"
+        },
+        {
+          "id": "controls-card-2",
+          "title": "Session Boundaries",
+          "description": "Authentication cookies are scoped to secure session management and expire by policy.",
+          "href": "/service-level-agreement",
+          "ctaLabel": "View SLA"
+        },
+        {
+          "id": "controls-card-3",
+          "title": "Policy Requests",
+          "description": "Contact our team for cookie policy clarifications during legal review.",
+          "href": "/contact-sales",
+          "ctaLabel": "Contact Team"
+        }
+      ]
+    }
+  ],
+  "contactPanel": {
+    "heading": "Need a cookie policy review?",
+    "body": "We can support legal and security teams with implementation-specific policy details.",
+    "responseTime": "Cookie policy questions answered in one business day"
+  }
+}

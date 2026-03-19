@@ -100,7 +100,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
         <div className="mx-auto grid max-w-7xl gap-7 px-4 lg:grid-cols-[0.95fr_1.15fr] lg:items-start">
           <Reveal as="div" className={`${getGradientVariant(1)} rounded-sm border border-slate-200 p-6 md:p-8`}>
             <h2
-              className="font-display text-3xl uppercase tracking-[0.06em] text-slate-900"
+              className="font-display text-3xl uppercase tracking-[0.06em] text-site-strong"
             >
               <KeywordGradientText
                 dataTinaField={page.contactPanel ? tinaField(page.contactPanel, "heading") : undefined}
@@ -123,7 +123,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
                 return (
                   <QuoteAwareLink
                     key={item.href}
-                    className="flex items-start gap-3 transition hover:text-slate-900"
+                    className="flex items-start gap-3 transition hover:text-site-strong"
                     data-tina-field={tinaField(item)}
                     href={item.href}
                   >
@@ -166,7 +166,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
         <div className="mx-auto grid max-w-7xl gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal as="div" className={`${getGradientVariant(3)} rounded-md border border-slate-200 p-6`}>
             <p className="text-xs uppercase tracking-[0.2em] text-primary" data-tina-field={urgentKicker.field}>{urgentKicker.value}</p>
-            <h2 className="mt-3 font-display text-2xl uppercase tracking-[0.06em] text-slate-900">
+            <h2 className="mt-3 font-display text-2xl uppercase tracking-[0.06em] text-site-strong">
               <KeywordGradientText dataTinaField={urgentHeading.field} text={urgentHeading.value} />
             </h2>
             <p className="mt-3 text-sm text-slate-600" data-tina-field={urgentBody.field}>{urgentBody.value}</p>
@@ -180,7 +180,7 @@ export function ContactPageTemplate({ page, site }: ContactPageTemplateProps) {
           </Reveal>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-900" data-tina-field={locationsHeading.field}>{locationsHeading.value}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-site-strong" data-tina-field={locationsHeading.field}>{locationsHeading.value}</p>
             <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600" data-tina-field={locationsSubheading.field}>{locationsSubheading.value}</p>
 
             <div className="mt-7 divide-y divide-white/20 border-b border-t border-slate-300">
