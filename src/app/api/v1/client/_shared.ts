@@ -61,8 +61,10 @@ export function parsePositiveInt(value: string | null, fallback: number, max: nu
 }
 
 export function parseInferenceTypeFilter(searchParams: URLSearchParams): Set<string> {
-  const values = searchParams
-    .getAll("filter[inference_types]")
+  const values = [
+    ...searchParams.getAll("filter[inference_types]"),
+    ...searchParams.getAll("inference_type")
+  ]
     .flatMap((value) => value.split(","))
     .map((value) => value.trim())
     .filter(Boolean)

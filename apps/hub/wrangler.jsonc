@@ -52,13 +52,11 @@
     {
       "binding": "AUTH_DB",
       "database_name": "apiscore-auth-db",
-      "database_id": "00000000-0000-0000-0000-000000001010",
       "migrations_dir": "drizzle/migrations/auth",
     },
     {
       "binding": "ANALYTICS_DB",
       "database_name": "apiscore-analytics-db",
-      "database_id": "00000000-0000-0000-0000-000000001020",
       "migrations_dir": "drizzle/migrations/analytics",
     },
   ],

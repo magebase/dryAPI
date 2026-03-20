@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toRoute } from "@/lib/route";
 import {
   ArrowUpRight,
   type LucideIcon,
@@ -579,7 +580,7 @@ export function ModelsCatalog({ routeBasePath }: ModelsCatalogProps) {
                           size="sm"
                           className="h-9 border-slate-200 bg-transparent text-[11px] font-bold uppercase tracking-wider hover:bg-slate-50 dark:border-zinc-800 dark:hover:bg-zinc-800"
                         >
-                          <Link href={modelCard.detailHref}>Details</Link>
+                          <Link href={toRoute(modelCard.detailHref)}>Details</Link>
                         </Button>
                         <Button
                           asChild
@@ -587,7 +588,7 @@ export function ModelsCatalog({ routeBasePath }: ModelsCatalogProps) {
                           size="sm"
                           className="h-9 text-[11px] font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-zinc-800"
                         >
-                          <Link href={modelCard.pricingHref}>Pricing</Link>
+                          <Link href={toRoute(modelCard.pricingHref)}>Pricing</Link>
                         </Button>
                         <ModelSlugCopyButton
                           modelSlug={modelCard.modelName}

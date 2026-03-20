@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
@@ -18,6 +18,13 @@ describe("resolveAuthInvocationOrigin", () => {
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.restoreAllMocks()
+  })
+
+  beforeEach(() => {
+    // Clear ambient env variables that might be loaded from .env.local
+    vi.stubEnv("BETTER_AUTH_URL", "")
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "")
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "")
   })
 
   it("prefers the configured auth origin over the request host", () => {
