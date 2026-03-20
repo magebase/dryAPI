@@ -11,6 +11,13 @@ type CreateApiKeyInput = {
   metadata?: Record<string, unknown>
 }
 
+type AuthApiWithApiKey = {
+  createApiKey: (input: {
+    method: "POST"
+    body: CreateApiKeyInput
+  }) => Promise<unknown>
+}
+
 type InvokeAuthHandlerInput = {
   request?: Request
   path: string
@@ -103,7 +110,9 @@ export async function invokeAuthHandler<T = unknown>(input: InvokeAuthHandlerInp
 }
 
 export async function createAuthApiKey<T = unknown>(input: CreateApiKeyInput): Promise<T> {
-  return getAuth().api.createApiKey({
+  const authApi = getAuth().api as AuthApiWithApiKey
+
+  return authApi.createApiKey({
     method: "POST",
     body: {
       userId: input.userId,
