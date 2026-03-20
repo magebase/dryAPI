@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import Database from "better-sqlite3"
+import { createClient, type Client as LibsqlClient } from "@libsql/client"
 import { afterEach, describe, expect, it } from "vitest"
 
 import { createHotColdDataLayer } from "@/lib/hot-cold-data-layer"
@@ -9,7 +9,7 @@ class TestD1PreparedStatement {
   private readonly params: unknown[]
 
   constructor(
-    private readonly sqlite: Database,
+    private readonly client: LibsqlClient,
     private readonly query: string,
     params: unknown[] = []
   ) {
@@ -17,28 +17,30 @@ class TestD1PreparedStatement {
   }
 
   bind(...params: unknown[]): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.sqlite, this.query, params)
+    return new TestD1PreparedStatement(this.client, this.query, params)
   }
 
   async run(): Promise<{ success: true }> {
-    this.sqlite.prepare(this.query).run(...this.params)
+    await this.client.execute({ sql: this.query, args: this.params })
     return { success: true }
   }
 
   async all<T>(): Promise<{ results: T[] }> {
-    const results = this.sqlite.prepare(this.query).all(...this.params) as unknown as T[]
-    return { results }
+    const rs = await this.client.execute({ sql: this.query, args: this.params })
+    return { results: rs.rows as unknown as T[] }
   }
 
   async first<T>(columnName?: string): Promise<T | null> {
-    const row = this.sqlite.prepare(this.query).get(...this.params) as Record<string, unknown> | undefined
+    const rs = await this.client.execute({ sql: this.query, args: this.params })
+    const row = rs.rows[0] as Record<string, unknown> | undefined
 
     if (!row) {
       return null
     }
 
     if (columnName) {
-      return (row[columnName] as T) ?? null
+      const val = row[columnName]
+      return (val === undefined ? null : (val as T)) ?? null
     }
 
     return row as unknown as T
@@ -46,10 +48,10 @@ class TestD1PreparedStatement {
 }
 
 class TestD1Database {
-  constructor(private readonly sqlite: Database) {}
+  constructor(private readonly client: LibsqlClient) {}
 
   prepare(query: string): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.sqlite, query)
+    return new TestD1PreparedStatement(this.client, query)
   }
 }
 
@@ -83,13 +85,13 @@ class MemoryObjectStore {
   }
 }
 
-const sqliteHandles: Database[] = []
+const clientHandles: LibsqlClient[] = []
 
 function createLayer() {
-  const sqlite = new Database(":memory:")
-  sqliteHandles.push(sqlite)
+  const client = createClient({ url: ":memory:" })
+  clientHandles.push(client)
 
-  const db = new TestD1Database(sqlite)
+  const db = new TestD1Database(client)
   const objectStore = new MemoryObjectStore()
   const layer = createHotColdDataLayer({
     db,
@@ -100,13 +102,13 @@ function createLayer() {
   return {
     layer,
     objectStore,
-    sqlite,
+    client,
   }
 }
 
-afterEach(() => {
-  for (const sqlite of sqliteHandles.splice(0)) {
-    sqlite.close()
+afterEach(async () => {
+  for (const client of clientHandles.splice(0)) {
+    client.close()
   }
 })
 
@@ -154,7 +156,7 @@ describe("createHotColdDataLayer", () => {
   })
 
   it("retries failed outbox writes with backoff metadata", async () => {
-    const { layer, objectStore, sqlite } = createLayer()
+    const { layer, objectStore, client } = createLayer()
     await layer.ensureTables()
 
     await layer.archiveEntityToCold({
@@ -170,13 +172,12 @@ describe("createHotColdDataLayer", () => {
     expect(firstFlush.failed).toBe(1)
     expect(await layer.getPendingOutboxCount()).toBe(1)
 
-    const attemptCount = sqlite
-      .prepare("SELECT attempt_count AS attemptCount FROM hot_cold_outbox LIMIT 1")
-      .get() as { attemptCount: number }
+    const rs = await client.execute("SELECT attempt_count AS attemptCount FROM hot_cold_outbox LIMIT 1")
+    const attemptCount = rs.rows[0] as unknown as { attemptCount: number }
 
     expect(attemptCount.attemptCount).toBe(1)
 
-    sqlite.prepare("UPDATE hot_cold_outbox SET available_at = 0").run()
+    await client.execute("UPDATE hot_cold_outbox SET available_at = 0")
 
     const secondFlush = await layer.flushOutboxBatch()
     expect(secondFlush.succeeded).toBe(1)
