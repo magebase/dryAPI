@@ -5,7 +5,7 @@ import path from "node:path"
 
 
 
-const openApiJsonPath = path.join(process.cwd(), "docs", "deapi-mirror", "articles", "openapi.hono.json")
+const openApiJsonPath = path.join("docs", "deapi-mirror", "articles", "openapi.hono.json")
 const outputDir = path.join(process.cwd(), "src", "content", "v1", "api-reference")
 const outputBaseUrl = "/docs/v1/api-reference"
 const defaultOpenApiUrl = process.env.HONO_OPENAPI_URL ?? "http://127.0.0.1:8787/openapi.json"
