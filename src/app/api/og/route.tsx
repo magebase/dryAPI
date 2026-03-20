@@ -11,7 +11,7 @@ import {
 } from "@/lib/og/metadata"
 import { renderTakumiOgTemplate } from "@/lib/og/templates"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 const CACHE_CONTROL = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
