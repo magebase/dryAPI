@@ -247,7 +247,24 @@ jobs:
           fi
 
       - name: Deploy to Cloudflare Workers
-        run: pnpm cf:deploy
+        run: |
+          set -euo pipefail
+
+          max_attempts=3
+          for attempt in $(seq 1 ${max_attempts}); do
+            if pnpm cf:deploy; then
+              exit 0
+            fi
+
+            if [[ "${attempt}" -eq "${max_attempts}" ]]; then
+              echo "Cloudflare deploy failed after ${max_attempts} attempts."
+              exit 1
+            fi
+
+            sleep_seconds=$(( attempt * 20 ))
+            echo "Cloudflare deploy attempt ${attempt}/${max_attempts} failed; retrying in ${sleep_seconds}s..."
+            sleep "${sleep_seconds}"
+          done
 
   deploy-hub:
     runs-on: ubuntu-latest
@@ -311,7 +328,24 @@ jobs:
           fi
 
       - name: Deploy hub to Cloudflare Workers
-        run: pnpm cf:deploy
+        run: |
+          set -euo pipefail
+
+          max_attempts=3
+          for attempt in $(seq 1 ${max_attempts}); do
+            if pnpm cf:deploy; then
+              exit 0
+            fi
+
+            if [[ "${attempt}" -eq "${max_attempts}" ]]; then
+              echo "Hub deploy failed after ${max_attempts} attempts."
+              exit 1
+            fi
+
+            sleep_seconds=$(( attempt * 20 ))
+            echo "Hub deploy attempt ${attempt}/${max_attempts} failed; retrying in ${sleep_seconds}s..."
+            sleep "${sleep_seconds}"
+          done
 
   test-hub:
     runs-on: ubuntu-latest
