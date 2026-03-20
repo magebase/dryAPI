@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { Zap } from "lucide-react"
 
+import { toRoute } from "@/lib/route"
+
 type TryModelCtaProps = {
   modelDisplayName: string
   playgroundHref: string
@@ -20,7 +22,7 @@ export function TryModelCta({ modelDisplayName, playgroundHref, className }: Try
         </div>
         <Link
           className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-md bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-1.5 text-xs font-semibold text-site-strong shadow-sm transition hover:brightness-105 sm:self-auto"
-          href={playgroundHref}
+          href={toRoute(playgroundHref)}
         >
           <Zap className="size-3.5" />
           Try {modelDisplayName}
