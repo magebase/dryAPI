@@ -29,7 +29,7 @@ const DEFAULT_BATCH_POLICY: RunpodBatchQueuePolicy = {
 }
 
 const DEFAULT_POLICIES_BY_MODEL: Record<string, RunpodBatchQueuePolicy> = {
-  Bge_M3_FP16: {
+  Bge_M3_INT8: {
     batchWindowSeconds: 1,
     maxBatchSize: 100,
     queueEnabled: true,

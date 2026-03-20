@@ -577,7 +577,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Bge_M3_FP16",
+        model: "Bge_M3_INT8",
         input: "integration test embedding",
       }),
     });
@@ -591,14 +591,14 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
   it("supports queue-first enqueue with stable client job id and batch policy headers", async () => {
     workerEnv.RUNPOD_BATCH_QUEUE_ENABLED = "1";
     workerEnv.RUNPOD_BATCHING_CONFIG_JSON = JSON.stringify({
-      Bge_M3_FP16: { batchWindowSeconds: 1, maxBatchSize: 100, queueEnabled: true },
+      Bge_M3_INT8: { batchWindowSeconds: 1, maxBatchSize: 100, queueEnabled: true },
     });
 
     const response = await SELF.fetch(`${BASE_URL}/v1/embeddings`, {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Bge_M3_FP16",
+        model: "Bge_M3_INT8",
         input: "queue-first embedding job",
       }),
     });
@@ -753,7 +753,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Bge_M3_FP16",
+        model: "Bge_M3_INT8",
         input: {
           input: ["hello integration"],
         },

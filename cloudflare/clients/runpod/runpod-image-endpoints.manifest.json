@@ -62,10 +62,10 @@
       }
     },
     {
-      "endpointId": "bge-m3-fp16",
-      "endpointName": "bge-m3-fp16",
+      "endpointId": "bge-m3-int8",
+      "endpointName": "bge-m3-int8",
       "sourceModel": {
-        "slug": "Bge_M3_FP16",
+        "slug": "Bge_M3_INT8",
         "displayName": "BGE M3 ONNX INT8",
         "tasks": [
           "txt2embedding"
@@ -100,7 +100,7 @@
         "templateIdEnv": "RUNPOD_TEMPLATE_ID_EMBEDDINGS_TEXT"
       },
       "endpointEnvironment": {
-        "MODEL_SLUG": "Bge_M3_FP16",
+        "MODEL_SLUG": "Bge_M3_INT8",
         "MODEL_DISPLAY_NAME": "BGE M3 ONNX INT8",
         "MODEL_TASKS": "txt2embedding",
         "MODEL_HUGGINGFACE_MODEL": "gpahal/bge-m3-onnx-int8",

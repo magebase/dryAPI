@@ -34,7 +34,7 @@ const RUNPOD_ENDPOINT_PROFILES = {
   all: null,
   serverless10: [
     "acestep-1-5-turbo",
-    "bge-m3-fp16",
+    "bge-m3-int8",
     "ben2",
     "flux-2-klein-4b-bf16",
     "ltx2-3-22b-dist-int8",

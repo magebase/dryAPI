@@ -69,7 +69,7 @@ describe('OpenAI-compatible surface routes', () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
-        model: 'Bge_M3_FP16',
+        model: 'Bge_M3_INT8',
         job_id: uniqueId('emb'),
         input: 'cold start mitigation for serverless GPUs',
       },
@@ -85,7 +85,7 @@ describe('OpenAI-compatible surface routes', () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
-        model: 'Bge_M3_FP16',
+        model: 'Bge_M3_INT8',
         job_id: uniqueId('embbatch'),
         input: ['queue depth', 'latency', 'cost controls'],
       },

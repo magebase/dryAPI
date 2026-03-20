@@ -107,11 +107,11 @@
     },
     {
       "kind": "runpod.serverless.endpoint.create",
-      "endpointId": "bge-m3-fp16",
-      "endpointName": "bge-m3-fp16",
+      "endpointId": "bge-m3-int8",
+      "endpointName": "bge-m3-int8",
       "templateIdEnv": "RUNPOD_TEMPLATE_ID_EMBEDDINGS_TEXT",
       "payloadTemplate": {
-        "name": "bge-m3-fp16",
+        "name": "bge-m3-int8",
         "templateId": "${RUNPOD_TEMPLATE_ID_EMBEDDINGS_TEXT}",
         "gpuType": "NVIDIA L4",
         "gpuTypes": [
@@ -129,7 +129,7 @@
         "env": [
           {
             "key": "MODEL_SLUG",
-            "value": "Bge_M3_FP16"
+            "value": "Bge_M3_INT8"
           },
           {
             "key": "MODEL_DISPLAY_NAME",
@@ -198,7 +198,7 @@
         ]
       },
       "sourceModel": {
-        "slug": "Bge_M3_FP16",
+        "slug": "Bge_M3_INT8",
         "displayName": "BGE M3 ONNX INT8",
         "tasks": [
           "txt2embedding"

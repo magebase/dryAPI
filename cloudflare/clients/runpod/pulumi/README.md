@@ -85,7 +85,7 @@ Optional environment variables:
 Pulumi stack config option:
 
 - `runpod-image-endpoints:endpointProfile=serverless10` (default) deploys 10 fixed endpoints:
-- `acestep-1-5-turbo`, `bge-m3-fp16`, `ben2`, `flux-2-klein-4b-bf16`, `ltx2-3-22b-dist-int8`
+- `acestep-1-5-turbo`, `bge-m3-int8`, `ben2`, `flux-2-klein-4b-bf16`, `ltx2-3-22b-dist-int8`
 - `nanonets-ocr-s-f16`, `qwen3-tts-12hz-1-7b-customvoice`, `realesrgan-x4`, `whisperlargev3`
 - `zimageturbo-int8`
 - `runpod-image-endpoints:endpointProfile=all` deploys all endpoints from the manifest.

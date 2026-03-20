@@ -105,8 +105,8 @@ RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.94,0.98,1.00,1.03,1.07"
 RUNPOD_PRICING_CONFIG_JSON = ""
 RUNPOD_BATCH_QUEUE_ENABLED = "1"
 # Optional per-model queue batching overrides.
-# RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true}}'
-RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
+# RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_INT8":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true}}'
+RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_INT8":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
 RUNPOD_QUEUE_METRICS_RETENTION_HOURS = "48"
 RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS = "900"
 
@@ -192,7 +192,7 @@ RUNPOD_PRICING_BANDIT_MAX_STEP_DOWN_PCT = "0.08"
 RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.94,0.98,1.00,1.03,1.07"
 RUNPOD_PRICING_CONFIG_JSON = ""
 RUNPOD_BATCH_QUEUE_ENABLED = "1"
-RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
+RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_INT8":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
 RUNPOD_QUEUE_METRICS_RETENTION_HOURS = "48"
 RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS = "900"
 
@@ -262,7 +262,7 @@ RUNPOD_PRICING_BANDIT_MAX_STEP_DOWN_PCT = "0.08"
 RUNPOD_PRICING_BANDIT_ARMS_CSV = "0.94,0.98,1.00,1.03,1.07"
 RUNPOD_PRICING_CONFIG_JSON = ""
 RUNPOD_BATCH_QUEUE_ENABLED = "0"
-RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_FP16":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
+RUNPOD_BATCHING_CONFIG_JSON = '{"Bge_M3_INT8":{"batchWindowSeconds":1,"maxBatchSize":100,"queueEnabled":true},"Ben2":{"batchWindowSeconds":3,"maxBatchSize":50,"queueEnabled":true},"RealESRGAN_x4plus":{"batchWindowSeconds":3,"maxBatchSize":25,"queueEnabled":true},"Nanonets_Ocr_S_F16":{"batchWindowSeconds":5,"maxBatchSize":15,"queueEnabled":true},"ZImageTurbo_INT8":{"batchWindowSeconds":2,"maxBatchSize":20,"queueEnabled":true},"Ltx2_3_22B_Dist_INT8":{"batchWindowSeconds":20,"maxBatchSize":8,"queueEnabled":true},"Qwen3_TTS_12Hz_1_7B_CustomVoice":{"batchWindowSeconds":0,"maxBatchSize":1,"queueEnabled":false}}'
 RUNPOD_QUEUE_METRICS_RETENTION_HOURS = "48"
 RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS = "900"
 
