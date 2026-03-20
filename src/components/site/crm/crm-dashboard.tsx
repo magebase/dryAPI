@@ -236,7 +236,7 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
           <CardHeader className="gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-[#ff8b2b] text-black">CRM</Badge>
-              <Badge variant="outline">crm.genfix.com.au</Badge>
+              <Badge variant="outline">crm.dryapi.dev</Badge>
               <Badge variant="outline">Updated {generatedAt}</Badge>
             </div>
             <CardTitle className="text-2xl tracking-tight md:text-3xl">GenFix Revenue Console</CardTitle>

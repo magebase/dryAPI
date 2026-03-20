@@ -65,32 +65,11 @@ function getJwks(teamDomain: string) {
   return jwks
 }
 
-function getConfig(): CloudflareAccessConfig | CloudflareAccessFailure | null {
+function getConfig(): CloudflareAccessConfig | CloudflareAccessFailure {
   const teamDomainRaw = process.env.CLOUDFLARE_ACCESS_TEAM_DOMAIN
   const audRaw = process.env.CLOUDFLARE_ACCESS_AUD
   const allowedEmailsRaw = process.env.TINA_ALLOWED_GOOGLE_EMAILS
   const allowedDomainsRaw = process.env.TINA_ALLOWED_GOOGLE_DOMAINS
-
-  const isProduction = process.env.NODE_ENV === "production"
-  const hasAnyConfig =
-    Boolean(teamDomainRaw) ||
-    Boolean(audRaw) ||
-    Boolean(allowedEmailsRaw) ||
-    Boolean(allowedDomainsRaw)
-
-  if (!hasAnyConfig) {
-    if (isProduction) {
-      return {
-        ok: false,
-        status: 500,
-        error:
-          "Cloudflare Zero Trust is not configured for TinaCMS routes. Set CLOUDFLARE_ACCESS_TEAM_DOMAIN, CLOUDFLARE_ACCESS_AUD, and at least one allowlist variable.",
-      }
-    }
-
-    // Local development can run without Cloudflare Access.
-    return null
-  }
 
   if (!teamDomainRaw || !audRaw) {
     return {
@@ -170,14 +149,6 @@ function getTokenFromRequest(request: Request): string | null {
 
 export async function verifyCloudflareAccess(request: Request): Promise<CloudflareAccessResult> {
   const config = getConfig()
-
-  if (config === null) {
-    return {
-      ok: true,
-      email: "local-dev-bypass@example.local",
-      payload: {},
-    }
-  }
 
   if (isFailureConfig(config)) {
     return config

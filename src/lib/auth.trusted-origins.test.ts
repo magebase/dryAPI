@@ -4,26 +4,26 @@ import { resolveTrustedOrigins } from "@/lib/auth"
 
 describe("resolveTrustedOrigins", () => {
   it("removes loopback origins in production", () => {
-    const trusted = resolveTrustedOrigins("https://genfix.com.au", {
+    const trusted = resolveTrustedOrigins("https://dryapi.dev", {
       nodeEnv: "production",
-      trustedOriginsEnv: "http://localhost:3000,https://admin.genfix.com.au",
+      trustedOriginsEnv: "http://localhost:3000,https://admin.dryapi.dev",
     })
 
     expect(trusted).not.toContain("http://localhost:3000")
     expect(trusted).not.toContain("http://127.0.0.1:3000")
-    expect(trusted).toContain("https://genfix.com.au")
-    expect(trusted).toContain("https://admin.genfix.com.au")
+    expect(trusted).toContain("https://dryapi.dev")
+    expect(trusted).toContain("https://admin.dryapi.dev")
   })
 
-  it("removes loopback origins for deployed genfix domains even outside production", () => {
-    const trusted = resolveTrustedOrigins("https://preview.genfix.com.au", {
+  it("removes loopback origins for deployed dryapi domains even outside production", () => {
+    const trusted = resolveTrustedOrigins("https://preview.dryapi.dev", {
       nodeEnv: "development",
       trustedOriginsEnv: "http://localhost:3000,https://partner.example.com",
     })
 
     expect(trusted).not.toContain("http://localhost:3000")
     expect(trusted).not.toContain("http://127.0.0.1:3000")
-    expect(trusted).toContain("https://preview.genfix.com.au")
+    expect(trusted).toContain("https://preview.dryapi.dev")
     expect(trusted).toContain("https://partner.example.com")
   })
 

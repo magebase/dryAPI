@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { verifyCloudflareAccess } from "@/lib/cloudflare-access";
-import { uploadFileToR2 } from "@/lib/r2-storage";
+import { uploadFileToR2WithOptions } from "@/lib/r2-storage";
 
 export async function POST(request: Request) {
   const auth = await verifyCloudflareAccess(request);
@@ -11,12 +11,21 @@ export async function POST(request: Request) {
 
   const data = await request.formData();
   const file = data.get("file");
+  const directory = data.get("directory");
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
 
-  const uploaded = await uploadFileToR2(file);
+  let uploaded
+  try {
+    uploaded = await uploadFileToR2WithOptions(file, {
+      directory: typeof directory === "string" ? directory : "",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid media directory."
+    return NextResponse.json({ error: message }, { status: 400 })
+  }
 
   if (!uploaded) {
     return NextResponse.json(
@@ -32,7 +41,7 @@ export async function POST(request: Request) {
     id: uploaded.key,
     type: "file",
     filename: file.name,
-    directory: "",
+    directory: uploaded.directory,
     src: uploaded.url,
     thumbnails: {
       "75x75": uploaded.url,

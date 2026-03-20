@@ -1,21 +1,28 @@
 #!/usr/bin/env node
 // @ts-nocheck
 
+import { config as loadDotenv } from "dotenv"
 import { spawnSync } from "node:child_process"
+
+import {
+  buildZeroTrustRouteDefinitions,
+  normalizeHost,
+  resolveBrandSiteHost,
+} from "./lib/cf-zero-trust"
+
+loadDotenv({ path: ".env" })
 
 function usage() {
   console.log(`Usage:
-  tsx scripts/cf-zero-trust-admin-provision.ts --site-host <host> --cal-host <host> [options]
+  tsx scripts/cf-zero-trust-admin-provision.ts --brand-key <brand-key> --cal-host <host> [options]
 
 Example:
   tsx scripts/cf-zero-trust-admin-provision.ts \
-    --site-host genfix.com.au \
-    --cal-host cal.genfix.com.au \
-    --crm-host crm.genfix.com.au \
-    --allow-emails editor@example.com,owner@example.com
+    --brand-key dryapi \
+    --cal-host cal.dryapi.dev \
+    --allow-emails editor@dryapi.dev,owner@dryapi.dev
 
 Required:
-  --site-host <host>     Public site hostname (for Tina admin/API routes)
   --cal-host <host>      Cal.com hostname (for Cal admin routes)
 
 Allowlist (required: at least one):
@@ -23,25 +30,29 @@ Allowlist (required: at least one):
   --allow-domains <csv>  Email domain allowlist for Access policy
 
 Optional:
+  --brand-key <key>      Brand key from content/site/brands.json (defaults to SITE_BRAND_KEY or dryAPI)
+  --site-host <host>     Override public site hostname from the brand catalog
   --crm-host <host>      CRM hostname (default: crm.<site-host>)
-  --policy-name <name>   Access policy name (default: GenFix Zero Trust allowlist)
+  --policy-name <name>   Access policy name (default: <brand> Zero Trust allowlist)
   --dry-run              Print planned actions without writing changes
   -h, --help             Show this help
 
 Environment:
   CLOUDFLARE_API_TOKEN or CF_API_TOKEN
   CLOUDFLARE_ACCOUNT_ID or CF_ACCOUNT_ID (auto-resolved via wrangler when omitted)
+  SITE_BRAND_KEY or DRYAPI_BRAND_KEY (used when --brand-key is omitted)
 `)
 }
 
 function parseArgs(argv) {
   const args = {
+    brandKey: "",
     siteHost: "",
     calHost: "",
     crmHost: "",
     allowEmails: "",
     allowDomains: "",
-    policyName: "GenFix Zero Trust allowlist",
+    policyName: "",
     dryRun: false,
   }
 
@@ -61,6 +72,12 @@ function parseArgs(argv) {
     const next = argv[index + 1]
     if (!next) {
       throw new Error(`Missing value for ${value}`)
+    }
+
+    if (value === "--brand-key") {
+      args.brandKey = next
+      index += 1
+      continue
     }
 
     if (value === "--site-host") {
@@ -114,10 +131,6 @@ function parseCsv(value) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean)
-}
-
-function normalizeHost(host) {
-  return host.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "")
 }
 
 function ensureHost(host, flagName) {
@@ -335,83 +348,6 @@ function buildIncludeRules({ emails, domains }) {
   return rules
 }
 
-function buildRouteDefinitions(siteHost, calHost, crmHost) {
-  return [
-    {
-      key: "tina-admin-root",
-      domain: `${siteHost}/admin`,
-      name: "GenFix Tina Admin (/admin)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "tina-admin-index",
-      domain: `${siteHost}/admin/index.html`,
-      name: "GenFix Tina Admin (/admin/index.html)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "tina-api-tina-prefix",
-      domain: `${siteHost}/api/tina/*`,
-      name: "GenFix Tina API (/api/tina/*)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "tina-api-cms",
-      domain: `${siteHost}/api/cms/*`,
-      name: "GenFix CMS API (/api/cms/*)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "tina-api-media",
-      domain: `${siteHost}/api/media/*`,
-      name: "GenFix Media API (/api/media/*)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "tina-api-verify-zjwt",
-      domain: `${siteHost}/api/verify-zjwt`,
-      name: "GenFix Verify ZJWT (/api/verify-zjwt)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "cal-admin-root",
-      domain: `${calHost}/admin`,
-      name: "GenFix Cal Admin (/admin)",
-      includeInOriginAud: false,
-    },
-    {
-      key: "cal-admin-prefix",
-      domain: `${calHost}/admin/*`,
-      name: "GenFix Cal Admin (/admin/*)",
-      includeInOriginAud: false,
-    },
-    {
-      key: "cal-apps-admin-root",
-      domain: `${calHost}/apps/admin`,
-      name: "GenFix Cal Admin (/apps/admin)",
-      includeInOriginAud: false,
-    },
-    {
-      key: "cal-apps-admin-prefix",
-      domain: `${calHost}/apps/admin/*`,
-      name: "GenFix Cal Admin (/apps/admin/*)",
-      includeInOriginAud: false,
-    },
-    {
-      key: "crm-root",
-      domain: crmHost,
-      name: "GenFix CRM (root)",
-      includeInOriginAud: true,
-    },
-    {
-      key: "crm-prefix",
-      domain: `${crmHost}/*`,
-      name: "GenFix CRM (all paths)",
-      includeInOriginAud: true,
-    },
-  ]
-}
-
 async function getTeamDomain({ token, accountId, dryRun }) {
   if (dryRun) {
     return "dry-run.cloudflareaccess.com"
@@ -434,9 +370,17 @@ async function getTeamDomain({ token, accountId, dryRun }) {
 async function main() {
   const args = parseArgs(process.argv.slice(2))
 
-  const siteHost = ensureHost(args.siteHost, "--site-host")
+  const brandKey = args.brandKey || process.env.SITE_BRAND_KEY || process.env.DRYAPI_BRAND_KEY || ""
+  const resolvedBrand = await resolveBrandSiteHost({
+    brandKey,
+    siteHost: args.siteHost || undefined,
+  })
+
+  const siteHost = resolvedBrand.siteHost
+  const brandLabel = resolvedBrand.brand.displayName
   const calHost = ensureHost(args.calHost, "--cal-host")
   const crmHost = ensureHost(args.crmHost || `crm.${siteHost}`, "--crm-host")
+  const policyName = args.policyName || `${brandLabel} Zero Trust allowlist`
 
   const token =
     process.env.CLOUDFLARE_API_TOKEN?.trim() || process.env.CF_API_TOKEN?.trim() || ""
@@ -467,10 +411,16 @@ async function main() {
   }
 
   const includeRules = buildIncludeRules({ emails: allowEmails, domains: allowDomains })
-  const routes = buildRouteDefinitions(siteHost, calHost, crmHost)
+  const routes = buildZeroTrustRouteDefinitions({
+    brandLabel,
+    siteHost,
+    calHost,
+    crmHost,
+  })
   const legacyRouteDomains = [`${siteHost}/api/tina/gql`]
 
   console.log(`Using account_id=${accountId}`)
+  console.log(`Brand=${brandLabel}${brandKey ? ` (${brandKey})` : ""}`)
   console.log(`Site host=${siteHost}`)
   console.log(`Cal host=${calHost}`)
   console.log(`CRM host=${crmHost}`)
@@ -503,7 +453,7 @@ async function main() {
       token,
       accountId,
       appId: app.id,
-      policyName: args.policyName,
+      policyName,
       includeRules,
       dryRun: args.dryRun,
     })

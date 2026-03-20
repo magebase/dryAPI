@@ -56,7 +56,7 @@ const pageElementFields = [
   { name: "src", label: "Image", type: "image" },
 ]
 
-const contentApiUrlOverride = process.env.NEXT_PUBLIC_TINA_CONTENT_API_URL || "/api/tina/gql"
+const contentApiUrlOverride = process.env.NEXT_PUBLIC_TINA_CONTENT_API_URL || "/admin/api/tina/gql"
 
 export default defineConfig({
   branch,

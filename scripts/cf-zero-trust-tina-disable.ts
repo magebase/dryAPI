@@ -1,30 +1,39 @@
 #!/usr/bin/env node
 // @ts-nocheck
 
+import { config as loadDotenv } from "dotenv"
 import { spawnSync } from "node:child_process"
+
+import { buildTinaProtectedDomains, normalizeHost, resolveBrandSiteHost } from "./lib/cf-zero-trust"
+
+loadDotenv({ path: ".env" })
 
 function usage() {
   console.log(`Usage:
-  tsx scripts/cf-zero-trust-tina-disable.ts --site-host <host> [options]
+  tsx scripts/cf-zero-trust-tina-disable.ts --brand-key <brand-key> [options]
 
 Example:
-  tsx scripts/cf-zero-trust-tina-disable.ts --site-host genfix.com.au
+  tsx scripts/cf-zero-trust-tina-disable.ts --brand-key dryapi
 
 Required:
-  --site-host <host>     Public site hostname where Tina routes are served
+  --brand-key <key>      Brand key from content/site/brands.json (defaults to SITE_BRAND_KEY or dryAPI)
 
 Optional:
+  --site-host <host>     Override public site hostname from the brand catalog
+
   --dry-run              Print planned deletions without API changes
   -h, --help             Show this help
 
 Environment:
   CLOUDFLARE_API_TOKEN or CF_API_TOKEN
   CLOUDFLARE_ACCOUNT_ID or CF_ACCOUNT_ID (auto-resolved via wrangler when omitted)
+  SITE_BRAND_KEY or DRYAPI_BRAND_KEY (used when --brand-key is omitted)
 `)
 }
 
 function parseArgs(argv) {
   const args = {
+    brandKey: "",
     siteHost: "",
     dryRun: false,
   }
@@ -47,6 +56,12 @@ function parseArgs(argv) {
       throw new Error(`Missing value for ${value}`)
     }
 
+    if (value === "--brand-key") {
+      args.brandKey = next
+      index += 1
+      continue
+    }
+
     if (value === "--site-host") {
       args.siteHost = next
       index += 1
@@ -57,10 +72,6 @@ function parseArgs(argv) {
   }
 
   return args
-}
-
-function normalizeHost(host) {
-  return host.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "")
 }
 
 function ensureHost(host, flagName) {
@@ -182,21 +193,16 @@ async function deleteAccessAppsByDomains({ token, accountId, domains, dryRun }) 
   return deletedCount
 }
 
-function buildTinaDomains(siteHost) {
-  return [
-    `${siteHost}/admin`,
-    `${siteHost}/admin/index.html`,
-    `${siteHost}/api/tina/*`,
-    `${siteHost}/api/tina/gql`,
-    `${siteHost}/api/cms/*`,
-    `${siteHost}/api/media/*`,
-    `${siteHost}/api/verify-zjwt`,
-  ]
-}
-
 async function main() {
   const args = parseArgs(process.argv.slice(2))
-  const siteHost = ensureHost(args.siteHost, "--site-host")
+  const brandKey = args.brandKey || process.env.SITE_BRAND_KEY || process.env.DRYAPI_BRAND_KEY || ""
+  const resolvedBrand = await resolveBrandSiteHost({
+    brandKey,
+    siteHost: args.siteHost || undefined,
+  })
+
+  const siteHost = resolvedBrand.siteHost
+  const routes = buildTinaProtectedDomains(siteHost)
 
   const token =
     process.env.CLOUDFLARE_API_TOKEN?.trim() || process.env.CF_API_TOKEN?.trim() || ""
@@ -215,9 +221,10 @@ async function main() {
     )
   }
 
-  const domains = buildTinaDomains(siteHost)
+  const domains = routes
 
   console.log(`Using account_id=${accountId}`)
+  console.log(`Brand=${resolvedBrand.brand.displayName}${brandKey ? ` (${brandKey})` : ""}`)
   console.log(`Site host=${siteHost}`)
   console.log(`Mode=${args.dryRun ? "dry-run" : "apply"}`)
 

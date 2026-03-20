@@ -6,15 +6,19 @@ import {
   verifyCloudflareAccess,
 } from "@/lib/cloudflare-access"
 import {
+  isAdminApiProxyPath,
+  isCloudflareAccessProtectedPath,
+  toBackendApiPathFromAdminProxy,
+} from "@/lib/cloudflare-access-paths"
+import {
   createAuthTraceId,
   logServerAuthEvent,
   summarizeCookieHeader,
 } from "@/lib/auth-debug"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 
-const PROTECTED_PREFIXES = ["/crm", "/api/cms", "/api/crm", "/api/media"]
 const SUCCESS_PATH = "/success"
-const CRM_HOSTNAMES = new Set(["crm.genfix.com.au", "www.crm.genfix.com.au"])
+const CRM_HOSTNAMES = new Set(["crm.dryapi.dev", "www.crm.dryapi.dev"])
 const DASHBOARD_PREFIX = "/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
@@ -55,13 +59,12 @@ function resolveCrmPath(pathname: string): string {
   return "/crm"
 }
 
-function isProtectedPath(pathname: string) {
-  if (pathname === "/api/verify-zjwt") {
-    return true
-  }
-
-  return PROTECTED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+function isCrmProtectedPath(pathname: string): boolean {
+  return (
+    pathname === "/crm"
+    || pathname.startsWith("/crm/")
+    || pathname === "/api/crm"
+    || pathname.startsWith("/api/crm/")
   )
 }
 
@@ -436,6 +439,17 @@ export async function middleware(request: NextRequest) {
 
   const hostname = normalizeHostname(request.headers.get("x-forwarded-host") || request.headers.get("host"))
 
+  if (isAdminApiProxyPath(request.nextUrl.pathname)) {
+    const auth = await verifyCloudflareAccess(request)
+    if (!auth.ok) {
+      return createCloudflareAccessErrorResponse(request.nextUrl.pathname, auth)
+    }
+
+    const rewriteUrl = request.nextUrl.clone()
+    rewriteUrl.pathname = toBackendApiPathFromAdminProxy(request.nextUrl.pathname)
+    return NextResponse.rewrite(rewriteUrl)
+  }
+
   if (isCrmHostname(hostname) && !isBypassRewritePath(request.nextUrl.pathname)) {
     const crmUrl = request.nextUrl.clone()
     const crmPath = resolveCrmPath(request.nextUrl.pathname)
@@ -453,7 +467,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(crmUrl)
   }
 
-  if (!isProtectedPath(request.nextUrl.pathname)) {
+  if (!isCloudflareAccessProtectedPath(request.nextUrl.pathname) && !isCrmProtectedPath(request.nextUrl.pathname)) {
     return NextResponse.next()
   }
 
@@ -469,6 +483,9 @@ export const config = {
   matcher: [
     // Avoid running middleware/proxy on static assets and framework internals.
     "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|sw.js|.*\\..*).*)",
+    "/admin",
+    "/admin/:path*",
+    "/admin/index.html",
     "/ADMIN/INDEX.HTML",
   ],
 }

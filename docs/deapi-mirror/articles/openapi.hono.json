@@ -547,10 +547,10 @@
                     "type": "string",
                     "description": "Active embeddings model slug used for OpenAI-compatible embedding routing.",
                     "examples": [
-                      "Bge_M3_FP16"
+                      "Bge_M3_INT8"
                     ],
                     "enum": [
-                      "Bge_M3_FP16"
+                      "Bge_M3_INT8"
                     ]
                   },
                   "input": {
@@ -1034,12 +1034,12 @@
               "examples": [
                 "AceStep_1_5_Turbo",
                 "Ben2",
-                "Bge_M3_FP16"
+                "Bge_M3_INT8"
               ],
               "enum": [
                 "AceStep_1_5_Turbo",
                 "Ben2",
-                "Bge_M3_FP16",
+                "Bge_M3_INT8",
                 "Flux_2_Klein_4B_BF16",
                 "Ltx2_3_22B_Dist_INT8",
                 "Nanonets_Ocr_S_F16",
@@ -1163,6 +1163,23 @@
         "responses": {
           "200": {
             "description": "Dynamic batch scaling table and queue summary."
+          }
+        }
+      }
+    },
+    "/v1/internal/test/seed-credits": {
+      "post": {
+        "operationId": "postV1InternalTestSeedCredits",
+        "tags": [
+          "Internal"
+        ],
+        "summary": "Seed credits for a test user (E2E only)",
+        "responses": {
+          "200": {
+            "description": "Credits seeded successfully"
+          },
+          "403": {
+            "description": "Forbidden in production"
           }
         }
       }
@@ -1341,12 +1358,12 @@
                     "examples": [
                       "AceStep_1_5_Turbo",
                       "Ben2",
-                      "Bge_M3_FP16"
+                      "Bge_M3_INT8"
                     ],
                     "enum": [
                       "AceStep_1_5_Turbo",
                       "Ben2",
-                      "Bge_M3_FP16",
+                      "Bge_M3_INT8",
                       "Flux_2_Klein_4B_BF16",
                       "Ltx2_3_22B_Dist_INT8",
                       "Nanonets_Ocr_S_F16",
@@ -1539,12 +1556,12 @@
                     "examples": [
                       "AceStep_1_5_Turbo",
                       "Ben2",
-                      "Bge_M3_FP16"
+                      "Bge_M3_INT8"
                     ],
                     "enum": [
                       "AceStep_1_5_Turbo",
                       "Ben2",
-                      "Bge_M3_FP16",
+                      "Bge_M3_INT8",
                       "Flux_2_Klein_4B_BF16",
                       "Ltx2_3_22B_Dist_INT8",
                       "Nanonets_Ocr_S_F16",

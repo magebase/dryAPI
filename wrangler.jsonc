@@ -4,6 +4,7 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-03-10",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": false,
   "observability": {
     "logs": {
       "enabled": true,
@@ -16,16 +17,20 @@
   },
   "routes": [
     {
-      "pattern": "genfix.com.au/*",
-      "zone_name": "genfix.com.au",
+      "pattern": "dryapi.dev",
+      "custom_domain": true,
     },
     {
-      "pattern": "www.genfix.com.au/*",
-      "zone_name": "genfix.com.au",
+      "pattern": "www.dryapi.dev",
+      "custom_domain": true,
     },
     {
-      "pattern": "crm.genfix.com.au/*",
-      "zone_name": "genfix.com.au",
+      "pattern": "crm.dryapi.dev",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "www.crm.dryapi.dev",
+      "custom_domain": true,
     },
   ],
   "services": [

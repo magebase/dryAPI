@@ -1,7 +1,11 @@
 name = "dryapi-api"
 main = "src/worker.ts"
 compatibility_date = "2026-03-14"
-workers_dev = true
+workers_dev = false
+
+routes = [
+	{ pattern = "api.dryapi.dev", custom_domain = true },
+]
 
 [[durable_objects.bindings]]
 name = "API_KEY_QUOTA_DO"
@@ -48,7 +52,7 @@ new_sqlite_classes = ["CreditShardDurableObject"]
 # Example: API_KEY = "sk-prod-..."
 API_KEY = ""
 # The origin URL where the Next.js internal API is reachable (OpenNext worker hostname)
-ORIGIN_URL = ""
+ORIGIN_URL = "https://dryapi.dev"
 # A service/internal API key used when proxying to the origin Next API (optional)
 INTERNAL_API_KEY = ""
 

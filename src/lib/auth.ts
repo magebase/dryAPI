@@ -162,14 +162,14 @@ function isLoopbackOrigin(origin: string): boolean {
   }
 }
 
-function isDeployedGenfixOrigin(baseUrl: string | undefined): boolean {
+function isDeployedDryapiOrigin(baseUrl: string | undefined): boolean {
   if (!baseUrl) {
     return false;
   }
 
   try {
     const hostname = new URL(baseUrl).hostname.toLowerCase();
-    return hostname === "genfix.com.au" || hostname.endsWith(".genfix.com.au");
+    return hostname === "dryapi.dev" || hostname.endsWith(".dryapi.dev");
   } catch {
     return false;
   }
@@ -207,7 +207,7 @@ export function resolveTrustedOrigins(
     new Set([...runtimeOrigins.filter(isString), ...explicitOrigins]),
   );
   const disallowLoopbackOrigins =
-    nodeEnv === "production" || isDeployedGenfixOrigin(baseUrl);
+    nodeEnv === "production" || isDeployedDryapiOrigin(baseUrl);
 
   if (!disallowLoopbackOrigins) {
     return uniqueOrigins;
