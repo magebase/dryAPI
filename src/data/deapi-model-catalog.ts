@@ -24,7 +24,7 @@ export const DEAPI_MODEL_CATALOG: DeapiModelCatalog = {
     "Qwen3_TTS_12Hz_1_7B_VoiceDesign"
   ],
   "image-to-image": [
-    "Flux_2_Klein_4B_BF16",
+    "Flux_2_Klein_4B_INT8",
     "QwenImageEdit_Plus_NF4"
   ],
   "text-to-video": [
@@ -47,13 +47,13 @@ export const DEAPI_MODEL_CATALOG: DeapiModelCatalog = {
     "AceStep_1_5_Turbo"
   ],
   "text-to-embedding": [
-    "Bge_M3_FP16"
+    "Bge_M3_INT8"
   ],
   "background-removal": [
     "Ben2"
   ],
   "text-to-image": [
-    "Flux_2_Klein_4B_BF16",
+    "Flux_2_Klein_4B_INT8",
     "Flux1schnell",
     "ZImageTurbo_INT8"
   ]

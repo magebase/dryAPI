@@ -30,12 +30,14 @@ import {
 } from "@/components/ui/table";
 import { SaasPlanCards } from "@/components/site/dashboard/billing/saas-plan-cards";
 import { BillingTopUpControls } from "@/components/site/dashboard/billing/billing-top-up-controls";
+import { resolveActiveBrand } from "@/lib/brand-catalog";
 import {
   BILLING_SAFEGUARDS,
   getStoredAutoTopUpSettings,
   syncDashboardTopUpFromStripeCheckout,
   type AutoTopUpSettingsSnapshot,
 } from "@/lib/dashboard-billing-credits";
+import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 import {
   listSaasPlans,
   resolveMonthlyTokenExpiryIso,
@@ -773,6 +775,12 @@ export default async function DashboardBillingPage({
 
   const requestHeaderStore = await headers();
   const origin = resolveRequestOrigin(requestHeaderStore);
+  const activeBrand = await resolveActiveBrand({
+    hostname: new URL(origin).hostname,
+  });
+  const checkoutMessaging = resolveStripeCheckoutMessaging({
+    brandMark: activeBrand.mark,
+  });
 
   const requestHeaders = new Headers({
     accept: "application/json",
@@ -930,6 +938,7 @@ export default async function DashboardBillingPage({
               monthlyTokenExpiryIso={monthlyTokenExpiryIso}
               initialAutoTopUpSettings={initialAutoTopUpSettings}
               safeguards={BILLING_SAFEGUARDS}
+              checkoutDisclosure={checkoutMessaging.checkoutDisclosure}
             />
           </CardContent>
         </Card>
@@ -981,6 +990,7 @@ export default async function DashboardBillingPage({
         <SaasPlanCards
           plans={saasPlans}
           monthlyTokenExpiryIso={monthlyTokenExpiryIso}
+          checkoutDisclosure={checkoutMessaging.checkoutDisclosure}
         />
 
         <Card className="border-zinc-200 bg-white/95 py-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">

@@ -96,7 +96,7 @@ describe("runpod-profit-optimizer", () => {
     })
 
     expect(
-      ["Flux1schnell", "Flux1dev", "SDXL", "JuggernautXL", "RealVisXL", "ZImageTurbo_INT8", "Flux_2_Klein_4B_BF16"],
+      ["Flux1schnell", "Flux1dev", "SDXL", "JuggernautXL", "RealVisXL", "ZImageTurbo_INT8", "Flux_2_Klein_4B_INT8"],
     ).toContain(selection.modelSlug)
     expect(selection.expectedGrossMargin).toBeGreaterThan(0)
   })

@@ -66,7 +66,7 @@ export function EmailLayout({
       ? `Internal ${branding.mark} notification`
       : kind === "marketing"
         ? `You are receiving updates from ${branding.mark}.`
-        : `This email was sent by ${branding.mark}.`
+        : `This email was sent by ${branding.mark}. Billing is processed by ${branding.legalEntityName}.`
 
   return (
     <Html>

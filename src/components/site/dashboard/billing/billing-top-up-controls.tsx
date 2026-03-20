@@ -36,6 +36,7 @@ type BillingTopUpControlsProps = {
   monthlyTokenExpiryIso: string
   initialAutoTopUpSettings: AutoTopUpSettings
   safeguards: BillingSafeguards
+  checkoutDisclosure: string
 }
 
 function toRelativeTime(value: string): string {
@@ -81,6 +82,7 @@ export function BillingTopUpControls({
   monthlyTokenExpiryIso,
   initialAutoTopUpSettings,
   safeguards,
+  checkoutDisclosure,
 }: BillingTopUpControlsProps) {
   const router = useRouter()
 
@@ -165,6 +167,7 @@ export function BillingTopUpControls({
 
       <div className="space-y-2">
         <p className="text-xs uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">One-click top-up</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">{checkoutDisclosure}</p>
         <div className="flex flex-wrap gap-2">
           {topUpAmounts.map((amount) => (
             <Button key={amount} asChild size="sm" variant={amount === safeguards.minimumTopUpCredits ? "default" : "outline"}>

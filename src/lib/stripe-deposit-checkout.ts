@@ -171,6 +171,8 @@ export function buildStripeDepositCheckoutParams(input: {
   description?: string
   customerEmail?: string
   metadata?: Record<string, string>
+  statementDescriptorSuffix?: string
+  checkoutSubmitMessage?: string
 }): URLSearchParams {
   const params = new URLSearchParams()
 
@@ -181,6 +183,17 @@ export function buildStripeDepositCheckoutParams(input: {
   params.set("line_items[0][price_data][currency]", input.currency)
   params.set("line_items[0][price_data][unit_amount]", String(input.amountCents))
   params.set("line_items[0][price_data][product_data][name]", (input.description || "Cal.com booking deposit").trim())
+
+  if (input.statementDescriptorSuffix?.trim()) {
+    params.set(
+      "payment_intent_data[statement_descriptor_suffix]",
+      input.statementDescriptorSuffix.trim(),
+    )
+  }
+
+  if (input.checkoutSubmitMessage?.trim()) {
+    params.set("custom_text[submit][message]", input.checkoutSubmitMessage.trim())
+  }
 
   if (input.customerEmail?.trim()) {
     params.set("customer_email", input.customerEmail.trim())

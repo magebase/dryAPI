@@ -75,7 +75,7 @@ export function HomeSections({
       value: resolveSiteUiText(
         site,
         "home.capabilitySignal.value.2",
-        "OpenAI and OpenRouter compatible",
+        "Standard TypeScript/Fetch API",
       ),
     },
     {
@@ -122,7 +122,7 @@ export function HomeSections({
   const planningHeading = resolveSiteUiText(
     site,
     "home.planning.heading",
-    "Use The Clients You Already Know",
+    "Deploy With Type-Safe API Access",
   );
   const omnichannelBody = resolveSiteUiText(
     site,
@@ -138,7 +138,7 @@ export function HomeSections({
   const commandBody = resolveSiteUiText(
     site,
     "home.commandCta.bodySuffix",
-    "Talk to our team about model selection, OpenAI-compatible rollout, and a price-performance plan that fits your workload.",
+    "Talk to our team about model selection, type-safe API rollout, and a price-performance plan that fits your workload.",
   );
 
   const supportPrompt = resolveSiteUiText(
@@ -147,8 +147,26 @@ export function HomeSections({
     "Need Help Picking Models, Pricing, Or API Rollout?",
   );
 
-  const requestSample = `import OpenAI from "openai"\n\nconst client = new OpenAI({\n  apiKey: process.env.DEAPI_API_KEY,\n  baseURL: "https://api.deapi.ai/v1"\n})\n\nconst result = await client.chat.completions.create({\n  model: "meta-llama/llama-3.3-70b-instruct",\n  messages: [{ role: "user", content: "Summarize this incident timeline" }]\n})`;
-  const responseSample = `{\n  "id": "chatcmpl_82dk1",\n  "model": "meta-llama/llama-3.3-70b-instruct",\n  "choices": [{\n    "message": {\n      "role": "assistant",\n      "content": "Here is the short incident summary..."\n    }\n  }],\n  "usage": { "total_tokens": 812 }\n}`;
+  const requestSample = `const res = await fetch("https://api.dryapi.dev/v1/inference", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer " + process.env.DRYAPI_KEY,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    model: "flux-schnell",
+    prompt: "A neon-lit cyberpunk city terminal",
+    params: { quality: "hd", aspect_ratio: "16:9" }
+  })
+});
+
+const result = await res.json();`;
+  const responseSample = `{
+  "id": "gen_82dk1",
+  "status": "succeeded",
+  "output": ["https://assets.dryapi.dev/img/32dk..."],
+  "meta": { "latency": "1.2s", "cost": 0.003 }
+}`;
 
   const heroMediaImage = workflowStory?.image ?? home.hero.backgroundImage;
 
@@ -187,7 +205,7 @@ export function HomeSections({
 
   const frameworkCells = [
     { label: "Choose", body: "Pick the best model by task" },
-    { label: "Plug In", body: "Keep your existing OpenAI-style client" },
+    { label: "Plug In", body: "Connect via simple TypeScript fetch" },
     { label: "Scale", body: "Route for price, speed, and throughput" },
   ];
 
@@ -301,26 +319,27 @@ export function HomeSections({
                   </div>
                 </div>
 
-                  <div className="relative">
-                    <div className="absolute -inset-4 rounded-[24px] bg-white/14 blur-2xl" />
-                    <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-2 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
-                      <div className="h-[280px] w-full md:h-[340px]">
-                        <MockWorkflowFrame className="h-full border-none shadow-none bg-white/40" />
-                      </div>
-                      <div className="mt-2 rounded-xl border border-white/45 bg-white/86 p-3">
-                        <div className="flex items-center gap-2">
-                          <div className="size-2 animate-pulse rounded-full bg-emerald-500" />
-                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-                            Gateway Active • 150+ Models
-                          </p>
-                        </div>
-                        <p className="text-site-muted mt-1 text-xs">
-                          Single-surface API dispatch for Chat, Image, Speech and Embeddings.
-                          Optimized for profit margin and elastic scale.
+                <div className="relative">
+                  <div className="absolute -inset-4 rounded-[24px] bg-white/14 blur-2xl" />
+                  <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-2 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
+                    <div className="h-[280px] w-full md:h-[340px]">
+                      <MockWorkflowFrame className="h-full border-none shadow-none bg-white/40" />
+                    </div>
+                    <div className="mt-2 rounded-xl border border-white/45 bg-white/86 p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="size-2 animate-pulse rounded-full bg-emerald-500" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+                          Gateway Active • 10+ Models
                         </p>
                       </div>
+                      <p className="text-site-muted mt-1 text-xs">
+                        Single-surface API dispatch for Chat, Image, Speech and
+                        Embeddings. Optimized for profit margin and elastic
+                        scale.
+                      </p>
                     </div>
                   </div>
+                </div>
               </div>
             </Reveal>
 
@@ -401,7 +420,8 @@ export function HomeSections({
               {home.spotlightSection.title}
             </h2>
             <p className="text-site-muted mt-5 text-lg">
-              Strategic inference control for teams that prioritize stability, performance, and unit economics.
+              Strategic inference control for teams that prioritize stability,
+              performance, and unit economics.
             </p>
           </Reveal>
 
@@ -464,7 +484,7 @@ export function HomeSections({
                   API-first, production-ready
                 </h3>
                 <p className="text-site-muted mt-3 text-sm">
-                  Ship integrations with familiar OpenAI-compatible clients and
+                  Ship integrations with type-safe fetch requests and
                   predictable response shapes.
                 </p>
                 <div className="mt-5">
@@ -621,18 +641,17 @@ export function HomeSections({
           >
             <div className="relative overflow-hidden rounded-lg bg-slate-950">
               <MockCodePanel
-                code={`import OpenAI from "openai"
-
-const client = new OpenAI({
-  apiKey: "dry_sk_...",
-  baseURL: "https://api.deapi.ai/v1"
+                code={`const res = await fetch("https://api.dryapi.dev/v1/inference", {
+  method: "POST",
+  headers: { "Authorization": "Bearer " + KEY },
+  body: JSON.stringify({
+    model: "flux-schnell",
+    prompt: "Cyberpunk terminal",
+    params: { quality: "hd" }
+  })
 })
 
-// Unified inference across 150+ models
-const res = await client.chat.completions.create({
-  model: "anthropic/claude-3-5-sonnet",
-  messages: [{ role: "user", content: "Optimize this workload" }]
-})`}
+const { output } = await res.json()`}
               />
             </div>
           </Reveal>
@@ -687,9 +706,9 @@ const res = await client.chat.completions.create({
               {planningHeading.value}
             </h2>
             <p className="text-site-muted mt-4 text-sm leading-relaxed">
-              Use the official OpenAI SDK, OpenRouter-style request shapes, and
-              one base URL to reach a wide range of models with minimal
-              integration work.
+              Use standard TypeScript and Fetch API primitives to reach a wide
+              range of models with minimal integration work and cool validation
+              params.
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
               {home.contactPanel.visible ? (
@@ -769,7 +788,7 @@ const res = await client.chat.completions.create({
                   className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-slate-300 hover:shadow-2xl"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  
+
                   <div className="relative mb-6 flex items-center justify-between">
                     <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-xl ring-8 ring-slate-50 transition-transform duration-500 group-hover:scale-110">
                       <tile.icon className="size-6" />
@@ -834,9 +853,7 @@ const res = await client.chat.completions.create({
         <div className="mx-auto max-w-7xl px-4">
           <Reveal as="div">
             <div className="mb-20 text-center">
-              <p
-                className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600"
-              >
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600">
                 Vertical Solutions
               </p>
               <h3 className="mt-6 font-display text-4xl font-bold tracking-tight text-slate-900 md:text-6xl">
@@ -1042,7 +1059,7 @@ const res = await client.chat.completions.create({
                       Customer Success
                     </p>
                   </div>
-                  
+
                   {testimonial ? (
                     <div className="space-y-6">
                       <p className="font-display text-xl italic leading-relaxed text-white md:text-2xl">
@@ -1064,7 +1081,9 @@ const res = await client.chat.completions.create({
                     </div>
                   ) : (
                     <p className="font-display text-xl italic leading-relaxed text-white md:text-2xl">
-                      &ldquo;We replaced multiple provider integrations with dryAPI and cut onboarding time for new AI features dramatically.&rdquo;
+                      &ldquo;We replaced multiple provider integrations with
+                      dryAPI and cut onboarding time for new AI features
+                      dramatically.&rdquo;
                     </p>
                   )}
 
@@ -1132,7 +1151,9 @@ function FeatureStory({
       as="article"
       className={`group grid gap-8 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-[color:var(--cta-cool-a)] hover:shadow-2xl md:p-8 ${reverse ? "lg:grid-cols-[1.05fr_0.95fr]" : "lg:grid-cols-[0.95fr_1.05fr]"}`}
     >
-      <div className={`flex flex-col justify-center ${reverse ? "lg:order-2" : ""}`}>
+      <div
+        className={`flex flex-col justify-center ${reverse ? "lg:order-2" : ""}`}
+      >
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-slate-900 shadow-lg ring-1 ring-white/10 transition-transform group-hover:scale-110">
             <SiteIcon className="size-5 text-white" icon={card.icon} />
@@ -1168,7 +1189,7 @@ function FeatureStory({
       <div className={`relative ${reverse ? "lg:order-1" : ""}`}>
         {/* Decorative background glow */}
         <div className="absolute -inset-20 bg-[radial-gradient(circle_at_center,rgba(84,126,232,0.08),transparent_70%)] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
-        
+
         <div className="relative aspect-[4/3] w-full transform overflow-hidden rounded-2xl bg-[#f8f9fb] p-1.5 shadow-inner transition-transform duration-700 group-hover:scale-[1.02] md:p-2.5">
           <div className="h-full w-full overflow-hidden rounded-xl border border-white/80 bg-white/40 shadow-2xl backdrop-blur-sm">
             <MockUiPreview
@@ -1620,9 +1641,7 @@ function MockWorkflowFrame({ className }: { className?: string }) {
         </div>
         <div className="space-y-1.5">
           <div className="flex gap-2">
-            <span className="text-[10px] text-indigo-400 opacity-60">
-              POST
-            </span>
+            <span className="text-[10px] text-indigo-400 opacity-60">POST</span>
             <div className="h-2 w-48 rounded bg-indigo-900/10" />
           </div>
           <div className="flex gap-2 pl-4">
@@ -1670,12 +1689,15 @@ function ValueCard({
 }
 
 function MockCodePanel({ code }: { code?: string }) {
-  const defaultCode = `// Fetch chat completion
-const stream = await dryapi.chat.completions.create({
-  model: "meta-llama/llama-3.3-70b-instruct",
-  messages: [{ role: "user", content: "Analyze risk" }],
-  stream: true,
-});`;
+  const defaultCode = `const res = await fetch("https://api.dryapi.dev/v1/inference", {
+  method: "POST",
+  headers: { "Authorization": "Bearer " + KEY },
+  body: JSON.stringify({
+    model: "flux-schnell",
+    prompt: "A neon-lit cyberpunk city",
+    params: { quality: "hd", aspect_ratio: "16:9" }
+  })
+})`;
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#0b0e14] shadow-2xl">

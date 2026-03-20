@@ -1,5 +1,6 @@
 import type { BrandProfile } from "@/lib/brand-catalog"
 import { resolveActiveBrand } from "@/lib/brand-catalog"
+import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding"
 import { readSiteConfig } from "@/lib/site-content-loader"
 
 export type EmailTheme = {
@@ -22,6 +23,8 @@ export type EmailBranding = {
   key: string
   displayName: string
   mark: string
+  legalEntityName: string
+  statementDescriptor: string
   homeUrl: string
   dashboardUrl: string
   pricingUrl: string
@@ -144,6 +147,9 @@ export function buildEmailBranding(input: BuildEmailBrandingInput): EmailBrandin
   })()
   const supportEmail = input.supportEmail?.trim() || `support@${host}`
   const salesEmail = input.salesEmail?.trim() || `sales@${host}`
+  const checkoutMessaging = resolveStripeCheckoutMessaging({
+    brandMark: mark,
+  })
   const theme = {
     ...BASE_EMAIL_THEME,
     ...(BRAND_THEME_MAP[key] || {}),
@@ -153,6 +159,8 @@ export function buildEmailBranding(input: BuildEmailBrandingInput): EmailBrandin
     key,
     displayName,
     mark,
+    legalEntityName: checkoutMessaging.legalEntityName,
+    statementDescriptor: checkoutMessaging.statementDescriptor,
     homeUrl,
     dashboardUrl: `${homeUrl}/dashboard`,
     pricingUrl: `${homeUrl}/pricing`,

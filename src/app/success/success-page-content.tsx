@@ -11,6 +11,8 @@ type SuccessPageContentProps = {
   brandMark: string
   brandName?: string
   contactEmail: string
+  legalEntityName?: string
+  statementDescriptor?: string
   flow: SuccessFlow
   plan: string | null
   period: string | null
@@ -21,6 +23,8 @@ export function SuccessPageContent({
   brandMark,
   brandName,
   contactEmail,
+  legalEntityName,
+  statementDescriptor,
   flow,
   plan,
   period,
@@ -49,6 +53,11 @@ export function SuccessPageContent({
   const eyebrow = isTopUp ? "Top-up successful" : "Payment successful"
 
   const showMetadataLine = !isTopUp && Boolean(metadataLine)
+  const legalDisclosure = legalEntityName && statementDescriptor
+    ? `Charges may appear as ${statementDescriptor} and are processed by ${legalEntityName}.`
+    : legalEntityName
+      ? `Billing is processed by ${legalEntityName}.`
+      : null
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-16 sm:py-24">
@@ -71,6 +80,9 @@ export function SuccessPageContent({
           <CardDescription className="text-zinc-600 dark:text-zinc-300">
             {message}
           </CardDescription>
+          {legalDisclosure ? (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">{legalDisclosure}</p>
+          ) : null}
           {showMetadataLine ? (
             <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
               {metadataLine}

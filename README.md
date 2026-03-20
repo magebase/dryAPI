@@ -410,6 +410,13 @@ Optional for dynamic Cal.com deposit checkout sessions (user-defined amount):
 - `STRIPE_DEPOSIT_DEFAULT_CANCEL_URL`
 - `STRIPE_DEPOSIT_TURNSTILE_REQUIRED`
 
+Optional for Stripe checkout branding and statement clarity:
+
+- `STRIPE_CHECKOUT_BRAND_NAME` (default: `dryAPI`)
+- `STRIPE_LEGAL_ENTITY_NAME` (default: `AdStim LLC`)
+- `STRIPE_STATEMENT_DESCRIPTOR` (default: `DRYAPI*ADSTIM`, 5-22 chars)
+- `STRIPE_STATEMENT_DESCRIPTOR_SUFFIX` (default: `DRYAPI`, 1-22 chars)
+
 API endpoint:
 
 - `POST /api/calcom/deposit-checkout`

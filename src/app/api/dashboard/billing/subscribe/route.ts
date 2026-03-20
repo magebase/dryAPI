@@ -17,6 +17,23 @@ import {
 
 type BillingPeriod = "monthly" | "annual";
 
+type StripePortalConfigurationProduct = {
+  prices?: string[];
+};
+
+type StripePortalConfigurationResponse = {
+  id?: string;
+  features?: {
+    subscription_update?: {
+      enabled?: boolean;
+      products?: StripePortalConfigurationProduct[];
+    };
+  };
+  error?: {
+    message?: string;
+  };
+};
+
 type StripeSubscriptionUpgradeResponse = {
   url?: string;
   redirect?: boolean;
@@ -27,6 +44,15 @@ type StripeSubscriptionUpgradeResponse = {
       }
     | string;
 };
+
+type PortalPriceMismatch = {
+  subscriptionItemId: string;
+  priceId: string;
+  configurationId: string;
+};
+
+const STRIPE_PORTAL_PRICE_MISMATCH_PATTERN =
+  /item `([^`]+)` cannot be updated to price `([^`]+)` because the configuration `([^`]+)` does not include the price in its `features\[subscription_update\]\[products\]`\.?/i;
 
 function readMessage(value: unknown): string | null {
   if (typeof value !== "string") {
@@ -54,6 +80,105 @@ function resolveUpgradeErrorMessage(
   }
 
   return readMessage(data.error?.message);
+}
+
+function parseStripePortalPriceMismatch(
+  value: string | null,
+): PortalPriceMismatch | null {
+  if (!value) {
+    return null;
+  }
+
+  const match = STRIPE_PORTAL_PRICE_MISMATCH_PATTERN.exec(value);
+  if (!match) {
+    return null;
+  }
+
+  const [, subscriptionItemId, priceId, configurationId] = match;
+  if (!subscriptionItemId || !priceId || !configurationId) {
+    return null;
+  }
+
+  return {
+    subscriptionItemId,
+    priceId,
+    configurationId,
+  };
+}
+
+function buildPortalConfigurationMismatchMessage(input: {
+  configurationId: string;
+  priceId: string;
+  subscriptionItemId?: string;
+}): string {
+  const parts = [
+    `Stripe Billing Portal configuration ${input.configurationId} does not allow price ${input.priceId} for subscription updates.`,
+    "Run the portal provisioning flow and include every active STRIPE_SAAS_* monthly and annual price in features.subscription_update.products.",
+  ];
+
+  if (input.subscriptionItemId) {
+    parts.push(`Blocked subscription item: ${input.subscriptionItemId}.`);
+  }
+
+  return parts.join(" ");
+}
+
+async function validateStripePortalConfigurationForPrice(input: {
+  stripePrivateKey: string;
+  configurationId: string;
+  expectedPriceId: string;
+}): Promise<{ ok: true } | { ok: false; message: string }> {
+  const response = await fetch(
+    `https://api.stripe.com/v1/billing_portal/configurations/${encodeURIComponent(
+      input.configurationId,
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${input.stripePrivateKey}`,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const payload = (await response
+    .json()
+    .catch(() => null)) as StripePortalConfigurationResponse | null;
+
+  if (!response.ok || !payload) {
+    return {
+      ok: false,
+      message:
+        payload?.error?.message ||
+        `Unable to load Stripe Billing Portal configuration ${input.configurationId}.`,
+    };
+  }
+
+  const subscriptionUpdate = payload.features?.subscription_update;
+  if (!subscriptionUpdate?.enabled) {
+    return {
+      ok: false,
+      message: `Stripe Billing Portal configuration ${input.configurationId} has subscription updates disabled.`,
+    };
+  }
+
+  const allowedPrices = new Set(
+    (subscriptionUpdate.products || []).flatMap((product) =>
+      Array.isArray(product.prices) ? product.prices : [],
+    ),
+  );
+
+  if (!allowedPrices.has(input.expectedPriceId)) {
+    return {
+      ok: false,
+      message: buildPortalConfigurationMismatchMessage({
+        configurationId: input.configurationId,
+        priceId: input.expectedPriceId,
+      }),
+    };
+  }
+
+  return { ok: true };
 }
 
 export async function GET(request: NextRequest) {
@@ -125,6 +250,44 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const selectedPriceId =
+    billingPeriod === "annual"
+      ? resolveSaasPlanStripeAnnualPriceId(plan) || monthlyPriceId
+      : monthlyPriceId;
+
+  const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim() || "";
+  const stripePortalConfigurationId =
+    process.env.STRIPE_PORTAL_CONFIGURATION_ID?.trim() || "";
+
+  if (stripePortalConfigurationId) {
+    if (!stripePrivateKey) {
+      return NextResponse.json(
+        {
+          error: "stripe_not_configured",
+          message:
+            "Missing STRIPE_PRIVATE_KEY while STRIPE_PORTAL_CONFIGURATION_ID is set.",
+        },
+        { status: 501 },
+      );
+    }
+
+    const validation = await validateStripePortalConfigurationForPrice({
+      stripePrivateKey,
+      configurationId: stripePortalConfigurationId,
+      expectedPriceId: selectedPriceId,
+    });
+
+    if (!validation.ok) {
+      return NextResponse.json(
+        {
+          error: "stripe_portal_configuration_mismatch",
+          message: validation.message,
+        },
+        { status: 500 },
+      );
+    }
+  }
+
   const origin = resolveRequestOriginFromRequest(request);
 
   const { response, data } =
@@ -153,6 +316,21 @@ export async function GET(request: NextRequest) {
 
   if (!response.ok || !data?.url) {
     const failureMessage = resolveUpgradeErrorMessage(data);
+    const portalMismatch = parseStripePortalPriceMismatch(failureMessage);
+
+    if (portalMismatch) {
+      return NextResponse.json(
+        {
+          error: "stripe_portal_configuration_mismatch",
+          message: buildPortalConfigurationMismatchMessage({
+            configurationId: portalMismatch.configurationId,
+            priceId: portalMismatch.priceId,
+            subscriptionItemId: portalMismatch.subscriptionItemId,
+          }),
+        },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json(
       {

@@ -1,0 +1,4 @@
+name: dryapi-stripe
+runtime: nodejs
+main: infrastructure
+description: DryAPI Stripe Infrastructure (Products, Prices, Portal)

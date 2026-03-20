@@ -21,6 +21,7 @@ import {
 import {
   buildBrandedCheckoutCancelUrl,
   buildBrandedCheckoutSuccessUrl,
+  resolveStripeCheckoutMessaging,
 } from "@/lib/stripe-branding";
 
 type StripeCheckoutSessionResponse = {
@@ -103,6 +104,9 @@ export async function GET(request: NextRequest) {
     const brand = await resolveActiveBrand({
       hostname: new URL(origin).hostname,
     });
+    const checkoutMessaging = resolveStripeCheckoutMessaging({
+      brandMark: brand.mark,
+    });
 
     const monthlyTokenCycleStart = plan
       ? resolveCurrentMonthlyTokenCycleStartIso()
@@ -124,6 +128,8 @@ export async function GET(request: NextRequest) {
       monthlyTokensGranted: plan?.monthlyTokens ?? null,
       monthlyTokenCycleStart,
       monthlyTokenExpiresAt: monthlyTokenExpiry,
+      merchant_legal_entity: checkoutMessaging.legalEntityName,
+      statement_descriptor_hint: checkoutMessaging.statementDescriptor,
     });
 
     const discountDescription =
@@ -145,6 +151,8 @@ export async function GET(request: NextRequest) {
       description: `${topUp.creditsGranted.toFixed(2)} credits top-up${discountDescription}`,
       customerEmail: session.email || undefined,
       metadata,
+      statementDescriptorSuffix: checkoutMessaging.statementDescriptorSuffix,
+      checkoutSubmitMessage: checkoutMessaging.checkoutSubmitMessage,
     });
 
     const stripeResponse = await fetch(

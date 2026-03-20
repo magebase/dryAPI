@@ -1,0 +1,12 @@
+{
+  "name": "dryapi-stripe-infra",
+  "version": "1.0.0",
+  "dependencies": {
+    "@pulumi/pulumi": "^3.0.0",
+    "pulumi-stripe": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

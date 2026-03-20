@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { buildTakumiMetadata } from "@/lib/og/metadata";
+import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import {
   readQueryValue,
@@ -38,6 +39,9 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
     readSiteConfig(),
     searchParams,
   ]);
+  const checkoutMessaging = resolveStripeCheckoutMessaging({
+    brandMark: site.brand.mark,
+  });
 
   const params = resolvedSearchParams || {};
   return (
@@ -45,6 +49,8 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
       brandMark={site.brand.mark}
       brandName={site.brand.name !== site.brand.mark ? site.brand.name : undefined}
       contactEmail={site.contact.contactEmail}
+      legalEntityName={checkoutMessaging.legalEntityName}
+      statementDescriptor={checkoutMessaging.statementDescriptor}
       flow={resolveSuccessPageFlow(params)}
       plan={readQueryValue(params, "plan")}
       period={readQueryValue(params, "period")}

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { buildTakumiMetadata } from "@/lib/og/metadata"
+import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding"
 import { readSiteConfig } from "@/lib/site-content-loader"
 import { readQueryValue, readStripeCheckoutSessionId } from "@/app/success/success-utils"
 import { SuccessPageContent } from "@/app/success/success-page-content"
@@ -47,12 +48,17 @@ export default async function SuccessFlowPage({ params, searchParams }: SuccessF
   ])
 
   const query = resolvedSearchParams || {}
+  const checkoutMessaging = resolveStripeCheckoutMessaging({
+    brandMark: site.brand.mark,
+  })
 
   return (
     <SuccessPageContent
       brandMark={site.brand.mark}
       brandName={site.brand.name !== site.brand.mark ? site.brand.name : undefined}
       contactEmail={site.contact.contactEmail}
+      legalEntityName={checkoutMessaging.legalEntityName}
+      statementDescriptor={checkoutMessaging.statementDescriptor}
       flow={resolveFlow(resolvedParams.flow)}
       plan={readQueryValue(query, "plan")}
       period={readQueryValue(query, "period")}

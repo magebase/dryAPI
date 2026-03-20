@@ -70,9 +70,10 @@ function formatRelativeTime(iso: string): string {
 type SaasPlanCardsProps = {
   plans: readonly SaasPlanDefinition[]
   monthlyTokenExpiryIso: string
+  checkoutDisclosure: string
 }
 
-export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsProps) {
+export function SaasPlanCards({ plans, monthlyTokenExpiryIso, checkoutDisclosure }: SaasPlanCardsProps) {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly")
   const isAnnual = billingPeriod === "annual"
   const maxAnnualDiscount = Math.max(...plans.map((plan) => plan.annualDiscountPercent))
@@ -87,6 +88,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso }: SaasPlanCardsPro
         <CardDescription className="text-zinc-600 dark:text-zinc-300">
           Tiered subscription plans with monthly credits and top-up credit discounts.
         </CardDescription>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">{checkoutDisclosure}</p>
 
         {/* Billing period toggle */}
         <div className="flex items-center gap-1 self-start rounded-lg border border-zinc-200 bg-zinc-100/70 p-1 dark:border-zinc-700 dark:bg-zinc-800/50">

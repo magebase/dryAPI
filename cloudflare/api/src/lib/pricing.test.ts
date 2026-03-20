@@ -87,13 +87,13 @@ describe('pricing worker type resolution', () => {
       c,
       surface: 'embeddings',
       endpointId: 'embeddings-endpoint',
-      modelSlug: 'Bge_M3_FP16',
+      modelSlug: 'Bge_M3_INT8',
       workerType: 'flex',
     })
 
     expect(policy.workerType).toBe('flex')
     expect(policy.gpuCostPerSecondUsd).toBe(0.0012)
-    expect(policy.priceKey).toBe('embeddings:Bge_M3_FP16:embeddings-endpoint:flex')
+    expect(policy.priceKey).toBe('embeddings:Bge_M3_INT8:embeddings-endpoint:flex')
   })
 
   it('maintains backward compatibility with scalar gpuCostPerSecondUsd', () => {

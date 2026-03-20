@@ -17,8 +17,8 @@
       "huggingFaceRepo": "PramaLLC/BEN2",
       "sourceNote": "Pinned in internal RunPod catalog for production image matting workloads."
     },
-    "Bge_M3_FP16": {
-      "displayName": "BGE M3 FP16",
+    "Bge_M3_INT8": {
+      "displayName": "BGE M3 INT8",
       "summary": "Multilingual embedding model for retrieval, semantic search, and reranking flows.",
       "primaryUse": "Text embeddings",
       "huggingFaceUrl": "https://huggingface.co/BAAI/bge-m3",
@@ -33,13 +33,13 @@
       "huggingFaceRepo": null,
       "sourceNote": "Repository ownership may differ across releases; search link is used as the stable upstream pointer."
     },
-    "Flux_2_Klein_4B_BF16": {
-      "displayName": "FLUX.2 Klein 4B BF16",
+    "Flux_2_Klein_4B_INT8": {
+      "displayName": "FLUX.2 Klein 4B INT8",
       "summary": "Compact FLUX generation profile balancing quality and speed for production image APIs.",
       "primaryUse": "Text-to-image and image-to-image",
       "huggingFaceUrl": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B",
       "huggingFaceRepo": "black-forest-labs/FLUX.2-klein-4B",
-      "sourceNote": "Run with BF16 baseline and optional runtime quantization based on latency and cost targets."
+      "sourceNote": "Run with INT8 baseline and optional runtime quantization based on latency and cost targets."
     },
     "Flux1schnell": {
       "displayName": "FLUX.1 schnell",

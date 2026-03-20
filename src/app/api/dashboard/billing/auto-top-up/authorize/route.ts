@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveActiveBrand } from "@/lib/brand-catalog";
 import {
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
   resolveStripeCustomerLookup,
 } from "@/lib/dashboard-billing";
+import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
@@ -45,6 +47,12 @@ export async function GET(request: NextRequest) {
   }
 
   const origin = resolveRequestOriginFromRequest(request);
+  const brand = await resolveActiveBrand({
+    hostname: new URL(origin).hostname,
+  });
+  const checkoutMessaging = resolveStripeCheckoutMessaging({
+    brandMark: brand.mark,
+  });
   const params = new URLSearchParams();
   params.set("mode", "setup");
   params.set("customer", customerId);
@@ -59,6 +67,18 @@ export async function GET(request: NextRequest) {
   params.set(
     "setup_intent_data[metadata][source]",
     "dryapi-auto-top-up-authorization",
+  );
+  params.set(
+    "setup_intent_data[metadata][merchant_legal_entity]",
+    checkoutMessaging.legalEntityName,
+  );
+  params.set(
+    "setup_intent_data[metadata][statement_descriptor_hint]",
+    checkoutMessaging.statementDescriptor,
+  );
+  params.set(
+    "custom_text[submit][message]",
+    checkoutMessaging.checkoutSubmitMessage,
   );
 
   const stripeResponse = await fetch(

@@ -69,5 +69,8 @@ describe("resolveSuccessPageFlow", () => {
     expect(html).toContain(
       "Top-up credits should appear in your billing dashboard shortly.",
     );
+    expect(html).toContain(
+      "Charges may appear as DRYAPI*ADSTIM and are processed by AdStim LLC.",
+    );
   });
 });

@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "outDir": "bin",
+        "rootDir": "infrastructure",
+        "target": "es2020",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "declaration": true,
+        "sourceMap": true,
+        "stripInternal": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["infrastructure/**/*.ts"]
+}

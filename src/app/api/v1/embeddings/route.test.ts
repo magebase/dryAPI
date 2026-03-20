@@ -16,7 +16,7 @@ describe("POST /api/v1/embeddings", () => {
     const req = makeApiRequest(EMBEDDINGS_URL, {
       method: "POST",
       body: {
-        model: "Bge_M3_FP16",
+        model: "Bge_M3_INT8",
       },
     })
 
@@ -31,7 +31,7 @@ describe("POST /api/v1/embeddings", () => {
     const req = makeApiRequest(EMBEDDINGS_URL, {
       method: "POST",
       body: {
-        model: "Bge_M3_FP16",
+        model: "Bge_M3_INT8",
         input: "hello world",
         allowLowMarginOverride: true,
       },
@@ -50,7 +50,7 @@ describe("POST /api/v1/embeddings", () => {
     const req = makeApiRequest(EMBEDDINGS_URL, {
       method: "POST",
       body: {
-        model: "Bge_M3_FP16",
+        model: "Bge_M3_INT8",
         input: ["hello", "world"],
         allowLowMarginOverride: true,
       },

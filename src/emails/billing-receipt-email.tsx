@@ -51,7 +51,8 @@ export function BillingReceiptEmail({
         ]}
       />
       <EmailCallout title="Records">
-        Keep this receipt for reconciliation, billing review, or internal finance records.
+        Keep this receipt for reconciliation, billing review, or internal finance records. Charges
+        may appear as {branding.statementDescriptor} and are processed by {branding.legalEntityName}.
       </EmailCallout>
       <EmailParagraph>
         If anything looks incorrect, contact {branding.supportEmail}.

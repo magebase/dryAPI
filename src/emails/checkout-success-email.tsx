@@ -72,6 +72,9 @@ export function CheckoutSuccessEmail({
         Need help? Contact <EmailInlineLink href={`mailto:${supportEmail}`}>{supportEmail}</EmailInlineLink>.
       </EmailParagraph>
       <EmailMuted>
+        Billing is processed by {branding.legalEntityName}. Charges may appear as {branding.statementDescriptor}.
+      </EmailMuted>
+      <EmailMuted>
         Keep this email for your records if you need to reference the completed billing action later.
       </EmailMuted>
     </EmailLayout>

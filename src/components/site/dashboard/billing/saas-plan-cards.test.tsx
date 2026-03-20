@@ -15,6 +15,7 @@ vi.mock("next/link", () => ({
 describe("SaasPlanCards", () => {
   const plans = listSaasPlans()
   const growthPlan = plans.find((plan) => plan.slug === "growth")
+  const checkoutDisclosure = "Charges appear as DRYAPI*ADSTIM. Billing is processed by AdStim LLC."
 
   if (!growthPlan) {
     throw new Error("Expected growth plan fixture")
@@ -25,6 +26,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        checkoutDisclosure={checkoutDisclosure}
       />,
     )
 
@@ -41,6 +43,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        checkoutDisclosure={checkoutDisclosure}
       />,
     )
 
@@ -59,6 +62,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        checkoutDisclosure={checkoutDisclosure}
       />,
     )
 
@@ -71,6 +75,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        checkoutDisclosure={checkoutDisclosure}
       />,
     )
 
@@ -87,9 +92,11 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        checkoutDisclosure={checkoutDisclosure}
       />,
     )
 
     expect(screen.getAllByText(/^50$/).length).toBeGreaterThan(0)
+    expect(screen.getByText(checkoutDisclosure)).toBeInTheDocument()
   })
 })

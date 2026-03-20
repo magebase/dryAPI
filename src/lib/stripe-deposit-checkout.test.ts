@@ -55,6 +55,8 @@ describe("stripe deposit checkout helpers", () => {
       cancelUrl: "https://cal.genfix.com.au/cancel",
       description: "Booking deposit",
       customerEmail: "ops@example.com",
+      statementDescriptorSuffix: "DRYAPI",
+      checkoutSubmitMessage: "You will be charged by AdStim LLC for your dryAPI purchase.",
       metadata: {
         source: "genfix",
         dryapi_brand_key: "dryapi",
@@ -67,6 +69,8 @@ describe("stripe deposit checkout helpers", () => {
     expect(payload.get("customer_email")).toBe("ops@example.com")
     expect(payload.get("metadata[source]")).toBe("genfix")
     expect(payload.get("metadata[dryapi_brand_key]")).toBe("dryapi")
+    expect(payload.get("payment_intent_data[statement_descriptor_suffix]")).toBe("DRYAPI")
+    expect(payload.get("custom_text[submit][message]")).toBe("You will be charged by AdStim LLC for your dryAPI purchase.")
   })
 
   it("keeps default top-up discount behavior when no plan discount is supplied", () => {

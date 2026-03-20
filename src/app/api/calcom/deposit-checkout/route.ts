@@ -12,6 +12,7 @@ import {
   resolveTopUpCharge,
   sanitizeDepositMetadata,
 } from "@/lib/stripe-deposit-checkout";
+import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 import { resolveActiveBrand } from "@/lib/brand-catalog";
 import { isStripeDepositsEnabledServer } from "@/lib/feature-flags";
 import { getRequestIp, verifyTurnstileToken } from "@/lib/turnstile";
@@ -182,6 +183,9 @@ export async function POST(request: NextRequest) {
     const brand = await resolveActiveBrand({
       hostname: new URL(successUrl).hostname || new URL(cancelUrl).hostname,
     });
+    const checkoutMessaging = resolveStripeCheckoutMessaging({
+      brandMark: brand.mark,
+    });
     const metadata = sanitizeDepositMetadata({
       ...(payload.metadata || {}),
       requestedAmountCents: topUp.requestedAmountCents,
@@ -197,6 +201,8 @@ export async function POST(request: NextRequest) {
     });
     metadata.dryapi_brand_key = brand.key;
     metadata.source = "genfix-calcom-deposit";
+    metadata.merchant_legal_entity = checkoutMessaging.legalEntityName;
+    metadata.statement_descriptor_hint = checkoutMessaging.statementDescriptor;
 
     const sessionParams = buildStripeDepositCheckoutParams({
       amountCents: topUp.chargeAmountCents,
@@ -208,6 +214,8 @@ export async function POST(request: NextRequest) {
         `${topUp.creditsGranted.toFixed(2)} credits top-up${topUp.discountCents > 0 ? " (5% off applied)" : ""}`,
       customerEmail: payload.customerEmail,
       metadata,
+      statementDescriptorSuffix: checkoutMessaging.statementDescriptorSuffix,
+      checkoutSubmitMessage: checkoutMessaging.checkoutSubmitMessage,
     });
 
     const stripeResponse = await fetch(
