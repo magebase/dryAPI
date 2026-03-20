@@ -106,6 +106,7 @@ Compatibility requirements:
 - Favor small, testable, low-regression changes over broad rewrites.
 - Keep changes scoped to the request; avoid opportunistic refactors.
 - Do not introduce formatting-only churn.
+- Always commit all validated repository changes and push them to the current remote branch.
 - Prefer existing packages in `package.json` over custom helpers when they cover the problem cleanly; the package guide is the first reference for choosing a dependency.
 - For `pnpm` script entrypoints in this repository, use TypeScript files (`.ts`) only. Do not add or call `.mjs`, `.cjs`, or custom `.js` script files.
 - Preserve existing Tina preview/edit paths (`/admin/index.html`, Tina API routes).
@@ -190,38 +191,38 @@ Authentication-gated pages (`/dashboard/**`, `/account/**`, success pages, API r
 ```ts
 // Required shape for every public page — fill all fields
 export async function generateMetadata(): Promise<Metadata> {
-  const siteUrl = normalizeSiteUrl()    // always brand-resolved
-  const site    = await readSiteConfig()
+  const siteUrl = normalizeSiteUrl(); // always brand-resolved
+  const site = await readSiteConfig();
 
   return {
-    title:       "Page Title | Brand Name",          // ≤ 60 chars
-    description: "Benefit-first description ...",    // 120–160 chars
-    keywords:    ["keyword a", "keyword b"],
-    alternates:  { canonical: `${siteUrl}/path` },   // absolute, no trailing slash
-    metadataBase: new URL(siteUrl),                  // required at layout level
+    title: "Page Title | Brand Name", // ≤ 60 chars
+    description: "Benefit-first description ...", // 120–160 chars
+    keywords: ["keyword a", "keyword b"],
+    alternates: { canonical: `${siteUrl}/path` }, // absolute, no trailing slash
+    metadataBase: new URL(siteUrl), // required at layout level
     openGraph: {
-      type:        "website",                        // or "article", see below
-      url:         `${siteUrl}/path`,
-      title:       "Open Graph Title",
+      type: "website", // or "article", see below
+      url: `${siteUrl}/path`,
+      title: "Open Graph Title",
       description: "Open Graph description",
-      siteName:    site.brand.displayName,
+      siteName: site.brand.displayName,
       images: [
         {
-          url:    `${siteUrl}/og/default.png`,       // 1200×630 recommended
-          width:  1200,
+          url: `${siteUrl}/og/default.png`, // 1200×630 recommended
+          width: 1200,
           height: 630,
-          alt:    "Descriptive alt text",
-          type:   "image/png",
+          alt: "Descriptive alt text",
+          type: "image/png",
         },
       ],
     },
     twitter: {
-      card:        "summary_large_image",
-      title:       "Twitter Card Title",
+      card: "summary_large_image",
+      title: "Twitter Card Title",
       description: "Twitter card description",
-      images:      [`${siteUrl}/og/default.png`],
+      images: [`${siteUrl}/og/default.png`],
     },
-  }
+  };
 }
 ```
 
@@ -247,7 +248,7 @@ Assign stable, unique `scriptId` values to each component to prevent duplicate s
 **Homepage / root layout** — `OrganizationJsonLd` + `LocalBusinessJsonLd`:
 
 ```tsx
-import { OrganizationJsonLd } from "next-seo"
+import { OrganizationJsonLd } from "next-seo";
 
 <OrganizationJsonLd
   useAppDir
@@ -258,13 +259,13 @@ import { OrganizationJsonLd } from "next-seo"
   logo={`${siteUrl}/logo.png`}
   sameAs={[site.brand.twitterUrl, site.brand.linkedInUrl].filter(Boolean)}
   scriptId="site-organization-jsonld"
-/>
+/>;
 ```
 
 **Blog post page** — `ArticleJsonLd` with `type="BlogPosting"`:
 
 ```tsx
-import { ArticleJsonLd } from "next-seo"
+import { ArticleJsonLd } from "next-seo";
 
 <ArticleJsonLd
   useAppDir
@@ -272,15 +273,20 @@ import { ArticleJsonLd } from "next-seo"
   url={`${siteUrl}/blog/${post.slug}`}
   title={post.seoTitle}
   images={post.ogImage ? [post.ogImage] : []}
-  datePublished={post.publishedAt}          // ISO 8601
+  datePublished={post.publishedAt} // ISO 8601
   dateModified={post.updatedAt ?? post.publishedAt}
-  authorName={[{ name: post.author.name, url: `${siteUrl}/blog/authors/${post.author.slug}` }]}
+  authorName={[
+    {
+      name: post.author.name,
+      url: `${siteUrl}/blog/authors/${post.author.slug}`,
+    },
+  ]}
   publisherName={site.brand.displayName}
   publisherLogo={`${siteUrl}/logo.png`}
   description={post.seoDescription}
   isAccessibleForFree
   scriptId={`blog-post-jsonld-${post.slug}`}
-/>
+/>;
 ```
 
 **Pricing page** — `WebPageJsonLd` + `BreadcrumbJsonLd`:
@@ -330,7 +336,7 @@ import { WebPageJsonLd, BreadcrumbJsonLd } from "next-seo"
 **Docs/API reference pages** — `TechArticleJsonLd` via raw script or `ArticleJsonLd` with section:
 
 ```tsx
-import { ArticleJsonLd } from "next-seo"
+import { ArticleJsonLd } from "next-seo";
 
 <ArticleJsonLd
   useAppDir
@@ -344,34 +350,34 @@ import { ArticleJsonLd } from "next-seo"
   publisherLogo={`${siteUrl}/logo.png`}
   description={doc.description}
   scriptId={`doc-jsonld-${slug}`}
-/>
+/>;
 ```
 
 **FAQ / help pages** — `FAQPageJsonLd`:
 
 ```tsx
-import { FAQPageJsonLd } from "next-seo"
+import { FAQPageJsonLd } from "next-seo";
 
 <FAQPageJsonLd
   useAppDir
-  mainEntity={faqs.map(f => ({
-    questionName:       f.question,
+  mainEntity={faqs.map((f) => ({
+    questionName: f.question,
     acceptedAnswerText: f.answer,
   }))}
   scriptId="faq-jsonld"
-/>
+/>;
 ```
 
 ### Robots and Indexing Rules
 
-| Route pattern | `robots` setting |
-| --- | --- |
-| All public marketing pages | `{ index: true, follow: true }` (default, can omit) |
-| `/dashboard/**`, `/account/**` | `{ index: false, follow: false }` |
-| `/api/**` | Not applicable (API routes) |
-| `/success`, `/verify/**`, `/reset/**` | `{ index: false, follow: false }` |
-| Paginated duplicates (`?page=2`) | Set `alternates.canonical` to page-1 URL |
-| Staging / preview environments | Handle via `X-Robots-Tag: noindex` at middleware level, not per-page `robots` |
+| Route pattern                         | `robots` setting                                                              |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| All public marketing pages            | `{ index: true, follow: true }` (default, can omit)                           |
+| `/dashboard/**`, `/account/**`        | `{ index: false, follow: false }`                                             |
+| `/api/**`                             | Not applicable (API routes)                                                   |
+| `/success`, `/verify/**`, `/reset/**` | `{ index: false, follow: false }`                                             |
+| Paginated duplicates (`?page=2`)      | Set `alternates.canonical` to page-1 URL                                      |
+| Staging / preview environments        | Handle via `X-Robots-Tag: noindex` at middleware level, not per-page `robots` |
 
 ### Canonical URL Rules
 
@@ -435,13 +441,13 @@ Use a single modern form stack across product surfaces:
 
 #### Server Actions vs TanStack Query decision matrix
 
-| Scenario | Use Server Action | Use TanStack Query |
-| --- | --- | --- |
-| Secure DB mutation / secret-backed operation | Yes | Optional wrapper |
-| Simple one-off form submit with no optimistic UI | Yes | Optional |
-| Optimistic updates or cache mutation needed | No (alone) | Yes |
-| Dependent views requiring cache invalidation | Optional | Yes |
-| Highly interactive client mutation workflow | Optional | Yes |
+| Scenario                                         | Use Server Action | Use TanStack Query |
+| ------------------------------------------------ | ----------------- | ------------------ |
+| Secure DB mutation / secret-backed operation     | Yes               | Optional wrapper   |
+| Simple one-off form submit with no optimistic UI | Yes               | Optional           |
+| Optimistic updates or cache mutation needed      | No (alone)        | Yes                |
+| Dependent views requiring cache invalidation     | Optional          | Yes                |
+| Highly interactive client mutation workflow      | Optional          | Yes                |
 
 #### Rule of thumb
 
@@ -1352,27 +1358,27 @@ This project uses `@browserbasehq/stagehand` (v3) for browser-based end-to-end a
 Always initialize once per test file or suite and close after all tests complete.
 
 ```ts
-import { afterAll, beforeAll, describe, it } from "vitest"
-import { Stagehand } from "@browserbasehq/stagehand"
+import { afterAll, beforeAll, describe, it } from "vitest";
+import { Stagehand } from "@browserbasehq/stagehand";
 
-let stagehand: Stagehand
+let stagehand: Stagehand;
 
 beforeAll(async () => {
   stagehand = new Stagehand({
-    env: "LOCAL",                    // LOCAL for CI/dev; BROWSERBASE for cloud
+    env: "LOCAL", // LOCAL for CI/dev; BROWSERBASE for cloud
     headless: true,
-    modelName: "gpt-4o",             // or "claude-3-5-sonnet-20241022"
+    modelName: "gpt-4o", // or "claude-3-5-sonnet-20241022"
     modelClientOptions: {
       apiKey: process.env["OPENAI_API_KEY"],
     },
-    verbose: 0,                      // set to 1 only during debugging
-  })
-  await stagehand.init()
-})
+    verbose: 0, // set to 1 only during debugging
+  });
+  await stagehand.init();
+});
 
 afterAll(async () => {
-  await stagehand.close()
-})
+  await stagehand.close();
+});
 ```
 
 - Always call `await stagehand.close()` in `afterAll`; failure to do so leaks browser processes.
@@ -1385,9 +1391,11 @@ afterAll(async () => {
 **`act`** — perform a browser interaction described in plain language:
 
 ```ts
-await stagehand.act({ action: "click the Sign In button" })
-await stagehand.act({ action: 'fill in the email field with "user@example.com"' })
-await stagehand.act({ action: "submit the login form" })
+await stagehand.act({ action: "click the Sign In button" });
+await stagehand.act({
+  action: 'fill in the email field with "user@example.com"',
+});
+await stagehand.act({ action: "submit the login form" });
 ```
 
 - Keep each `act` call atomic: one logical action per call.
@@ -1400,7 +1408,7 @@ await stagehand.act({ action: "submit the login form" })
 const result = await stagehand.extract({
   instruction: "extract the current credit balance shown on the billing page",
   schema: z.object({ balance: z.string() }),
-})
+});
 ```
 
 - Always provide a `schema` (Zod) to get typed, validated output.
@@ -1411,7 +1419,7 @@ const result = await stagehand.extract({
 ```ts
 const actions = await stagehand.observe({
   instruction: "click the top-up button",
-})
+});
 ```
 
 - Use `observe` before `act` when uncertainty is high: unfamiliar pages, dynamic content, or unstable layouts.
@@ -1420,9 +1428,9 @@ const actions = await stagehand.observe({
 **`page`** — direct Playwright `Page` access for operations that do not need AI:
 
 ```ts
-await stagehand.page.goto("http://localhost:3000/dashboard")
-await stagehand.page.waitForURL("**/dashboard")
-const url = stagehand.page.url()
+await stagehand.page.goto("http://localhost:3000/dashboard");
+await stagehand.page.waitForURL("**/dashboard");
+const url = stagehand.page.url();
 ```
 
 - Prefer `page.goto` and `page.waitForURL` for navigation — these are deterministic and do not cost an LLM call.
@@ -1435,9 +1443,9 @@ const url = stagehand.page.url()
 
 ```ts
 it("should display balance after top-up", async () => {
-  await stagehand.page.goto(`${BASE_URL}/dashboard/billing`)
+  await stagehand.page.goto(`${BASE_URL}/dashboard/billing`);
   // ... act + extract assertions
-})
+});
 ```
 
 - Use `vitest`'s `expect` for assertions on extracted data; do not invent custom assertion helpers.
@@ -1445,12 +1453,12 @@ it("should display balance after top-up", async () => {
 
 ### Local vs Browserbase environments
 
-| Setting | Local (CI/dev) | Browserbase (cloud) |
-| --- | --- | --- |
-| `env` | `"LOCAL"` | `"BROWSERBASE"` |
-| `headless` | `true` | managed by platform |
-| Required env vars | none (beyond LLM key) | `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID` |
-| Use case | unit CI pipeline E2E gate | remote cross-browser, persistent session |
+| Setting           | Local (CI/dev)            | Browserbase (cloud)                             |
+| ----------------- | ------------------------- | ----------------------------------------------- |
+| `env`             | `"LOCAL"`                 | `"BROWSERBASE"`                                 |
+| `headless`        | `true`                    | managed by platform                             |
+| Required env vars | none (beyond LLM key)     | `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID` |
+| Use case          | unit CI pipeline E2E gate | remote cross-browser, persistent session        |
 
 - Set `BROWSERBASE_API_KEY` and `BROWSERBASE_PROJECT_ID` via worker secrets or CI environment variables. Never commit them.
 - Do not run Browserbase sessions in local dev unless explicitly needed; they are billed per minute.

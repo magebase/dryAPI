@@ -17,6 +17,11 @@ describe("runpod-profit-optimizer", () => {
     expect(getRunpodModelProfile("Flux1schnell").gpuTier).toBe("rtx4090")
     expect(getRunpodModelProfile("WhisperLargeV3").inferenceTypes).toContain("vid2txt")
     expect(getRunpodModelProfile("Flux1schnell").gpuFallbackOrder).toEqual(["rtx4090", "a6000", "a100"])
+    expect(getRunpodModelProfile("Flux_2_Klein_4B_BF16")).toMatchObject({
+      gpuTier: "a100",
+      endpointKey: "endpoint-flux-2-klein",
+      targetRetailPriceUsd: 0.006588,
+    })
   })
 
   it("estimates provider request cost with startup and idle windows", () => {
@@ -96,7 +101,7 @@ describe("runpod-profit-optimizer", () => {
     })
 
     expect(
-      ["Flux1schnell", "Flux1dev", "SDXL", "JuggernautXL", "RealVisXL", "ZImageTurbo_INT8", "Flux_2_Klein_4B_INT8"],
+      ["Flux1schnell", "Flux1dev", "SDXL", "JuggernautXL", "RealVisXL", "ZImageTurbo_INT8", "Flux_2_Klein_4B_INT8", "Flux_2_Klein_4B_BF16"],
     ).toContain(selection.modelSlug)
     expect(selection.expectedGrossMargin).toBeGreaterThan(0)
   })

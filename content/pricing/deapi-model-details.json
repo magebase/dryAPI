@@ -41,6 +41,14 @@
       "huggingFaceRepo": "black-forest-labs/FLUX.2-klein-4B",
       "sourceNote": "Run with INT8 baseline and optional runtime quantization based on latency and cost targets."
     },
+    "Flux_2_Klein_4B_BF16": {
+      "displayName": "FLUX.2 Klein 4B BF16",
+      "summary": "Compact FLUX generation profile balancing quality and speed for production image APIs.",
+      "primaryUse": "Text-to-image and image-to-image",
+      "huggingFaceUrl": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B",
+      "huggingFaceRepo": "black-forest-labs/FLUX.2-klein-4B",
+      "sourceNote": "Run with BF16 weights for the active production image profile and keep pricing aligned with the live manifest."
+    },
     "Flux1schnell": {
       "displayName": "FLUX.1 schnell",
       "summary": "Latency-focused FLUX model for rapid image iteration and high-throughput generation.",

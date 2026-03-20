@@ -1,10 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import {
-  Manrope,
-  DM_Sans,
-  Fira_Code,
-} from "next/font/google";
+import { Manrope, DM_Sans, Fira_Code } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { isPwaEnabledServer } from "@/lib/feature-flags";
@@ -60,8 +56,6 @@ const manrope = Manrope({
   weight: ["200", "300", "400", "500", "600", "700", "800"],
   variable: "--font-manrope",
 });
-
-;
 
 const FALLBACK_SITE_URL = "https://dryapi.dev";
 
@@ -142,15 +136,16 @@ export default function RootLayout({
       )}
     >
       <body
-        className={`${manrope.variable} ${dmSans.variable} ${firaCode.variable} antialiased`}
+        className={`${manrope.variable} ${dmSans.variable} ${firaCode.variable} m-0 antialiased`}
       >
         <NuqsAdapter>
           <AppProviders>
             {pwaEnabled ? <SerwistRegister /> : null}
             <Suspense fallback={null}>
               <AosProvider>{children}</AosProvider>
+
+              <AppToaster />
             </Suspense>
-            <AppToaster />
           </AppProviders>
         </NuqsAdapter>
       </body>

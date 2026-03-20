@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   ArrowRight,
   Code2,
@@ -127,7 +126,7 @@ export function HomeSections({
   const omnichannelBody = resolveSiteUiText(
     site,
     "home.omnichannel.body",
-    "One policy layer to manage Email, Chat, Docs, CRM, and media workflows.",
+    "Run chat, image, speech, video, and embedding models through a single endpoint. Switch models without reworking your integration.",
   );
 
   const commandHeading = resolveSiteUiText(
@@ -210,7 +209,7 @@ const result = await res.json();`;
   ];
 
   const heroMetrics = [
-    { value: "150+", label: "Production Models" },
+    { value: "10+", label: "Production Models" },
     { value: "99.99%", label: "Gateway Uptime" },
     { value: "<220ms", label: "Median Route Overhead" },
   ];
@@ -240,34 +239,38 @@ const result = await res.json();`;
 
               <div className="relative grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 mb-6">
-                    <div className="size-1.5 animate-pulse rounded-full bg-indigo-400" />
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 mb-6 backdrop-blur-sm">
+                    <div className="size-2 animate-pulse rounded-full bg-indigo-400" />
                     <p
-                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50"
+                      className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70"
                       data-tina-field={tinaField(home.hero, "kicker")}
                     >
                       {home.hero.kicker}
                     </p>
                   </div>
                   <h1
-                    className="mt-3 max-w-3xl whitespace-pre-line bg-gradient-to-b from-white via-[#dceeff] to-[#91cfff] bg-clip-text font-display text-4xl leading-[0.95] tracking-[-0.02em] text-transparent sm:text-5xl md:text-6xl"
+                    className="mt-4 max-w-3xl whitespace-pre-line bg-gradient-to-b from-white via-[#dceeff] to-[#91cfff] bg-clip-text font-display text-5xl leading-[0.92] tracking-[-0.03em] text-transparent sm:text-6xl md:text-7xl"
                     data-tina-field={tinaField(home.hero, "heading")}
                   >
                     {home.hero.heading}
                   </h1>
                   <p
-                    className="text-site-inverse-muted mt-5 max-w-2xl text-sm leading-relaxed md:text-base"
+                    className="text-site-inverse-muted mt-6 max-w-xl text-base leading-relaxed md:text-lg"
                     data-tina-field={tinaField(home.hero, "subheading")}
                   >
                     {home.hero.subheading}
                   </p>
 
-                  <div className="mt-7 flex flex-wrap gap-2.5">
-                    <ActionLink
-                      action={home.hero.primaryAction}
-                      field={tinaField(home.hero, "primaryAction")}
-                      tone="ink"
-                    />
+                  <div className="mt-8 flex flex-wrap items-center gap-3">
+                    <QuoteAwareLink
+                      className="inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-[color:var(--cta-cool-a)] to-[color:var(--cta-cool-b)] px-7 py-4 text-sm font-bold tracking-tight text-white shadow-[0_16px_40px_-8px_rgba(40,80,200,0.45)] transition hover:brightness-110 hover:shadow-[0_20px_48px_-8px_rgba(40,80,200,0.55)] active:scale-[0.98]"
+                      data-tina-field={tinaField(home.hero, "primaryAction")}
+                      href={home.hero.primaryAction.href}
+                      quoteLabel={home.hero.primaryAction.label}
+                    >
+                      {home.hero.primaryAction.label}
+                      <ArrowRight className="size-4" />
+                    </QuoteAwareLink>
                     <ActionLink
                       action={home.hero.secondaryAction}
                       field={tinaField(home.hero, "secondaryAction")}
@@ -390,14 +393,39 @@ const result = await res.json();`;
               y={14}
             >
               <div className="marquee-track flex w-max gap-2 [--marquee-duration:26s]">
-                {trustedMarqueeLogos.map((logo, index) => (
+                {/* {trustedMarqueeLogos.map((logo, index) => (
                   <TrustedLogoPill key={`${logo.id}-${index}`} logo={logo} />
-                ))}
+                ))} */}
               </div>
             </Reveal>
           </div>
         </section>
       ) : null}
+
+      {/* Credibility metrics strip */}
+      <div className="border-y border-[#e3e3e3] bg-[#f5f5f5] py-7">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-4">
+            {(
+              [
+                // { value: "1.2M+", label: "Requests Served" },
+                // { value: "10+", label: "Models Available" },
+                // { value: "99.99%", label: "Gateway Uptime" },
+                // { value: "300+", label: "Active Tenants" },
+              ] as const
+            ).map((m) => (
+              <div className="text-center" key={m.label}>
+                <p className="font-display text-2xl font-bold tracking-tight text-[#111111]">
+                  {m.value}
+                </p>
+                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7a7a7a]">
+                  {m.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <section
         className="bg-[#f2f2f2] py-12 md:py-24"
@@ -420,8 +448,8 @@ const result = await res.json();`;
               {home.spotlightSection.title}
             </h2>
             <p className="text-site-muted mt-5 text-lg">
-              Strategic inference control for teams that prioritize stability,
-              performance, and unit economics.
+              Pick the right model for every job, integrate in minutes, and pay
+              only for what you use.
             </p>
           </Reveal>
 
@@ -438,25 +466,17 @@ const result = await res.json();`;
               <FeatureStory
                 actionLabel={spotlightAction1.value}
                 actionLabelField={spotlightAction1.field}
-                card={spotlightCards[0]}
-                linkHref={home.hero.primaryAction.href}
+                card={spotlightCards[1]}
+                linkHref={home.hero.secondaryAction.href}
                 reverse={false}
-                type="policy"
+                type="image"
               />
               <FeatureStory
                 actionLabel={spotlightAction2.value}
                 actionLabelField={spotlightAction2.field}
-                card={spotlightCards[1] ?? spotlightCards[0]}
-                linkHref={home.hero.secondaryAction.href}
-                reverse
-                type="audit"
-              />
-              <FeatureStory
-                actionLabel={spotlightAction3.value}
-                actionLabelField={spotlightAction3.field}
-                card={spotlightCards[2] ?? spotlightCards[0]}
+                card={spotlightCards[2] ?? spotlightCards[1]}
                 linkHref={home.contactPanel.primaryAction.href}
-                reverse={false}
+                reverse
                 type="costs"
               />
             </div>
@@ -517,7 +537,7 @@ const result = await res.json();`;
       </section>
 
       <section
-        className="bg-[#ececec] py-3 pb-10 md:pb-12"
+        className="bg-[#ececec] py-10 md:py-14"
         data-landing-slot="capability-grid"
         data-tina-field={tinaField(home, "capabilitySection")}
         id="landing-slot-capability-grid"
@@ -572,50 +592,6 @@ const result = await res.json();`;
         </div>
       </section>
 
-      {/* Three-card value grid (more distinct visuals) */}
-      <section
-        className="bg-white py-10"
-        data-landing-slot="value-grid"
-        id="landing-slot-value-grid"
-      >
-        <div className="mx-auto max-w-7xl px-4">
-          <Reveal
-            as="div"
-            className="rounded-xl border border-[#eef0f2] bg-white p-6 md:p-8"
-          >
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
-                What Fast and Compliant Looks Like
-              </p>
-              <h2 className="text-site-strong mt-2 text-3xl leading-tight md:text-4xl">
-                Outcomes, Not Hype
-              </h2>
-            </div>
-
-            <div className="mt-6 grid gap-6 sm:grid-cols-3">
-              <ValueCard
-                title="Policy Enforcement"
-                body="Stop unsafe outputs before they leave your stack."
-                accent="from-secondary/75 via-white to-accent/15"
-                type="policy"
-              />
-              <ValueCard
-                title="Audit Trails"
-                body="Immutable, queryable logs for compliance reviews."
-                accent="from-secondary/70 via-white to-primary/12"
-                type="audit"
-              />
-              <ValueCard
-                title="Predictable Costs"
-                body="Reserve GPU seconds and cache embeddings to save money."
-                accent="from-secondary/65 via-white to-accent/10"
-                type="costs"
-              />
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       <section
         className="border-y border-[#dfdfdf] bg-[#f2f2f2] py-12"
         data-landing-slot="operational-proof"
@@ -658,39 +634,6 @@ const { output } = await res.json()`}
         </div>
       </section>
 
-      {/* Workflow proof with mock UI */}
-      <section
-        className="bg-[#fbfcfd] py-10"
-        data-landing-slot="workflow-proof"
-        id="landing-slot-workflow-proof"
-      >
-        <div className="mx-auto max-w-7xl px-4">
-          <Reveal
-            as="div"
-            className="rounded-xl border border-[#eef2f4] bg-white p-6 md:p-8"
-          >
-            <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-              <div>
-                <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.14em]">
-                  See It Work
-                </p>
-                <h3 className="text-site-strong mt-2 text-2xl font-semibold">
-                  Policy checks in the flow
-                </h3>
-                <p className="text-site-muted mt-3 text-sm">
-                  A compact mock shows how content is validated and approved
-                  before delivery.
-                </p>
-              </div>
-
-              <div>
-                <MockWorkflowFrame />
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       <section
         className="bg-[#ececec] py-12"
         data-landing-slot="api-planning"
@@ -706,9 +649,8 @@ const { output } = await res.json()`}
               {planningHeading.value}
             </h2>
             <p className="text-site-muted mt-4 text-sm leading-relaxed">
-              Use standard TypeScript and Fetch API primitives to reach a wide
-              range of models with minimal integration work and cool validation
-              params.
+              Use standard TypeScript and Fetch API primitives to reach 150+
+              models with predictable request shapes and full type safety.
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
               {home.contactPanel.visible ? (
@@ -766,11 +708,11 @@ const { output } = await res.json()`}
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 mb-6">
                 <div className="size-1.5 rounded-full bg-slate-400" />
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                  Omnichannel Layer
+                  Full Model Coverage
                 </p>
               </div>
               <h3 className="font-display text-4xl tracking-tight text-slate-900 md:text-5xl">
-                Unified Governance Across Every Channel
+                One API, Every Modality
               </h3>
               <p
                 className="mt-6 text-base leading-relaxed text-slate-500 md:text-lg"
@@ -816,7 +758,7 @@ const { output } = await res.json()`}
 
                   <div className="relative mt-6 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-colors group-hover:text-slate-900">
                     <div className="h-px w-8 bg-slate-200 transition-all group-hover:w-12 group-hover:bg-slate-900" />
-                    Explorer {tile.title}
+                    Explore {tile.title}
                   </div>
                 </Reveal>
               ))}
@@ -825,28 +767,9 @@ const { output } = await res.json()`}
         </div>
       </section>
 
-      <section
-        className="border-y border-[#dddddd] bg-[#f0f0f0] py-16"
-        data-landing-slot="scale-banner"
-        id="landing-slot-scale-banner"
-      >
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <Reveal as="div">
-            <h2 className="text-site-strong text-3xl leading-tight md:text-4xl">
-              Built To Scale Without Expensive Lock-In
-            </h2>
-            <p className="text-site-muted mx-auto mt-4 max-w-2xl text-sm leading-relaxed">
-              Move from prototype volume to production spikes with elastic
-              routing, predictable contracts, and pricing designed to stay
-              competitive as usage grows.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
       {/* Use cases grid */}
       <section
-        className="bg-white py-24 md:py-32"
+        className="bg-white py-16 md:py-24"
         data-landing-slot="use-cases"
         id="landing-slot-use-cases"
       >
@@ -860,8 +783,8 @@ const { output } = await res.json()`}
                 Built for Scalable AI Operations
               </h3>
               <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-slate-500">
-                From automated support to high-volume media synthesis, we handle
-                the infrastructure so you can focus on the product.
+                From customer support automation to content generation at scale
+                — one API contract handles routing, billing, and scaling.
               </p>
             </div>
 
@@ -889,28 +812,6 @@ const { output } = await res.json()`}
         </div>
       </section>
 
-      {/* Metrics / stats band */}
-      <section
-        className="relative overflow-hidden bg-white py-16 text-site-strong"
-        data-landing-slot="metrics"
-        id="landing-slot-metrics"
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,118,255,0.06),transparent_70%)]" />
-        <div className="relative z-10 mx-auto max-w-7xl px-4">
-          <Reveal as="div" className="text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-site-soft">
-              Reliability Snapshot
-            </p>
-          </Reveal>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatBand label="Requests Served" value="1.2M+" />
-            <StatBand label="Models Supported" value="150+" />
-            <StatBand label="Gateway Uptime" value="99.99%" />
-            <StatBand label="Active Tenants" value="300+" />
-          </div>
-        </div>
-      </section>
-
       {/* Institutional trust / certifications */}
       <section
         className="bg-[#f7f9fb] py-10"
@@ -926,30 +827,45 @@ const { output } = await res.json()`}
               Trust &amp; Security
             </p>
             <h3 className="text-site-strong mt-2 text-2xl font-semibold">
-              Enterprise-grade monitoring and controls
+              Built with security at every layer
             </h3>
             <p className="text-site-muted mt-3 text-sm">
-              Certifications, audit logs, and strict access controls for
-              regulated workloads.
+              API key auth, rate limits, Stripe billing controls, and HTTPS on
+              every request.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-6">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="size-5 text-[#2b6cb0]" />
-                <span className="text-sm font-semibold">SOC2</span>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
+                <ShieldCheck className="size-4 text-[#2b6cb0]" />
+                <span className="text-xs font-semibold text-slate-700">
+                  Auth on every key
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="size-5 text-[#2b6cb0]" />
-                <span className="text-sm font-semibold">ISO 27001</span>
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
+                <ShieldCheck className="size-4 text-[#2b6cb0]" />
+                <span className="text-xs font-semibold text-slate-700">
+                  Per-key rate limits
+                </span>
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
+                <ShieldCheck className="size-4 text-[#2b6cb0]" />
+                <span className="text-xs font-semibold text-slate-700">
+                  Stripe billing controls
+                </span>
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
+                <ShieldCheck className="size-4 text-[#2b6cb0]" />
+                <span className="text-xs font-semibold text-slate-700">
+                  HTTPS end-to-end
+                </span>
               </div>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* Pricing teaser */}
       {/* Pricing band */}
       <section
-        className="bg-white"
+        className="bg-white py-10 md:py-16"
         data-landing-slot="pricing"
         id="landing-slot-pricing"
       >
@@ -1154,16 +1070,11 @@ function FeatureStory({
       <div
         className={`flex flex-col justify-center ${reverse ? "lg:order-2" : ""}`}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-slate-900 shadow-lg ring-1 ring-white/10 transition-transform group-hover:scale-110">
-            <SiteIcon className="size-5 text-white" icon={card.icon} />
-          </div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--cta-cool-a)]">
-            Platform Protocol
-          </p>
+        <div className="flex size-10 items-center justify-center rounded-xl bg-slate-900 shadow-lg ring-1 ring-white/10 transition-transform group-hover:scale-110">
+          <SiteIcon className="size-5 text-white" icon={card.icon} />
         </div>
         <h3
-          className="text-site-strong mt-6 text-3xl font-display leading-[1.1] tracking-tight md:text-4xl"
+          className="text-site-strong mt-5 text-3xl font-display leading-[1.1] tracking-tight md:text-4xl"
           data-tina-field={tinaField(card, "title")}
         >
           {card.title}
@@ -1239,20 +1150,6 @@ function UseCaseCard({
         Deploy pipeline
         <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
       </div>
-    </div>
-  );
-}
-
-function StatBand({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="group relative rounded-2xl border border-black/5 bg-slate-50/50 p-6 transition-colors hover:bg-white md:p-8 text-center">
-      <div className="absolute inset-x-0 bottom-0 h-1 w-full scale-x-0 bg-slate-950 transition-transform duration-500 group-hover:scale-x-100" />
-      <p className="text-3xl font-display font-bold tracking-tight text-slate-900 md:text-4xl">
-        {value}
-      </p>
-      <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-        {label}
-      </p>
     </div>
   );
 }
@@ -1654,40 +1551,6 @@ function MockWorkflowFrame({ className }: { className?: string }) {
   );
 }
 
-function ValueCard({
-  title,
-  body,
-  accent,
-  type,
-}: {
-  title: string;
-  body: string;
-  accent: string;
-  type?:
-    | "default"
-    | "chat"
-    | "image"
-    | "speech"
-    | "embeddings"
-    | "policy"
-    | "audit"
-    | "costs";
-}) {
-  return (
-    <div className="group rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
-      <div
-        className={`rounded-lg p-2 bg-gradient-to-br ${accent} shadow-inner transition-transform group-hover:scale-[1.02]`}
-      >
-        <MockUiPreview compact type={type} />
-      </div>
-      <h3 className="text-site-strong mt-5 text-lg font-bold tracking-tight">
-        {title}
-      </h3>
-      <p className="text-site-muted mt-2 text-sm leading-relaxed">{body}</p>
-    </div>
-  );
-}
-
 function MockCodePanel({ code }: { code?: string }) {
   const defaultCode = `const res = await fetch("https://api.dryapi.dev/v1/inference", {
   method: "POST",
@@ -1716,15 +1579,6 @@ function MockCodePanel({ code }: { code?: string }) {
           <code>{code || defaultCode}</code>
         </pre>
       </div>
-    </div>
-  );
-}
-
-function LegacyStatBand({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-white/12 bg-white/4 px-4 py-3 text-center">
-      <div className="text-site-strong text-2xl font-bold">{value}</div>
-      <div className="text-site-muted mt-1 text-sm">{label}</div>
     </div>
   );
 }

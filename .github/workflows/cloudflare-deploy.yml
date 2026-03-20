@@ -206,10 +206,18 @@ jobs:
           }
           NODE
 
-      - name: Validate internal auth secret is present
+      - name: Resolve internal auth secret
         run: |
           set -euo pipefail
-          test -n "${SYNC_SECRET_INTERNAL_API_KEY:-}"
+
+          internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-}}}}"
+
+          if [[ -z "${internal_api_key}" ]]; then
+            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, or SYNC_SECRET_DEAPI_API_KEY is required."
+            exit 1
+          fi
+
+          printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
       - name: Sync GitHub secrets to Cloudflare Worker secrets
         run: |
@@ -439,10 +447,18 @@ jobs:
             printf '%s\n' "${provision_output}" | grep -E '^(CLOUDFLARE_ACCESS_TEAM_DOMAIN|CLOUDFLARE_ACCESS_AUD)='
           )
 
-      - name: Validate internal auth secret is present
+      - name: Resolve internal auth secret
         run: |
           set -euo pipefail
-          test -n "${SYNC_SECRET_INTERNAL_API_KEY:-}"
+
+          internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-}}}}"
+
+          if [[ -z "${internal_api_key}" ]]; then
+            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, or SYNC_SECRET_DEAPI_API_KEY is required."
+            exit 1
+          fi
+
+          printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
       - name: Sync GitHub secrets to Cloudflare API worker secrets
         working-directory: cloudflare/api

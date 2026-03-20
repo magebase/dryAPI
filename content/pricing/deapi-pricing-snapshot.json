@@ -33,6 +33,7 @@
     "Ben2",
     "Bge_M3_INT8",
     "Chatterbox",
+    "Flux_2_Klein_4B_BF16",
     "Flux_2_Klein_4B_INT8",
     "Flux1schnell",
     "Kokoro",
@@ -180,6 +181,37 @@
       "sourceUrl": "https://deapi.ai/pricing?type=image-to-image",
       "model": "Flux_2_Klein_4B_INT8",
       "modelLabel": "FLUX.2 Klein 4B INT8",
+      "params": {
+        "steps": 4
+      },
+      "priceText": "Livewire estimated cost $0.006588",
+      "priceUsd": 0.006588,
+      "credits": 0.006588,
+      "metadata": {
+        "pageTitle": "AI API Pricing - Pay Per Use - deAPI.ai",
+        "metaDescription": "Pay-per-use pricing for AI image, voice, video and OCR APIs. Generate images from $0.001, transcribe video from $0.015/hour. Start free, scale affordably.",
+        "sliderCount": 1,
+        "priceSource": "livewire"
+      },
+      "excerpts": [
+        "Models Pricing Enterprise Docs Playground Text to Image Text to Speech Image to Text Video to Text Image to Image Image to Video Text to Music",
+        "Models",
+        "Models Text-to-Image Image-to-Image FLUX.2 Klein 4B BF16 Qwen Image Edit Plus Text-to-Speech Text-to-Video Image-to-Video Video-to-Text Image-to-Text Text-to-Music Text-to-Embedding Background Removal Image Upscale",
+        "Image Image Starting price per transformation (4 steps) $0.00659 Style transfer between images AI-powered image enhancement Seamless object modification Artistic transformations Photo-to-illustration conversion",
+        "Image Image Starting price per transformation (4 steps) $0.00659",
+        "Starting price per transformation (4 steps)",
+        "Price Calculator",
+        "Steps 4 Estimated cost Calculating... $0.00659 4 steps Higher steps increase quality and processing time. Note: Image-to-Image pricing is based on steps. Upload your image and provide a prompt to transform it. Try in Playground"
+      ],
+      "descriptions": [],
+      "scrapedAt": "2026-03-15T06:54:07.427Z"
+    },
+    {
+      "id": "0ba4bfefb447ab0f657aa1bbdc526be4f1ed9093",
+      "category": "image-to-image",
+      "sourceUrl": "https://deapi.ai/pricing?type=image-to-image",
+      "model": "Flux_2_Klein_4B_BF16",
+      "modelLabel": "FLUX.2 Klein 4B BF16",
       "params": {
         "steps": 4
       },
@@ -15762,6 +15794,42 @@
       ],
       "descriptions": [
         "Text Image Generate stunning images from text descriptions 512×512 4 steps $0.00136 768×768 4 steps $0.00191 1024×1024 4 steps $0.00268 1024×1024 8 steps $0.00384 2048×2048 4 steps $0.00794",
+        "Generate stunning images from text descriptions"
+      ],
+      "scrapedAt": "2026-03-15T06:54:42.505Z"
+    },
+    {
+      "id": "df01605cd95dc95039903ab923e92ef48ae72fc0",
+      "category": "text-to-image",
+      "sourceUrl": "https://deapi.ai/pricing?type=text-to-image",
+      "model": "Flux_2_Klein_4B_BF16",
+      "modelLabel": "FLUX.2 Klein 4B BF16",
+      "params": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 4
+      },
+      "priceText": "Livewire estimated cost $0.00367",
+      "priceUsd": 0.00367,
+      "credits": 0.00367,
+      "metadata": {
+        "pageTitle": "AI API Pricing - Pay Per Use - deAPI.ai",
+        "metaDescription": "Pay-per-use pricing for AI image, voice, video and OCR APIs. Generate images from $0.001, transcribe video from $0.015/hour. Start free, scale affordably.",
+        "sliderCount": 3,
+        "priceSource": "livewire"
+      },
+      "excerpts": [
+        "Models Pricing Enterprise Docs Playground Text to Image Text to Speech Image to Text Video to Text Image to Image Image to Video Text to Music",
+        "Models",
+        "Models Text-to-Image FLUX.2 Klein 4B BF16 Z-Image-Turbo INT8 FLUX.1 schnell Image-to-Image Text-to-Speech Text-to-Video Image-to-Video Video-to-Text Image-to-Text Text-to-Music Text-to-Embedding Background Removal Image Upscale",
+        "Price Calculator Width 1024px Height 1024px Steps 4 Estimated cost Calculating... $0.00367 1024×1024 • 4 steps Higher resolution and steps increase quality and cost. Try in Playground",
+        "Price Calculator",
+        "Width 1024px Height 1024px Steps 4 Estimated cost Calculating... $0.00367 1024×1024 • 4 steps Higher resolution and steps increase quality and cost. Try in Playground",
+        "Estimated cost Calculating... $0.00367 1024×1024 • 4 steps",
+        "Estimated cost"
+      ],
+      "descriptions": [
+        "Text Image Generate stunning images from text descriptions 512×512 4 steps $0.00187 768×768 4 steps $0.00262 1024×1024 4 steps $0.00367",
         "Generate stunning images from text descriptions"
       ],
       "scrapedAt": "2026-03-15T06:54:42.505Z"

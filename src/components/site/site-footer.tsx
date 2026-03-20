@@ -99,6 +99,7 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
               </p>
             ))}
           </div>
+
           <div className="flex items-center gap-3">
             {site.footer.socialLinks.map((item, index) => {
               const Icon = iconMap[item.icon];
@@ -146,24 +147,6 @@ export function SiteFooter({ site }: { site: SiteConfig }) {
                 ))}
               </ul>
             </Reveal>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-t border-[color:var(--border)] py-4">
-        <div className="text-site-soft mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 text-xs">
-          {site.footer.legalLinks.map((link, index) => (
-            <QuoteAwareLink
-              key={`legal-${link.href}-${link.label}-${index}`}
-              className="transition hover:text-[color:var(--site-text-strong)]"
-              data-aos="fade-up"
-              data-aos-delay={String(index * 45)}
-              data-aos-duration="360"
-              data-tina-field={tinaField(link)}
-              href={link.href}
-            >
-              {link.label}
-            </QuoteAwareLink>
           ))}
         </div>
       </div>
