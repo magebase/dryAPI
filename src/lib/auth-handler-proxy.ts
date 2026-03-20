@@ -110,7 +110,7 @@ export async function invokeAuthHandler<T = unknown>(input: InvokeAuthHandlerInp
 }
 
 export async function createAuthApiKey<T = unknown>(input: CreateApiKeyInput): Promise<T> {
-  const authApi = getAuth().api as AuthApiWithApiKey
+  const authApi = getAuth().api as unknown as AuthApiWithApiKey
 
   return authApi.createApiKey({
     method: "POST",
