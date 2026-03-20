@@ -21,8 +21,6 @@ const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth
 const SESSION_CHECK_CACHE_TTL_MS = 5_000
 const SESSION_CHECK_TIMEOUT_MS = 2_500
 
-export const runtime = "edge"
-
 type SessionAuthCacheEntry = {
   authenticated: boolean
   expiresAt: number
@@ -220,7 +218,6 @@ async function isDashboardUserAuthenticated(
         traceId,
         status: response.status,
       })
-
       writeCachedSessionAuth(sessionToken, false)
       return false
     }
@@ -230,18 +227,17 @@ async function isDashboardUserAuthenticated(
 
     logServerAuthEvent("log", "middleware.dashboard.session-check.result", {
       traceId,
-      status: response.status,
       authenticated,
-      payloadKeys: payload && typeof payload === "object" ? Object.keys(payload as Record<string, unknown>) : [],
     })
 
     writeCachedSessionAuth(sessionToken, authenticated)
     return authenticated
-  } catch {
+  } catch (error) {
     logServerAuthEvent("error", "middleware.dashboard.session-check.error", {
       traceId,
-      fromPath: request.nextUrl.pathname,
+      error: error instanceof Error ? error.message : String(error),
     })
+    writeCachedSessionAuth(sessionToken, false)
     return false
   }
 }
@@ -250,75 +246,57 @@ function createDashboardLoginRedirect(request: NextRequest, traceId: string): Ne
   const loginUrl = request.nextUrl.clone()
   loginUrl.pathname = "/login"
   loginUrl.search = ""
-  loginUrl.searchParams.set("callbackURL", `${request.nextUrl.pathname}${request.nextUrl.search}`)
 
-  const forwardParams = ["auth", "error", "toast", "toastDescription", "toastType"] as const
-  for (const key of forwardParams) {
-    const value = request.nextUrl.searchParams.get(key)
-    if (value) {
-      loginUrl.searchParams.set(key, value)
-    }
-  }
+  const fromPath = request.nextUrl.pathname + request.nextUrl.search
+  loginUrl.searchParams.set("redirectTo", fromPath)
 
   logServerAuthEvent("warn", "middleware.dashboard.redirect-to-login", {
     traceId,
     fromPath: request.nextUrl.pathname,
     toPath: loginUrl.pathname,
-    callbackURL: loginUrl.searchParams.get("callbackURL"),
   })
 
   return NextResponse.redirect(loginUrl, 307)
 }
 
-function resolveDefaultLocaleDocsPath(pathname: string): string | null {
-  const segments = pathname.split("/").filter(Boolean)
-
-  if (segments[0] !== DEFAULT_LOCALE || segments[1] !== "docs") {
-    return null
-  }
-
-  return `/${segments.slice(1).join("/")}` || "/docs"
-}
-
-function resolveVersionedDocsPath(pathname: string): string | null {
-  const segments = pathname.split("/").filter(Boolean)
-
-  if (segments.length === 0) {
-    return null
-  }
-
-  let docsIndex = 0
-  let localePrefix = ""
-
-  if (isSupportedLocale(segments[0]) && segments[0] !== DEFAULT_LOCALE) {
-    localePrefix = `/${segments[0]}`
-    docsIndex = 1
-  }
-
-  if (segments[docsIndex] !== "docs") {
-    return null
-  }
-
-  const version = segments[docsIndex + 1]
-
-  if (!version || version === "v1") {
-    return null
-  }
-
-  const suffix = segments.slice(docsIndex + 1).join("/")
-  return `${localePrefix}/docs/v1/${suffix}`
-}
-
 function resolveBaseDocsPath(pathname: string): string | null {
-  const segments = pathname.split("/").filter(Boolean)
+  const cleaned = pathname.replace(/\/+$/, "")
 
-  if (segments.length === 1 && segments[0] === "docs") {
+  if (cleaned === "/docs") {
     return "/docs/v1"
   }
 
+  if (cleaned.startsWith("/docs/v1/")) {
+    return null
+  }
+
+  const legacyPrefixes = [
+    "/docs/v1/api",
+    "/docs/v1/blog",
+    "/docs/v1/marketing",
+    "/docs/v1/execution-modes-and-integrations",
+  ]
+
+  const matchingPrefix = legacyPrefixes.find((prefix) => cleaned === prefix || cleaned.startsWith(`${prefix}/`))
+  if (matchingPrefix) {
+    return cleaned
+  }
+
+  const segments = cleaned.split("/").filter(Boolean)
+  if (segments.length >= 2 && segments[0] === "docs" && segments[1] !== "v1") {
+    return `/docs/v1/${segments.slice(1).join("/")}`
+  }
+
+  return null
+}
+
+function resolveDefaultLocaleDocsPath(pathname: string): string | null {
+  const cleaned = pathname.replace(/\/+$/, "")
+  const segments = cleaned.split("/").filter(Boolean)
+
   if (
-    segments.length === 2
-    && isSupportedLocale(segments[0])
+    segments.length >= 2
+    && isSupportedLocale(segments[0] || "")
     && segments[0] !== DEFAULT_LOCALE
     && segments[1] === "docs"
   ) {
@@ -328,7 +306,21 @@ function resolveBaseDocsPath(pathname: string): string | null {
   return null
 }
 
-export async function proxy(request: NextRequest) {
+function resolveVersionedDocsPath(pathname: string): string | null {
+  const cleaned = pathname.replace(/\/+$/, "")
+
+  if (cleaned.startsWith("/docs/v1/")) {
+    return null
+  }
+
+  if (cleaned === "/docs/v1") {
+    return null
+  }
+
+  return null
+}
+
+export function middleware(request: NextRequest) {
   const traceId = createAuthTraceId(request.headers.get("x-request-id"))
   const pathname = request.nextUrl.pathname
   const isAuthObservedPath =
