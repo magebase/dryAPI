@@ -18,6 +18,18 @@ export async function GET(request: NextRequest) {
   }
 
   const session = await getDashboardSessionSnapshot(request);
+  if (!session.authenticated) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "unauthorized",
+          message: "You must be signed in to access this endpoint.",
+        },
+      },
+      { status: 401 },
+    );
+  }
+
   if (session.email) {
     await ensureCurrentUserSubscriptionBenefits(session.email).catch(
       () => null,
