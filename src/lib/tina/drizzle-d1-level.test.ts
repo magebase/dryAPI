@@ -1,42 +1,43 @@
 // @vitest-environment node
 
-import Database from "better-sqlite3"
+import { createClient } from "@libsql/client"
 import { afterEach, describe, expect, it } from "vitest"
 
 import { DrizzleD1Level } from "@/lib/tina/drizzle-d1-level"
 
 class TestD1PreparedStatement {
-  private readonly params: unknown[]
+  private readonly params: any[]
 
   constructor(
-    private readonly sqlite: Database,
+    private readonly client: ReturnType<typeof createClient>,
     private readonly query: string,
-    params: unknown[] = []
+    params: any[] = []
   ) {
     this.params = params
   }
 
-  bind(...params: unknown[]): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.sqlite, this.query, params)
+  bind(...params: any[]): TestD1PreparedStatement {
+    return new TestD1PreparedStatement(this.client, this.query, params)
   }
 
   async run(): Promise<{ success: true }> {
-    this.sqlite.prepare(this.query).run(...this.params)
+    await this.client.execute({ sql: this.query, args: this.params })
     return { success: true }
   }
 
   async all<T extends Record<string, unknown>>(): Promise<{ results: T[] }> {
-    const results = this.sqlite.prepare(this.query).all(...this.params) as T[]
-    return { results }
+    const rs = await this.client.execute({ sql: this.query, args: this.params })
+    return { results: rs.rows as unknown as T[] }
   }
 
-  async raw<T extends unknown[]>(): Promise<T[]> {
-    const results = this.sqlite.prepare(this.query).raw(true).all(...this.params) as T[]
-    return results
+  async raw<T extends any[]>(): Promise<T[]> {
+    const rs = await this.client.execute({ sql: this.query, args: this.params })
+    return rs.rows as unknown as T[]
   }
 
   async first<T>(columnName?: string): Promise<T | null> {
-    const row = this.sqlite.prepare(this.query).get(...this.params) as Record<string, unknown> | undefined
+    const rs = await this.client.execute({ sql: this.query, args: this.params })
+    const row = rs.rows[0] as unknown as Record<string, unknown> | undefined
 
     if (!row) {
       return null
@@ -51,10 +52,10 @@ class TestD1PreparedStatement {
 }
 
 class TestD1Database {
-  constructor(private readonly sqlite: Database) {}
+  constructor(private readonly client: ReturnType<typeof createClient>) {}
 
   prepare(query: string): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.sqlite, query)
+    return new TestD1PreparedStatement(this.client, query)
   }
 
   async batch(
@@ -70,28 +71,28 @@ class TestD1Database {
   }
 
   async exec(query: string): Promise<{ success: true }> {
-    this.sqlite.exec(query)
+    await this.client.execute(query)
     return { success: true }
   }
 }
 
-const sqliteHandles: Database[] = []
+const libsqlClients: ReturnType<typeof createClient>[] = []
 
 function createLevel(namespace: string) {
-  const sqlite = new Database(":memory:")
-  sqliteHandles.push(sqlite)
+  const client = createClient({ url: ":memory:" })
+  libsqlClients.push(client)
 
-  const d1 = new TestD1Database(sqlite)
+  const d1 = new TestD1Database(client)
 
   return new DrizzleD1Level<string, unknown>({
     namespace,
-    binding: d1 as unknown as Parameters<typeof import("drizzle-orm/d1").drizzle>[0],
+    binding: d1 as any,
   })
 }
 
-afterEach(() => {
-  for (const sqlite of sqliteHandles.splice(0)) {
-    sqlite.close()
+afterEach(async () => {
+  for (const client of libsqlClients.splice(0)) {
+    client.close()
   }
 })
 
@@ -171,19 +172,19 @@ describe("DrizzleD1Level", () => {
   })
 
   it("isolates data by namespace", async () => {
-    const sqlite = new Database(":memory:")
-    sqliteHandles.push(sqlite)
+    const client = createClient({ url: ":memory:" })
+    libsqlClients.push(client)
 
-    const d1 = new TestD1Database(sqlite)
+    const d1 = new TestD1Database(client)
 
     const alpha = new DrizzleD1Level<string, unknown>({
       namespace: "alpha",
-      binding: d1 as unknown as Parameters<typeof import("drizzle-orm/d1").drizzle>[0],
+      binding: d1 as any,
     })
 
     const beta = new DrizzleD1Level<string, unknown>({
       namespace: "beta",
-      binding: d1 as unknown as Parameters<typeof import("drizzle-orm/d1").drizzle>[0],
+      binding: d1 as any,
     })
 
     await alpha.open()

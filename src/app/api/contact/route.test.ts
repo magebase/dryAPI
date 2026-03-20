@@ -3,20 +3,20 @@ import { NextRequest } from "next/server"
 
 vi.mock("server-only", () => ({}))
 
-const sendBrevoReactEmailMock = vi.fn().mockResolvedValue({ messageId: "msg_contact_123" })
-const contactEmailTemplateMock = vi.fn((props: unknown) => ({ type: "ContactEmail", props }))
-const quoteEmailTemplateMock = vi.fn((props: unknown) => ({ type: "QuoteEmail", props }))
+const { sendBrevoReactEmailMock } = vi.hoisted(() => ({
+  sendBrevoReactEmailMock: vi.fn().mockResolvedValue({ messageId: "msg_contact_123" }),
+}))
 
 vi.mock("@/lib/brevo-email", () => ({
   sendBrevoReactEmail: sendBrevoReactEmailMock,
 }))
 
 vi.mock("@/emails/contact-email", () => ({
-  ContactEmail: contactEmailTemplateMock,
+  ContactEmail: vi.fn((props: unknown) => ({ type: "ContactEmail", props })),
 }))
 
 vi.mock("@/emails/quote-email", () => ({
-  QuoteEmail: quoteEmailTemplateMock,
+  QuoteEmail: vi.fn((props: unknown) => ({ type: "QuoteEmail", props })),
 }))
 
 vi.mock("@/emails/brand", async () => {
@@ -74,14 +74,16 @@ vi.mock("@/lib/turnstile", () => ({
   verifyTurnstileToken: vi.fn().mockResolvedValue({ ok: true, codes: [] }),
 }))
 
+import { ContactEmail } from "@/emails/contact-email"
+import { QuoteEmail } from "@/emails/quote-email"
 import { POST } from "@/app/api/contact/route"
 
 describe("contact route email send path", () => {
   beforeEach(() => {
     vi.stubEnv("BREVO_API_KEY", "brevo_test_key")
     sendBrevoReactEmailMock.mockClear()
-    contactEmailTemplateMock.mockClear()
-    quoteEmailTemplateMock.mockClear()
+    vi.mocked(ContactEmail).mockClear()
+    vi.mocked(QuoteEmail).mockClear()
   })
 
   afterEach(() => {
@@ -115,10 +117,10 @@ describe("contact route email send path", () => {
 
     expect(response.status).toBe(200)
     expect(payload.ok).toBe(true)
-    expect(contactEmailTemplateMock).toHaveBeenCalledTimes(1)
+    expect(ContactEmail).toHaveBeenCalledTimes(1)
     expect(sendBrevoReactEmailMock).toHaveBeenCalledTimes(1)
 
-    const templateProps = contactEmailTemplateMock.mock.calls[0]?.[0] as {
+    const templateProps = vi.mocked(ContactEmail).mock.calls[0]?.[0] as {
       branding: { key: string; mark: string }
       name: string
       email: string

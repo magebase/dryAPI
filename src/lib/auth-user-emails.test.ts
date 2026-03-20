@@ -2,15 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-const sendBrevoReactEmailMock = vi.fn().mockResolvedValue({ messageId: "msg_123" })
-const passwordResetTemplateMock = vi.fn((props: unknown) => ({ type: "PasswordResetEmail", props }))
+const { sendBrevoReactEmailMock } = vi.hoisted(() => ({
+  sendBrevoReactEmailMock: vi.fn().mockResolvedValue({ messageId: "msg_123" }),
+}))
 
 vi.mock("@/lib/brevo-email", () => ({
   sendBrevoReactEmail: sendBrevoReactEmailMock,
 }))
 
 vi.mock("@/emails/password-reset-email", () => ({
-  PasswordResetEmail: passwordResetTemplateMock,
+  PasswordResetEmail: vi.fn((props: unknown) => ({ type: "PasswordResetEmail", props })),
 }))
 
 vi.mock("@/emails/verify-email", () => ({
@@ -38,6 +39,7 @@ vi.mock("@/emails/brand", async () => {
   }
 })
 
+import { PasswordResetEmail } from "@/emails/password-reset-email"
 import { sendAuthPasswordResetEmail } from "@/lib/auth-user-emails"
 
 describe("auth user emails", () => {
@@ -46,7 +48,7 @@ describe("auth user emails", () => {
     vi.stubEnv("BREVO_FROM_EMAIL", "no-reply@embedapi.dev")
     vi.stubEnv("BREVO_FROM_NAME", "EmbedAPI")
     sendBrevoReactEmailMock.mockClear()
-    passwordResetTemplateMock.mockClear()
+    vi.mocked(PasswordResetEmail).mockClear()
   })
 
   afterEach(() => {
@@ -64,10 +66,10 @@ describe("auth user emails", () => {
       token: "reset-token",
     })
 
-    expect(passwordResetTemplateMock).toHaveBeenCalledTimes(1)
+    expect(PasswordResetEmail).toHaveBeenCalledTimes(1)
     expect(sendBrevoReactEmailMock).toHaveBeenCalledTimes(1)
 
-    const templateProps = passwordResetTemplateMock.mock.calls[0]?.[0] as {
+    const templateProps = vi.mocked(PasswordResetEmail).mock.calls[0]?.[0] as {
       branding: { key: string; mark: string }
       resetUrl: string
       name: string

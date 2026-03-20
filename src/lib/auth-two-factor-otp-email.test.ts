@@ -107,7 +107,7 @@ describe("sendTwoFactorOtpEmail", () => {
   })
 
   it("skips sending when BREVO_API_KEY is missing", async () => {
-    vi.unstubAllEnvs()
+    vi.stubEnv("BREVO_API_KEY", "")
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
     await sendTwoFactorOtpEmail(makePayload())
