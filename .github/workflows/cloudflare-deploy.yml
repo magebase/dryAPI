@@ -210,10 +210,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-}}}}"
+          internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-${SYNC_SECRET_BETTER_AUTH_SECRET:-}}}}}"
 
           if [[ -z "${internal_api_key}" ]]; then
-            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, or SYNC_SECRET_DEAPI_API_KEY is required."
+            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, SYNC_SECRET_DEAPI_API_KEY, or SYNC_SECRET_BETTER_AUTH_SECRET is required."
             exit 1
           fi
 
@@ -451,10 +451,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-}}}}"
+          internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-${SYNC_SECRET_BETTER_AUTH_SECRET:-}}}}}"
 
           if [[ -z "${internal_api_key}" ]]; then
-            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, or SYNC_SECRET_DEAPI_API_KEY is required."
+            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, SYNC_SECRET_DEAPI_API_KEY, or SYNC_SECRET_BETTER_AUTH_SECRET is required."
             exit 1
           fi
 
