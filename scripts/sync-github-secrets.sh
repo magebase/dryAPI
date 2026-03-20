@@ -137,7 +137,7 @@ sync_worker_secrets_bulk() {
 
   while :; do
     local output
-    if output=$(pnpm wrangler secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" --env="" 2>&1); then
+    if output=$(pnpm wrangler versions secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" --env="" 2>&1); then
       return 0
     fi
 
