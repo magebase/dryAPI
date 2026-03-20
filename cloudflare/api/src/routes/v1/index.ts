@@ -11,6 +11,7 @@ import { registerJobsStatusRoute } from './jobs-status'
 import { registerJobsWebSocketRoute } from './jobs-websocket'
 import { registerPricingSnapshotsRoute } from './pricing-snapshots'
 import { registerQueueBatchScalingRoute } from './queue-batch-scaling'
+import { registerE2eSeedingRoute } from './internal-seed'
 import { registerRunpodCancelRoute } from './runpod-cancel'
 import { registerRunpodHealthRoute } from './runpod-health'
 import { registerRunpodPurgeQueueRoute } from './runpod-purge-queue'
@@ -32,6 +33,7 @@ export function registerV1Routes(app: Hono<WorkerEnv>) {
   registerJobsWebSocketRoute(app)
   registerPricingSnapshotsRoute(app)
   registerQueueBatchScalingRoute(app)
+  registerE2eSeedingRoute(app)
   registerWebhookTestRoute(app)
 
   // Internal provider routes retained for operational control.

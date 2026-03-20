@@ -1,6 +1,6 @@
 import type { WorkerBindings } from '../types'
 
-type LedgerAction = 'check' | 'reserve' | 'refund' | 'flush'
+type LedgerAction = 'check' | 'reserve' | 'refund' | 'flush' | 'seed'
 
 type LedgerRequestBody = {
   action?: LedgerAction
@@ -190,6 +190,8 @@ export class CreditShardDurableObject {
         return this.handleReserve(body)
       case 'refund':
         return this.handleRefund(body)
+      case 'seed':
+        return this.handleSeed(body)
       case 'flush':
         await this.flushPendingToD1('manual')
         return jsonResponse({
@@ -236,6 +238,10 @@ export class CreditShardDurableObject {
 
     if (pathname === '/flush') {
       return 'flush'
+    }
+
+    if (pathname === '/seed') {
+      return 'seed'
     }
 
     return null
@@ -456,6 +462,50 @@ export class CreditShardDurableObject {
     return jsonResponse({
       ok: true,
       action: 'refund',
+      user_id: userId,
+      balance: updatedBalance,
+      amount,
+      pending_delta: updatedPending,
+    })
+  }
+
+  private async handleSeed(body: LedgerRequestBody): Promise<Response> {
+    const userId = asCleanUserId(body.userId)
+    const amount = Number(body.amount)
+
+    if (!userId || !Number.isFinite(amount) || amount <= 0) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: {
+            code: 'invalid_request',
+            message: 'userId and positive amount required',
+          },
+          user_id: userId,
+          balance: null,
+        },
+        400,
+      )
+    }
+
+    const currentBalance = await this.loadBalance(userId)
+    const updatedBalance = Number((currentBalance + amount).toFixed(6))
+    this.balances.set(userId, updatedBalance)
+
+    const currentPending = this.pendingDeltaByUser.get(userId) ?? 0
+    const updatedPending = Number((currentPending + amount).toFixed(6))
+    this.pendingDeltaByUser.set(userId, updatedPending)
+
+    await Promise.all([
+      this.state.storage.put(balanceStorageKey(userId), updatedBalance),
+      this.state.storage.put(pendingStorageKey(userId), updatedPending),
+    ])
+
+    await this.maybeFlushOrSchedule()
+
+    return jsonResponse({
+      ok: true,
+      action: 'seed',
       user_id: userId,
       balance: updatedBalance,
       amount,

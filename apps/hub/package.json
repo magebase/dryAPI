@@ -8,7 +8,7 @@
     "build": "next build --webpack",
     "start": "next start --port 3001",
     "lint": "eslint",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:generate": "pnpm db:generate:auth && pnpm db:generate:analytics",

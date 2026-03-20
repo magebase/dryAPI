@@ -159,3 +159,23 @@ export async function createRunpodJob(
   expect(typeof payload.id).toBe('string')
   return payload.id as string
 }
+
+export async function seedE2eCredits(amount = 1000): Promise<void> {
+  const env = getEnv()
+  const request = new E2eRequestClient()
+  const userId = '4c806362b613f7496abf2841' // SHA256('test-api-key').slice(0, 24)
+
+  const response = await request.post('/v1/internal/test/seed-credits', {
+    headers: {
+      ...authHeaders(),
+      'X-DryAPI-Allow-Internal': '1',
+    },
+    data: {
+      userId: `api_key:${userId}`,
+      amount,
+    },
+  })
+
+  expect(response.status()).toBe(200)
+}
+

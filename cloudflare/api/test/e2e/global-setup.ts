@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { seedE2eCredits } from './helpers'
 
 function readEnvFile(filePath: string): Record<string, string> {
   if (!fs.existsSync(filePath)) {
@@ -99,7 +100,11 @@ export async function setup(): Promise<void> {
   runningProcs.push(workerProc)
 
   await pollUntilReady(`${baseURL}/openapi.json`, 180_000)
+
+  // Seed credits for the test user so E2E tests don't fail with 402
+  await seedE2eCredits(1000)
 }
+
 
 export async function teardown(): Promise<void> {
   for (const proc of runningProcs) {

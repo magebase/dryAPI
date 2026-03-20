@@ -6,7 +6,7 @@ const MIN_SHARD_COUNT = 1
 const MAX_SHARD_COUNT = 1024
 const SHARD_COUNT_CACHE_TTL_MS = 60_000
 
-type CreditAction = 'check' | 'reserve' | 'refund'
+type CreditAction = 'check' | 'reserve' | 'refund' | 'seed'
 
 type LedgerSuccess = {
   ok: true
@@ -373,6 +373,28 @@ export async function getCreditBalance(args: {
     c: args.c,
     userId: args.userId,
     action: 'check',
+  })
+
+  if (!result.ok) {
+    return result
+  }
+
+  return {
+    ok: true,
+    balance: result.payload.balance,
+  }
+}
+
+export async function seedCreditsForTestUser(args: {
+  c: AppContext
+  userId: string
+  amount: number
+}): Promise<{ ok: true; balance: number } | { ok: false; response: Response }> {
+  const result = await postLedgerAction<LedgerSuccess>({
+    c: args.c,
+    userId: args.userId,
+    action: 'seed',
+    amount: args.amount,
   })
 
   if (!result.ok) {

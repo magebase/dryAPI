@@ -1,18 +1,20 @@
 // @vitest-environment node
 
-import Database from "better-sqlite3"
-import { afterEach, describe, expect, it } from "vitest"
+import { createClient } from "@libsql/client"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   getDashboardSettingsForUser,
   updateDashboardSettingsSection,
 } from "@/lib/dashboard-settings-store"
 
+vi.mock("server-only", () => ({}))
+
 class TestD1PreparedStatement {
   private readonly params: unknown[]
 
   constructor(
-    private readonly sqlite: Database,
+    private readonly client: ReturnType<typeof createClient>,
     private readonly query: string,
     params: unknown[] = [],
   ) {
@@ -20,43 +22,43 @@ class TestD1PreparedStatement {
   }
 
   bind(...params: unknown[]): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.sqlite, this.query, params)
+    return new TestD1PreparedStatement(this.client, this.query, params)
   }
 
   async run(): Promise<{ success: true }> {
-    this.sqlite.prepare(this.query).run(...this.params)
+    await this.client.execute({ sql: this.query, args: this.params })
     return { success: true }
   }
 
   async all<T>(): Promise<{ results: T[] }> {
-    const results = this.sqlite.prepare(this.query).all(...this.params) as unknown as T[]
-    return { results }
+    const result = await this.client.execute({ sql: this.query, args: this.params })
+    return { results: result.rows as unknown as T[] }
   }
 }
 
 class TestD1Database {
-  constructor(private readonly sqlite: Database) {}
+  constructor(private readonly client: ReturnType<typeof createClient>) {}
 
   prepare(query: string): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.sqlite, query)
+    return new TestD1PreparedStatement(this.client, query)
   }
 }
 
-const sqliteHandles: Database[] = []
+const sqliteHandles: ReturnType<typeof createClient>[] = []
 
 function createDb() {
-  const sqlite = new Database(":memory:")
-  sqliteHandles.push(sqlite)
+  const client = createClient({ url: ":memory:" })
+  sqliteHandles.push(client)
 
   return {
-    sqlite,
-    db: new TestD1Database(sqlite),
+    client,
+    db: new TestD1Database(client),
   }
 }
 
 afterEach(() => {
-  for (const sqlite of sqliteHandles.splice(0)) {
-    sqlite.close()
+  for (const client of sqliteHandles.splice(0)) {
+    client.close()
   }
 })
 
