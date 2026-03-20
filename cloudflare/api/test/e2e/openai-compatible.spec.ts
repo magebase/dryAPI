@@ -35,7 +35,7 @@ describe('OpenAI-compatible surface routes', () => {
     const response = await request.post('/v1/images/generations', {
       headers: authHeaders(),
       data: {
-        model: 'Flux1schnell',
+        model: 'Flux_2_Klein_4B_BF16',
         job_id: uniqueId('img'),
         prompt: 'A high-detail floating datacenter in the clouds',
         n: 1,
@@ -69,7 +69,7 @@ describe('OpenAI-compatible surface routes', () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
-        model: 'BGE_Large',
+        model: 'Bge_M3_FP16',
         job_id: uniqueId('emb'),
         input: 'cold start mitigation for serverless GPUs',
       },

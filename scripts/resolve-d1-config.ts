@@ -43,6 +43,50 @@ function main() {
     }
   }
 
+  const missingDatabaseNames = databaseNames.filter((databaseName) => !idsByName.has(databaseName))
+
+  for (const databaseName of missingDatabaseNames) {
+    execFileSync(
+      "pnpm",
+      ["exec", "wrangler", "d1", "create", databaseName],
+      {
+        cwd: path.dirname(configPath),
+        encoding: "utf8",
+        stdio: "inherit",
+      },
+    )
+  }
+
+  if (missingDatabaseNames.length > 0) {
+    const refreshedOutput = execFileSync(
+      "pnpm",
+      ["exec", "wrangler", "d1", "list", "--json"],
+      {
+        cwd: path.dirname(configPath),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    )
+
+    idsByName.clear()
+
+    for (const database of JSON.parse(refreshedOutput) as Array<Record<string, unknown>>) {
+      const name = typeof database.name === "string" ? database.name : null
+      const databaseId =
+        typeof database.uuid === "string"
+          ? database.uuid
+          : typeof database.id === "string"
+            ? database.id
+            : typeof database.database_id === "string"
+              ? database.database_id
+              : null
+
+      if (name && databaseId) {
+        idsByName.set(name, databaseId)
+      }
+    }
+  }
+
   let content = fs.readFileSync(configPath, "utf8")
 
   for (const databaseName of databaseNames) {
