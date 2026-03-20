@@ -54,11 +54,11 @@ function resolveTrustedOrigins(baseUrl: string): string[] {
 
 // ─── DB resolver ──────────────────────────────────────────────────────────────
 
-function resolveAuthDatabase() {
-  const ctx = getCloudflareContext()
-  const env = ctx?.env as Record<string, unknown> | undefined
+async function resolveAuthDatabase() {
+  const { env } = await getCloudflareContext({ async: true })
+  const cloudflareEnv = env as Record<string, unknown> | undefined
 
-  if (!env) {
+  if (!cloudflareEnv) {
     if (process.env.NODE_ENV === "production") {
       throw new Error("[hub/auth] Cloudflare context unavailable — AUTH_DB unreachable in production.")
     }
@@ -66,7 +66,7 @@ function resolveAuthDatabase() {
     return undefined
   }
 
-  const binding = resolveD1Binding(env, ["AUTH_DB"])
+  const binding = resolveD1Binding(cloudflareEnv, ["AUTH_DB"])
   if (!binding) {
     if (process.env.NODE_ENV === "production") {
       throw new Error("[hub/auth] AUTH_DB binding not found.")
@@ -98,8 +98,8 @@ function readSocialProviders() {
 // ─── Auth instance ────────────────────────────────────────────────────────────
 
 const baseURL = getBaseUrl()
-const database = resolveAuthDatabase()
 const socialProviders = readSocialProviders()
+const database = await resolveAuthDatabase()
 
 export const auth = betterAuth({
   baseURL,
