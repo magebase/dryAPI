@@ -90,34 +90,43 @@ declare -a target_worker_configs=()
 
 discover_worker_targets target_worker_names target_worker_configs
 
-echo "Syncing ${#sync_vars[@]} secrets to ${#target_worker_names[@]} workers with concurrency=${sync_concurrency}, retries=${sync_retries}."
-for ((index = 0; index < ${#target_worker_names[@]}; index += 1)); do
-  echo "  - ${target_worker_names[$index]} (${target_worker_configs[$index]})"
-done
-
 is_transient_api_error() {
   local output="$1"
 
   grep -Eiq 'upstream request timeout|gateway timeout|Received a malformed response from the API|internal server error|temporarily unavailable|service unavailable|timed out|HTTP 5[0-9]{2}|502|503|504|429|rate limit|An unknown error has occurred|request to the Cloudflare API|conflict|in[ -]?progress|try again|please retry|code:[[:space:]]*10013|code:[[:space:]]*7010' <<<"${output}"
 }
 
-supports_versions_secret_put() {
-  local output="$1"
+build_bulk_secret_payload() {
+  local output_file="$1"
+  shift
 
-  if grep -Eiq 'Unknown arguments: versions|Unknown command .*versions|wrangler versions secret put' <<<"${output}"; then
-    return 1
-  fi
+  node - "${output_file}" "$@" <<'NODE'
+const fs = require('node:fs')
 
-  return 0
+const outputFile = process.argv[2]
+const envNames = process.argv.slice(3)
+const payload = {}
+let nonEmptyCount = 0
+
+for (const envName of envNames) {
+  const value = process.env[envName]
+  if (typeof value !== 'string' || value.length === 0) {
+    continue
+  }
+
+  payload[envName.replace(/^SYNC_SECRET_/, '')] = value
+  nonEmptyCount += 1
 }
 
-put_secret_legacy() {
-  local secret_name="$1"
-  local secret_value="$2"
-  local target_worker_name="$3"
-  local target_worker_config="$4"
-  local -n output_ref=$5
-  local -n attempts_ref=$6
+fs.writeFileSync(outputFile, JSON.stringify(payload), 'utf8')
+process.stdout.write(String(nonEmptyCount))
+NODE
+}
+
+sync_worker_secrets_bulk() {
+  local target_worker_name="$1"
+  local target_worker_config="$2"
+  local bulk_payload_file="$3"
 
   local attempt=1
   local backoff_seconds=2
@@ -125,9 +134,7 @@ put_secret_legacy() {
 
   while :; do
     local output
-    if output=$(printf "%s" "${secret_value}" | pnpm wrangler secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" 2>&1); then
-      output_ref=""
-      attempts_ref="${attempt}"
+    if output=$(pnpm wrangler secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" 2>&1); then
       return 0
     fi
 
@@ -138,9 +145,9 @@ put_secret_legacy() {
     fi
 
     if is_transient_api_error "${output}"; then
-      echo "Retrying ${secret_name} for ${target_worker_name} using legacy secret put after transient error (attempt ${attempt}/${sync_retries})..."
+      echo "Retrying bulk secret sync for ${target_worker_name} after transient error (attempt ${attempt}/${sync_retries})..."
     else
-      echo "Retrying ${secret_name} for ${target_worker_name} using legacy secret put after error (attempt ${attempt}/${sync_retries})..."
+      echo "Retrying bulk secret sync for ${target_worker_name} after error (attempt ${attempt}/${sync_retries})..."
     fi
 
     sleep "${backoff_seconds}"
@@ -151,101 +158,25 @@ put_secret_legacy() {
     fi
   done
 
-  output_ref="${last_output}"
-  attempts_ref="${attempt}"
-  return 1
-}
-
-put_secret_versions() {
-  local secret_name="$1"
-  local secret_value="$2"
-  local target_worker_name="$3"
-  local target_worker_config="$4"
-
-  local attempt=1
-  local backoff_seconds=2
-  local last_output=""
-  local versions_supported=1
-  local failure_reason=""
-
-  while :; do
-    local output
-    if output=$(printf "%s" "${secret_value}" | pnpm wrangler versions secret put "${secret_name}" --name "${target_worker_name}" --config "${target_worker_config}" 2>&1); then
-      return 0
-    fi
-    last_output="${output}"
-
-    if ! supports_versions_secret_put "${output}"; then
-      versions_supported=0
-      failure_reason="versions command unsupported"
-      break
-    fi
-
-    if (( attempt >= sync_retries )); then
-      failure_reason="versions retries exhausted"
-      break
-    fi
-
-    if is_transient_api_error "${output}"; then
-      echo "Retrying ${secret_name} for ${target_worker_name} after transient error (attempt ${attempt}/${sync_retries})..."
-    else
-      echo "Retrying ${secret_name} for ${target_worker_name} after error (attempt ${attempt}/${sync_retries})..."
-    fi
-
-    sleep "${backoff_seconds}"
-    attempt=$((attempt + 1))
-    backoff_seconds=$((backoff_seconds * 2))
-    if (( backoff_seconds > 30 )); then
-      backoff_seconds=30
-    fi
-  done
-
-  local legacy_output=""
-  local legacy_attempts=0
-  if put_secret_legacy "${secret_name}" "${secret_value}" "${target_worker_name}" "${target_worker_config}" legacy_output legacy_attempts; then
-    return 0
-  fi
-
-  if (( versions_supported == 0 )); then
-    echo "Failed to sync ${secret_name} to ${target_worker_name}: versions API unsupported and legacy secret put failed after ${legacy_attempts} attempt(s)."
-    echo "${last_output}" >&2
-    if [[ -n "${legacy_output}" ]]; then
-      echo "${legacy_output}" >&2
-    fi
-    return 1
-  fi
-
-  if [[ -z "${failure_reason}" ]]; then
-    failure_reason="versions attempt failed"
-  fi
-
-  echo "Failed to sync ${secret_name} to ${target_worker_name} after versions=${attempt} and legacy=${legacy_attempts} attempt(s): ${failure_reason}."
+  echo "Failed to bulk sync secrets to ${target_worker_name} after ${attempt} attempt(s)."
   echo "${last_output}" >&2
-  if [[ -n "${legacy_output}" ]]; then
-    echo "${legacy_output}" >&2
-  fi
-
   return 1
 }
 
-sync_secret_var() {
-  local sync_var="$1"
-  local target_worker_name="$2"
-  local target_worker_config="$3"
-  local secret_name="${sync_var#SYNC_SECRET_}"
-  local secret_value="${!sync_var:-}"
+bulk_secret_payload_file="$(mktemp)"
+trap 'rm -f "${bulk_secret_payload_file}"' EXIT
 
-  if [[ -z "${secret_value}" ]]; then
-    echo "Skipping ${secret_name} for ${target_worker_name}: value is empty"
-    return 0
-  fi
+bulk_secret_count="$(build_bulk_secret_payload "${bulk_secret_payload_file}" "${sync_vars[@]}")"
 
-  if ! put_secret_versions "${secret_name}" "${secret_value}" "${target_worker_name}" "${target_worker_config}"; then
-    return 1
-  fi
+if ! [[ "${bulk_secret_count}" =~ ^[0-9]+$ ]] || (( bulk_secret_count < 1 )); then
+  echo "No non-empty SYNC_SECRET_* variables were provided."
+  exit 0
+fi
 
-  echo "Synced ${secret_name} -> ${target_worker_name}"
-}
+echo "Syncing ${bulk_secret_count} secrets to ${#target_worker_names[@]} workers with concurrency=${sync_concurrency}, retries=${sync_retries} using bulk uploads."
+for ((index = 0; index < ${#target_worker_names[@]}; index += 1)); do
+  echo "  - ${target_worker_names[$index]} (${target_worker_configs[$index]})"
+done
 
 active_jobs=0
 failed_jobs=0
@@ -254,17 +185,15 @@ for ((index = 0; index < ${#target_worker_names[@]}; index += 1)); do
   target_worker_name="${target_worker_names[$index]}"
   target_worker_config="${target_worker_configs[$index]}"
 
-  for sync_var in "${sync_vars[@]}"; do
-    sync_secret_var "${sync_var}" "${target_worker_name}" "${target_worker_config}" &
-    active_jobs=$((active_jobs + 1))
+  sync_worker_secrets_bulk "${target_worker_name}" "${target_worker_config}" "${bulk_secret_payload_file}" &
+  active_jobs=$((active_jobs + 1))
 
-    if (( active_jobs >= sync_concurrency )); then
-      if ! wait -n; then
-        failed_jobs=1
-      fi
-      active_jobs=$((active_jobs - 1))
+  if (( active_jobs >= sync_concurrency )); then
+    if ! wait -n; then
+      failed_jobs=1
     fi
-  done
+    active_jobs=$((active_jobs - 1))
+  fi
 done
 
 while (( active_jobs > 0 )); do
