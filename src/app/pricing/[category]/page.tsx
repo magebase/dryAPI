@@ -22,19 +22,7 @@ type PricingCategoryPageProps = {
   params: Promise<{ category: string }>
 }
 
-export async function generateStaticParams() {
-  const snapshot = await getLatestDeapiPricingSnapshot()
-  if (!snapshot) {
-    return []
-  }
-
-  const filteredSnapshot = filterPricingSnapshotToActiveModels(snapshot)
-  const categories = listPricingCategories(filteredSnapshot)
-
-  return categories.map((category) => ({
-    category: toPricingCategorySlug(category),
-  }))
-}
+export const dynamic = "force-dynamic"
 
 export async function generateMetadata({ params }: PricingCategoryPageProps): Promise<Metadata> {
   const [{ category }, site, snapshot] = await Promise.all([

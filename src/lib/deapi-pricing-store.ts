@@ -60,6 +60,13 @@ const PRICING_SNAPSHOT_PATH = path.join(
   "deapi-pricing-snapshot.json",
 );
 
+function isNextProductionBuildPhase(): boolean {
+  return (
+    process.env.NODE_ENV === "production"
+    && process.env.NEXT_PHASE === "phase-production-build"
+  );
+}
+
 function toNumber(input: number | string | null | undefined): number {
   const parsed = Number(input);
   if (!Number.isFinite(parsed)) {
@@ -126,7 +133,7 @@ async function resolveMetadataDb(): Promise<D1DatabaseLike | null> {
       D1_BINDING_PRIORITY.metadata,
     );
   } catch {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" && !isNextProductionBuildPhase()) {
       throw new Error("Cloudflare context is unavailable.");
     }
 
