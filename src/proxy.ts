@@ -21,6 +21,8 @@ const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth
 const SESSION_CHECK_CACHE_TTL_MS = 5_000
 const SESSION_CHECK_TIMEOUT_MS = 2_500
 
+export const runtime = "edge"
+
 type SessionAuthCacheEntry = {
   authenticated: boolean
   expiresAt: number
