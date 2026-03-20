@@ -1,7 +1,5 @@
 PRAGMA foreign_keys = OFF;
 
-BEGIN TRANSACTION;
-
 CREATE TABLE subscription_new (
   id TEXT PRIMARY KEY NOT NULL,
   plan TEXT NOT NULL,
@@ -84,7 +82,5 @@ ON subscription (stripeSubscriptionId);
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_subscription_status
 ON subscription (status);
-
-COMMIT;
 
 PRAGMA foreign_keys = ON;
