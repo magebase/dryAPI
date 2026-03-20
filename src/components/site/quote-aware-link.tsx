@@ -14,11 +14,7 @@ type QuoteAwareLinkProps = Omit<React.ComponentProps<typeof Link>, "href"> & {
 }
 
 function getHrefString(href: QuoteAwareLinkProps["href"]) {
-  if (typeof href === "string") {
-    return href
-  }
-
-  return href.pathname ?? ""
+  return href
 }
 
 function isQuoteIntentLink(label: string, href: string) {
