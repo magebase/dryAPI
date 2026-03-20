@@ -42,8 +42,11 @@ discover_worker_targets() {
   local -n configs_ref=$2
 
   mapfile -t wrangler_configs < <(
-    find . -type f \
+    find . -maxdepth 1 -type f \
       \( -name "wrangler.json" -o -name "wrangler.jsonc" -o -name "wrangler.toml" \) \
+      -not -name "*.local.json" \
+      -not -name "*.local.jsonc" \
+      -not -name "*.local.toml" \
       -not -path "*/node_modules/*" \
       | sort
   )
@@ -134,7 +137,7 @@ sync_worker_secrets_bulk() {
 
   while :; do
     local output
-    if output=$(pnpm wrangler secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" 2>&1); then
+    if output=$(pnpm wrangler secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" --env="" 2>&1); then
       return 0
     fi
 
