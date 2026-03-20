@@ -526,13 +526,13 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Flux_2_Klein_4B_INT8",
+        model: "Flux_2_Klein_4B_BF16",
         prompt: "integration test image",
       }),
     });
 
     expect(response.status).toBe(202);
-    const payload = (await response.json()) as { surface?: string };
+    const payload = (await response.json()) as { surface?: string; error?: { code?: string; message?: string } };
     expect(payload.surface).toBe("images");
     expect(runpodCalls.at(-1)?.path).toBe("/v2/images-endpoint/run");
   });
@@ -577,7 +577,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Bge_M3_INT8",
+        model: "Bge_M3_FP16",
         input: "integration test embedding",
       }),
     });
@@ -591,14 +591,14 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
   it("supports queue-first enqueue with stable client job id and batch policy headers", async () => {
     workerEnv.RUNPOD_BATCH_QUEUE_ENABLED = "1";
     workerEnv.RUNPOD_BATCHING_CONFIG_JSON = JSON.stringify({
-      Bge_M3_INT8: { batchWindowSeconds: 1, maxBatchSize: 100, queueEnabled: true },
+      Bge_M3_FP16: { batchWindowSeconds: 1, maxBatchSize: 100, queueEnabled: true },
     });
 
     const response = await SELF.fetch(`${BASE_URL}/v1/embeddings`, {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Bge_M3_INT8",
+        model: "Bge_M3_FP16",
         input: "queue-first embedding job",
       }),
     });
@@ -753,7 +753,7 @@ describe("Cloudflare API worker integration (RunPod route coverage)", () => {
       method: "POST",
       headers: AUTH_JSON_HEADERS,
       body: JSON.stringify({
-        model: "Bge_M3_INT8",
+        model: "Bge_M3_FP16",
         input: {
           input: ["hello integration"],
         },
