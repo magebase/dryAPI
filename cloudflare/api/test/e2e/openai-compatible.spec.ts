@@ -85,7 +85,7 @@ describe('OpenAI-compatible surface routes', () => {
     const response = await request.post('/v1/embeddings', {
       headers: authHeaders(),
       data: {
-        model: 'E5_Large',
+        model: 'Bge_M3_FP16',
         job_id: uniqueId('embbatch'),
         input: ['queue depth', 'latency', 'cost controls'],
       },

@@ -73,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Resolve remote D1 database IDs
+        run: pnpm exec tsx scripts/resolve-d1-config.ts wrangler.jsonc dryapi-auth-db dryapi-billing-db dryapi-analytics-db dryapi-metadata-db
+
       - name: Verify Takumi OG metadata coverage
         run: pnpm og:verify
 
@@ -278,6 +281,9 @@ jobs:
 
       - name: Install hub dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Resolve hub remote D1 database IDs
+        run: pnpm exec tsx ../../scripts/resolve-d1-config.ts wrangler.jsonc apiscore-auth-db apiscore-analytics-db
 
       - name: Apply D1 migrations (hub / auth)
         run: pnpm db:migrate:remote:auth
