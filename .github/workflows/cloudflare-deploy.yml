@@ -236,6 +236,16 @@ jobs:
 
       - name: Apply D1 migrations (remote)
         run: pnpm db:migrate:remote
+
+      - name: Ensure OpenNext cache bucket exists
+        run: |
+          set -euo pipefail
+
+          cache_bucket="genfix-site-opennext-cache"
+          if ! pnpm exec wrangler r2 bucket info "${cache_bucket}" --config wrangler.jsonc >/dev/null 2>&1; then
+            pnpm exec wrangler r2 bucket create "${cache_bucket}" --config wrangler.jsonc
+          fi
+
       - name: Deploy to Cloudflare Workers
         run: pnpm cf:deploy
 
@@ -290,6 +300,15 @@ jobs:
 
       - name: Apply D1 migrations (hub / analytics)
         run: pnpm db:migrate:remote:analytics
+
+      - name: Ensure hub OpenNext cache bucket exists
+        run: |
+          set -euo pipefail
+
+          cache_bucket="apiscore-hub-opennext-cache"
+          if ! pnpm exec wrangler r2 bucket info "${cache_bucket}" --config wrangler.jsonc >/dev/null 2>&1; then
+            pnpm exec wrangler r2 bucket create "${cache_bucket}" --config wrangler.jsonc
+          fi
 
       - name: Deploy hub to Cloudflare Workers
         run: pnpm cf:deploy
