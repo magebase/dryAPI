@@ -1,5 +1,5 @@
 import Stripe from "stripe"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   handleStripePluginEvent,
@@ -42,7 +42,25 @@ function createDeps(overrides?: Partial<Parameters<typeof handleStripePluginEven
   }
 }
 
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
 describe("handleStripePluginEvent", () => {
+  it("returns early when checkout.session.completed has no session id", async () => {
+    const deps = createDeps()
+
+    await handleStripePluginEvent(
+      buildEvent("checkout.session.completed", {
+        id: "",
+      }),
+      deps,
+    )
+
+    expect(deps.resolveCheckoutCustomerEmail).not.toHaveBeenCalled()
+    expect(deps.sendCheckoutSuccessEmail).not.toHaveBeenCalled()
+  })
+
   it("runs top-up sync + benefit sync + success email on checkout.session.completed", async () => {
     const deps = createDeps({
       resolveCheckoutFlow: vi.fn().mockReturnValue("topup"),
@@ -65,6 +83,23 @@ describe("handleStripePluginEvent", () => {
     expect(deps.sendCheckoutSuccessEmail).toHaveBeenCalledTimes(1)
   })
 
+  it("still runs benefit sync and success email for non-top-up checkouts", async () => {
+    const deps = createDeps({
+      resolveCheckoutFlow: vi.fn().mockReturnValue("subscription"),
+    })
+
+    await handleStripePluginEvent(
+      buildEvent("checkout.session.completed", {
+        id: "cs_test_123",
+      }),
+      deps,
+    )
+
+    expect(deps.syncTopUp).not.toHaveBeenCalled()
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("owner@example.com")
+    expect(deps.sendCheckoutSuccessEmail).toHaveBeenCalledTimes(1)
+  })
+
   it("skips checkout branch when no customer email is resolved", async () => {
     const deps = createDeps({
       resolveCheckoutCustomerEmail: vi.fn().mockReturnValue(""),
@@ -82,6 +117,25 @@ describe("handleStripePluginEvent", () => {
     expect(deps.sendCheckoutSuccessEmail).not.toHaveBeenCalled()
   })
 
+  it("swallows sync, benefit, and email errors for completed checkouts", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const deps = createDeps({
+      resolveCheckoutFlow: vi.fn().mockReturnValue("topup"),
+      syncTopUp: vi.fn().mockRejectedValue(new Error("sync failed")),
+      ensureSubscriptionBenefits: vi.fn().mockRejectedValue(new Error("benefits failed")),
+      sendCheckoutSuccessEmail: vi.fn().mockRejectedValue(new Error("email failed")),
+    })
+
+    await handleStripePluginEvent(
+      buildEvent("checkout.session.completed", {
+        id: "cs_test_123",
+      }),
+      deps,
+    )
+
+    expect(errorSpy).toHaveBeenCalledTimes(2)
+  })
+
   it("sends invoice receipt and refreshes benefits on invoice.paid", async () => {
     const deps = createDeps()
 
@@ -95,6 +149,61 @@ describe("handleStripePluginEvent", () => {
 
     expect(deps.sendInvoiceReceiptEmail).toHaveBeenCalledTimes(1)
     expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("billing@example.com")
+  })
+
+  it("falls back to resolving the invoice customer email when customer_email is blank", async () => {
+    const deps = createDeps({
+      resolveInvoiceCustomerEmail: vi.fn().mockResolvedValue("resolved@example.com"),
+    })
+
+    await handleStripePluginEvent(
+      buildEvent("invoice.paid", {
+        id: "in_123",
+        customer_email: "   ",
+      }),
+      deps,
+    )
+
+    expect(deps.resolveInvoiceCustomerEmail).toHaveBeenCalledTimes(1)
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("resolved@example.com")
+  })
+
+  it("swallows receipt email failures and skips benefits when no invoice email can be resolved", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const deps = createDeps({
+      sendInvoiceReceiptEmail: vi.fn().mockRejectedValue(new Error("receipt failed")),
+      resolveInvoiceCustomerEmail: vi.fn().mockResolvedValue(""),
+    })
+
+    await handleStripePluginEvent(
+      buildEvent("invoice.paid", {
+        id: "in_123",
+        customer_email: "",
+      }),
+      deps,
+    )
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      "[auth] Failed to send branded Stripe receipt email",
+      expect.any(Error),
+    )
+    expect(deps.ensureSubscriptionBenefits).not.toHaveBeenCalled()
+  })
+
+  it("swallows subscription benefit refresh failures after invoice payment", async () => {
+    const deps = createDeps({
+      ensureSubscriptionBenefits: vi.fn().mockRejectedValue(new Error("benefits failed")),
+    })
+
+    await expect(
+      handleStripePluginEvent(
+        buildEvent("invoice.paid", {
+          id: "in_123",
+          customer_email: "billing@example.com",
+        }),
+        deps,
+      ),
+    ).resolves.toBeUndefined()
   })
 
   it("sends payment-failed and subscription-canceled emails for respective events", async () => {
@@ -116,5 +225,38 @@ describe("handleStripePluginEvent", () => {
 
     expect(deps.sendInvoicePaymentFailedEmail).toHaveBeenCalledTimes(1)
     expect(deps.sendSubscriptionCanceledEmail).toHaveBeenCalledTimes(1)
+  })
+
+  it("swallows failures from failure/cancellation emails and ignores unknown events", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const deps = createDeps({
+      sendInvoicePaymentFailedEmail: vi.fn().mockRejectedValue(new Error("payment email failed")),
+      sendSubscriptionCanceledEmail: vi.fn().mockRejectedValue(new Error("cancel email failed")),
+    })
+
+    await handleStripePluginEvent(
+      buildEvent("invoice.payment_failed", {
+        id: "in_failed_1",
+      }),
+      deps,
+    )
+
+    await handleStripePluginEvent(
+      buildEvent("customer.subscription.deleted", {
+        id: "sub_deleted_1",
+      }),
+      deps,
+    )
+
+    await expect(
+      handleStripePluginEvent(
+        buildEvent("charge.refunded", {
+          id: "ch_123",
+        }),
+        deps,
+      ),
+    ).resolves.toBeUndefined()
+
+    expect(errorSpy).toHaveBeenCalledTimes(2)
   })
 })

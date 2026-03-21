@@ -17,6 +17,16 @@ function normalizeWhitespace(value) {
   return value.replace(/\s+/g, " ").trim()
 }
 
+function normalizeCustomerFacingBranding(value) {
+  return value
+    .replaceAll("https://docs.deapi.ai/openapi.json", "https://dryapi.dev/openapi.json")
+    .replace(/https:\/\/docs\.deapi\.ai\/([^\s)]+)\.md/g, (_match, pathPart) => `https://dryapi.dev/docs/v1/${pathPart}`)
+    .replaceAll("docs.deapi.ai", "dryapi.dev")
+    .replaceAll("deAPI.ai", "dryAPI")
+    .replaceAll("deAPI", "dryAPI")
+    .replaceAll("deapi.ai", "dryapi.dev")
+}
+
 function toSectionKey(sourcePath) {
   if (sourcePath.startsWith("api/analysis/")) return "api-analysis"
   if (sourcePath.startsWith("api/generation/")) return "api-generation"
@@ -537,9 +547,10 @@ async function main() {
   await ensureDir(articlesRoot)
 
   const indexText = await fetchText(INDEX_URL)
-  await fs.writeFile(path.join(outputRoot, "llms.txt"), indexText, "utf8")
+  const normalizedIndexText = normalizeCustomerFacingBranding(indexText)
+  await fs.writeFile(path.join(outputRoot, "llms.txt"), normalizedIndexText, "utf8")
 
-  const entries = parseEntries(indexText)
+  const entries = parseEntries(normalizedIndexText)
   if (entries.length === 0) throw new Error("No entries discovered in llms.txt")
 
   const manifestEntries = await writeContentEntries(entries)

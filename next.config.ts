@@ -37,6 +37,11 @@ const posthogDomains = [
   "https://us.i.posthog.com",
 ];
 
+const cloudflareInsightsDomains = [
+  "https://static.cloudflareinsights.com",
+  "https://cloudflareinsights.com",
+];
+
 const siteSharedCsp = [
   "default-src 'self';",
   "img-src 'self' data: https://assets.tina.io https://assets.tinajs.io;",
@@ -53,9 +58,9 @@ const siteProductionCsp = [
   "frame-ancestors 'self';",
   "frame-src 'self';",
   "script-src 'self' 'unsafe-eval';",
-  "script-src-elem 'self' 'unsafe-inline';",
+  `script-src-elem 'self' 'unsafe-inline' ${cloudflareInsightsDomains.join(" ")};`,
   "script-src-attr 'none';",
-  "connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io;",
+  `connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io ${cloudflareInsightsDomains.join(" ")};`,
 ];
 
 const siteDevelopmentCsp = [
@@ -75,7 +80,8 @@ const adminProductionCsp = [
   "frame-ancestors 'self';",
   "frame-src 'self';",
   "script-src 'self' 'unsafe-eval';",
-  "connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io;",
+  `script-src-elem 'self' 'unsafe-inline' ${cloudflareInsightsDomains.join(" ")};`,
+  `connect-src 'self' https://identity.tinajs.io https://identity-v2.tinajs.io https://content.tinajs.io https://assets.tinajs.io ${cloudflareInsightsDomains.join(" ")};`,
 ];
 
 const adminDevelopmentCsp = [

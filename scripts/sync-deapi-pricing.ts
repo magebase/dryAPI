@@ -23,6 +23,43 @@ const outputCatalogPath = path.join(process.cwd(), "src", "data", "deapi-model-c
 const DEAPI_PRICING_BASE_URL = "https://deapi.ai/pricing"
 const EXTRA_CATEGORY_TYPES = new Set(["background-removal", "image-upscale"])
 
+function normalizeCustomerFacingBranding(value) {
+  return String(value)
+    .replaceAll("https://deapi.ai", "https://dryapi.dev")
+    .replaceAll("deAPI.ai", "dryAPI")
+    .replaceAll("deAPI", "dryAPI")
+    .replaceAll("deapi.ai", "dryapi.dev")
+}
+
+function normalizeCustomerFacingSnapshot(snapshot) {
+  return {
+    ...snapshot,
+    source: normalizeCustomerFacingBranding(snapshot.source),
+    sourceUrls: Array.isArray(snapshot.sourceUrls)
+      ? snapshot.sourceUrls.map((value) => normalizeCustomerFacingBranding(value))
+      : snapshot.sourceUrls,
+    permutations: Array.isArray(snapshot.permutations)
+      ? snapshot.permutations.map((permutation) => ({
+          ...permutation,
+          sourceUrl: normalizeCustomerFacingBranding(permutation.sourceUrl),
+          metadata: permutation.metadata
+            ? {
+                ...permutation.metadata,
+                pageTitle: normalizeCustomerFacingBranding(permutation.metadata.pageTitle),
+                metaDescription: normalizeCustomerFacingBranding(permutation.metadata.metaDescription),
+              }
+            : permutation.metadata,
+          excerpts: Array.isArray(permutation.excerpts)
+            ? permutation.excerpts.map((value) => normalizeCustomerFacingBranding(value))
+            : permutation.excerpts,
+          descriptions: Array.isArray(permutation.descriptions)
+            ? permutation.descriptions.map((value) => normalizeCustomerFacingBranding(value))
+            : permutation.descriptions,
+        }))
+      : snapshot.permutations,
+  }
+}
+
 function readSourceUrlsEnv() {
   const raw = (process.env.DEAPI_SOURCE_URLS || "").trim()
   if (!raw) {
@@ -1269,12 +1306,14 @@ async function run() {
     },
   }
 
-  const catalog = buildCatalog(snapshot)
+  const normalizedSnapshot = normalizeCustomerFacingSnapshot(snapshot)
 
-  await fs.writeFile(outputSnapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8")
+  const catalog = buildCatalog(normalizedSnapshot)
+
+  await fs.writeFile(outputSnapshotPath, `${JSON.stringify(normalizedSnapshot, null, 2)}\n`, "utf8")
   await fs.writeFile(outputCatalogPath, renderCatalogTs(catalog), "utf8")
 
-  await maybePushSnapshot(snapshot).catch((error) => {
+  await maybePushSnapshot(normalizedSnapshot).catch((error) => {
     console.warn(`Could not push pricing snapshot to sync endpoint: ${error instanceof Error ? error.message : String(error)}`)
   })
 

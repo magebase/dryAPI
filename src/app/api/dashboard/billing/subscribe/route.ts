@@ -95,9 +95,6 @@ function parseStripePortalPriceMismatch(
   }
 
   const [, subscriptionItemId, priceId, configurationId] = match;
-  if (!subscriptionItemId || !priceId || !configurationId) {
-    return null;
-  }
 
   return {
     subscriptionItemId,
@@ -252,7 +249,7 @@ export async function GET(request: NextRequest) {
 
   const selectedPriceId =
     billingPeriod === "annual"
-      ? resolveSaasPlanStripeAnnualPriceId(plan) || monthlyPriceId
+      ? resolveSaasPlanStripeAnnualPriceId(plan)
       : monthlyPriceId;
 
   const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim() || "";

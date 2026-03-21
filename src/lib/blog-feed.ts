@@ -5,7 +5,7 @@ import { Feed } from "feed"
 import { isManualBlogEnabled } from "@/lib/feature-flags"
 import { listBlogPosts, readSiteConfig } from "@/lib/site-content-loader"
 
-const FALLBACK_SITE_URL = "https://genfix.com.au"
+const FALLBACK_SITE_URL = "https://dryapi.dev"
 
 export type BlogFeedFormats = {
   rss2: string

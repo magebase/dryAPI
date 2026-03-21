@@ -73,6 +73,235 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     expect(invokeAuthHandlerMock).toHaveBeenCalledTimes(1)
   })
 
+  it("returns 400 for an invalid billing period", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const res = await GET(makeRequest("plan=starter&period=weekly"))
+
+    expect(res.status).toBe(400)
+    expect(await res.json()).toMatchObject({
+      error: "invalid_billing_period",
+    })
+  })
+
+  it("returns 400 for an invalid plan", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const res = await GET(makeRequest("plan=enterprise"))
+
+    expect(res.status).toBe(400)
+    expect(await res.json()).toMatchObject({
+      error: "invalid_plan",
+    })
+  })
+
+  it("returns 400 when the plan query is omitted", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const res = await GET(makeRequest("period=monthly"))
+
+    expect(res.status).toBe(400)
+    expect(await res.json()).toMatchObject({
+      error: "invalid_plan",
+    })
+  })
+
+  it("returns 501 when the monthly plan price id is missing", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(501)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_plan_not_configured",
+    })
+  })
+
+  it("returns 501 when the annual plan price id is missing", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const res = await GET(makeRequest("plan=starter&period=annual"))
+
+    expect(res.status).toBe(501)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_plan_not_configured",
+    })
+  })
+
+  it("returns 501 when portal configuration is set without a Stripe private key", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(501)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_not_configured",
+    })
+  })
+
+  it("returns a clear error when portal subscription updates are disabled", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "bpc_test",
+            features: {
+              subscription_update: {
+                enabled: false,
+              },
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        ),
+      ),
+    )
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_portal_configuration_mismatch",
+    })
+  })
+
+  it("returns a clear error when portal subscription updates are missing entirely", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "bpc_test",
+            features: {},
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        ),
+      ),
+    )
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_portal_configuration_mismatch",
+    })
+  })
+
+  it("returns a clear error when portal features are missing entirely", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "bpc_test",
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        ),
+      ),
+    )
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_portal_configuration_mismatch",
+    })
+  })
+
+  it("returns a clear error when portal configuration cannot be loaded", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("invalid-json", {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        }),
+      ),
+    )
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(500)
+    expect(body.message).toContain("Unable to load Stripe Billing Portal configuration bpc_test.")
+  })
+
   it("returns explicit portal configuration mismatch when Stripe rejects subscription_update price", async () => {
     vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
 
@@ -154,5 +383,210 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     })
     expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("ignores portal products with non-array price lists", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "bpc_test",
+            features: {
+              subscription_update: {
+                enabled: true,
+                products: [{ prices: "price_monthly_starter" }],
+              },
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        ),
+      ),
+    )
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({
+      error: "stripe_portal_configuration_mismatch",
+    })
+  })
+
+  it("continues to checkout when a configured portal allows the selected price", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "bpc_test",
+            features: {
+              subscription_update: {
+                enabled: true,
+                products: [{ prices: ["price_monthly_starter"] }],
+              },
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        ),
+      ),
+    )
+    invokeAuthHandlerMock.mockResolvedValue({
+      response: new Response(JSON.stringify({ url: "https://checkout.stripe.com/c/test" }), { status: 200 }),
+      data: {
+        url: "https://checkout.stripe.com/c/test",
+      },
+    })
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(302)
+    expect(invokeAuthHandlerMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("returns checkout_creation_failed when Better Auth omits a checkout url", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+    invokeAuthHandlerMock.mockResolvedValue({
+      response: new Response(JSON.stringify({ message: "Missing checkout URL" }), { status: 502 }),
+      data: {
+        message: "Missing checkout URL",
+      },
+    })
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(502)
+    expect(await res.json()).toMatchObject({
+      error: "checkout_creation_failed",
+      message: "Missing checkout URL",
+    })
+  })
+
+  it("falls back to the default checkout failure message when Better Auth returns no structured data", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+    invokeAuthHandlerMock.mockResolvedValue({
+      response: new Response(null, { status: 502 }),
+      data: null,
+    })
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(502)
+    expect(body.message).toBe("Unable to create Stripe subscription checkout session.")
+  })
+
+  it("falls back to the default checkout failure message when Better Auth returns blank string errors", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+    invokeAuthHandlerMock.mockResolvedValue({
+      response: { ok: false, status: 0 },
+      data: {
+        error: "   ",
+      },
+    })
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(502)
+    expect(body.message).toBe("Unable to create Stripe subscription checkout session.")
+  })
+
+  it("supports string error payloads from Better Auth", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+    invokeAuthHandlerMock.mockResolvedValue({
+      response: new Response(JSON.stringify({ error: "Plain string failure" }), { status: 500 }),
+      data: {
+        error: "Plain string failure",
+      },
+    })
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchObject({
+      error: "checkout_creation_failed",
+      message: "Plain string failure",
+    })
+  })
+
+  it("passes annual checkout inputs through to Better Auth", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    vi.stubEnv("STRIPE_SAAS_ANNUAL_PRICE_STARTER", "price_annual_starter")
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+    invokeAuthHandlerMock.mockResolvedValue({
+      response: new Response(JSON.stringify({ url: "https://checkout.stripe.com/c/annual" }), { status: 200 }),
+      data: {
+        url: "https://checkout.stripe.com/c/annual",
+      },
+    })
+
+    const res = await GET(makeRequest("plan=starter&period=annual"))
+
+    expect(res.status).toBe(302)
+    expect(res.headers.get("location")).toBe("https://checkout.stripe.com/c/annual")
+    expect(invokeAuthHandlerMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          annual: true,
+        }),
+      }),
+    )
   })
 })

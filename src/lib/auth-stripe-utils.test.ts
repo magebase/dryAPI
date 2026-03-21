@@ -55,6 +55,10 @@ describe("readStringMetadata", () => {
     expect(readStringMetadata({ brand: "   " }, "brand")).toBeNull()
   })
 
+  it("returns null for non-string values", () => {
+    expect(readStringMetadata({ brand: 123 } as never, "brand")).toBeNull()
+  })
+
   it("returns null for null/undefined metadata", () => {
     expect(readStringMetadata(null, "brand")).toBeNull()
     expect(readStringMetadata(undefined, "brand")).toBeNull()
@@ -76,6 +80,10 @@ describe("readExpandableId", () => {
 
   it("returns null for an expanded object with no id", () => {
     expect(readExpandableId({ email: "user@example.com" })).toBeNull()
+  })
+
+  it("returns null for an expanded object with a blank id", () => {
+    expect(readExpandableId({ id: "   " })).toBeNull()
   })
 
   it("returns null for null/undefined/number", () => {
@@ -148,6 +156,14 @@ describe("formatStripeAmount", () => {
   it("treats null amount as zero", () => {
     expect(formatStripeAmount(null, "usd")).toBe("$0.00")
   })
+
+  it("falls back to a plain amount format for unknown currencies", () => {
+    expect(formatStripeAmount(500, "bad!")).toBe("5.00 BAD!")
+  })
+
+  it("treats blank currencies as USD", () => {
+    expect(formatStripeAmount(500, "   ")).toBe("$5.00")
+  })
 })
 
 describe("formatStripeUnixTimestamp", () => {
@@ -169,5 +185,9 @@ describe("formatStripeUnixTimestamp", () => {
 
   it("returns null for NaN", () => {
     expect(formatStripeUnixTimestamp(NaN)).toBeNull()
+  })
+
+  it("returns null for out-of-range finite timestamps", () => {
+    expect(formatStripeUnixTimestamp(1e20)).toBeNull()
   })
 })

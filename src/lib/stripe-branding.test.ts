@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   buildBrandedCheckoutCancelUrl,
@@ -6,6 +6,10 @@ import {
   resolveBrandForCheckoutSession,
   resolveStripeCheckoutMessaging,
 } from "@/lib/stripe-branding"
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe("stripe-branding", () => {
   it("builds top-up success URL with checkout session placeholder", () => {
@@ -39,6 +43,37 @@ describe("stripe-branding", () => {
     expect(url).toBe("https://agentapi.dev/dashboard/billing?subscription=canceled&plan=starter&period=monthly")
   })
 
+  it("builds top-up cancel URL without subscription params", () => {
+    const url = buildBrandedCheckoutCancelUrl({
+      origin: "https://dryapi.dev/",
+      flow: "topup",
+    })
+
+    expect(url).toBe("https://dryapi.dev/dashboard/billing?checkout=canceled")
+  })
+
+  it("builds subscription cancel URLs without optional plan metadata", () => {
+    const url = buildBrandedCheckoutCancelUrl({
+      origin: "https://dryapi.dev",
+      flow: "subscription",
+      planSlug: "",
+      billingPeriod: null,
+    })
+
+    expect(url).toBe("https://dryapi.dev/dashboard/billing?subscription=canceled")
+  })
+
+  it("omits invalid plan and period values from success URLs", () => {
+    const url = buildBrandedCheckoutSuccessUrl({
+      origin: "https://dryapi.dev///",
+      flow: "subscription",
+      planSlug: "",
+      billingPeriod: null,
+    })
+
+    expect(url).toBe("https://dryapi.dev/success?flow=subscription")
+  })
+
   it("resolves brand from checkout success URL host", async () => {
     const result = await resolveBrandForCheckoutSession({
       success_url: "https://embedapi.dev/success?flow=subscription",
@@ -47,6 +82,26 @@ describe("stripe-branding", () => {
 
     expect(result.hostname).toBe("embedapi.dev")
     expect(result.brand.key).toBe("embedapi")
+  })
+
+  it("falls back to the cancel URL host when success_url is invalid", async () => {
+    const result = await resolveBrandForCheckoutSession({
+      success_url: "not-a-url",
+      cancel_url: "https://agentapi.dev/dashboard/billing?checkout=canceled",
+    })
+
+    expect(result.hostname).toBe("agentapi.dev")
+    expect(result.brand.key).toBe("agentapi")
+  })
+
+  it("supports null checkout urls during brand resolution", async () => {
+    const result = await resolveBrandForCheckoutSession({
+      success_url: null,
+      cancel_url: null,
+    })
+
+    expect(result.hostname).toBeNull()
+    expect(result.brand.key).toBe("dryapi")
   })
 
   it("builds checkout legal/descriptor messaging defaults", () => {
@@ -59,6 +114,24 @@ describe("stripe-branding", () => {
     expect(messaging.statementDescriptor).toBe("DRYAPI*ADSTIM")
     expect(messaging.statementDescriptorSuffix).toBe("DRYAPI")
     expect(messaging.checkoutSubmitMessage).toContain("You will be charged by AdStim LLC")
+  })
+
+  it("falls back to the default checkout brand name when brandMark is absent", () => {
+    const messaging = resolveStripeCheckoutMessaging()
+
+    expect(messaging.checkoutBrandName).toBe("dryAPI")
+  })
+
+  it("prefers explicit env branding overrides", () => {
+    vi.stubEnv("STRIPE_CHECKOUT_BRAND_NAME", "  Agent API  ")
+    vi.stubEnv("STRIPE_LEGAL_ENTITY_NAME", "  Example Billing LLC  ")
+
+    const messaging = resolveStripeCheckoutMessaging({
+      brandMark: "ignored",
+    })
+
+    expect(messaging.checkoutBrandName).toBe("Agent API")
+    expect(messaging.legalEntityName).toBe("Example Billing LLC")
   })
 
   it("accepts descriptor env overrides", () => {
@@ -88,5 +161,43 @@ describe("stripe-branding", () => {
         process.env.STRIPE_STATEMENT_DESCRIPTOR_SUFFIX = previousSuffix
       }
     }
+  })
+
+  it("rejects empty brand and legal entity names", () => {
+    vi.stubEnv("STRIPE_CHECKOUT_BRAND_NAME", "   ")
+
+    expect(() =>
+      resolveStripeCheckoutMessaging({
+        brandMark: null,
+      }),
+    ).toThrowError(/brand name is required/i)
+
+    vi.stubEnv("STRIPE_CHECKOUT_BRAND_NAME", "dryAPI")
+    vi.stubEnv("STRIPE_LEGAL_ENTITY_NAME", "   ")
+
+    expect(() =>
+      resolveStripeCheckoutMessaging({
+        brandMark: "dryAPI",
+      }),
+    ).toThrowError(/legal entity name is required/i)
+  })
+
+  it("rejects invalid statement descriptors", () => {
+    vi.stubEnv("STRIPE_STATEMENT_DESCRIPTOR", "bad")
+
+    expect(() =>
+      resolveStripeCheckoutMessaging({
+        brandMark: "dryAPI",
+      }),
+    ).toThrowError(/descriptor must be between 5 and 22/i)
+
+    vi.unstubAllEnvs()
+    vi.stubEnv("STRIPE_STATEMENT_DESCRIPTOR_SUFFIX", "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+    expect(() =>
+      resolveStripeCheckoutMessaging({
+        brandMark: "dryAPI",
+      }),
+    ).toThrowError(/descriptor suffix must be between 1 and 22/i)
   })
 })

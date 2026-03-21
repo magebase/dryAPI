@@ -48,12 +48,7 @@ export function parseAutoTopUpThresholdToCents(input: number | string | undefine
   }
 
   const normalized = majorAmountStringSchema.parse(input)
-  const parsed = Number(normalized)
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    throw new Error("Auto top-up threshold must be zero or higher")
-  }
-
-  return Math.round(parsed * 100)
+  return Math.round(Number(normalized) * 100)
 }
 
 export function resolveTopUpCharge(
@@ -80,9 +75,9 @@ export function resolveTopUpCharge(
   )
 
   const chargeAmountCents = requestedAmountCents - discountCents
-  const appliedDiscountPercent = requestedAmountCents > 0
-    ? Number(((discountCents / requestedAmountCents) * 100).toFixed(2))
-    : 0
+  const appliedDiscountPercent = Number(
+    ((discountCents / requestedAmountCents) * 100).toFixed(2),
+  )
 
   return {
     requestedAmountCents,

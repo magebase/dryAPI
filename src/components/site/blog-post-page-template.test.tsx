@@ -21,7 +21,7 @@ const siteFixture: SiteConfig = {
   brand: {
     name: "Load Ready",
     mark: "GENFIX",
-    siteUrl: "https://genfix.com.au",
+    siteUrl: "https://dryapi.dev",
   },
   contact: {
     contactEmail: "sales@genfix.com.au",
@@ -147,7 +147,7 @@ vi.mock("@/components/site/reveal", () => ({
 }))
 
 vi.mock("@/lib/brand-catalog", () => ({
-  normalizeSiteUrl: () => "https://genfix.com.au",
+  normalizeSiteUrl: () => "https://dryapi.dev",
 }))
 
 describe("BlogPostPageTemplate", () => {
@@ -158,7 +158,7 @@ describe("BlogPostPageTemplate", () => {
   })
 
   it("renders with basic metadata and schema", () => {
-    process.env.NEXT_PUBLIC_SITE_URL = "https://genfix.com.au"
+    process.env.NEXT_PUBLIC_SITE_URL = "https://dryapi.dev"
     render(<BlogPostPageTemplate post={postFixture} site={siteFixture} />)
 
     expect(articleJsonLdProps?.headline).toBe("Generator Hire Guide")

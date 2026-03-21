@@ -59,7 +59,7 @@ export function splitLocalizedSlug(slug: string[]): LocalizedSlug {
 }
 
 export function toLocaleAlternates(pathname: string): Record<string, string> {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://genfix.com.au").replace(/\/+$/, "")
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://dryapi.dev").replace(/\/+$/, "")
 
   return Object.fromEntries(
     SUPPORTED_LOCALES.map((locale) => [locale, `${siteUrl}${localizePath(pathname, locale)}`])

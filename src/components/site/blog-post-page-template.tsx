@@ -237,7 +237,7 @@ export function BlogPostPageTemplate({
   }, []);
 
   const siteUrl = (
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://genfix.com.au"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://dryapi.dev"
   ).replace(/\/+$/, "");
   const canonicalPath = normalizeCanonicalPath(post.slug, post.canonicalPath);
   const canonicalUrl = `${siteUrl}${canonicalPath}`;

@@ -853,11 +853,7 @@ function readCheckoutEmail(payload: StripeCheckoutSessionPayload): string | null
   return null
 }
 
-function readCheckoutCreditsGranted(metadata: Record<string, unknown> | null | undefined): number | null {
-  if (!metadata || typeof metadata !== "object") {
-    return null
-  }
-
+function readCheckoutCreditsGranted(metadata: Record<string, unknown>): number | null {
   const raw = metadata.creditsGranted
   const parsed = toFiniteNumber(raw)
   if (parsed === null || parsed <= 0) {
@@ -936,7 +932,9 @@ export async function syncDashboardTopUpFromStripeCheckout(input: {
     }
   }
 
-  const metadata = payload.metadata || {}
+  const metadata = payload.metadata && typeof payload.metadata === "object"
+    ? payload.metadata
+    : {}
   const source = typeof metadata.source === "string" ? metadata.source.trim() : ""
   if (source !== "dryapi-dashboard-top-up") {
     return {
