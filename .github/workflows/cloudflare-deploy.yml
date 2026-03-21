@@ -477,6 +477,50 @@ jobs:
             "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" queues create "${queue_name}" --config wrangler.toml
           fi
 
+      - name: Resolve API queue metrics KV namespace ID
+        working-directory: cloudflare/api
+        run: |
+          set -euo pipefail
+
+          namespace_title="queue_metrics_kv_prod"
+          namespace_id="$({
+            curl -fsSL \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces?per_page=1000" \
+              | jq -r --arg title "${namespace_title}" '.result[] | select(.title == $title) | .id'
+          } | head -n1)"
+
+          if [[ -z "${namespace_id}" || "${namespace_id}" == "null" ]]; then
+            namespace_id="$({
+              curl -fsSL -X POST \
+                -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces" \
+                --data "{\"title\":\"${namespace_title}\"}" \
+                | jq -r '.result.id'
+            })"
+          fi
+
+          if [[ -z "${namespace_id}" || "${namespace_id}" == "null" ]]; then
+            echo "Failed to resolve KV namespace ID for ${namespace_title}."
+            exit 1
+          fi
+
+          node - "${namespace_id}" <<'NODE'
+          const fs = require('node:fs')
+
+          const namespaceId = process.argv[2]
+          const configPath = 'wrangler.toml'
+          const original = fs.readFileSync(configPath, 'utf8')
+          const updated = original.replace('id = "queue_metrics_kv_prod"', `id = "${namespaceId}"`)
+
+          if (updated === original) {
+            throw new Error('Failed to update wrangler.toml KV namespace id')
+          }
+
+          fs.writeFileSync(configPath, updated)
+          NODE
+
       - name: Deploy API worker to Cloudflare Workers
         working-directory: cloudflare/api
         run: |
