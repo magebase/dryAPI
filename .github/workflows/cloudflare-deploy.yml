@@ -424,11 +424,19 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [[ -z "${TINA_ALLOWED_GOOGLE_EMAILS:-}" && -z "${TINA_ALLOWED_GOOGLE_DOMAINS:-}" ]]; then
+            echo "Skipping Zero Trust provisioning (no TINA_ALLOWED_GOOGLE_EMAILS or TINA_ALLOWED_GOOGLE_DOMAINS configured)."
+            exit 0
+          fi
+
           provision_args=(
             --brand-key dryapi
             --cal-host cal.dryapi.dev
-            --allow-emails "${TINA_ALLOWED_GOOGLE_EMAILS}"
           )
+
+          if [[ -n "${TINA_ALLOWED_GOOGLE_EMAILS:-}" ]]; then
+            provision_args+=(--allow-emails "${TINA_ALLOWED_GOOGLE_EMAILS}")
+          fi
 
           if [[ -n "${TINA_ALLOWED_GOOGLE_DOMAINS:-}" ]]; then
             provision_args+=(--allow-domains "${TINA_ALLOWED_GOOGLE_DOMAINS}")
