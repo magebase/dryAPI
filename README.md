@@ -393,15 +393,15 @@ Optional for Stripe Billing Portal (tiered consultancy plans):
 - `STRIPE_PORTAL_BUSINESS_HEADLINE`
 - `STRIPE_PORTAL_PRIVACY_POLICY_URL`
 - `STRIPE_PORTAL_TERMS_URL`
+- `STRIPE_SAAS_PRICE_STARTER`
+- `STRIPE_SAAS_ANNUAL_PRICE_STARTER`
 - `STRIPE_PORTAL_BASIC_PRODUCT_ID`
-- `STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID`
-- `STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID`
+- `STRIPE_SAAS_PRICE_GROWTH`
+- `STRIPE_SAAS_ANNUAL_PRICE_GROWTH`
 - `STRIPE_PORTAL_GROWTH_PRODUCT_ID`
-- `STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID`
-- `STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID`
+- `STRIPE_SAAS_PRICE_SCALE`
+- `STRIPE_SAAS_ANNUAL_PRICE_SCALE`
 - `STRIPE_PORTAL_PRO_PRODUCT_ID`
-- `STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID`
-- `STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID`
 
 Optional for dynamic Cal.com deposit checkout sessions (user-defined amount):
 
@@ -425,7 +425,7 @@ API endpoint:
 
 Request body supports either `amount` (major units, e.g. `150.00`) or `amountCents` (minor units), plus optional `calcomBookingUrl`, `successUrl`, `cancelUrl`, `customerEmail`, `description`, and `metadata`.
 
-Tier product/price IDs must be set before running `pnpm stripe:portal:ensure`. Populate them with `pnpm stripe:portal:init-local`, then fill in the Stripe product and price IDs from your catalog.
+The canonical `STRIPE_SAAS_*` monthly and annual price IDs plus portal product IDs must be set before running `pnpm stripe:portal:ensure`. Populate them with `pnpm stripe:portal:init-local`, then fill in the Stripe catalog values from your source of truth.
 
 To create or update a portal configuration in Stripe:
 
@@ -466,9 +466,13 @@ Chatbot AI Search Wrangler setup helpers:
 ```bash
 pnpm cf:chatbot:ai-search:check
 pnpm cf:chatbot:ai-search:sync
+pnpm cf:chatbot:ai-search:recrawl
 ```
 
 The `check` command validates required `CLOUDFLARE_AI_SEARCH_*` keys in `.env` and shows what will be synced. The `sync` command applies them with `wrangler secret put` to the worker defined in `wrangler.jsonc`.
+The `recrawl` command verifies `https://dryapi.dev` and `https://dryapi.dev/llms-full.txt`, then queues a fresh Cloudflare AI Search indexing job for the active instance.
+
+The weekly recrawl job at [.github/workflows/weekly-ai-search-recrawl.yml](.github/workflows/weekly-ai-search-recrawl.yml) uses the same AI Search account, token, and index values.
 
 ## Cloudflare Zero Trust for TinaCMS
 
@@ -605,19 +609,19 @@ Optional Stripe portal automation secrets:
 - `STRIPE_PORTAL_BUSINESS_HEADLINE`
 - `STRIPE_PORTAL_PRIVACY_POLICY_URL`
 - `STRIPE_PORTAL_TERMS_URL`
+- `STRIPE_SAAS_PRICE_STARTER`
+- `STRIPE_SAAS_ANNUAL_PRICE_STARTER`
 - `STRIPE_PORTAL_BASIC_PRODUCT_ID`
-- `STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID`
-- `STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID`
+- `STRIPE_SAAS_PRICE_GROWTH`
+- `STRIPE_SAAS_ANNUAL_PRICE_GROWTH`
 - `STRIPE_PORTAL_GROWTH_PRODUCT_ID`
-- `STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID`
-- `STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID`
+- `STRIPE_SAAS_PRICE_SCALE`
+- `STRIPE_SAAS_ANNUAL_PRICE_SCALE`
 - `STRIPE_PORTAL_PRO_PRODUCT_ID`
-- `STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID`
-- `STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID`
 
 Local and production availability for Stripe portal values:
 
-- Local: set the same `STRIPE_PORTAL_*` keys in `.env` and run `pnpm stripe:portal:ensure`.
+- Local: set the same `STRIPE_SAAS_*` monthly and annual price keys plus `STRIPE_PORTAL_*_PRODUCT_ID` values in `.env` and run `pnpm stripe:portal:ensure`.
 - Production: CI converts Stripe portal secrets into `SYNC_SECRET_*` values and pushes them to Cloudflare Worker secrets via `scripts/sync-github-secrets.sh`.
 
 Any additional GitHub secret can be synced by adding it to workflow `env` with the `SYNC_SECRET_` prefix.

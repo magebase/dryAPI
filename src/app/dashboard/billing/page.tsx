@@ -913,6 +913,7 @@ export default async function DashboardBillingPage({
             <BillingTopUpControls
               topUpAmounts={topUpAmounts}
               activePlan={activePlan}
+              customerId={stripeSummary.customerId}
               monthlyTokenExpiryIso={monthlyTokenExpiryIso}
               initialAutoTopUpSettings={initialAutoTopUpSettings}
               safeguards={BILLING_SAFEGUARDS}

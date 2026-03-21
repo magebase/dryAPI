@@ -4,32 +4,20 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import {
+  listSaasPlans,
+  resolveSaasPlanStripeAnnualPriceId,
+  resolveSaasPlanStripePriceId,
+} from "../src/lib/stripe-saas-plans";
+
 const STRIPE_API_BASE = "https://api.stripe.com";
 const DEFAULT_SITE_URL = "https://dryapi.dev";
 
-const PLAN_SPECS = [
-  {
-    key: "starter",
-    label: "Starter",
-    productEnv: "STRIPE_PORTAL_BASIC_PRODUCT_ID",
-    monthlyPriceEnv: "STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID",
-    annualPriceEnv: "STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID",
-  },
-  {
-    key: "growth",
-    label: "Growth",
-    productEnv: "STRIPE_PORTAL_GROWTH_PRODUCT_ID",
-    monthlyPriceEnv: "STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID",
-    annualPriceEnv: "STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID",
-  },
-  {
-    key: "scale",
-    label: "Scale",
-    productEnv: "STRIPE_PORTAL_PRO_PRODUCT_ID",
-    monthlyPriceEnv: "STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID",
-    annualPriceEnv: "STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID",
-  },
-];
+const PORTAL_PRODUCT_ENV_KEYS = {
+  starter: "STRIPE_PORTAL_BASIC_PRODUCT_ID",
+  growth: "STRIPE_PORTAL_GROWTH_PRODUCT_ID",
+  scale: "STRIPE_PORTAL_PRO_PRODUCT_ID",
+};
 
 function clean(value) {
   return typeof value === "string" ? value.trim() : "";
@@ -111,39 +99,38 @@ function isEntrypoint() {
 function buildTierProducts(env = process.env) {
   const products = [];
 
-  for (const plan of PLAN_SPECS) {
-    const product = clean(env[plan.productEnv]);
-    const prices = [
-      clean(env[plan.monthlyPriceEnv]),
-      clean(env[plan.annualPriceEnv]),
-    ].filter(Boolean);
-
-    if (!product && prices.length === 0) {
-      continue;
-    }
+  for (const plan of listSaasPlans()) {
+    const portalProductEnvKey = PORTAL_PRODUCT_ENV_KEYS[plan.slug];
+    const product = clean(env[portalProductEnvKey]);
+    const monthlyPrice = resolveSaasPlanStripePriceId(plan, env);
+    const annualPrice = resolveSaasPlanStripeAnnualPriceId(plan, env);
 
     if (!product) {
       throw new Error(
-        `Missing ${plan.productEnv} for ${plan.label} portal configuration.`,
+        `Missing ${portalProductEnvKey} for ${plan.label} portal configuration.`,
       );
     }
 
-    if (prices.length === 0) {
+    const missingPriceEnvKeys = [];
+
+    if (!monthlyPrice) {
+      missingPriceEnvKeys.push(plan.stripePriceIdEnvKey);
+    }
+
+    if (!annualPrice) {
+      missingPriceEnvKeys.push(plan.stripeAnnualPriceIdEnvKey);
+    }
+
+    if (missingPriceEnvKeys.length > 0) {
       throw new Error(
-        `Missing ${plan.monthlyPriceEnv} and ${plan.annualPriceEnv} for ${plan.label} portal configuration.`,
+        `Missing ${missingPriceEnvKeys.join(" and ")} for ${plan.label} portal configuration.`,
       );
     }
 
     products.push({
       product,
-      prices,
+      prices: [monthlyPrice, annualPrice],
     });
-  }
-
-  if (products.length === 0) {
-    throw new Error(
-      "No Stripe portal products configured. Set STRIPE_PORTAL_*_PRODUCT_ID plus at least one STRIPE_PORTAL_*_MONTHLY_PRICE_ID or STRIPE_PORTAL_*_ANNUAL_PRICE_ID env value.",
-    );
   }
 
   return products;

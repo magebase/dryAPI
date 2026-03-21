@@ -33,6 +33,7 @@ type BillingSafeguards = {
 type BillingTopUpControlsProps = {
   topUpAmounts: readonly number[]
   activePlan: ActivePlanSummary | null
+  customerId: string | null
   monthlyTokenExpiryIso: string
   initialAutoTopUpSettings: AutoTopUpSettings
   safeguards: BillingSafeguards
@@ -79,12 +80,14 @@ function toUsdLabel(value: number): string {
 export function BillingTopUpControls({
   topUpAmounts,
   activePlan,
+  customerId,
   monthlyTokenExpiryIso,
   initialAutoTopUpSettings,
   safeguards,
   checkoutDisclosure,
 }: BillingTopUpControlsProps) {
   const router = useRouter()
+  const canAuthorizeAutoTopUp = Boolean(customerId)
 
   const [customTopUpAmount, setCustomTopUpAmount] = useState<number>(
     Math.max(safeguards.minimumTopUpCredits, activePlan?.monthlyCredits ? Math.min(activePlan.monthlyCredits, 50) : 25),
@@ -272,15 +275,27 @@ export function BillingTopUpControls({
         </p>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" variant="outline" asChild>
-            <Link href="/api/dashboard/billing/auto-top-up/authorize" prefetch={false}>
+          {canAuthorizeAutoTopUp ? (
+            <Button type="button" size="sm" variant="outline" asChild>
+              <Link href="/api/dashboard/billing/auto-top-up/authorize" prefetch={false}>
+                Authorize Stripe auto top-up
+              </Link>
+            </Button>
+          ) : (
+            <Button type="button" size="sm" variant="outline" disabled>
               Authorize Stripe auto top-up
-            </Link>
-          </Button>
+            </Button>
+          )}
           <Button type="button" size="sm" onClick={saveAutoTopUpSettings} disabled={saveState === "saving"}>
             {saveState === "saving" ? "Saving..." : "Save auto top-up settings"}
           </Button>
         </div>
+
+        {!canAuthorizeAutoTopUp ? (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Complete checkout or subscribe first so Stripe can create a customer before auto top-up can be authorized.
+          </p>
+        ) : null}
 
         {statusMessage ? (
           <p className={`text-xs ${saveState === "error" ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-300"}`}>

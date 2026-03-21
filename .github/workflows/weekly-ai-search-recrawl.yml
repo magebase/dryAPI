@@ -1,0 +1,97 @@
+name: Weekly AI Search Recrawl
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recrawl:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_AI_SEARCH_SOURCE_URLS: https://dryapi.dev,https://dryapi.dev/llms-full.txt
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve AI Search secrets
+        env:
+          ALL_REPO_SECRETS_JSON: ${{ toJSON(secrets) }}
+        run: |
+          set -euo pipefail
+
+          node <<'NODE' >> "$GITHUB_ENV"
+          const raw = process.env.ALL_REPO_SECRETS_JSON || "{}";
+          let secretMap = {};
+
+          try {
+            secretMap = JSON.parse(raw);
+          } catch {
+            secretMap = {};
+          }
+
+          const pick = (...keys) => {
+            for (const key of keys) {
+              const value = secretMap[key];
+              if (typeof value === "string" && value.trim().length > 0) {
+                return value;
+              }
+            }
+
+            return "";
+          };
+
+          const accountId = pick("CLOUDFLARE_AI_SEARCH_ACCOUNT_ID", "CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID");
+          const apiToken = pick(
+            "CLOUDFLARE_AI_SEARCH_API_TOKEN",
+            "CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN",
+            "CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN_ID",
+            "CLOUDFLARE_AI_SEARCH_TOKEN",
+            "CLOUDFLARE_AI_SEARCH_TOKEN_ID",
+          );
+          const index = pick("CLOUDFLARE_AI_SEARCH_INDEX", "CLOUDFLARE_AI_SEARCH_NAME");
+
+          if (!accountId || !apiToken || !index) {
+            throw new Error("Missing required Cloudflare AI Search secrets.");
+          }
+
+          const write = (name, value) => {
+            if (!value) {
+              return;
+            }
+
+            process.stdout.write(`${name}<<__SYNC_EOF__\n${value}\n__SYNC_EOF__\n`);
+          };
+
+          write("CLOUDFLARE_AI_SEARCH_ACCOUNT_ID", accountId);
+          write("CLOUDFLARE_AI_SEARCH_API_TOKEN", apiToken);
+          write("CLOUDFLARE_AI_SEARCH_INDEX", index);
+          NODE
+
+      - name: Validate AI Search inputs
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_AI_SEARCH_ACCOUNT_ID}"
+          test -n "${CLOUDFLARE_AI_SEARCH_API_TOKEN}"
+          test -n "${CLOUDFLARE_AI_SEARCH_INDEX}"
+
+      - name: Trigger AI Search recrawl
+        run: pnpm cf:chatbot:ai-search:recrawl

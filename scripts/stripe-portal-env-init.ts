@@ -16,15 +16,15 @@ const ENV_KEYS = [
   ["STRIPE_PORTAL_BUSINESS_HEADLINE", ""],
   ["STRIPE_PORTAL_PRIVACY_POLICY_URL", ""],
   ["STRIPE_PORTAL_TERMS_URL", ""],
+  ["STRIPE_SAAS_PRICE_STARTER", ""],
+  ["STRIPE_SAAS_ANNUAL_PRICE_STARTER", ""],
   ["STRIPE_PORTAL_BASIC_PRODUCT_ID", ""],
-  ["STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID", ""],
-  ["STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID", ""],
+  ["STRIPE_SAAS_PRICE_GROWTH", ""],
+  ["STRIPE_SAAS_ANNUAL_PRICE_GROWTH", ""],
   ["STRIPE_PORTAL_GROWTH_PRODUCT_ID", ""],
-  ["STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID", ""],
-  ["STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID", ""],
+  ["STRIPE_SAAS_PRICE_SCALE", ""],
+  ["STRIPE_SAAS_ANNUAL_PRICE_SCALE", ""],
   ["STRIPE_PORTAL_PRO_PRODUCT_ID", ""],
-  ["STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID", ""],
-  ["STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID", ""],
 ];
 
 function clean(value) {
@@ -153,7 +153,7 @@ function main() {
 
   console.log(`Added ${missing.length} Stripe portal env keys to ${envFile}.`);
   console.log(
-    "Next: fill in STRIPE_PRIVATE_KEY and tier product/price IDs, then run `pnpm stripe:portal:ensure`.",
+    "Next: fill in STRIPE_PRIVATE_KEY, the STRIPE_SAAS_* monthly and annual price IDs, and portal product IDs, then run `pnpm stripe:portal:ensure`.",
   );
 }
 

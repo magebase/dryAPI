@@ -60,6 +60,7 @@
     "cf:secrets:sync:all": "bash ./scripts/sync-worker-secrets-from-env.sh --env-file .env",
     "cf:chatbot:ai-search:sync": "bash ./scripts/cf-chatbot-ai-search-sync.sh --env-file .env --config wrangler.jsonc",
     "cf:chatbot:ai-search:check": "bash ./scripts/cf-chatbot-ai-search-sync.sh --env-file .env --config wrangler.jsonc --dry-run",
+    "cf:chatbot:ai-search:recrawl": "tsx scripts/cf-chatbot-ai-search-recrawl.ts",
     "cf:client:init": "bash ./scripts/cf-client-init.sh",
     "cf:access:admin:provision": "tsx ./scripts/cf-zero-trust-admin-provision.ts",
     "cf:access:tina:disable": "tsx ./scripts/cf-zero-trust-tina-disable.ts",
