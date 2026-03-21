@@ -33,6 +33,21 @@ function toPath(slug: string[]) {
   return `/${slug.join("/")}`;
 }
 
+const RESERVED_APP_PATHS = new Set([
+  "/login",
+  "/register",
+  "/forgot",
+  "/reset-password",
+]);
+
+function isReservedAppPath(pathname: string) {
+  return (
+    RESERVED_APP_PATHS.has(pathname) ||
+    pathname.startsWith("/forgot/") ||
+    pathname.startsWith("/reset-password/")
+  );
+}
+
 function isBlogPostPath(slug: string[]) {
   return slug.length === 2 && slug[0] === "blog";
 }
@@ -112,6 +127,7 @@ export async function generateStaticParams() {
 
   return [
     ...pages
+      .filter((page) => !isReservedAppPath(page.slug))
       .filter((page) => manualBlogEnabled || page.slug !== "/blog")
       .map((page) => ({
         slug: page.slug.replace(/^\//, "").split("/"),
@@ -129,6 +145,12 @@ export async function generateMetadata({
 }: CatchAllPageProps): Promise<Metadata> {
   const { slug } = await params;
   const manualBlogEnabled = isManualBlogEnabled();
+  const pathname = toPath(slug);
+
+  if (isReservedAppPath(pathname)) {
+    notFound();
+  }
+
   const site = await readSiteConfig();
   const siteName = site.brand.name || site.brand.mark;
 
@@ -235,6 +257,12 @@ export async function generateMetadata({
 export default async function CatchAllPage({ params }: CatchAllPageProps) {
   const { slug } = await params;
   const manualBlogEnabled = isManualBlogEnabled();
+  const pathname = toPath(slug);
+
+  if (isReservedAppPath(pathname)) {
+    notFound();
+  }
+
   const site = await readSiteConfig();
 
   if (isBlogPostPath(slug)) {

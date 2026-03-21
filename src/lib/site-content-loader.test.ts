@@ -5,6 +5,7 @@ vi.mock("server-only", () => ({}))
 import {
   readHomeContent,
   readSiteConfig,
+  listRoutePages,
   routeSlugToRelativePath,
 } from "@/lib/site-content-loader"
 
@@ -53,6 +54,15 @@ describe("brand-aware site content", () => {
       } else {
         process.env.SITE_BRAND_KEY = previousBrandKey
       }
+    }
+  })
+
+  it("does not expose auth-only routes as marketing content pages", async () => {
+    const pages = await listRoutePages()
+    const reservedPaths = ["/login", "/register", "/forgot", "/reset-password"]
+
+    for (const reservedPath of reservedPaths) {
+      expect(pages.map((page) => page.slug)).not.toContain(reservedPath)
     }
   })
 })

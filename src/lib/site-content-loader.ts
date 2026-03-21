@@ -14,6 +14,8 @@ import {
   type RoutePage,
   type SiteConfig,
 } from "@/lib/site-content-schema"
+import homeContentArtifact from "../../content/site/home.json"
+import siteConfigContentArtifact from "../../content/site/site-config.json"
 
 const contentRoot = path.join(process.cwd(), "content")
 const siteRoot = path.join(contentRoot, "site")
@@ -113,7 +115,7 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 }
 
 export async function readSiteConfig(): Promise<SiteConfig> {
-  const basePayload = await readJsonFile<unknown>(path.join(siteRoot, "site-config.json"))
+  const basePayload = siteConfigContentArtifact as unknown
   const brandOverride = await readBrandOverrideJson(path.join("site", "site-config.json"))
 
   if (!brandOverride) {
@@ -124,7 +126,7 @@ export async function readSiteConfig(): Promise<SiteConfig> {
 }
 
 export async function readHomeContent(): Promise<HomeContent> {
-  const basePayload = await readJsonFile<unknown>(path.join(siteRoot, "home.json"))
+  const basePayload = homeContentArtifact as unknown
   const brandOverride = await readBrandOverrideJson(path.join("site", "home.json"))
 
   if (!brandOverride) {
