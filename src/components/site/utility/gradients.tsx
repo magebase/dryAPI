@@ -31,6 +31,7 @@ export enum ModelCardGradientName {
   Oahu = "Oahu",
   RocketPower = "Rocket Power",
   BlueFlame = "Blue Flame",
+  Azure = "Azure",
 }
 
 const MODEL_CARD_GRADIENTS: Record<ModelCardGradientName, string> = {
@@ -93,6 +94,8 @@ const MODEL_CARD_GRADIENTS: Record<ModelCardGradientName, string> = {
     "radial-gradient(ellipse at top, #b45309, #fdba74, #9f1239)",
   [ModelCardGradientName.BlueFlame]:
     "radial-gradient(ellipse at bottom, #fde68a, #7c3aed, #0c4a6e)",
+  [ModelCardGradientName.Azure]:
+    "linear-gradient(to right, #dbeafe, #60a5fa, #1d4ed8)",
 }
 
 const MODEL_CARD_HARMONIC_ROWS: [
@@ -170,11 +173,11 @@ export function getModelCardGradientPreset(seed: number): GradientPreset {
 }
 
 const DASHBOARD_ANNOUNCEMENT_GRADIENTS: ModelCardGradientName[] = [
-  ModelCardGradientName.BigSur,
-  ModelCardGradientName.Hyper,
-  ModelCardGradientName.Oceanic,
-  ModelCardGradientName.Borealis,
-  ModelCardGradientName.Sunset,
+  ModelCardGradientName.Azure,
+  ModelCardGradientName.Messenger,
+  ModelCardGradientName.BlueSteel,
+  ModelCardGradientName.Midnight,
+  ModelCardGradientName.Arendelle,
 ]
 
 export function getDashboardAnnouncementGradient(seed: number): GradientPreset {

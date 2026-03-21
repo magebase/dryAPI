@@ -269,7 +269,7 @@ export function GeneralSettingsForm() {
                 <Input
                   autoComplete="email"
                   id={field.name}
-                  placeholder="magebase.dev@gmail.com"
+                  placeholder="dryapi.dev@gmail.com"
                   type="email"
                   value={field.state.value}
                   onBlur={field.handleBlur}
