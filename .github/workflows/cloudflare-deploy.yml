@@ -433,7 +433,7 @@ jobs:
 
       - name: Sync GitHub secrets to Cloudflare API worker secrets
         working-directory: cloudflare/api
-        run: ../../scripts/sync-github-secrets.sh
+        run: bash ../../scripts/sync-github-secrets.sh
 
       - name: Deploy API worker to Cloudflare Workers
         working-directory: cloudflare/api
