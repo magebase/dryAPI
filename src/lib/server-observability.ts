@@ -133,6 +133,7 @@ function emit(
   event: string,
   payload: ServerPerfPayload,
 ): void {
+  const sanitizedPayload = sanitizeValue(payload) as Record<string, unknown>;
   const writer =
     level === "error"
       ? console.error
@@ -145,7 +146,7 @@ function emit(
   writer({
     scope: "server-perf",
     event,
-    ...sanitizeValue(payload),
+    ...sanitizedPayload,
   });
 }
 

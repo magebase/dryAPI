@@ -245,11 +245,13 @@ function instrumentPreparedStatement(
           property === "raw") &&
         typeof target[property] === "function"
       ) {
+        const method = target[property];
+
         return async (...args: unknown[]) => {
           const startedAt = nowMs();
 
           try {
-            const result = await Reflect.apply(target[property], target, args);
+            const result = await Reflect.apply(method, target, args);
             maybeLogD1Operation({
               eventBase: "d1.statement",
               durationMs: normalizeDurationMs(nowMs() - startedAt),
