@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   ArrowRight,
   Clock3,
@@ -368,6 +368,7 @@ export function PricingTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(PAGE_SIZE_OPTIONS[0]);
+  const [expandedRowIds, setExpandedRowIds] = useState<string[]>([]);
 
   const effectiveSelectedCategory = resolvedLockedCategory ?? selectedCategory;
 
@@ -462,6 +463,14 @@ export function PricingTable({
     rowsPerPage !== PAGE_SIZE_OPTIONS[0] ||
     (!resolvedLockedCategory && effectiveSelectedCategory !== "all");
 
+  const toggleExpandedRow = (rowId: string) => {
+    setExpandedRowIds((current) =>
+      current.includes(rowId)
+        ? current.filter((id) => id !== rowId)
+        : [...current, rowId],
+    );
+  };
+
   const resetFilters = () => {
     setSelectedCategory("all");
     setSelectedModel("all");
@@ -469,6 +478,7 @@ export function PricingTable({
     setSortKey("priceUsd");
     setSortDirection("asc");
     setRowsPerPage(PAGE_SIZE_OPTIONS[0]);
+    setExpandedRowIds([]);
     setCurrentPage(1);
   };
 
@@ -748,121 +758,126 @@ export function PricingTable({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <Accordion className="contents" type="multiple">
-                    {visibleRows.map((entry) => {
-                      const representative = entry.representative;
-                      const totalRows = entry.rows.length;
+                  {visibleRows.map((entry) => {
+                    const representative = entry.representative;
+                    const totalRows = entry.rows.length;
+                    const isExpanded = expandedRowIds.includes(entry.id);
+                    const detailsId = `pricing-row-details-${entry.id}`;
 
-                      return (
-                        <div key={entry.id}>
-                        <AccordionItem
-                          className="border-none"
-                          value={entry.id}
-                        >
-                          <TableRow className="group cursor-pointer border-slate-100 hover:bg-slate-50/50 data-[state=open]:bg-slate-50/80">
-                              <TableCell className="py-4">
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-primary/5 text-[10px] font-bold tracking-wider text-primary hover:bg-primary/10 transition-colors uppercase"
-                                >
-                                  {entry.categorySummary || "Uncategorized"}
-                                </Badge>
-                                {entry.categories.length > 1 && (
-                                  <p className="mt-1 text-[10px] font-medium text-site-soft">
-                                    +{entry.categories.length - 1} more
-                                  </p>
-                                )}
-                              </TableCell>
-                              <TableCell className="py-4 text-sm font-semibold text-site-strong">
-                                {entry.modelName}
-                              </TableCell>
-                              <TableCell className="py-4">
-                                <div className="max-w-[300px]">
-                                  <p
-                                    className="truncate text-xs text-slate-600"
-                                    title={entry.representativeParamText}
-                                  >
-                                    {entry.representativeParamText}
-                                  </p>
-                                  <p className="mt-1 text-[10px] text-site-soft">
-                                    Default for {entry.commonParamCount} of{" "}
-                                    {totalRows}
-                                  </p>
-                                </div>
-                              </TableCell>
-                              <TableCell className="py-4 text-right font-mono text-sm font-bold text-site-strong">
-                                {formatUsd(representative.priceUsd)}
-                              </TableCell>
-                              <TableCell className="py-4 text-right text-xs font-medium text-site-muted">
-                                {formatCredits(representative.credits)}
-                              </TableCell>
-                              <TableCell className="py-4 text-right">
-                                <AccordionTrigger className="inline-flex py-0 font-semibold text-primary hover:no-underline">
-                                  <span className="mr-2 text-xs">
-                                    Explore {totalRows} rows
-                                  </span>
-                                </AccordionTrigger>
-                              </TableCell>
-                            </TableRow>
-                            <AccordionContent
-                              className="p-0 border-t border-slate-100 bg-slate-50/30"
-                              asChild
+                    return (
+                      <Fragment key={entry.id}>
+                        <TableRow className="group border-slate-100 hover:bg-slate-50/50">
+                          <TableCell className="py-4">
+                            <Badge
+                              variant="secondary"
+                              className="bg-primary/5 text-[10px] font-bold tracking-wider text-primary transition-colors uppercase hover:bg-primary/10"
                             >
-                              <TableCell colSpan={6} className="p-0">
-                                <div className="p-6">
-                                  <Table className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
-                                    <TableHeader className="bg-slate-50/80">
-                                      <TableRow className="hover:bg-transparent">
-                                        <TableHead className="text-[9px] font-bold uppercase text-site-soft">
-                                          Permutation
-                                        </TableHead>
-                                        <TableHead className="w-[120px] text-right text-[9px] font-bold uppercase text-site-soft">
-                                          Price (USD)
-                                        </TableHead>
-                                        <TableHead className="w-[120px] text-right text-[9px] font-bold uppercase text-site-soft">
-                                          Credits
-                                        </TableHead>
-                                        <TableHead className="w-[80px] text-right text-[9px] font-bold uppercase text-site-soft">
-                                          Action
-                                        </TableHead>
+                              {entry.categorySummary || "Uncategorized"}
+                            </Badge>
+                            {entry.categories.length > 1 && (
+                              <p className="mt-1 text-[10px] font-medium text-site-soft">
+                                +{entry.categories.length - 1} more
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-4 text-sm font-semibold text-site-strong">
+                            {entry.modelName}
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="max-w-[300px]">
+                              <p
+                                className="truncate text-xs text-slate-600"
+                                title={entry.representativeParamText}
+                              >
+                                {entry.representativeParamText}
+                              </p>
+                              <p className="mt-1 text-[10px] text-site-soft">
+                                Default for {entry.commonParamCount} of {totalRows}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4 text-right font-mono text-sm font-bold text-site-strong">
+                            {formatUsd(representative.priceUsd)}
+                          </TableCell>
+                          <TableCell className="py-4 text-right text-xs font-medium text-site-muted">
+                            {formatCredits(representative.credits)}
+                          </TableCell>
+                          <TableCell className="py-4 text-right">
+                            <Button
+                              aria-controls={detailsId}
+                              aria-expanded={isExpanded}
+                              className="ml-auto h-8 gap-1.5 px-2 text-primary hover:no-underline"
+                              onClick={() => toggleExpandedRow(entry.id)}
+                              type="button"
+                              variant="ghost"
+                            >
+                              <span className="text-xs font-semibold">
+                                Explore {totalRows} rows
+                              </span>
+                              <ArrowRight
+                                className={`size-3.5 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                              />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+
+                        {isExpanded ? (
+                          <TableRow className="border-t border-slate-100 bg-slate-50/30">
+                            <TableCell colSpan={6} className="p-0">
+                              <div className="p-6" id={detailsId}>
+                                <Table className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                                  <TableHeader className="bg-slate-50/80">
+                                    <TableRow className="hover:bg-transparent">
+                                      <TableHead className="text-[9px] font-bold uppercase text-site-soft">
+                                        Permutation
+                                      </TableHead>
+                                      <TableHead className="w-[120px] text-right text-[9px] font-bold uppercase text-site-soft">
+                                        Price (USD)
+                                      </TableHead>
+                                      <TableHead className="w-[120px] text-right text-[9px] font-bold uppercase text-site-soft">
+                                        Credits
+                                      </TableHead>
+                                      <TableHead className="w-[80px] text-right text-[9px] font-bold uppercase text-site-soft">
+                                        Action
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {entry.rows.map((row) => (
+                                      <TableRow
+                                        key={row.id}
+                                        className="border-slate-100 last:border-0 transition-colors hover:bg-slate-50/50"
+                                      >
+                                        <TableCell className="py-2.5 text-[11px] font-medium text-slate-600">
+                                          {toParamText(row.params)}
+                                        </TableCell>
+                                        <TableCell className="py-2.5 text-right font-mono text-[11px] font-bold text-site-strong">
+                                          {formatUsd(row.priceUsd)}
+                                        </TableCell>
+                                        <TableCell className="py-2.5 text-right text-[11px] text-site-muted">
+                                          {formatCredits(row.credits)}
+                                        </TableCell>
+                                        <TableCell className="py-2.5 text-right">
+                                          <Button
+                                            className="size-6 text-site-soft transition-colors hover:text-primary"
+                                            size="icon"
+                                            type="button"
+                                            variant="ghost"
+                                          >
+                                            <ArrowRight className="size-3.5" />
+                                          </Button>
+                                        </TableCell>
                                       </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {entry.rows.map((row) => (
-                                        <TableRow
-                                          key={row.id}
-                                          className="border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors"
-                                        >
-                                          <TableCell className="py-2.5 text-[11px] font-medium text-slate-600">
-                                            {toParamText(row.params)}
-                                          </TableCell>
-                                          <TableCell className="py-2.5 text-right font-mono text-[11px] font-bold text-site-strong">
-                                            {formatUsd(row.priceUsd)}
-                                          </TableCell>
-                                          <TableCell className="py-2.5 text-right text-[11px] text-site-muted">
-                                            {formatCredits(row.credits)}
-                                          </TableCell>
-                                          <TableCell className="py-2.5 text-right">
-                                            <Button
-                                              size="icon"
-                                              variant="ghost"
-                                              className="size-6 text-site-soft hover:text-primary transition-colors"
-                                            >
-                                              <ArrowRight className="size-3.5" />
-                                            </Button>
-                                          </TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </div>
-                              </TableCell>
-                            </AccordionContent>
-                        </AccordionItem>
-                        </div>
-                      );
-                    })}
-                  </Accordion>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ) : null}
+                      </Fragment>
+                    );
+                  })}
                 </TableBody>
               </Table>
 
