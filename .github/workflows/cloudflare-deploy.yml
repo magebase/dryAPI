@@ -474,7 +474,7 @@ jobs:
 
           max_attempts=3
           for attempt in $(seq 1 ${max_attempts}); do
-            if pnpm --dir "${GITHUB_WORKSPACE}" exec wrangler deploy --config "${GITHUB_WORKSPACE}/cloudflare/api/wrangler.toml"; then
+            if "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" deploy --config wrangler.toml; then
               exit 0
             fi
 
