@@ -171,7 +171,7 @@ jobs:
           fi
 
           portal_enabled="false"
-          if [[ -n "${STRIPE_PRIVATE_KEY:-}" ]]; then
+          if [[ "$(pnpm exec tsx scripts/stripe-portal-config-status.ts)" == "true" ]]; then
             portal_enabled="true"
           fi
 
@@ -248,7 +248,7 @@ jobs:
 
       - name: Skip Stripe billing portal configuration
         if: ${{ steps.stripe_portal.outputs.portal_enabled != 'true' }}
-        run: echo "Skipping Stripe portal ensure (missing STRIPE_PRIVATE_KEY)."
+        run: echo "Skipping Stripe portal ensure (missing or incomplete Stripe portal secrets)."
 
       - name: Apply D1 migrations (remote)
         run: pnpm db:migrate:remote

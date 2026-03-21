@@ -30,6 +30,52 @@ const PLAN_SPECS = [
   },
 ];
 
+function hasConfiguredPortalPlan(env, plan) {
+  const product = clean(env[plan.productEnv]);
+  const monthlyPrice = clean(env[plan.monthlyPriceEnv]);
+  const annualPrice = clean(env[plan.annualPriceEnv]);
+
+  if (!product && !monthlyPrice && !annualPrice) {
+    return false;
+  }
+
+  if (!product) {
+    return false;
+  }
+
+  if (!monthlyPrice && !annualPrice) {
+    return false;
+  }
+
+  return true;
+}
+
+function shouldEnableStripePortalEnsure(env = process.env) {
+  if (!clean(env.STRIPE_PRIVATE_KEY)) {
+    return false;
+  }
+
+  let hasConfiguredPlan = false;
+
+  for (const plan of PLAN_SPECS) {
+    const product = clean(env[plan.productEnv]);
+    const monthlyPrice = clean(env[plan.monthlyPriceEnv]);
+    const annualPrice = clean(env[plan.annualPriceEnv]);
+
+    if (!product && !monthlyPrice && !annualPrice) {
+      continue;
+    }
+
+    if (!hasConfiguredPortalPlan(env, plan)) {
+      return false;
+    }
+
+    hasConfiguredPlan = true;
+  }
+
+  return hasConfiguredPlan;
+}
+
 function clean(value) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -290,3 +336,4 @@ if (isEntrypoint()) {
 }
 
 export { buildPortalPayload, buildTierProducts };
+export { shouldEnableStripePortalEnsure };
