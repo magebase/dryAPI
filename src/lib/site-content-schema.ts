@@ -28,6 +28,7 @@ export const iconCardSchema = z.object({
   visible: visibleToggleSchema,
   title: requiredText,
   description: requiredText,
+  image: z.string().trim().optional(),
   icon: z.enum([
     "wrench",
     "truck",

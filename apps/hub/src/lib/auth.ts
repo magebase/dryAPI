@@ -100,6 +100,13 @@ function readSocialProviders() {
 const baseURL = getBaseUrl()
 const socialProviders = readSocialProviders()
 const database = await resolveAuthDatabase()
+const authPlugins = [
+  nextCookies(),
+  emailHarmony(),
+  admin(),
+  lastLoginMethod({ storeInDatabase: true }),
+  apiKey(),
+] as any
 
 export const auth = betterAuth({
   baseURL,
@@ -118,13 +125,7 @@ export const auth = betterAuth({
       // TODO: wire email provider
     },
   },
-  plugins: [
-    nextCookies(),
-    emailHarmony(),
-    admin(),
-    lastLoginMethod({ storeInDatabase: true }),
-    apiKey(),
-  ],
+  plugins: authPlugins,
   trustedOrigins: resolveTrustedOrigins(baseURL),
 })
 

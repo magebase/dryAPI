@@ -250,7 +250,6 @@ export const DEAPI_RUNPOD_MODEL_PROFILES: DeapiRunpodModelProfile[] = [
     batchWindowSeconds: 10,
     cacheTtlSeconds: 900,
     targetRetailPriceUsd: 0.006588,
-    quantizationFormats: ["bf16", "fp16"],
   },
   {
     slug: "QwenImageEdit_Plus_NF4",

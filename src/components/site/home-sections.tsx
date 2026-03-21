@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Video,
 } from "lucide-react";
+import Image from "next/image";
 import { tinaField } from "tinacms/dist/react";
 
 import { QuoteAwareLink } from "@/components/site/quote-aware-link";
@@ -223,6 +224,16 @@ const result = await res.json();`;
           data-tina-field={tinaField(home, "hero")}
           id="landing-slot-hero"
         >
+          {home.hero.backgroundImage && (
+            <Image
+              alt=""
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
+              data-tina-field={tinaField(home.hero, "backgroundImage")}
+              fill
+              priority
+              src={home.hero.backgroundImage}
+            />
+          )}
           <HeroGradientCanvas />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(168,118,255,0.32),transparent_42%),radial-gradient(circle_at_84%_18%,rgba(201,92,255,0.3),transparent_46%),radial-gradient(circle_at_66%_80%,rgba(255,108,181,0.2),transparent_52%),radial-gradient(circle_at_88%_88%,rgba(255,131,74,0.22),transparent_38%),linear-gradient(180deg,rgba(26,12,51,0.72)_0%,rgba(45,16,72,0.58)_46%,rgba(72,19,84,0.56)_78%,rgba(116,36,64,0.62)_100%)]" />
           <div className="pointer-events-none absolute inset-0 opacity-36 mix-blend-screen bg-[radial-gradient(circle_at_24%_32%,rgba(185,132,255,0.22),transparent_52%),radial-gradient(circle_at_72%_64%,rgba(235,94,255,0.18),transparent_56%),radial-gradient(100%_62%_at_88%_92%,rgba(255,129,72,0.16),transparent_72%)] [animation:hero-aurora-drift_56s_ease-in-out_infinite_alternate] motion-reduce:animate-none" />
@@ -402,31 +413,6 @@ const result = await res.json();`;
         </section>
       ) : null}
 
-      {/* Credibility metrics strip */}
-      <div className="border-y border-[#e3e3e3] bg-[#f5f5f5] py-7">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-4">
-            {(
-              [
-                // { value: "1.2M+", label: "Requests Served" },
-                // { value: "10+", label: "Models Available" },
-                // { value: "99.99%", label: "Gateway Uptime" },
-                // { value: "300+", label: "Active Tenants" },
-              ] as const
-            ).map((m) => (
-              <div className="text-center" key={m.label}>
-                <p className="font-display text-2xl font-bold tracking-tight text-[#111111]">
-                  {m.value}
-                </p>
-                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7a7a7a]">
-                  {m.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       <section
         className="bg-[#f2f2f2] py-12 md:py-24"
         data-landing-slot="spotlight"
@@ -561,7 +547,15 @@ const result = await res.json();`;
                   delay={index * 0.08}
                   key={card.id}
                 >
-                  <div className="h-40 rounded-lg border border-[#f0f0f0] overflow-hidden bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_50%,#fdfaff_100%)]">
+                  <div className="relative h-40 rounded-lg border border-[#f0f0f0] overflow-hidden bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_50%,#fdfaff_100%)]">
+                    {card.image && (
+                      <Image
+                        alt={card.title}
+                        fill
+                        className="object-cover opacity-20 transition-opacity group-hover:opacity-100"
+                        src={card.image}
+                      />
+                    )}
                     <MockUiPreview
                       compact
                       type={
@@ -750,9 +744,11 @@ const { output } = await res.json()`}
                   </div>
 
                   <div className="relative mt-8 aspect-[1.6/1] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 grayscale-[0.3] transition-all duration-700 group-hover:scale-[1.05] group-hover:bg-white group-hover:grayscale-0">
-                    <MockUiPreview
-                      compact
-                      type={tile.title.toLowerCase() as any}
+                    <Image
+                      alt={tile.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      src={`/landing/${idx % 2 === 0 ? "chatbot-dashboard" : "generic-models-dashboard"}.png`}
                     />
                   </div>
 
@@ -794,18 +790,21 @@ const { output } = await res.json()`}
                 icon={MessageSquare}
                 title="Customer Support"
                 type="chat"
+                image="/landing/chatbot-dashboard.png"
               />
               <UseCaseCard
                 body="OCR, embeddings, and retrieval to extract value from massive datasets."
                 icon={FileText}
                 title="Document Intelligence"
                 type="embeddings"
+                image="/landing/ocr reader-dashboard.png"
               />
               <UseCaseCard
                 body="High-volume, low-cost image pipelines with professional quality tiers."
                 icon={ImageIcon}
                 title="Image Generation"
                 type="image"
+                image="/landing/image-generator-dashboard.png"
               />
             </div>
           </Reveal>
@@ -1102,11 +1101,12 @@ function FeatureStory({
         <div className="absolute -inset-20 bg-[radial-gradient(circle_at_center,rgba(84,126,232,0.08),transparent_70%)] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
 
         <div className="relative aspect-[4/3] w-full transform overflow-hidden rounded-2xl bg-[#f8f9fb] p-1.5 shadow-inner transition-transform duration-700 group-hover:scale-[1.02] md:p-2.5">
-          <div className="h-full w-full overflow-hidden rounded-xl border border-white/80 bg-white/40 shadow-2xl backdrop-blur-sm">
-            <MockUiPreview
-              className="bg-transparent"
-              compact={false}
-              type={type}
+          <div className="relative z-10 h-full w-full overflow-hidden rounded-xl border border-white/80 bg-white/40 shadow-2xl backdrop-blur-sm">
+            <Image
+              alt={card.title}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              src={card.image ?? "/landing/generic-models-dashboard.png"}
             />
           </div>
         </div>
@@ -1120,11 +1120,13 @@ function UseCaseCard({
   body,
   icon: Icon,
   type,
+  image,
 }: {
   title: string;
   body: string;
   icon: React.ElementType;
   type: MockUiPreviewProps["type"];
+  image?: string;
 }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/5 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-black/10 hover:shadow-xl">
@@ -1143,7 +1145,15 @@ function UseCaseCard({
       <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
 
       <div className="mt-6 aspect-[1.4/1] w-full overflow-hidden rounded-xl border border-black/5 bg-slate-50/50 grayscale-[0.2] transition-all duration-500 group-hover:bg-white group-hover:grayscale-0">
-        <MockUiPreview compact className="scale-[0.8] origin-top" type={type} />
+        <div className="relative h-full w-full">
+          <Image
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            src={image ?? "/landing/chatbot-dashboard.png"}
+          />
+          <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
+        </div>
       </div>
 
       <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-900">

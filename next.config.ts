@@ -135,12 +135,12 @@ const nextConfig: NextConfig = {
       ...config.experiments,
       asyncWebAssembly: true,
       layers: true,
-    }
+    };
 
     config.module.rules.push({
       test: /\.wasm$/,
       type: "asset/resource",
-    })
+    });
 
     config.module.rules.push({
       test: /\.txt$/i,
@@ -203,6 +203,9 @@ const nextConfig: NextConfig = {
     localPatterns: [
       {
         pathname: "/api/og",
+      },
+      {
+        pathname: "/landing/**",
       },
     ],
   },
