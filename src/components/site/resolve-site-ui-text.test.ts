@@ -1,20 +1,21 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest";
 
-import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text"
-import type { SiteConfig } from "@/lib/site-content-schema"
+import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text";
+import type { SiteConfig } from "@/lib/site-content-schema";
 
 vi.mock("tinacms/dist/react", () => ({
-  tinaField: (_value: unknown, fieldName?: string) => `field:${fieldName ?? "value"}`,
-}))
+  tinaField: (_value: unknown, fieldName?: string) =>
+    `field:${fieldName ?? "value"}`,
+}));
 
 const siteFixture: SiteConfig = {
   brand: {
     name: "Load Ready",
-    mark: "GENFIX",
+    mark: "DRYAPI",
   },
   contact: {
-    contactEmail: "sales@genfix.com.au",
-    quoteEmail: "quotes@genfix.com.au",
+    contactEmail: "sales@dryapi.dev",
+    quoteEmail: "quotes@dryapi.dev",
   },
   announcement: "Brisbane diesel generator specialists.",
   header: {
@@ -42,23 +43,31 @@ const siteFixture: SiteConfig = {
       value: "Generator Range",
     },
   ],
-}
+};
 
 describe("resolveSiteUiText", () => {
   it("returns Tina-bound value when key exists", () => {
-    const resolved = resolveSiteUiText(siteFixture, "home.capabilitySignal.label.1", "fallback")
+    const resolved = resolveSiteUiText(
+      siteFixture,
+      "home.capabilitySignal.label.1",
+      "fallback",
+    );
 
     expect(resolved).toEqual({
       value: "Generator Range",
       field: "field:value",
-    })
-  })
+    });
+  });
 
   it("returns fallback value without field when key is missing", () => {
-    const resolved = resolveSiteUiText(siteFixture, "home.unknown.key", "fallback")
+    const resolved = resolveSiteUiText(
+      siteFixture,
+      "home.unknown.key",
+      "fallback",
+    );
 
     expect(resolved).toEqual({
       value: "fallback",
-    })
-  })
-})
+    });
+  });
+});

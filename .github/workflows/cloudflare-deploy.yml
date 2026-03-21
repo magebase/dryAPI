@@ -22,7 +22,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_WORKER_NAME: ${{ secrets.CLOUDFLARE_WORKER_NAME }}
-      CF_D1_DATABASE_NAME: ${{ secrets.CF_D1_DATABASE_NAME || 'genfix-db' }}
+      CF_D1_DATABASE_NAME: ${{ secrets.CF_D1_DATABASE_NAME || 'dryapi-db' }}
       NEXT_PUBLIC_TINA_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -55,9 +55,9 @@ jobs:
       SYNC_SECRET_CRM_AUTOMATION_API_TOKEN: ${{ secrets.CRM_AUTOMATION_API_TOKEN }}
       SYNC_SECRET_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       SYNC_SECRET_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
-      SYNC_SECRET_CF_D1_DATABASE_NAME: ${{ secrets.CF_D1_DATABASE_NAME || 'genfix-db' }}
+      SYNC_SECRET_CF_D1_DATABASE_NAME: ${{ secrets.CF_D1_DATABASE_NAME || 'dryapi-db' }}
       SECRET_SYNC_CONCURRENCY: ${{ vars.SYNC_SECRET_CONCURRENCY || '8' }}
-      SECRET_SYNC_RETRIES: '6'
+      SECRET_SYNC_RETRIES: "6"
 
     steps:
       - name: Checkout
@@ -270,7 +270,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          cache_bucket="genfix-site-opennext-cache"
+          cache_bucket="dryapi-site-opennext-cache"
           if ! pnpm exec wrangler r2 bucket info "${cache_bucket}" --config wrangler.jsonc >/dev/null 2>&1; then
             pnpm exec wrangler r2 bucket create "${cache_bucket}" --config wrangler.jsonc
           fi

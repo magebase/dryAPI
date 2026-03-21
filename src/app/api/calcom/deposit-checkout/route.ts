@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       calcomBookingUrl: payload.calcomBookingUrl || "",
     });
     metadata.dryapi_brand_key = brand.key;
-    metadata.source = "genfix-calcom-deposit";
+    metadata.source = "dryapi-calcom-deposit";
     metadata.merchant_legal_entity = checkoutMessaging.legalEntityName;
     metadata.statement_descriptor_hint = checkoutMessaging.statementDescriptor;
 

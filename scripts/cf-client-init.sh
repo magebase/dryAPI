@@ -56,16 +56,16 @@ fi
 
 mkdir -p "$client_dir"
 
-site_worker="genfix-${client_slug}-site"
-calcom_worker="genfix-${client_slug}-calcom"
+site_worker="dryapi-${client_slug}-site"
+calcom_worker="dryapi-${client_slug}-calcom"
 d1_auth_name="dryapi-${client_slug}-auth-d1"
 d1_billing_name="dryapi-${client_slug}-billing-d1"
 d1_analytics_name="dryapi-${client_slug}-analytics-d1"
 d1_metadata_name="dryapi-${client_slug}-metadata-d1"
-kv_name="genfix-${client_slug}-kv"
-r2_cache_bucket="genfix-${client_slug}-next-cache"
-r2_media_bucket="genfix-${client_slug}-media"
-r2_backup_bucket="genfix-${client_slug}-calcom-backups"
+kv_name="dryapi-${client_slug}-kv"
+r2_cache_bucket="dryapi-${client_slug}-next-cache"
+r2_media_bucket="dryapi-${client_slug}-media"
+r2_backup_bucket="dryapi-${client_slug}-calcom-backups"
 
 backend_host="api-${client_slug}.${internal_zone}"
 calcom_internal_host="cal-${client_slug}.${internal_zone}"

@@ -157,7 +157,7 @@ Quote submissions are routed to the Tina-managed `contact.quoteEmail` value in:
 
 - `content/site/site-config.json`
 
-This address is validated to the `@genfix.com` domain in the runtime schema.
+This address is validated to the `@dryapi.com` domain in the runtime schema.
 
 ## Visual Editing Setup (Next.js)
 
@@ -365,11 +365,11 @@ Recommended routing vars for contact/quote/chat queues:
 
 Optional shared fallback recipients:
 
-- `GENFIX_EMAIL_SALES_TO`
-- `GENFIX_EMAIL_RENTALS_TO`
-- `GENFIX_EMAIL_SERVICING_TO`
-- `GENFIX_EMAIL_PARTS_TO`
-- `GENFIX_EMAIL_DEFAULT_TO`
+- `DRYAPI_EMAIL_SALES_TO`
+- `DRYAPI_EMAIL_RENTALS_TO`
+- `DRYAPI_EMAIL_SERVICING_TO`
+- `DRYAPI_EMAIL_PARTS_TO`
+- `DRYAPI_EMAIL_DEFAULT_TO`
 
 Optional for contact emails:
 

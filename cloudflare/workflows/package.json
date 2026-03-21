@@ -1,5 +1,5 @@
 {
-  "name": "genfix-automation-workflows",
+  "name": "dryapi-automation-workflows",
   "private": true,
   "type": "module",
   "scripts": {

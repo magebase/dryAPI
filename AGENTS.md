@@ -395,7 +395,7 @@ Set `metadataBase` once in the root `src/app/layout.tsx` via `generateMetadata`.
 
 - Missing or empty `openGraph.images` array on any public content page.
 - `openGraph.images` entries without explicit `width`, `height`, and `alt`.
-- Hardcoded domain strings (`"https://dryapi.dev"`, `"https://genfix.ai"`) in `generateMetadata` — always use `normalizeSiteUrl()`.
+- Hardcoded domain strings (`"https://dryapi.dev"`, `"https://dryapi.ai"`) in `generateMetadata` — always use `normalizeSiteUrl()`.
 - JSON-LD components placed in `layout.tsx` without `scriptId` — this causes duplicate injection on navigation.
 - JSON-LD in `head.js` in the App Router — use `page.tsx` only.
 - `twitter.card` set to `"summary"` for content pages — always use `"summary_large_image"`.

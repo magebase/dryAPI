@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "genfix-site",
+  "name": "dryapi-site",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-03-10",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -42,7 +42,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "genfix-site",
+      "service": "dryapi-site",
     },
   ],
   "durable_objects": {
@@ -64,13 +64,17 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"],
+      "new_sqlite_classes": [
+        "DOQueueHandler",
+        "DOShardedTagCache",
+        "BucketCachePurge",
+      ],
     },
   ],
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "genfix-site-opennext-cache",
+      "bucket_name": "dryapi-site-opennext-cache",
     },
   ],
   "d1_databases": [

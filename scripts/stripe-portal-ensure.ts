@@ -4,7 +4,7 @@
 import { existsSync, readFileSync } from "node:fs";
 
 const STRIPE_API_BASE = "https://api.stripe.com";
-const DEFAULT_SITE_URL = "https://genfix.com.au";
+const DEFAULT_SITE_URL = "https://dryapi.dev";
 
 const PLAN_SPECS = [
   {
@@ -177,7 +177,7 @@ function buildPortalPayload(products) {
       enabled: true,
     },
     metadata: {
-      project_key: clean(process.env.STRIPE_METER_PROJECT_KEY) || "genfix",
+      project_key: clean(process.env.STRIPE_METER_PROJECT_KEY) || "dryapi",
       plan_model: "consultancy_tiered",
       managed_by: "stripe-portal-ensure-script",
     },
@@ -185,7 +185,7 @@ function buildPortalPayload(products) {
 }
 
 async function resolveExistingPortalConfigurationId(apiKey) {
-  const projectKey = clean(process.env.STRIPE_METER_PROJECT_KEY) || "genfix";
+  const projectKey = clean(process.env.STRIPE_METER_PROJECT_KEY) || "dryapi";
   const listResponse = await stripeRequest(
     apiKey,
     "/v1/billing_portal/configurations?active=true&limit=100",

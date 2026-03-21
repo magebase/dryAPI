@@ -1,73 +1,73 @@
-# deAPI
+# dryAPI
 
 ## Docs
 
-- [Audio-to-Text (X Spaces Transcription)](https://docs.deapi.ai/api/analysis/audio-to-text-spaces.md): Endpoint for requesting audio transcription (Twitter Spaces)
-- [Audio-to-Text (X Spaces) Price Calculation](https://docs.deapi.ai/api/analysis/audio-to-text-spaces-price.md): Endpoint for calculating price for audio to text inference (Twitter Spaces)
-- [Image-to-Text (OCR)](https://docs.deapi.ai/api/analysis/image-to-text.md): Endpoint for requesting image2text (OCR) inference
-- [Image-to-Text Price Calculation](https://docs.deapi.ai/api/analysis/image-to-text-price.md): Endpoint for calculating price for image2text (OCR) inference
-- [Upload Audio File (Audio-to-Text)](https://docs.deapi.ai/api/analysis/upload-audio-file.md): Endpoint for requesting audio transcription
-- [Upload Audio File Price Calculation](https://docs.deapi.ai/api/analysis/upload-audio-file-price.md): Endpoint for requesting audio transcription price
-- [Upload Video File (Video-to-Text)](https://docs.deapi.ai/api/analysis/upload-video-file.md): Endpoint for requesting video transcription
-- [Upload Video File Price Calculation](https://docs.deapi.ai/api/analysis/upload-video-file-price.md): Endpoint for calculating price for video to text inference
-- [Video-to-Text (Transcription)](https://docs.deapi.ai/api/analysis/video-to-text.md): Unique Platform Support: deAPI is one of the few APIs offering direct transcription from YT, TikTok, Twitch VODs, X and Kick videos — no need to download files first. Just paste the URL.
-- [Video-to-Text Price Calculation](https://docs.deapi.ai/api/analysis/video-to-text-price.md): Endpoint for calculating price for video to text inference
-- [Errors](https://docs.deapi.ai/api/errors.md): HTTP status codes and error responses returned by deAPI
-- [Audio-to-Video](https://docs.deapi.ai/api/generation/audio-to-video.md): Endpoint for requesting audio2video inference
-- [Audio-to-Video Price Calculation](https://docs.deapi.ai/api/generation/audio-to-video-price.md): Endpoint for calculating price for audio2video inference
-- [Image-to-Video](https://docs.deapi.ai/api/generation/image-to-video.md): Endpoint for requesting image2video inference
-- [Image-to-Video Price Calculation](https://docs.deapi.ai/api/generation/image-to-video-price.md): Endpoint for calculating price for image2video inference
-- [Text-to-Embedding](https://docs.deapi.ai/api/generation/text-to-embedding.md): Endpoint for requesting text to embedding inference
-- [Text-to-Embedding Price Calculation](https://docs.deapi.ai/api/generation/text-to-embedding-price.md): Endpoint for calculating price for text to embedding inference
-- [Text-to-Image](https://docs.deapi.ai/api/generation/text-to-image.md): Endpoint for requesting text2img inference
-- [Text-to-Image Price Calculation](https://docs.deapi.ai/api/generation/text-to-image-price.md): Endpoint for calculating price for text2img inference
-- [Text-to-Music](https://docs.deapi.ai/api/generation/text-to-music.md): Endpoint for requesting text2music inference
-- [Text-to-Music Price Calculation](https://docs.deapi.ai/api/generation/text-to-music-price.md): Endpoint for calculating price for text2music inference. Requires duration and inference_steps parameters.
-- [Text-to-Speech (TTS)](https://docs.deapi.ai/api/generation/text-to-speech.md): Endpoint for requesting text2audio inference
-- [Text-to-Speech Price Calculation](https://docs.deapi.ai/api/generation/text-to-speech-price.md): Endpoint for calculating price for text2audio inference. Either text or count_text must be provided.
-- [Text-to-Video](https://docs.deapi.ai/api/generation/text-to-video.md): Endpoint for requesting text2video inference
-- [Text-to-Video Price Calculation](https://docs.deapi.ai/api/generation/text-to-video-price.md): Endpoint for calculating price for text2video inference
-- [API Overview](https://docs.deapi.ai/api/overview.md): Complete reference of all deAPI endpoints
-- [Image Prompt Booster](https://docs.deapi.ai/api/prompt-enhancement/image-prompt-booster.md): Enhance text-to-image prompts for better AI generation results.
-- [Image Prompt Booster Price](https://docs.deapi.ai/api/prompt-enhancement/image-prompt-booster-price.md): Calculate the cost of enhancing a text-to-image prompt before execution.
-- [Image-to-Image Prompt Booster](https://docs.deapi.ai/api/prompt-enhancement/image-to-image-prompt-booster.md): Enhance image-to-image transformation prompts with visual context awareness. Requires a reference image.
-- [Image-to-Image Prompt Booster Price](https://docs.deapi.ai/api/prompt-enhancement/image-to-image-prompt-booster-price.md): Calculate the cost of enhancing an image-to-image transformation prompt before execution.
-- [Prompt Enhancement](https://docs.deapi.ai/api/prompt-enhancement/overview.md): AI-powered prompt optimization tools that transform basic ideas into detailed, professional prompts for better generation results.
-- [Sample Prompts Generator](https://docs.deapi.ai/api/prompt-enhancement/sample-prompts.md): Generate creative sample prompts for AI inference tasks. Perfect for inspiration, testing, or quick starting points.
-- [Sample Prompts Price](https://docs.deapi.ai/api/prompt-enhancement/sample-prompts-price.md): Calculate the cost of generating sample prompts before execution.
-- [Speech Prompt Booster](https://docs.deapi.ai/api/prompt-enhancement/speech-prompt-booster.md): Enhance text-to-speech input for more natural, expressive audio generation.
-- [Speech Prompt Booster Price](https://docs.deapi.ai/api/prompt-enhancement/speech-prompt-booster-price.md): Calculate the cost of enhancing a text-to-speech prompt before execution.
-- [Video Prompt Booster](https://docs.deapi.ai/api/prompt-enhancement/video-prompt-booster.md): Enhance text-to-video or image-to-video prompts. Optionally include a reference image for context-aware enhancement.
-- [Video Prompt Booster Price](https://docs.deapi.ai/api/prompt-enhancement/video-prompt-booster-price.md): Calculate the cost of enhancing a video prompt before execution.
-- [Image Background Removal](https://docs.deapi.ai/api/transformation/background-removal.md): Endpoint for requesting image background removal inference
-- [Image Background Removal Price Calculation](https://docs.deapi.ai/api/transformation/background-removal-price.md): Endpoint for calculating price for image background removal inference
-- [Image-to-Image](https://docs.deapi.ai/api/transformation/image-to-image.md): Endpoint for requesting img2img inference. Accepts either a single image via "image" or multiple images via "images[]" (mutually exclusive).
-- [Image-to-Image Price Calculation](https://docs.deapi.ai/api/transformation/image-to-image-price.md): Endpoint for calculating price for img2img inference
-- [Image Upscale](https://docs.deapi.ai/api/transformation/image-upscale.md): Endpoint for requesting image upscaling inference
-- [Image Upscale Price Calculation](https://docs.deapi.ai/api/transformation/image-upscale-price.md): Endpoint for calculating price for image upscaling inference
-- [Check Balance](https://docs.deapi.ai/api/utilities/check-balance.md): Endpoint for requesting client current balance.
-- [Get Results](https://docs.deapi.ai/api/utilities/get-results.md): Check job status and retrieve results via polling
-- [Model Selection](https://docs.deapi.ai/api/utilities/model-selection.md): Endpoint for fetching all available models.
-- [Architecture & Security](https://docs.deapi.ai/architecture-and-security.md)
-- [Execution Modes & HTTP Queue](https://docs.deapi.ai/execution-modes-and-integrations/execution-modes-and-http-queue.md): How to receive job results via webhooks, WebSockets, or polling
-- [MCP Server](https://docs.deapi.ai/execution-modes-and-integrations/mcp-server.md): Describes the deAPI MCP server, its available tools, and how to connect agents or IDE integrations to use deAPI as a structured toolbox.
-- [n8n deAPI node](https://docs.deapi.ai/execution-modes-and-integrations/n8n-deapi-node.md)
-- [n8n Integration](https://docs.deapi.ai/execution-modes-and-integrations/n8n-integration.md)
-- [Webhooks](https://docs.deapi.ai/execution-modes-and-integrations/webhooks.md): Receive real-time notifications about job status changes
-- [WebSockets](https://docs.deapi.ai/execution-modes-and-integrations/websockets.md): Receive real-time job status updates via WebSocket connections
-- [Introduction](https://docs.deapi.ai/introduction.md): Fast and affordable inference for open-source AI models
-- [Limits & Quotas](https://docs.deapi.ai/limits-and-quotas.md)
-- [Models](https://docs.deapi.ai/models.md): How to discover, select, and use models on deAPI
-- [FAQ — Frequently Asked Questions](https://docs.deapi.ai/other/faq-frequently-asked-questions.md)
-- [Payment Methods](https://docs.deapi.ai/other/payment-methods.md)
-- [SDKs & Integrations](https://docs.deapi.ai/other/sdks-and-integrations.md)
-- [Support & Contact](https://docs.deapi.ai/other/support-and-contact.md)
-- [Pricing](https://docs.deapi.ai/pricing.md)
-- [Quickstart](https://docs.deapi.ai/quickstart.md)
+- [Audio-to-Text (X Spaces Transcription)](https://dryapi.dev/docs/v1/api/analysis/audio-to-text-spaces.md): Endpoint for requesting audio transcription (Twitter Spaces)
+- [Audio-to-Text (X Spaces) Price Calculation](https://dryapi.dev/docs/v1/api/analysis/audio-to-text-spaces-price.md): Endpoint for calculating price for audio to text inference (Twitter Spaces)
+- [Image-to-Text (OCR)](https://dryapi.dev/docs/v1/api/analysis/image-to-text.md): Endpoint for requesting image2text (OCR) inference
+- [Image-to-Text Price Calculation](https://dryapi.dev/docs/v1/api/analysis/image-to-text-price.md): Endpoint for calculating price for image2text (OCR) inference
+- [Upload Audio File (Audio-to-Text)](https://dryapi.dev/docs/v1/api/analysis/upload-audio-file.md): Endpoint for requesting audio transcription
+- [Upload Audio File Price Calculation](https://dryapi.dev/docs/v1/api/analysis/upload-audio-file-price.md): Endpoint for requesting audio transcription price
+- [Upload Video File (Video-to-Text)](https://dryapi.dev/docs/v1/api/analysis/upload-video-file.md): Endpoint for requesting video transcription
+- [Upload Video File Price Calculation](https://dryapi.dev/docs/v1/api/analysis/upload-video-file-price.md): Endpoint for calculating price for video to text inference
+- [Video-to-Text (Transcription)](https://dryapi.dev/docs/v1/api/analysis/video-to-text.md): Unique Platform Support: dryAPI is one of the few APIs offering direct transcription from YT, TikTok, Twitch VODs, X and Kick videos — no need to download files first. Just paste the URL.
+- [Video-to-Text Price Calculation](https://dryapi.dev/docs/v1/api/analysis/video-to-text-price.md): Endpoint for calculating price for video to text inference
+- [Errors](https://dryapi.dev/docs/v1/api/errors.md): HTTP status codes and error responses returned by dryAPI
+- [Audio-to-Video](https://dryapi.dev/docs/v1/api/generation/audio-to-video.md): Endpoint for requesting audio2video inference
+- [Audio-to-Video Price Calculation](https://dryapi.dev/docs/v1/api/generation/audio-to-video-price.md): Endpoint for calculating price for audio2video inference
+- [Image-to-Video](https://dryapi.dev/docs/v1/api/generation/image-to-video.md): Endpoint for requesting image2video inference
+- [Image-to-Video Price Calculation](https://dryapi.dev/docs/v1/api/generation/image-to-video-price.md): Endpoint for calculating price for image2video inference
+- [Text-to-Embedding](https://dryapi.dev/docs/v1/api/generation/text-to-embedding.md): Endpoint for requesting text to embedding inference
+- [Text-to-Embedding Price Calculation](https://dryapi.dev/docs/v1/api/generation/text-to-embedding-price.md): Endpoint for calculating price for text to embedding inference
+- [Text-to-Image](https://dryapi.dev/docs/v1/api/generation/text-to-image.md): Endpoint for requesting text2img inference
+- [Text-to-Image Price Calculation](https://dryapi.dev/docs/v1/api/generation/text-to-image-price.md): Endpoint for calculating price for text2img inference
+- [Text-to-Music](https://dryapi.dev/docs/v1/api/generation/text-to-music.md): Endpoint for requesting text2music inference
+- [Text-to-Music Price Calculation](https://dryapi.dev/docs/v1/api/generation/text-to-music-price.md): Endpoint for calculating price for text2music inference. Requires duration and inference_steps parameters.
+- [Text-to-Speech (TTS)](https://dryapi.dev/docs/v1/api/generation/text-to-speech.md): Endpoint for requesting text2audio inference
+- [Text-to-Speech Price Calculation](https://dryapi.dev/docs/v1/api/generation/text-to-speech-price.md): Endpoint for calculating price for text2audio inference. Either text or count_text must be provided.
+- [Text-to-Video](https://dryapi.dev/docs/v1/api/generation/text-to-video.md): Endpoint for requesting text2video inference
+- [Text-to-Video Price Calculation](https://dryapi.dev/docs/v1/api/generation/text-to-video-price.md): Endpoint for calculating price for text2video inference
+- [API Overview](https://dryapi.dev/docs/v1/api/overview.md): Complete reference of all dryAPI endpoints
+- [Image Prompt Booster](https://dryapi.dev/docs/v1/api/prompt-enhancement/image-prompt-booster.md): Enhance text-to-image prompts for better AI generation results.
+- [Image Prompt Booster Price](https://dryapi.dev/docs/v1/api/prompt-enhancement/image-prompt-booster-price.md): Calculate the cost of enhancing a text-to-image prompt before execution.
+- [Image-to-Image Prompt Booster](https://dryapi.dev/docs/v1/api/prompt-enhancement/image-to-image-prompt-booster.md): Enhance image-to-image transformation prompts with visual context awareness. Requires a reference image.
+- [Image-to-Image Prompt Booster Price](https://dryapi.dev/docs/v1/api/prompt-enhancement/image-to-image-prompt-booster-price.md): Calculate the cost of enhancing an image-to-image transformation prompt before execution.
+- [Prompt Enhancement](https://dryapi.dev/docs/v1/api/prompt-enhancement/overview.md): AI-powered prompt optimization tools that transform basic ideas into detailed, professional prompts for better generation results.
+- [Sample Prompts Generator](https://dryapi.dev/docs/v1/api/prompt-enhancement/sample-prompts.md): Generate creative sample prompts for AI inference tasks. Perfect for inspiration, testing, or quick starting points.
+- [Sample Prompts Price](https://dryapi.dev/docs/v1/api/prompt-enhancement/sample-prompts-price.md): Calculate the cost of generating sample prompts before execution.
+- [Speech Prompt Booster](https://dryapi.dev/docs/v1/api/prompt-enhancement/speech-prompt-booster.md): Enhance text-to-speech input for more natural, expressive audio generation.
+- [Speech Prompt Booster Price](https://dryapi.dev/docs/v1/api/prompt-enhancement/speech-prompt-booster-price.md): Calculate the cost of enhancing a text-to-speech prompt before execution.
+- [Video Prompt Booster](https://dryapi.dev/docs/v1/api/prompt-enhancement/video-prompt-booster.md): Enhance text-to-video or image-to-video prompts. Optionally include a reference image for context-aware enhancement.
+- [Video Prompt Booster Price](https://dryapi.dev/docs/v1/api/prompt-enhancement/video-prompt-booster-price.md): Calculate the cost of enhancing a video prompt before execution.
+- [Image Background Removal](https://dryapi.dev/docs/v1/api/transformation/background-removal.md): Endpoint for requesting image background removal inference
+- [Image Background Removal Price Calculation](https://dryapi.dev/docs/v1/api/transformation/background-removal-price.md): Endpoint for calculating price for image background removal inference
+- [Image-to-Image](https://dryapi.dev/docs/v1/api/transformation/image-to-image.md): Endpoint for requesting img2img inference. Accepts either a single image via "image" or multiple images via "images[]" (mutually exclusive).
+- [Image-to-Image Price Calculation](https://dryapi.dev/docs/v1/api/transformation/image-to-image-price.md): Endpoint for calculating price for img2img inference
+- [Image Upscale](https://dryapi.dev/docs/v1/api/transformation/image-upscale.md): Endpoint for requesting image upscaling inference
+- [Image Upscale Price Calculation](https://dryapi.dev/docs/v1/api/transformation/image-upscale-price.md): Endpoint for calculating price for image upscaling inference
+- [Check Balance](https://dryapi.dev/docs/v1/api/utilities/check-balance.md): Endpoint for requesting client current balance.
+- [Get Results](https://dryapi.dev/docs/v1/api/utilities/get-results.md): Check job status and retrieve results via polling
+- [Model Selection](https://dryapi.dev/docs/v1/api/utilities/model-selection.md): Endpoint for fetching all available models.
+- [Architecture & Security](https://dryapi.dev/docs/v1/architecture-and-security.md)
+- [Execution Modes & HTTP Queue](https://dryapi.dev/docs/v1/execution-modes-and-integrations/execution-modes-and-http-queue.md): How to receive job results via webhooks, WebSockets, or polling
+- [MCP Server](https://dryapi.dev/docs/v1/execution-modes-and-integrations/mcp-server.md): Describes the dryAPI MCP server, its available tools, and how to connect agents or IDE integrations to use dryAPI as a structured toolbox.
+- [n8n dryAPI node](https://dryapi.dev/docs/v1/execution-modes-and-integrations/n8n-deapi-node.md)
+- [n8n Integration](https://dryapi.dev/docs/v1/execution-modes-and-integrations/n8n-integration.md)
+- [Webhooks](https://dryapi.dev/docs/v1/execution-modes-and-integrations/webhooks.md): Receive real-time notifications about job status changes
+- [WebSockets](https://dryapi.dev/docs/v1/execution-modes-and-integrations/websockets.md): Receive real-time job status updates via WebSocket connections
+- [Introduction](https://dryapi.dev/docs/v1/introduction.md): Fast and affordable inference for open-source AI models
+- [Limits & Quotas](https://dryapi.dev/docs/v1/limits-and-quotas.md)
+- [Models](https://dryapi.dev/docs/v1/models.md): How to discover, select, and use models on dryAPI
+- [FAQ — Frequently Asked Questions](https://dryapi.dev/docs/v1/other/faq-frequently-asked-questions.md)
+- [Payment Methods](https://dryapi.dev/docs/v1/other/payment-methods.md)
+- [SDKs & Integrations](https://dryapi.dev/docs/v1/other/sdks-and-integrations.md)
+- [Support & Contact](https://dryapi.dev/docs/v1/other/support-and-contact.md)
+- [Pricing](https://dryapi.dev/docs/v1/pricing.md)
+- [Quickstart](https://dryapi.dev/docs/v1/quickstart.md)
 
 ## OpenAPI Specs
 
-- [openapi](https://docs.deapi.ai/openapi.json)
+- [openapi](https://dryapi.dev/docs/v1/openapi.json)
 
 
 Built with [Mintlify](https://mintlify.com).

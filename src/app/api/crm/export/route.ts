@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     status: 200,
     headers: {
       "content-type": contentType,
-      "content-disposition": `attachment; filename=genfix-leads-${format}.${extension}`,
+      "content-disposition": `attachment; filename=dryapi-leads-${format}.${extension}`,
     },
   });
 }

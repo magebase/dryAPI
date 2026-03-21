@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest";
 
 import {
   formatStripeAmount,
@@ -9,185 +9,195 @@ import {
   readStringMetadata,
   resolveBrandHost,
   toEnvBrandSuffix,
-} from "@/lib/auth-stripe-utils"
+} from "@/lib/auth-stripe-utils";
 
 describe("toEnvBrandSuffix", () => {
   it("uppercases a simple key", () => {
-    expect(toEnvBrandSuffix("dryapi")).toBe("DRYAPI")
-  })
+    expect(toEnvBrandSuffix("dryapi")).toBe("DRYAPI");
+  });
 
   it("replaces dots and hyphens with underscores", () => {
-    expect(toEnvBrandSuffix("genfix.ai")).toBe("GENFIX_AI")
-    expect(toEnvBrandSuffix("my-brand")).toBe("MY_BRAND")
-  })
+    expect(toEnvBrandSuffix("dryapi.ai")).toBe("DRYAPI_AI");
+    expect(toEnvBrandSuffix("my-brand")).toBe("MY_BRAND");
+  });
 
   it("collapses consecutive non-alphanumeric characters to a single underscore", () => {
-    expect(toEnvBrandSuffix("foo..bar")).toBe("FOO_BAR")
-  })
+    expect(toEnvBrandSuffix("foo..bar")).toBe("FOO_BAR");
+  });
 
   it("trims leading and trailing whitespace before conversion", () => {
-    expect(toEnvBrandSuffix("  dryapi  ")).toBe("DRYAPI")
-  })
-})
+    expect(toEnvBrandSuffix("  dryapi  ")).toBe("DRYAPI");
+  });
+});
 
 describe("resolveBrandHost", () => {
   it("returns the hostname for a valid URL", () => {
-    expect(resolveBrandHost("https://dryapi.dev")).toBe("dryapi.dev")
-    expect(resolveBrandHost("https://genfix.ai/en")).toBe("genfix.ai")
-  })
+    expect(resolveBrandHost("https://dryapi.dev")).toBe("dryapi.dev");
+    expect(resolveBrandHost("https://dryapi.ai/en")).toBe("dryapi.ai");
+  });
 
   it("falls back to dryapi.dev for an invalid URL", () => {
-    expect(resolveBrandHost("not-a-url")).toBe("dryapi.dev")
-    expect(resolveBrandHost("")).toBe("dryapi.dev")
-  })
-})
+    expect(resolveBrandHost("not-a-url")).toBe("dryapi.dev");
+    expect(resolveBrandHost("")).toBe("dryapi.dev");
+  });
+});
 
 describe("readStringMetadata", () => {
   it("returns the value for a present string key", () => {
-    expect(readStringMetadata({ brand: "genfix" }, "brand")).toBe("genfix")
-  })
+    expect(readStringMetadata({ brand: "dryapi" }, "brand")).toBe("dryapi");
+  });
 
   it("returns null for a missing key", () => {
-    expect(readStringMetadata({ other: "x" }, "brand")).toBeNull()
-  })
+    expect(readStringMetadata({ other: "x" }, "brand")).toBeNull();
+  });
 
   it("returns null for a blank value", () => {
-    expect(readStringMetadata({ brand: "   " }, "brand")).toBeNull()
-  })
+    expect(readStringMetadata({ brand: "   " }, "brand")).toBeNull();
+  });
 
   it("returns null for non-string values", () => {
-    expect(readStringMetadata({ brand: 123 } as never, "brand")).toBeNull()
-  })
+    expect(readStringMetadata({ brand: 123 } as never, "brand")).toBeNull();
+  });
 
   it("returns null for null/undefined metadata", () => {
-    expect(readStringMetadata(null, "brand")).toBeNull()
-    expect(readStringMetadata(undefined, "brand")).toBeNull()
-  })
-})
+    expect(readStringMetadata(null, "brand")).toBeNull();
+    expect(readStringMetadata(undefined, "brand")).toBeNull();
+  });
+});
 
 describe("readExpandableId", () => {
   it("returns a plain string ID directly", () => {
-    expect(readExpandableId("cus_abc123")).toBe("cus_abc123")
-  })
+    expect(readExpandableId("cus_abc123")).toBe("cus_abc123");
+  });
 
   it("returns null for a blank string", () => {
-    expect(readExpandableId("   ")).toBeNull()
-  })
+    expect(readExpandableId("   ")).toBeNull();
+  });
 
   it("reads id from an expanded object", () => {
-    expect(readExpandableId({ id: "cus_abc123", email: "user@example.com" })).toBe("cus_abc123")
-  })
+    expect(
+      readExpandableId({ id: "cus_abc123", email: "user@example.com" }),
+    ).toBe("cus_abc123");
+  });
 
   it("returns null for an expanded object with no id", () => {
-    expect(readExpandableId({ email: "user@example.com" })).toBeNull()
-  })
+    expect(readExpandableId({ email: "user@example.com" })).toBeNull();
+  });
 
   it("returns null for an expanded object with a blank id", () => {
-    expect(readExpandableId({ id: "   " })).toBeNull()
-  })
+    expect(readExpandableId({ id: "   " })).toBeNull();
+  });
 
   it("returns null for null/undefined/number", () => {
-    expect(readExpandableId(null)).toBeNull()
-    expect(readExpandableId(undefined)).toBeNull()
-    expect(readExpandableId(42)).toBeNull()
-  })
-})
+    expect(readExpandableId(null)).toBeNull();
+    expect(readExpandableId(undefined)).toBeNull();
+    expect(readExpandableId(42)).toBeNull();
+  });
+});
 
 describe("readExpandableEmail", () => {
   it("reads email from an expanded customer object", () => {
-    expect(readExpandableEmail({ id: "cus_1", email: "user@example.com" })).toBe("user@example.com")
-  })
+    expect(
+      readExpandableEmail({ id: "cus_1", email: "user@example.com" }),
+    ).toBe("user@example.com");
+  });
 
   it("returns null for a deleted customer", () => {
-    expect(readExpandableEmail({ id: "cus_1", email: "user@example.com", deleted: true })).toBeNull()
-  })
+    expect(
+      readExpandableEmail({
+        id: "cus_1",
+        email: "user@example.com",
+        deleted: true,
+      }),
+    ).toBeNull();
+  });
 
   it("returns null when email is missing", () => {
-    expect(readExpandableEmail({ id: "cus_1" })).toBeNull()
-  })
+    expect(readExpandableEmail({ id: "cus_1" })).toBeNull();
+  });
 
   it("returns null for a blank email", () => {
-    expect(readExpandableEmail({ email: "   " })).toBeNull()
-  })
+    expect(readExpandableEmail({ email: "   " })).toBeNull();
+  });
 
   it("returns null for a plain string (must be an object)", () => {
-    expect(readExpandableEmail("cus_abc123")).toBeNull()
-  })
+    expect(readExpandableEmail("cus_abc123")).toBeNull();
+  });
 
   it("returns null for null/undefined", () => {
-    expect(readExpandableEmail(null)).toBeNull()
-    expect(readExpandableEmail(undefined)).toBeNull()
-  })
-})
+    expect(readExpandableEmail(null)).toBeNull();
+    expect(readExpandableEmail(undefined)).toBeNull();
+  });
+});
 
 describe("readExpandableMetadata", () => {
   it("returns metadata from an object with a metadata property", () => {
-    const obj = { id: "sub_1", metadata: { brand: "dryapi" } }
-    expect(readExpandableMetadata(obj)).toEqual({ brand: "dryapi" })
-  })
+    const obj = { id: "sub_1", metadata: { brand: "dryapi" } };
+    expect(readExpandableMetadata(obj)).toEqual({ brand: "dryapi" });
+  });
 
   it("returns null when metadata is absent", () => {
-    expect(readExpandableMetadata({ id: "sub_1" })).toBeNull()
-  })
+    expect(readExpandableMetadata({ id: "sub_1" })).toBeNull();
+  });
 
   it("returns null when metadata is not an object", () => {
-    expect(readExpandableMetadata({ metadata: "string-value" })).toBeNull()
-  })
+    expect(readExpandableMetadata({ metadata: "string-value" })).toBeNull();
+  });
 
   it("returns null for non-object input", () => {
-    expect(readExpandableMetadata(null)).toBeNull()
-    expect(readExpandableMetadata("sub_1")).toBeNull()
-  })
-})
+    expect(readExpandableMetadata(null)).toBeNull();
+    expect(readExpandableMetadata("sub_1")).toBeNull();
+  });
+});
 
 describe("formatStripeAmount", () => {
   it("formats a USD amount in cents to dollars", () => {
-    expect(formatStripeAmount(2100, "usd")).toBe("$21.00")
-  })
+    expect(formatStripeAmount(2100, "usd")).toBe("$21.00");
+  });
 
   it("formats a zero amount", () => {
-    expect(formatStripeAmount(0, "usd")).toBe("$0.00")
-  })
+    expect(formatStripeAmount(0, "usd")).toBe("$0.00");
+  });
 
   it("defaults to USD when currency is null", () => {
-    expect(formatStripeAmount(500, null)).toBe("$5.00")
-  })
+    expect(formatStripeAmount(500, null)).toBe("$5.00");
+  });
 
   it("treats null amount as zero", () => {
-    expect(formatStripeAmount(null, "usd")).toBe("$0.00")
-  })
+    expect(formatStripeAmount(null, "usd")).toBe("$0.00");
+  });
 
   it("falls back to a plain amount format for unknown currencies", () => {
-    expect(formatStripeAmount(500, "bad!")).toBe("5.00 BAD!")
-  })
+    expect(formatStripeAmount(500, "bad!")).toBe("5.00 BAD!");
+  });
 
   it("treats blank currencies as USD", () => {
-    expect(formatStripeAmount(500, "   ")).toBe("$5.00")
-  })
-})
+    expect(formatStripeAmount(500, "   ")).toBe("$5.00");
+  });
+});
 
 describe("formatStripeUnixTimestamp", () => {
   it("formats a Unix second timestamp as UTC date/time string", () => {
     // 2024-01-15 12:00:00 UTC
-    const result = formatStripeUnixTimestamp(1705320000)
-    expect(result).toMatch(/2024/)
-    expect(result).toMatch(/UTC/)
-  })
+    const result = formatStripeUnixTimestamp(1705320000);
+    expect(result).toMatch(/2024/);
+    expect(result).toMatch(/UTC/);
+  });
 
   it("returns null for zero", () => {
-    expect(formatStripeUnixTimestamp(0)).toBeNull()
-  })
+    expect(formatStripeUnixTimestamp(0)).toBeNull();
+  });
 
   it("returns null for null/undefined", () => {
-    expect(formatStripeUnixTimestamp(null)).toBeNull()
-    expect(formatStripeUnixTimestamp(undefined)).toBeNull()
-  })
+    expect(formatStripeUnixTimestamp(null)).toBeNull();
+    expect(formatStripeUnixTimestamp(undefined)).toBeNull();
+  });
 
   it("returns null for NaN", () => {
-    expect(formatStripeUnixTimestamp(NaN)).toBeNull()
-  })
+    expect(formatStripeUnixTimestamp(NaN)).toBeNull();
+  });
 
   it("returns null for out-of-range finite timestamps", () => {
-    expect(formatStripeUnixTimestamp(1e20)).toBeNull()
-  })
-})
+    expect(formatStripeUnixTimestamp(1e20)).toBeNull();
+  });
+});

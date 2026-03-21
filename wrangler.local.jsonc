@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "genfix-site-local",
+  "name": "dryapi-site-local",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-03-10",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -9,82 +9,86 @@
     "logs": {
       "enabled": true,
       "invocation_logs": true,
-      "persist": true
+      "persist": true,
     },
     "traces": {
       "enabled": true,
-      "persist": true
-    }
+      "persist": true,
+    },
   },
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "genfix-site-local"
-    }
+      "service": "dryapi-site-local",
+    },
   ],
   "durable_objects": {
     "bindings": [
       {
         "name": "NEXT_CACHE_DO_QUEUE",
-        "class_name": "DOQueueHandler"
+        "class_name": "DOQueueHandler",
       },
       {
         "name": "NEXT_TAG_CACHE_DO_SHARDED",
-        "class_name": "DOShardedTagCache"
+        "class_name": "DOShardedTagCache",
       },
       {
         "name": "NEXT_CACHE_DO_PURGE",
-        "class_name": "BucketCachePurge"
-      }
-    ]
+        "class_name": "BucketCachePurge",
+      },
+    ],
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"]
-    }
+      "new_sqlite_classes": [
+        "DOQueueHandler",
+        "DOShardedTagCache",
+        "BucketCachePurge",
+      ],
+    },
   ],
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "genfix-site-opennext-cache-local"
-    }
+      "bucket_name": "dryapi-site-opennext-cache-local",
+    },
   ],
   "d1_databases": [
     {
       "binding": "AUTH_DB",
       "database_name": "dryapi-auth-db-local",
-      "migrations_dir": "drizzle/migrations/auth"
+      "migrations_dir": "drizzle/migrations/auth",
     },
     {
       "binding": "BILLING_DB",
       "database_name": "dryapi-billing-db-local",
-      "migrations_dir": "drizzle/migrations/billing"
+      "migrations_dir": "drizzle/migrations/billing",
     },
     {
       "binding": "ANALYTICS_DB",
       "database_name": "dryapi-analytics-db-local",
-      "migrations_dir": "drizzle/migrations/analytics"
+      "migrations_dir": "drizzle/migrations/analytics",
     },
     {
       "binding": "METADATA_DB",
       "database_name": "dryapi-metadata-db-local",
-      "migrations_dir": "drizzle/migrations/metadata"
+      "migrations_dir": "drizzle/migrations/metadata",
     },
     {
       "binding": "APP_DB",
       "database_name": "dryapi-analytics-db-local",
-      "migrations_dir": "drizzle/migrations/analytics"
-    }
+      "migrations_dir": "drizzle/migrations/analytics",
+    },
   ],
   "images": {
-    "binding": "IMAGES"
+    "binding": "IMAGES",
   },
   "ai": {
-    "binding": "AI"
-  }
+    "binding": "AI",
+  },
 }

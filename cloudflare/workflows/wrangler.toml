@@ -1,4 +1,4 @@
-name = "genfix-automation-workflows"
+name = "dryapi-automation-workflows"
 main = "src/worker.ts"
 compatibility_date = "2026-03-11"
 workers_dev = true
@@ -15,7 +15,7 @@ enabled = true
 crons = ["0 * * * *"]
 
 [[workflows]]
-name = "genfix-automation-workflow"
+name = "dryapi-automation-workflow"
 binding = "AUTOMATION_WORKFLOW"
 class_name = "AutomationWorkflow"
 

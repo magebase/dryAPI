@@ -1,4 +1,8 @@
-import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
+import {
+  WorkflowEntrypoint,
+  type WorkflowEvent,
+  type WorkflowStep,
+} from "cloudflare:workers";
 
 type ProFlowKind =
   | "lead-scoring-and-tagging"
@@ -117,23 +121,29 @@ type StripeMeterEventType =
 type StripeMeterMetadataValue = string | number | boolean | null | undefined;
 
 const STRIPE_METER_API_URL = "https://api.stripe.com/v1/billing/meter_events";
-const DEFAULT_PROJECT_KEY = "genfix";
+const DEFAULT_PROJECT_KEY = "dryapi";
 
 const STRIPE_METER_EVENT_DEFAULTS: Record<StripeMeterEventType, string> = {
-  brevo_sms_send: "genfix_brevo_sms_send",
-  workflow_dispatch: "genfix_workflow_dispatch",
-  workflow_run: "genfix_workflow_run",
-  cloudflare_worker_request: "genfix_cloudflare_worker_request",
+  brevo_sms_send: "dryapi_brevo_sms_send",
+  workflow_dispatch: "dryapi_workflow_dispatch",
+  workflow_run: "dryapi_workflow_run",
+  cloudflare_worker_request: "dryapi_cloudflare_worker_request",
 };
 
-const STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS: Record<StripeMeterEventType, keyof Env> = {
+const STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS: Record<
+  StripeMeterEventType,
+  keyof Env
+> = {
   brevo_sms_send: "STRIPE_METER_EVENT_BREVO_SMS_SEND",
   workflow_dispatch: "STRIPE_METER_EVENT_WORKFLOW_DISPATCH",
   workflow_run: "STRIPE_METER_EVENT_WORKFLOW_RUN",
   cloudflare_worker_request: "STRIPE_METER_EVENT_CLOUDFLARE_WORKER_REQUEST",
 };
 
-function resolveStripeMeterEventName(env: Env, eventType: StripeMeterEventType): string {
+function resolveStripeMeterEventName(
+  env: Env,
+  eventType: StripeMeterEventType,
+): string {
   const overrideKey = STRIPE_METER_EVENT_OVERRIDE_ENV_KEYS[eventType];
   const overrideValue = env[overrideKey]?.trim();
 
@@ -154,7 +164,9 @@ function sanitizeStripeDimensionKey(key: string): string {
     .slice(0, 40);
 }
 
-function stringifyStripeDimensionValue(value: StripeMeterMetadataValue): string {
+function stringifyStripeDimensionValue(
+  value: StripeMeterMetadataValue,
+): string {
   if (value === null || value === undefined) {
     return "";
   }
@@ -162,7 +174,10 @@ function stringifyStripeDimensionValue(value: StripeMeterMetadataValue): string 
   return String(value).trim().slice(0, 120);
 }
 
-function resolveStripeBrandKey(env: Env, metadata: Record<string, StripeMeterMetadataValue> | undefined): string {
+function resolveStripeBrandKey(
+  env: Env,
+  metadata: Record<string, StripeMeterMetadataValue> | undefined,
+): string {
   const explicit = metadata?.dryapi_brand_key;
   if (explicit !== undefined && explicit !== null) {
     const normalized = String(explicit).trim().toLowerCase();
@@ -171,7 +186,9 @@ function resolveStripeBrandKey(env: Env, metadata: Record<string, StripeMeterMet
     }
   }
 
-  const fromEnv = (env.SITE_BRAND_KEY || env.DRYAPI_BRAND_KEY || "dryapi").trim().toLowerCase();
+  const fromEnv = (env.SITE_BRAND_KEY || env.DRYAPI_BRAND_KEY || "dryapi")
+    .trim()
+    .toLowerCase();
   return (fromEnv || "dryapi").slice(0, 40);
 }
 
@@ -194,7 +211,10 @@ function buildStripeIdentifier(input: {
     return provided.slice(0, 200);
   }
 
-  return `${input.projectKey}:${input.eventType}:${input.timestamp}:${crypto.randomUUID()}`.slice(0, 200);
+  return `${input.projectKey}:${input.eventType}:${input.timestamp}:${crypto.randomUUID()}`.slice(
+    0,
+    200,
+  );
 }
 
 async function recordStripeMeterUsage(
@@ -214,7 +234,8 @@ async function recordStripeMeterUsage(
     return false;
   }
 
-  const projectKey = env.STRIPE_METER_PROJECT_KEY?.trim() || DEFAULT_PROJECT_KEY;
+  const projectKey =
+    env.STRIPE_METER_PROJECT_KEY?.trim() || DEFAULT_PROJECT_KEY;
   const eventName = resolveStripeMeterEventName(env, input.eventType);
   const value = normalizeStripeMeterValue(input.value);
   const timestamp = input.timestamp ?? Math.floor(Date.now() / 1000);
@@ -230,7 +251,10 @@ async function recordStripeMeterUsage(
   payload.set("payload[value]", String(value));
   payload.set("payload[stripe_customer_id]", customerId);
   payload.set("payload[project_key]", projectKey);
-  payload.set("payload[dryapi_brand_key]", resolveStripeBrandKey(env, input.metadata));
+  payload.set(
+    "payload[dryapi_brand_key]",
+    resolveStripeBrandKey(env, input.metadata),
+  );
   payload.set("timestamp", String(timestamp));
   payload.set("identifier", identifier);
 
@@ -265,7 +289,9 @@ async function recordStripeMeterUsage(
 
     if (!response.ok) {
       const details = await response.text().catch(() => "");
-      console.warn(`Stripe meter event failed (${response.status}) for ${eventName}: ${details || "no body"}`);
+      console.warn(
+        `Stripe meter event failed (${response.status}) for ${eventName}: ${details || "no body"}`,
+      );
       return false;
     }
 
@@ -360,7 +386,9 @@ function resolveFlowKind(kind: string): CanonicalFlowKind | null {
   return null;
 }
 
-function parseScheduledFlowKinds(input: string | undefined): CanonicalFlowKind[] {
+function parseScheduledFlowKinds(
+  input: string | undefined,
+): CanonicalFlowKind[] {
   if (!input) {
     return [];
   }
@@ -373,7 +401,11 @@ function parseScheduledFlowKinds(input: string | undefined): CanonicalFlowKind[]
   return [...new Set(resolved)];
 }
 
-async function postJson(url: string, body: JsonObject, headers?: Record<string, string>): Promise<void> {
+async function postJson(
+  url: string,
+  body: JsonObject,
+  headers?: Record<string, string>,
+): Promise<void> {
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -427,7 +459,8 @@ async function sendBrevoEmail(
     {
       sender: {
         email: fromEmail,
-        name: (options?.fromName || env.BREVO_FROM_NAME || "").trim() || "GenFix",
+        name:
+          (options?.fromName || env.BREVO_FROM_NAME || "").trim() || "GenFix",
       },
       to: [{ email: to }],
       subject,
@@ -443,7 +476,11 @@ async function sendBrevoEmail(
   return true;
 }
 
-async function sendBrevoSms(env: Env, content: string, overrideTo?: string): Promise<boolean> {
+async function sendBrevoSms(
+  env: Env,
+  content: string,
+  overrideTo?: string,
+): Promise<boolean> {
   const apiKey = env.BREVO_API_KEY?.trim();
   const sender = env.BREVO_SMS_SENDER?.trim();
   const recipient = (overrideTo || env.BREVO_ESCALATION_SMS_TO || "").trim();
@@ -526,7 +563,9 @@ function scoreLead(payload: JsonObject, env: Env): LeadScoreResult {
   const serviceType = readString(payload, "serviceType").toLowerCase();
   const urgency = readString(payload, "urgency").toLowerCase();
   const budget = readNumber(payload, "budget") || 0;
-  const highValueThreshold = Number(env.LEAD_SCORING_HIGH_VALUE_THRESHOLD || "3000");
+  const highValueThreshold = Number(
+    env.LEAD_SCORING_HIGH_VALUE_THRESHOLD || "3000",
+  );
 
   let score = 0;
   const tags: string[] = [];
@@ -591,12 +630,14 @@ function parseSequenceStages(payload: JsonObject): SequenceStage[] {
     {
       delay: "36 hours",
       channel: "sms",
-      message: "Checking in from GenFix. Reply and we can reserve a booking time.",
+      message:
+        "Checking in from GenFix. Reply and we can reserve a booking time.",
     },
     {
       delay: "48 hours",
       channel: "whatsapp",
-      message: "Final follow-up: we can still help you with a tailored power solution.",
+      message:
+        "Final follow-up: we can still help you with a tailored power solution.",
     },
   ];
 }
@@ -616,7 +657,11 @@ function buildOwnerSummary(payload: JsonObject): string {
   ]);
 }
 
-async function runChatEscalation(step: WorkflowStep, env: Env, payload: JsonObject): Promise<JsonObject> {
+async function runChatEscalation(
+  step: WorkflowStep,
+  env: Env,
+  payload: JsonObject,
+): Promise<JsonObject> {
   const question = readString(payload, "question") || "Unknown question";
   const pagePath = readString(payload, "pagePath") || "/";
   const visitorId = readString(payload, "visitorId") || "anonymous";
@@ -644,20 +689,27 @@ async function runChatEscalation(step: WorkflowStep, env: Env, payload: JsonObje
   });
 
   const smsSent = await step.do("notify escalation sms", async () => {
-    return sendBrevoSms(env, `dryAPI chat escalation (${queue}): ${question}`, smsTo);
+    return sendBrevoSms(
+      env,
+      `dryAPI chat escalation (${queue}): ${question}`,
+      smsTo,
+    );
   });
 
-  const crmSynced = await step.do("forward escalation to crm webhook", async () => {
-    return postToWebhook(env.CRM_WEBHOOK_URL, {
-      type: "chat-escalation",
-      source: "dryapi-chatbot",
-      queue,
-      question,
-      pagePath,
-      visitorId,
-      requestedAt: new Date().toISOString(),
-    });
-  });
+  const crmSynced = await step.do(
+    "forward escalation to crm webhook",
+    async () => {
+      return postToWebhook(env.CRM_WEBHOOK_URL, {
+        type: "chat-escalation",
+        source: "dryapi-chatbot",
+        queue,
+        question,
+        pagePath,
+        visitorId,
+        requestedAt: new Date().toISOString(),
+      });
+    },
+  );
 
   return {
     template: "chat-escalation",
@@ -681,9 +733,16 @@ async function runLeadScoringAndTagging(
     const sentEmail = await sendBrevoEmail(
       env,
       `Lead scored ${scored.score} (${scored.priority})`,
-      joinLines([summary, `Score: ${scored.score}`, `Tags: ${scored.tags.join(", ")}`]),
+      joinLines([
+        summary,
+        `Score: ${scored.score}`,
+        `Tags: ${scored.tags.join(", ")}`,
+      ]),
     );
-    const sentSms = await sendBrevoSms(env, `Lead score ${scored.score}: ${readString(payload, "name") || "new lead"}`);
+    const sentSms = await sendBrevoSms(
+      env,
+      `Lead score ${scored.score}: ${readString(payload, "name") || "new lead"}`,
+    );
     return sentEmail || sentSms;
   });
 
@@ -771,7 +830,9 @@ async function runUpsellCrossSellSuggestions(
   const delay = readString(payload, "delay") || "7 days";
   const emailTo = readString(payload, "emailTo") || undefined;
   const smsTo = readString(payload, "smsTo") || undefined;
-  const offer = readString(payload, "offer") || "Add preventive maintenance for better uptime.";
+  const offer =
+    readString(payload, "offer") ||
+    "Add preventive maintenance for better uptime.";
 
   await step.sleep("wait before upsell offer", delay);
 
@@ -821,7 +882,11 @@ async function runReviewAggregationAndPosting(
   });
 
   const smsSent = await step.do("send review sms", async () => {
-    return sendBrevoSms(env, "Thanks for choosing GenFix. Please leave us a review.", smsTo);
+    return sendBrevoSms(
+      env,
+      "Thanks for choosing GenFix. Please leave us a review.",
+      smsTo,
+    );
   });
 
   const aggregated = await step.do("aggregate and post review", async () => {
@@ -833,12 +898,15 @@ async function runReviewAggregationAndPosting(
   });
 
   const alerted = await step.do("notify internal team", async () => {
-    return postToWebhook(env.SLACK_WEBHOOK_URL || env.TEAM_NOTIFICATIONS_WEBHOOK_URL, {
-      type: "review-alert",
-      message: "Review request triggered and aggregation queued.",
-      context: payload,
-      timestamp: new Date().toISOString(),
-    });
+    return postToWebhook(
+      env.SLACK_WEBHOOK_URL || env.TEAM_NOTIFICATIONS_WEBHOOK_URL,
+      {
+        type: "review-alert",
+        message: "Review request triggered and aggregation queued.",
+        context: payload,
+        timestamp: new Date().toISOString(),
+      },
+    );
   });
 
   return {
@@ -876,7 +944,8 @@ async function runPaymentDepositFollowUp(
     {
       delay: "24 hours",
       channel: "sms",
-      message: "Quick reminder from GenFix: deposit pending. Reply if you need help.",
+      message:
+        "Quick reminder from GenFix: deposit pending. Reply if you need help.",
     },
   ];
 
@@ -885,26 +954,32 @@ async function runPaymentDepositFollowUp(
   for (const reminder of reminders) {
     index += 1;
     await step.sleep(`wait before deposit reminder ${index}`, reminder.delay);
-    const delivered = await step.do(`send deposit reminder ${index}`, async () => {
-      return sendChannelMessage(reminder.channel, env, reminder.message, {
-        emailTo,
-        smsTo,
-        context: payload,
-      });
-    });
+    const delivered = await step.do(
+      `send deposit reminder ${index}`,
+      async () => {
+        return sendChannelMessage(reminder.channel, env, reminder.message, {
+          emailTo,
+          smsTo,
+          context: payload,
+        });
+      },
+    );
     if (delivered) {
       sent += 1;
     }
   }
 
   const paymentStatusSynced = await step.do("sync payment status", async () => {
-    return postToWebhook(env.PAYMENT_STATUS_WEBHOOK_URL || env.CRM_WEBHOOK_URL, {
-      type: "payment-deposit-follow-up",
-      status: "pending",
-      remindersSent: sent,
-      lead: payload,
-      timestamp: new Date().toISOString(),
-    });
+    return postToWebhook(
+      env.PAYMENT_STATUS_WEBHOOK_URL || env.CRM_WEBHOOK_URL,
+      {
+        type: "payment-deposit-follow-up",
+        status: "pending",
+        remindersSent: sent,
+        lead: payload,
+        timestamp: new Date().toISOString(),
+      },
+    );
   });
 
   return {
@@ -914,7 +989,11 @@ async function runPaymentDepositFollowUp(
   };
 }
 
-async function runLostLeadRecovery(step: WorkflowStep, env: Env, payload: JsonObject): Promise<JsonObject> {
+async function runLostLeadRecovery(
+  step: WorkflowStep,
+  env: Env,
+  payload: JsonObject,
+): Promise<JsonObject> {
   const delay = readString(payload, "delay") || "72 hours";
   const emailTo = readString(payload, "emailTo") || undefined;
   const smsTo = readString(payload, "smsTo") || undefined;
@@ -924,19 +1003,30 @@ async function runLostLeadRecovery(step: WorkflowStep, env: Env, payload: JsonOb
 
   await step.sleep("wait before lost lead recovery", delay);
 
-  const channelSent = await step.do("send lost lead recovery message", async () => {
-    const emailSent = await sendBrevoEmail(env, "Still interested?", message, emailTo);
-    const smsSent = await sendBrevoSms(env, message, smsTo);
-    return emailSent || smsSent;
-  });
+  const channelSent = await step.do(
+    "send lost lead recovery message",
+    async () => {
+      const emailSent = await sendBrevoEmail(
+        env,
+        "Still interested?",
+        message,
+        emailTo,
+      );
+      const smsSent = await sendBrevoSms(env, message, smsTo);
+      return emailSent || smsSent;
+    },
+  );
 
-  const retargetingSynced = await step.do("sync retargeting audience", async () => {
-    return postToWebhook(env.RETARGETING_WEBHOOK_URL, {
-      type: "lost-lead-recovery",
-      lead: payload,
-      timestamp: new Date().toISOString(),
-    });
-  });
+  const retargetingSynced = await step.do(
+    "sync retargeting audience",
+    async () => {
+      return postToWebhook(env.RETARGETING_WEBHOOK_URL, {
+        type: "lost-lead-recovery",
+        lead: payload,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
 
   return {
     template: "lost-lead-recovery",
@@ -954,16 +1044,23 @@ async function runEventWebinarReminders(
   const smsTo = readString(payload, "smsTo") || undefined;
   const eventName = readString(payload, "eventName") || "consultation";
 
-  const confirmationSent = await step.do("send event confirmation", async () => {
-    const emailSent = await sendBrevoEmail(
-      env,
-      `Your ${eventName} is confirmed`,
-      `Your ${eventName} is confirmed. We will remind you before it starts.`,
-      emailTo,
-    );
-    const smsSent = await sendBrevoSms(env, `${eventName} confirmed. Reminders will follow.`, smsTo);
-    return emailSent || smsSent;
-  });
+  const confirmationSent = await step.do(
+    "send event confirmation",
+    async () => {
+      const emailSent = await sendBrevoEmail(
+        env,
+        `Your ${eventName} is confirmed`,
+        `Your ${eventName} is confirmed. We will remind you before it starts.`,
+        emailTo,
+      );
+      const smsSent = await sendBrevoSms(
+        env,
+        `${eventName} confirmed. Reminders will follow.`,
+        smsTo,
+      );
+      return emailSent || smsSent;
+    },
+  );
 
   await step.sleep("wait before event reminder 24h", "24 hours");
   const reminder24h = await step.do("send event reminder 24h", async () => {
@@ -973,7 +1070,11 @@ async function runEventWebinarReminders(
       `Reminder: your ${eventName} is in 24 hours.`,
       emailTo,
     );
-    const smsSent = await sendBrevoSms(env, `Reminder: ${eventName} is in 24h.`, smsTo);
+    const smsSent = await sendBrevoSms(
+      env,
+      `Reminder: ${eventName} is in 24h.`,
+      smsTo,
+    );
     return emailSent || smsSent;
   });
 
@@ -985,7 +1086,11 @@ async function runEventWebinarReminders(
       `Reminder: your ${eventName} starts in about one hour.`,
       emailTo,
     );
-    const smsSent = await sendBrevoSms(env, `${eventName} starts in about one hour.`, smsTo);
+    const smsSent = await sendBrevoSms(
+      env,
+      `${eventName} starts in about one hour.`,
+      smsTo,
+    );
     return emailSent || smsSent;
   });
 
@@ -1017,7 +1122,9 @@ async function runVipHighValueLeadAlerts(
   const threshold = Number(env.LEAD_SCORING_HIGH_VALUE_THRESHOLD || "3000");
   const serviceType = readString(payload, "serviceType").toLowerCase();
   const vipServices = readStringArray(payload, "vipServices");
-  const serviceMatched = vipServices.some((item) => serviceType.includes(item.toLowerCase()));
+  const serviceMatched = vipServices.some((item) =>
+    serviceType.includes(item.toLowerCase()),
+  );
   const isHighValue = budget >= threshold || serviceMatched;
 
   if (!isHighValue) {
@@ -1033,17 +1140,24 @@ async function runVipHighValueLeadAlerts(
 
   const ownerAlerted = await step.do("notify owner immediately", async () => {
     const smsSent = await sendBrevoSms(env, ownerMessage);
-    const emailSent = await sendBrevoEmail(env, "VIP lead alert", buildOwnerSummary(payload));
+    const emailSent = await sendBrevoEmail(
+      env,
+      "VIP lead alert",
+      buildOwnerSummary(payload),
+    );
     return smsSent || emailSent;
   });
 
   const teamAlerted = await step.do("notify team channel", async () => {
-    return postToWebhook(env.SLACK_WEBHOOK_URL || env.TEAM_NOTIFICATIONS_WEBHOOK_URL, {
-      type: "vip-high-value-lead-alerts",
-      message: ownerMessage,
-      lead: payload,
-      timestamp: new Date().toISOString(),
-    });
+    return postToWebhook(
+      env.SLACK_WEBHOOK_URL || env.TEAM_NOTIFICATIONS_WEBHOOK_URL,
+      {
+        type: "vip-high-value-lead-alerts",
+        message: ownerMessage,
+        lead: payload,
+        timestamp: new Date().toISOString(),
+      },
+    );
   });
 
   const crmTagged = await step.do("tag vip lead in crm", async () => {
@@ -1078,17 +1192,34 @@ async function runAbandonedFormRecovery(
 
   await step.sleep("wait before abandoned form recovery", delay);
 
-  const emailSent = await step.do("send abandoned form recovery email", async () => {
-    return sendBrevoEmail(env, "Need help finishing your booking?", message, emailTo);
-  });
+  const emailSent = await step.do(
+    "send abandoned form recovery email",
+    async () => {
+      return sendBrevoEmail(
+        env,
+        "Need help finishing your booking?",
+        message,
+        emailTo,
+      );
+    },
+  );
 
-  const smsSent = await step.do("send abandoned form recovery sms", async () => {
-    return sendBrevoSms(env, message, smsTo);
-  });
+  const smsSent = await step.do(
+    "send abandoned form recovery sms",
+    async () => {
+      return sendBrevoSms(env, message, smsTo);
+    },
+  );
 
-  const whatsappSent = await step.do("send abandoned form recovery whatsapp", async () => {
-    return sendChannelMessage("whatsapp", env, message, { smsTo, context: payload });
-  });
+  const whatsappSent = await step.do(
+    "send abandoned form recovery whatsapp",
+    async () => {
+      return sendChannelMessage("whatsapp", env, message, {
+        smsTo,
+        context: payload,
+      });
+    },
+  );
 
   const crmSynced = await step.do("sync abandoned form event", async () => {
     return postToWebhook(env.CRM_WEBHOOK_URL, {
@@ -1115,7 +1246,9 @@ async function runLoyaltyRepeatClientAutomation(
   const delay = readString(payload, "delay") || "30 days";
   const emailTo = readString(payload, "emailTo") || undefined;
   const smsTo = readString(payload, "smsTo") || undefined;
-  const offer = readString(payload, "offer") || "Thank you for being a repeat client. Here is your loyalty offer.";
+  const offer =
+    readString(payload, "offer") ||
+    "Thank you for being a repeat client. Here is your loyalty offer.";
 
   await step.sleep("wait before loyalty outreach", delay);
 
@@ -1168,13 +1301,16 @@ async function runGeoTargetedPromotions(
   });
 
   const synced = await step.do("sync geo promotion event", async () => {
-    return postToWebhook(env.GEO_PROMOTIONS_WEBHOOK_URL || env.CRM_WEBHOOK_URL, {
-      type: "geo-targeted-promotions",
-      location,
-      offer: localizedOffer,
-      lead: payload,
-      timestamp: new Date().toISOString(),
-    });
+    return postToWebhook(
+      env.GEO_PROMOTIONS_WEBHOOK_URL || env.CRM_WEBHOOK_URL,
+      {
+        type: "geo-targeted-promotions",
+        location,
+        offer: localizedOffer,
+        lead: payload,
+        timestamp: new Date().toISOString(),
+      },
+    );
   });
 
   return {
@@ -1206,7 +1342,10 @@ async function runInternalKpiDashboardSync(
 }
 
 export class AutomationWorkflow extends WorkflowEntrypoint<Env, FlowRequest> {
-  async run(event: WorkflowEvent<FlowRequest>, step: WorkflowStep): Promise<JsonObject> {
+  async run(
+    event: WorkflowEvent<FlowRequest>,
+    step: WorkflowStep,
+  ): Promise<JsonObject> {
     const env = (this as unknown as { env: Env }).env;
     const requestPayload = asRecord(event.payload || {});
     const rawKind = String(requestPayload.kind || "chat-escalation");
@@ -1279,7 +1418,10 @@ export class AutomationWorkflow extends WorkflowEntrypoint<Env, FlowRequest> {
   }
 }
 
-async function triggerFlow(env: Env, flow: FlowRequest): Promise<{ id: string }> {
+async function triggerFlow(
+  env: Env,
+  flow: FlowRequest,
+): Promise<{ id: string }> {
   const instance = await env.AUTOMATION_WORKFLOW.create({
     params: flow,
   });
@@ -1306,7 +1448,9 @@ async function dispatchScheduledFlows(env: Env): Promise<void> {
 const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (!ensureToken(request, env)) {
-      const unauthorizedResponse = new Response("Unauthorized", { status: 401 });
+      const unauthorizedResponse = new Response("Unauthorized", {
+        status: 401,
+      });
       await recordStripeMeterUsage(env, {
         eventType: "cloudflare_worker_request",
         metadata: {
@@ -1345,14 +1489,16 @@ const worker = {
       if (rawKind) {
         kind = resolveFlowKind(rawKind);
         if (!kind) {
-          return respond(Response.json(
-            {
-              ok: false,
-              error: `Unsupported flow kind: ${rawKind}`,
-              supportedFlowKinds: CANONICAL_FLOWS,
-            },
-            { status: 400 },
-          ));
+          return respond(
+            Response.json(
+              {
+                ok: false,
+                error: `Unsupported flow kind: ${rawKind}`,
+                supportedFlowKinds: CANONICAL_FLOWS,
+              },
+              { status: 400 },
+            ),
+          );
         }
         payload = asRecord(body.payload);
       } else {
@@ -1361,10 +1507,18 @@ const worker = {
       }
 
       const instance = await triggerFlow(env, { kind, payload });
-      return respond(Response.json({ ok: true, kind, instanceId: instance.id }, { status: 202 }));
+      return respond(
+        Response.json(
+          { ok: true, kind, instanceId: instance.id },
+          { status: 202 },
+        ),
+      );
     }
 
-    if (request.method === "GET" && url.pathname.startsWith("/automation/instances/")) {
+    if (
+      request.method === "GET" &&
+      url.pathname.startsWith("/automation/instances/")
+    ) {
       const id = url.pathname.slice("/automation/instances/".length).trim();
       if (!id) {
         return respond(new Response("Missing instance id", { status: 400 }));
