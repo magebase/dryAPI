@@ -143,7 +143,7 @@
       "primaryUse": "Text-to-image",
       "huggingFaceUrl": "https://huggingface.co/Tongyi-MAI/Z-Image-Turbo",
       "huggingFaceRepo": "Tongyi-MAI/Z-Image-Turbo",
-      "sourceNote": "INT8 appears in deAPI slug while upstream repository naming remains generic to the base model family."
+      "sourceNote": "INT8 appears in dryAPI slug while upstream repository naming remains generic to the base model family."
     }
   }
 }

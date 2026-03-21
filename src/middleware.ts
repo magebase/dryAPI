@@ -17,6 +17,11 @@ import {
 } from "@/lib/auth-debug"
 import { isPhpProbePath } from "@/lib/blocked-routes"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
+import {
+  logServerPerfEvent,
+  resolvePerfSlowThresholdMs,
+  shouldEmitServerPerf,
+} from "@/lib/server-observability"
 
 const SUCCESS_PATH = "/success"
 const CRM_HOSTNAMES = new Set(["crm.dryapi.dev", "www.crm.dryapi.dev"])
@@ -25,6 +30,7 @@ const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
 const SESSION_CHECK_CACHE_TTL_MS = 5_000
 const SESSION_CHECK_TIMEOUT_MS = 2_500
+const SESSION_CHECK_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_SESSION_CHECK_SLOW_MS", 150)
 
 type SessionAuthCacheEntry = {
   authenticated: boolean
@@ -185,8 +191,18 @@ async function isDashboardUserAuthenticated(
   traceId: string,
   sessionToken: string,
 ): Promise<boolean> {
+  const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now()
   const cachedAuthenticated = readCachedSessionAuth(sessionToken)
   if (cachedAuthenticated !== null) {
+    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
+    if (shouldEmitServerPerf("log")) {
+      logServerPerfEvent("log", "middleware.dashboard.session-check.cache-hit", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+        authenticated: cachedAuthenticated,
+        durationMs,
+      })
+    }
     return cachedAuthenticated
   }
 
@@ -217,11 +233,24 @@ async function isDashboardUserAuthenticated(
       clearTimeout(timeout)
     })
 
+    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
+
     if (!response.ok) {
       logServerAuthEvent("warn", "middleware.dashboard.session-check.non-ok", {
         traceId,
         status: response.status,
+        durationMs,
       })
+
+      if (durationMs >= SESSION_CHECK_SLOW_MS) {
+        logServerPerfEvent("warn", "middleware.dashboard.session-check.slow", {
+          traceId,
+          pathname: request.nextUrl.pathname,
+          status: response.status,
+          durationMs,
+          slowThresholdMs: SESSION_CHECK_SLOW_MS,
+        })
+      }
       writeCachedSessionAuth(sessionToken, false)
       return false
     }
@@ -232,13 +261,41 @@ async function isDashboardUserAuthenticated(
     logServerAuthEvent("log", "middleware.dashboard.session-check.result", {
       traceId,
       authenticated,
+      durationMs,
     })
+
+    if (durationMs >= SESSION_CHECK_SLOW_MS) {
+      logServerPerfEvent("warn", "middleware.dashboard.session-check.slow", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+        authenticated,
+        durationMs,
+        slowThresholdMs: SESSION_CHECK_SLOW_MS,
+      })
+    } else if (shouldEmitServerPerf("log")) {
+      logServerPerfEvent("log", "middleware.dashboard.session-check", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+        authenticated,
+        durationMs,
+      })
+    }
 
     writeCachedSessionAuth(sessionToken, authenticated)
     return authenticated
   } catch (error) {
+    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
     logServerAuthEvent("error", "middleware.dashboard.session-check.error", {
       traceId,
+      error: error instanceof Error ? error.message : String(error),
+      durationMs,
+    })
+
+    logServerPerfEvent("error", "middleware.dashboard.session-check.error", {
+      traceId,
+      pathname: request.nextUrl.pathname,
+      durationMs,
+      slowThresholdMs: SESSION_CHECK_SLOW_MS,
       error: error instanceof Error ? error.message : String(error),
     })
     writeCachedSessionAuth(sessionToken, false)

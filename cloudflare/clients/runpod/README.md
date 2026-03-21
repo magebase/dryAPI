@@ -1,6 +1,6 @@
 # RunPod Image Endpoint Build
 
-This directory contains a pinned, reproducible mapping of deAPI image-capable model slugs to open-source model sources, plus generated RunPod endpoint specs.
+This directory contains a pinned, reproducible mapping of dryAPI image-capable model slugs to open-source model sources, plus generated RunPod endpoint specs.
 
 ## Files
 
@@ -91,5 +91,5 @@ Example:
 
 ## Notes
 
-- Some deAPI slugs include runtime quantization descriptors (e.g. `INT8`, `NF4`) where upstream open-source repos do not publish a separate artifact filename with that exact suffix.
+- Some dryAPI slugs include runtime quantization descriptors (e.g. `INT8`, `NF4`) where upstream open-source repos do not publish a separate artifact filename with that exact suffix.
 - For those entries, the catalog pins the canonical upstream repo revision and records the quantization mode as a runtime worker concern.

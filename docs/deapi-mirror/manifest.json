@@ -48,13 +48,7 @@
       "url": "https://docs.deapi.ai/api/analysis/image-to-text.md",
       "sourcePath": "api/analysis/image-to-text.md",
       "routePath": "/docs/v1/api/analysis/image-to-text",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "analysis",
-        "image-to-text"
-      ],
+      "routeSegments": ["docs", "v1", "api", "analysis", "image-to-text"],
       "sectionKey": "api-analysis",
       "sectionTitle": "API / Analysis",
       "kind": "markdown",
@@ -66,13 +60,7 @@
       "url": "https://docs.deapi.ai/api/analysis/image-to-text-price.md",
       "sourcePath": "api/analysis/image-to-text-price.md",
       "routePath": "/docs/v1/api/analysis/image-to-text-price",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "analysis",
-        "image-to-text-price"
-      ],
+      "routeSegments": ["docs", "v1", "api", "analysis", "image-to-text-price"],
       "sectionKey": "api-analysis",
       "sectionTitle": "API / Analysis",
       "kind": "markdown",
@@ -84,13 +72,7 @@
       "url": "https://docs.deapi.ai/api/analysis/upload-audio-file.md",
       "sourcePath": "api/analysis/upload-audio-file.md",
       "routePath": "/docs/v1/api/analysis/upload-audio-file",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "analysis",
-        "upload-audio-file"
-      ],
+      "routeSegments": ["docs", "v1", "api", "analysis", "upload-audio-file"],
       "sectionKey": "api-analysis",
       "sectionTitle": "API / Analysis",
       "kind": "markdown",
@@ -120,13 +102,7 @@
       "url": "https://docs.deapi.ai/api/analysis/upload-video-file.md",
       "sourcePath": "api/analysis/upload-video-file.md",
       "routePath": "/docs/v1/api/analysis/upload-video-file",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "analysis",
-        "upload-video-file"
-      ],
+      "routeSegments": ["docs", "v1", "api", "analysis", "upload-video-file"],
       "sectionKey": "api-analysis",
       "sectionTitle": "API / Analysis",
       "kind": "markdown",
@@ -156,13 +132,7 @@
       "url": "https://docs.deapi.ai/api/analysis/video-to-text.md",
       "sourcePath": "api/analysis/video-to-text.md",
       "routePath": "/docs/v1/api/analysis/video-to-text",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "analysis",
-        "video-to-text"
-      ],
+      "routeSegments": ["docs", "v1", "api", "analysis", "video-to-text"],
       "sectionKey": "api-analysis",
       "sectionTitle": "API / Analysis",
       "kind": "markdown",
@@ -174,13 +144,7 @@
       "url": "https://docs.deapi.ai/api/analysis/video-to-text-price.md",
       "sourcePath": "api/analysis/video-to-text-price.md",
       "routePath": "/docs/v1/api/analysis/video-to-text-price",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "analysis",
-        "video-to-text-price"
-      ],
+      "routeSegments": ["docs", "v1", "api", "analysis", "video-to-text-price"],
       "sectionKey": "api-analysis",
       "sectionTitle": "API / Analysis",
       "kind": "markdown",
@@ -192,12 +156,7 @@
       "url": "https://docs.deapi.ai/api/errors.md",
       "sourcePath": "api/errors.md",
       "routePath": "/docs/v1/api/errors",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "errors"
-      ],
+      "routeSegments": ["docs", "v1", "api", "errors"],
       "sectionKey": "api",
       "sectionTitle": "API",
       "kind": "markdown",
@@ -209,13 +168,7 @@
       "url": "https://docs.deapi.ai/api/generation/audio-to-video.md",
       "sourcePath": "api/generation/audio-to-video.md",
       "routePath": "/docs/v1/api/generation/audio-to-video",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "audio-to-video"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "audio-to-video"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -245,13 +198,7 @@
       "url": "https://docs.deapi.ai/api/generation/image-to-video.md",
       "sourcePath": "api/generation/image-to-video.md",
       "routePath": "/docs/v1/api/generation/image-to-video",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "image-to-video"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "image-to-video"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -281,13 +228,7 @@
       "url": "https://docs.deapi.ai/api/generation/text-to-embedding.md",
       "sourcePath": "api/generation/text-to-embedding.md",
       "routePath": "/docs/v1/api/generation/text-to-embedding",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "text-to-embedding"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "text-to-embedding"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -317,13 +258,7 @@
       "url": "https://docs.deapi.ai/api/generation/text-to-image.md",
       "sourcePath": "api/generation/text-to-image.md",
       "routePath": "/docs/v1/api/generation/text-to-image",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "text-to-image"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "text-to-image"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -353,13 +288,7 @@
       "url": "https://docs.deapi.ai/api/generation/text-to-music.md",
       "sourcePath": "api/generation/text-to-music.md",
       "routePath": "/docs/v1/api/generation/text-to-music",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "text-to-music"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "text-to-music"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -389,13 +318,7 @@
       "url": "https://docs.deapi.ai/api/generation/text-to-speech.md",
       "sourcePath": "api/generation/text-to-speech.md",
       "routePath": "/docs/v1/api/generation/text-to-speech",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "text-to-speech"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "text-to-speech"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -425,13 +348,7 @@
       "url": "https://docs.deapi.ai/api/generation/text-to-video.md",
       "sourcePath": "api/generation/text-to-video.md",
       "routePath": "/docs/v1/api/generation/text-to-video",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "generation",
-        "text-to-video"
-      ],
+      "routeSegments": ["docs", "v1", "api", "generation", "text-to-video"],
       "sectionKey": "api-generation",
       "sectionTitle": "API / Generation",
       "kind": "markdown",
@@ -461,12 +378,7 @@
       "url": "https://docs.deapi.ai/api/overview.md",
       "sourcePath": "api/overview.md",
       "routePath": "/docs/v1/api/overview",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "overview"
-      ],
+      "routeSegments": ["docs", "v1", "api", "overview"],
       "sectionKey": "api",
       "sectionTitle": "API",
       "kind": "markdown",
@@ -550,13 +462,7 @@
       "url": "https://docs.deapi.ai/api/prompt-enhancement/overview.md",
       "sourcePath": "api/prompt-enhancement/overview.md",
       "routePath": "/docs/v1/api/prompt-enhancement/overview",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "prompt-enhancement",
-        "overview"
-      ],
+      "routeSegments": ["docs", "v1", "api", "prompt-enhancement", "overview"],
       "sectionKey": "api-prompt-enhancement",
       "sectionTitle": "API / Prompt Enhancement",
       "kind": "markdown",
@@ -748,13 +654,7 @@
       "url": "https://docs.deapi.ai/api/transformation/image-upscale.md",
       "sourcePath": "api/transformation/image-upscale.md",
       "routePath": "/docs/v1/api/transformation/image-upscale",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "transformation",
-        "image-upscale"
-      ],
+      "routeSegments": ["docs", "v1", "api", "transformation", "image-upscale"],
       "sectionKey": "api-transformation",
       "sectionTitle": "API / Transformation",
       "kind": "markdown",
@@ -784,13 +684,7 @@
       "url": "https://docs.deapi.ai/api/utilities/check-balance.md",
       "sourcePath": "api/utilities/check-balance.md",
       "routePath": "/docs/v1/api/utilities/check-balance",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "utilities",
-        "check-balance"
-      ],
+      "routeSegments": ["docs", "v1", "api", "utilities", "check-balance"],
       "sectionKey": "api-utilities",
       "sectionTitle": "API / Utilities",
       "kind": "markdown",
@@ -802,13 +696,7 @@
       "url": "https://docs.deapi.ai/api/utilities/get-results.md",
       "sourcePath": "api/utilities/get-results.md",
       "routePath": "/docs/v1/api/utilities/get-results",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "utilities",
-        "get-results"
-      ],
+      "routeSegments": ["docs", "v1", "api", "utilities", "get-results"],
       "sectionKey": "api-utilities",
       "sectionTitle": "API / Utilities",
       "kind": "markdown",
@@ -820,13 +708,7 @@
       "url": "https://docs.deapi.ai/api/utilities/model-selection.md",
       "sourcePath": "api/utilities/model-selection.md",
       "routePath": "/docs/v1/api/utilities/model-selection",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "api",
-        "utilities",
-        "model-selection"
-      ],
+      "routeSegments": ["docs", "v1", "api", "utilities", "model-selection"],
       "sectionKey": "api-utilities",
       "sectionTitle": "API / Utilities",
       "kind": "markdown",
@@ -838,11 +720,7 @@
       "url": "https://docs.deapi.ai/architecture-and-security.md",
       "sourcePath": "architecture-and-security.md",
       "routePath": "/docs/v1/architecture-and-security",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "architecture-and-security"
-      ],
+      "routeSegments": ["docs", "v1", "architecture-and-security"],
       "sectionKey": "core",
       "sectionTitle": "Core",
       "kind": "markdown",
@@ -884,7 +762,7 @@
     },
     {
       "id": "execution-modes-and-integrations/n8n-deapi-node.md",
-      "title": "n8n deAPI node",
+      "title": "n8n dryAPI node",
       "url": "https://docs.deapi.ai/execution-modes-and-integrations/n8n-deapi-node.md",
       "sourcePath": "execution-modes-and-integrations/n8n-deapi-node.md",
       "routePath": "/docs/v1/execution-modes-and-integrations/n8n-deapi-node",
@@ -956,11 +834,7 @@
       "url": "https://docs.deapi.ai/introduction.md",
       "sourcePath": "introduction.md",
       "routePath": "/docs/v1/introduction",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "introduction"
-      ],
+      "routeSegments": ["docs", "v1", "introduction"],
       "sectionKey": "core",
       "sectionTitle": "Core",
       "kind": "markdown",
@@ -972,11 +846,7 @@
       "url": "https://docs.deapi.ai/limits-and-quotas.md",
       "sourcePath": "limits-and-quotas.md",
       "routePath": "/docs/v1/limits-and-quotas",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "limits-and-quotas"
-      ],
+      "routeSegments": ["docs", "v1", "limits-and-quotas"],
       "sectionKey": "core",
       "sectionTitle": "Core",
       "kind": "markdown",
@@ -988,11 +858,7 @@
       "url": "https://docs.deapi.ai/models.md",
       "sourcePath": "models.md",
       "routePath": "/docs/v1/models",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "models"
-      ],
+      "routeSegments": ["docs", "v1", "models"],
       "sectionKey": "core",
       "sectionTitle": "Core",
       "kind": "markdown",
@@ -1021,12 +887,7 @@
       "url": "https://docs.deapi.ai/other/payment-methods.md",
       "sourcePath": "other/payment-methods.md",
       "routePath": "/docs/v1/other/payment-methods",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "other",
-        "payment-methods"
-      ],
+      "routeSegments": ["docs", "v1", "other", "payment-methods"],
       "sectionKey": "other",
       "sectionTitle": "Other",
       "kind": "markdown",
@@ -1038,12 +899,7 @@
       "url": "https://docs.deapi.ai/other/sdks-and-integrations.md",
       "sourcePath": "other/sdks-and-integrations.md",
       "routePath": "/docs/v1/other/sdks-and-integrations",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "other",
-        "sdks-and-integrations"
-      ],
+      "routeSegments": ["docs", "v1", "other", "sdks-and-integrations"],
       "sectionKey": "other",
       "sectionTitle": "Other",
       "kind": "markdown",
@@ -1055,12 +911,7 @@
       "url": "https://docs.deapi.ai/other/support-and-contact.md",
       "sourcePath": "other/support-and-contact.md",
       "routePath": "/docs/v1/other/support-and-contact",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "other",
-        "support-and-contact"
-      ],
+      "routeSegments": ["docs", "v1", "other", "support-and-contact"],
       "sectionKey": "other",
       "sectionTitle": "Other",
       "kind": "markdown",
@@ -1072,11 +923,7 @@
       "url": "https://docs.deapi.ai/pricing.md",
       "sourcePath": "pricing.md",
       "routePath": "/docs/v1/pricing",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "pricing"
-      ],
+      "routeSegments": ["docs", "v1", "pricing"],
       "sectionKey": "core",
       "sectionTitle": "Core",
       "kind": "markdown",
@@ -1088,11 +935,7 @@
       "url": "https://docs.deapi.ai/quickstart.md",
       "sourcePath": "quickstart.md",
       "routePath": "/docs/v1/quickstart",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "quickstart"
-      ],
+      "routeSegments": ["docs", "v1", "quickstart"],
       "sectionKey": "core",
       "sectionTitle": "Core",
       "kind": "markdown",
@@ -1104,11 +947,7 @@
       "url": "https://docs.deapi.ai/openapi.json",
       "sourcePath": "openapi.json",
       "routePath": "/docs/v1/openapi",
-      "routeSegments": [
-        "docs",
-        "v1",
-        "openapi"
-      ],
+      "routeSegments": ["docs", "v1", "openapi"],
       "sectionKey": "general",
       "sectionTitle": "General",
       "kind": "openapi",

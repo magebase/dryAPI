@@ -1,7 +1,7 @@
 {
   "slug": "/playground/text-to-music",
   "navLabel": "Text To Music Playground",
-  "seoTitle": "Text To Music Playground | deAPI",
+  "seoTitle": "Text To Music Playground | dryAPI",
   "seoDescription": "Interactive text to music playground tooling with unified API keys, usage tracking, and deployment-ready outputs.",
   "pageContent": {
     "elements": [

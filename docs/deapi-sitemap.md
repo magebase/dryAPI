@@ -1,4 +1,4 @@
-# deAPI Site Map (Captured 2026-03-14)
+# dryAPI Site Map (Captured 2026-03-14)
 
 Source: live crawl of `https://deapi.ai` using homepage links + `/sitemap.xml`.
 
@@ -7,6 +7,7 @@ Path-based pages: 26
 Query variants: 42
 
 ## Path Routes
+
 - https://deapi.ai
 - https://deapi.ai/case-studies/humain
 - https://deapi.ai/changelog
@@ -34,6 +35,7 @@ Query variants: 42
 - https://deapi.ai/use-cases/video-to-text
 
 ## Query Variants
+
 - https://deapi.ai/models?type=audio-to-text
 - https://deapi.ai/models?type=audio-to-text&model=WhisperLargeV3
 - https://deapi.ai/models?type=background-removal
@@ -78,6 +80,7 @@ Query variants: 42
 - https://deapi.ai/playground?type=video-to-text
 
 ## Clone Notes
+
 - Route skeletons created as Tina documents under `content/pages/*.json` for each non-root pathname.
 - Root (`/`) remains powered by `content/site/home.json`.
 - Query URLs under `/models` are represented by the `/models` route and can be handled via search params.

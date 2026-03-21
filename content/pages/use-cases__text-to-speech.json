@@ -1,7 +1,7 @@
 {
   "slug": "/use-cases/text-to-speech",
   "navLabel": "Text To Speech Use Case",
-  "seoTitle": "Text To Speech Use Case | deAPI",
+  "seoTitle": "Text To Speech Use Case | dryAPI",
   "seoDescription": "Implementation blueprint for text to speech use case with model selection, routing, and observability guidance.",
   "pageContent": {
     "elements": [

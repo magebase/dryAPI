@@ -31,6 +31,7 @@ import {
 import { SaasPlanCards } from "@/components/site/dashboard/billing/saas-plan-cards";
 import { BillingTopUpControls } from "@/components/site/dashboard/billing/billing-top-up-controls";
 import { resolveActiveBrand } from "@/lib/brand-catalog";
+import { resolveStripeCustomerLookup } from "@/lib/dashboard-billing";
 import {
   BILLING_SAFEGUARDS,
   getStoredAutoTopUpSettings,
@@ -449,17 +450,6 @@ async function fetchStripeJson(
   }
 }
 
-function resolveCustomerIdFromPayload(payload: unknown): string | null {
-  const entries = getStripeListEntries(payload);
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return null;
-  }
-
-  const first = entries[0];
-  const customerId = typeof first.id === "string" ? first.id.trim() : "";
-  return customerId || null;
-}
-
 function mapPaymentMethods(payload: unknown): StripePaymentMethodSummary[] {
   const entries = getStripeListEntries(payload);
 
@@ -575,22 +565,10 @@ async function getStripeBillingSummary(
   }
 
   const errors: string[] = [];
-  const customerIdFromEnv =
-    process.env.STRIPE_METER_BILLING_CUSTOMER_ID?.trim() || "";
-  let customerId = customerIdFromEnv || null;
-
-  if (!customerId && customerEmail) {
-    const customerSearchPayload = await fetchStripeJson(
-      stripePrivateKey,
-      "customers",
-      new URLSearchParams({
-        email: customerEmail,
-        limit: "1",
-      }),
-    );
-
-    customerId = resolveCustomerIdFromPayload(customerSearchPayload);
-  }
+  const { customerId } = await resolveStripeCustomerLookup({
+    stripePrivateKey,
+    sessionEmail: customerEmail,
+  });
 
   if (!customerId) {
     return {

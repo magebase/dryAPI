@@ -126,17 +126,42 @@ async function fetchStripeJson(
   }
 }
 
+function resolveStripeCustomerId(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") {
+    return null
+  }
+
+  if ((payload as { deleted?: boolean }).deleted) {
+    return null
+  }
+
+  const customerId = (payload as { id?: unknown }).id
+  if (typeof customerId !== "string") {
+    return null
+  }
+
+  const trimmed = customerId.trim()
+  return trimmed || null
+}
+
 export async function resolveStripeCustomerLookup(input: {
   stripePrivateKey: string
   sessionEmail: string | null
 }): Promise<StripeCustomerLookupResult> {
   const customerIdFromEnv = process.env.STRIPE_METER_BILLING_CUSTOMER_ID?.trim() || ""
-  const customerId = customerIdFromEnv || null
+  if (customerIdFromEnv) {
+    const configuredCustomer = await fetchStripeJson(
+      input.stripePrivateKey,
+      `customers/${customerIdFromEnv}`,
+      new URLSearchParams(),
+    )
+    const resolvedCustomerId = resolveStripeCustomerId(configuredCustomer)
 
-  if (customerId) {
-    return {
-      customerId,
-      errors: [],
+    if (resolvedCustomerId) {
+      return {
+        customerId: resolvedCustomerId,
+        errors: [],
+      }
     }
   }
 
@@ -172,10 +197,7 @@ export async function resolveStripeCustomerLookup(input: {
   }
 
   const first = entries[0]
-  const resolvedCustomerId =
-    first && typeof first === "object" && typeof (first as Record<string, unknown>).id === "string"
-      ? ((first as Record<string, unknown>).id as string)
-      : null
+  const resolvedCustomerId = resolveStripeCustomerId(first)
 
   return {
     customerId: resolvedCustomerId,

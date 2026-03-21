@@ -341,7 +341,7 @@
     },
     {
       "key": "blogPost.nextStepBody",
-      "value": "Talk to the deAPI team about rollout planning, guardrails, and pricing strategy."
+      "value": "Talk to the dryAPI team about rollout planning, guardrails, and pricing strategy."
     },
     {
       "key": "blogPost.nextStepHeading",
@@ -889,7 +889,7 @@
     },
     {
       "key": "routePage.ctaBody",
-      "value": "Speak with the deAPI team about model routing, API integration, and launch planning."
+      "value": "Speak with the dryAPI team about model routing, API integration, and launch planning."
     },
     {
       "key": "routePage.ctaHeading",

@@ -1,7 +1,7 @@
 {
   "slug": "/models",
   "navLabel": "Models",
-  "seoTitle": "Models | deAPI",
+  "seoTitle": "Models | dryAPI",
   "seoDescription": "Browse chat, image, speech, and embedding models available through one unified API contract.",
   "pageContent": {
     "elements": [

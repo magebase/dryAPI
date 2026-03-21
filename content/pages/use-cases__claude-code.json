@@ -1,7 +1,7 @@
 {
   "slug": "/use-cases/claude-code",
   "navLabel": "Claude Code Use Case",
-  "seoTitle": "Claude Code Use Case | deAPI",
+  "seoTitle": "Claude Code Use Case | dryAPI",
   "seoDescription": "Implementation blueprint for claude code use case with model selection, routing, and observability guidance.",
   "pageContent": {
     "elements": [

@@ -1,7 +1,7 @@
 {
   "slug": "/pricing",
   "navLabel": "Pricing",
-  "seoTitle": "Pricing | deAPI",
+  "seoTitle": "Pricing | dryAPI",
   "seoDescription": "Transparent, usage-aware pricing for multimodal inference with predictable billing controls.",
   "pageContent": {
     "elements": [
@@ -13,7 +13,7 @@
       {
         "id": "intro-paragraph",
         "type": "paragraph",
-        "text": "deAPI combines prepaid credits, plan-based guardrails, and usage telemetry so teams can scale AI features without billing surprises."
+        "text": "dryAPI combines prepaid credits, plan-based guardrails, and usage telemetry so teams can scale AI features without billing surprises."
       },
       {
         "id": "intro-link",

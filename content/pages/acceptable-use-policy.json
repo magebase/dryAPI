@@ -1,8 +1,8 @@
 {
   "slug": "/acceptable-use-policy",
   "navLabel": "Acceptable Use Policy",
-  "seoTitle": "Acceptable Use Policy | deAPI",
-  "seoDescription": "Review acceptable use rules for API traffic, content safety, and lawful operation on deAPI.",
+  "seoTitle": "Acceptable Use Policy | dryAPI",
+  "seoDescription": "Review acceptable use rules for API traffic, content safety, and lawful operation on dryAPI.",
   "pageContent": {
     "elements": [
       {
@@ -26,7 +26,7 @@
   "hero": {
     "kicker": "Legal",
     "heading": "Acceptable Use Policy",
-    "body": "Use deAPI for lawful, compliant workloads and follow controls that protect the platform and its users.",
+    "body": "Use dryAPI for lawful, compliant workloads and follow controls that protect the platform and its users.",
     "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
     "actions": [
       {

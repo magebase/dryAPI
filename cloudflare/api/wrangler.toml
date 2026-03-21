@@ -2,10 +2,22 @@ name = "dryapi-api"
 main = "src/worker.ts"
 compatibility_date = "2026-03-14"
 workers_dev = false
+placement = { mode = "smart" }
 
 routes = [
 	{ pattern = "api.dryapi.dev", custom_domain = true },
 ]
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
 
 [[durable_objects.bindings]]
 name = "API_KEY_QUOTA_DO"

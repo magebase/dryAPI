@@ -4,6 +4,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { drizzle } from "drizzle-orm/d1";
 import { cache } from "react";
 
+import { instrumentD1Binding } from "@/lib/d1-observability";
+
 type D1Binding = Parameters<typeof drizzle>[0];
 
 type CloudflareDbAccessors<TSchema extends Record<string, unknown>> = {
@@ -26,18 +28,28 @@ function resolveBinding(
   return binding;
 }
 
+function resolveInstrumentedBinding(
+  env: Record<string, unknown>,
+  bindingKey: string,
+): D1Binding {
+  return instrumentD1Binding(resolveBinding(env, bindingKey), {
+    bindingName: bindingKey,
+    component: `drizzle.${bindingKey.toLowerCase()}`,
+  });
+}
+
 export function createCloudflareDbAccessors<TSchema extends Record<string, unknown>>(
   bindingKey: string,
   schema: TSchema,
 ): CloudflareDbAccessors<TSchema> {
   const getBinding = cache(() => {
     const { env } = getCloudflareContext();
-    return resolveBinding(env as Record<string, unknown>, bindingKey);
+    return resolveInstrumentedBinding(env as Record<string, unknown>, bindingKey);
   });
 
   const getBindingAsync = cache(async () => {
     const { env } = await getCloudflareContext({ async: true });
-    return resolveBinding(env as Record<string, unknown>, bindingKey);
+    return resolveInstrumentedBinding(env as Record<string, unknown>, bindingKey);
   });
 
   const getDb = cache(() => drizzle(getBinding(), { schema }));

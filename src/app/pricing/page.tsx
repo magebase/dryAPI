@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await readSiteConfig();
 
   return buildTakumiMetadata({
-    title: "Model Pricing (USD) | deAPI",
+    title: "Model Pricing (USD) | dryAPI",
     description:
       "Unified model pricing across all categories with full parameter permutations, accordion drilldowns, and paginated rows.",
     canonicalPath: "/pricing",

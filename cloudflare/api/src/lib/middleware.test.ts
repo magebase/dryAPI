@@ -104,6 +104,19 @@ describe('verifyApiKeyViaOrigin', () => {
     expect(result).toEqual({ ok: true, quotaKey: 'key_abc123' })
   })
 
+  it('reuses a cached successful API key verification result for repeated tokens', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ principal: { keyId: 'key_abc123' } }),
+    })
+    const c = makeCtx({}, { ORIGIN_URL: 'https://app.test' })
+
+    await expect(verifyApiKeyViaOrigin(c, 'cached-token')).resolves.toEqual({ ok: true, quotaKey: 'key_abc123' })
+    await expect(verifyApiKeyViaOrigin(c, 'cached-token')).resolves.toEqual({ ok: true, quotaKey: 'key_abc123' })
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
   it('returns principal minuteLimit when verification payload includes rateLimitPerMinute', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
@@ -111,7 +124,7 @@ describe('verifyApiKeyViaOrigin', () => {
     })
     const c = makeCtx({}, { ORIGIN_URL: 'https://app.test' })
 
-    const result = await verifyApiKeyViaOrigin(c, 'user-token')
+    const result = await verifyApiKeyViaOrigin(c, 'limited-user-token')
 
     expect(result).toEqual({ ok: true, quotaKey: 'key_abc123', minuteLimit: 25 })
   })
@@ -182,13 +195,40 @@ describe('authenticateSessionViaOrigin', () => {
       }),
     })
     const c = makeCtx(
-      { cookie: 'better-auth.session=tok123' },
+      { cookie: 'better-auth.session=cachetok999' },
       { ORIGIN_URL: 'https://app.test' },
     )
 
     const result = await authenticateSessionViaOrigin(c)
 
     expect(result).toEqual({ ok: true, quotaKey: 'user@example.com', creditUserId: 'user@example.com' })
+  })
+
+  it('reuses a cached successful session lookup result for repeated cookies', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        user: { email: 'cache@example.com', id: 'u1' },
+        session: { id: 's1' },
+      }),
+    })
+    const c = makeCtx(
+      { cookie: 'better-auth.session=tok123' },
+      { ORIGIN_URL: 'https://app.test' },
+    )
+
+    await expect(authenticateSessionViaOrigin(c)).resolves.toEqual({
+      ok: true,
+      quotaKey: 'cache@example.com',
+      creditUserId: 'cache@example.com',
+    })
+    await expect(authenticateSessionViaOrigin(c)).resolves.toEqual({
+      ok: true,
+      quotaKey: 'cache@example.com',
+      creditUserId: 'cache@example.com',
+    })
+
+    expect(fetchMock).toHaveBeenCalledOnce()
   })
 
   it('returns { ok: false } when session endpoint returns non-2xx', async () => {

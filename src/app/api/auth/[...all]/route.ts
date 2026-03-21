@@ -8,8 +8,19 @@ import {
 	summarizeCookieHeader,
 } from "@/lib/auth-debug"
 import { resolveConfiguredBalance } from "@/lib/configured-balance"
+import {
+	applyRequestPerfHeaders,
+	createRequestPerfTracker,
+	logServerPerfEvent,
+	readCloudflareRequestMetadata,
+	resolvePerfSlowThresholdMs,
+	shouldEmitServerPerf,
+	type RequestPerfTracker,
+} from "@/lib/server-observability"
 
 const authHandlers = toNextJsHandler(auth)
+
+const AUTH_ROUTE_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_PERF_SLOW_MS", 250)
 
 const AUTH_COOKIES_TO_CLEAR = [
 	"better-auth.session_token",
@@ -185,6 +196,51 @@ async function runAuthHandler(
 	}
 }
 
+function withPerfHeaders(
+	response: Response,
+	traceId: string,
+	tracker: RequestPerfTracker,
+): Response {
+	const headers = new Headers(response.headers)
+	applyRequestPerfHeaders(headers, traceId, tracker)
+
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers,
+	})
+}
+
+function emitAuthPerfSummary(args: {
+	request: Request
+	traceId: string
+	method: "GET" | "POST"
+	pathname: string
+	tracker: RequestPerfTracker
+	response: Response
+	extra?: Record<string, unknown>
+}): void {
+	const totalDurationMs = args.tracker.getTotalDurationMs()
+	const payload = args.tracker.summary({
+		traceId: args.traceId,
+		method: args.method,
+		pathname: args.pathname,
+		status: args.response.status,
+		slowThresholdMs: AUTH_ROUTE_SLOW_MS,
+		...readCloudflareRequestMetadata(args.request.headers),
+		...(args.extra || {}),
+	})
+
+	if (totalDurationMs >= AUTH_ROUTE_SLOW_MS) {
+		logServerPerfEvent("warn", "api.auth.summary.slow", payload)
+		return
+	}
+
+	if (shouldEmitServerPerf("log")) {
+		logServerPerfEvent("log", "api.auth.summary", payload)
+	}
+}
+
 export async function GET(request: Request): Promise<Response> {
 	let requestUrl: URL
 	try {
@@ -197,6 +253,11 @@ export async function GET(request: Request): Promise<Response> {
 	const pathname = requestUrl.pathname
 	const shouldLog = shouldLogAuthPath(pathname)
 	const isGetSessionPath = pathname.startsWith("/api/auth/get-session")
+	const tracker = createRequestPerfTracker({
+		traceId,
+		method: "GET",
+		pathname,
+	})
 
 	try {
 		if (shouldLog) {
@@ -209,13 +270,23 @@ export async function GET(request: Request): Promise<Response> {
 			})
 		}
 
-		const authResponse = await runAuthHandler(request, "GET", traceId, pathname)
+		const authResponse = await tracker.measure(
+			"auth.handler",
+			() => runAuthHandler(request, "GET", traceId, pathname),
+		)
 
 		const stableGetSession = isGetSessionPath
-			? await buildStableGetSessionResponse(authResponse)
+			? await tracker.measure(
+				"auth.get-session.normalize",
+				() => buildStableGetSessionResponse(authResponse),
+			)
 			: null
 
-		const response = stableGetSession?.response ?? authResponse
+		const response = withPerfHeaders(
+			stableGetSession?.response ?? authResponse,
+			traceId,
+			tracker,
+		)
 
 		if (shouldLog) {
 			logServerAuthEvent("log", "api.auth.response", {
@@ -229,6 +300,20 @@ export async function GET(request: Request): Promise<Response> {
 			})
 
 			if (isGetSessionPath) {
+
+		emitAuthPerfSummary({
+			request,
+			traceId,
+			method: "GET",
+			pathname,
+			tracker,
+			response,
+			extra: {
+				recovered: stableGetSession?.recovered ?? false,
+				sourceStatus: stableGetSession?.sourceStatus ?? response.status,
+				setCookieCount: countSetCookieHeaders(response.headers.get("set-cookie")),
+			},
+		})
 				const payload = stableGetSession?.payload ?? normalizeAuthSessionPayload(await parseJsonBodySafely(response))
 				logServerAuthEvent("log", "api.auth.get-session.payload", {
 					traceId,
@@ -251,10 +336,28 @@ export async function GET(request: Request): Promise<Response> {
 		})
 
 		if (isGetSessionPath) {
-			return buildRecoveredGetSessionResponse()
+			const response = withPerfHeaders(
+				buildRecoveredGetSessionResponse(),
+				traceId,
+				tracker,
+			)
+			emitAuthPerfSummary({
+				request,
+				traceId,
+				method: "GET",
+				pathname,
+				tracker,
+				response,
+				extra: {
+					error: message,
+					recovered: true,
+				},
+			})
+			return response
 		}
 
-		return new Response(
+		const response = withPerfHeaders(
+			new Response(
 			JSON.stringify({ error: "Authentication handler failed" }),
 			{
 				status: 500,
@@ -263,7 +366,24 @@ export async function GET(request: Request): Promise<Response> {
 					"cache-control": "no-store",
 				},
 			},
+			),
+			traceId,
+			tracker,
 		)
+
+		emitAuthPerfSummary({
+			request,
+			traceId,
+			method: "GET",
+			pathname,
+			tracker,
+			response,
+			extra: {
+				error: message,
+			},
+		})
+
+		return response
 	}
 }
 
@@ -271,6 +391,11 @@ export async function POST(request: Request): Promise<Response> {
 	const requestUrl = new URL(request.url)
 	const traceId = createAuthTraceId(request.headers.get("x-request-id"))
 	const shouldLog = shouldLogAuthPath(requestUrl.pathname)
+	const tracker = createRequestPerfTracker({
+		traceId,
+		method: "POST",
+		pathname: requestUrl.pathname,
+	})
 
 	if (isDeleteUserPath(requestUrl.pathname)) {
 		const balance = resolveConfiguredBalance()
@@ -281,7 +406,25 @@ export async function POST(request: Request): Promise<Response> {
 				balance,
 			})
 
-			return buildDeleteUserBlockedResponse(balance)
+			tracker.record("auth.delete-user.blocked", 0, { balance })
+			const response = withPerfHeaders(
+				buildDeleteUserBlockedResponse(balance),
+				traceId,
+				tracker,
+			)
+			emitAuthPerfSummary({
+				request,
+				traceId,
+				method: "POST",
+				pathname: requestUrl.pathname,
+				tracker,
+				response,
+				extra: {
+					blockedByNegativeBalance: true,
+					balance,
+				},
+			})
+			return response
 		}
 	}
 
@@ -295,7 +438,14 @@ export async function POST(request: Request): Promise<Response> {
 		})
 	}
 
-	const response = await runAuthHandler(request, "POST", traceId, requestUrl.pathname)
+	const response = withPerfHeaders(
+		await tracker.measure(
+			"auth.handler",
+			() => runAuthHandler(request, "POST", traceId, requestUrl.pathname),
+		),
+		traceId,
+		tracker,
+	)
 
 	if (shouldLog) {
 		logServerAuthEvent("log", "api.auth.response", {
@@ -306,6 +456,18 @@ export async function POST(request: Request): Promise<Response> {
 			setCookieCount: countSetCookieHeaders(response.headers.get("set-cookie")),
 		})
 	}
+
+	emitAuthPerfSummary({
+		request,
+		traceId,
+		method: "POST",
+		pathname: requestUrl.pathname,
+		tracker,
+		response,
+		extra: {
+			setCookieCount: countSetCookieHeaders(response.headers.get("set-cookie")),
+		},
+	})
 
 	return response
 }

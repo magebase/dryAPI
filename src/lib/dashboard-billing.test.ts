@@ -161,8 +161,20 @@ describe("dashboard-billing", () => {
   })
 
   describe("resolveStripeCustomerLookup", () => {
-    it("prefers the configured customer id from env", async () => {
+    it("verifies the configured customer id from env", async () => {
       vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "cus_env")
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ id: "cus_env" }), {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          }),
+        ),
+      )
 
       await expect(
         resolveStripeCustomerLookup({
@@ -173,6 +185,43 @@ describe("dashboard-billing", () => {
         customerId: "cus_env",
         errors: [],
       })
+    })
+
+    it("falls back to the signed-in email when the configured customer id is stale", async () => {
+      vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "cus_missing")
+
+      const fetchMock = vi.fn(async (input) => {
+        const url = typeof input === "string" ? input : input.url
+
+        if (url.startsWith("https://api.stripe.com/v1/customers/cus_missing")) {
+          return new Response(null, { status: 404 })
+        }
+
+        if (url.startsWith("https://api.stripe.com/v1/customers?")) {
+          return new Response(JSON.stringify({ data: [{ id: "cus_email" }] }), {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          })
+        }
+
+        throw new Error(`Unexpected fetch: ${url}`)
+      })
+
+      vi.stubGlobal("fetch", fetchMock)
+
+      await expect(
+        resolveStripeCustomerLookup({
+          stripePrivateKey: "sk_test_123",
+          sessionEmail: "owner@dryapi.dev",
+        }),
+      ).resolves.toEqual({
+        customerId: "cus_email",
+        errors: [],
+      })
+
+      expect(fetchMock).toHaveBeenCalledTimes(2)
     })
 
     it("fails when no signed-in email is available", async () => {

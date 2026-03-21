@@ -9,9 +9,7 @@
       "sourceModel": {
         "slug": "AceStep_1_5_Turbo",
         "displayName": "AceStep 1.5 Turbo",
-        "tasks": [
-          "txt2music"
-        ]
+        "tasks": ["txt2music"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -25,11 +23,7 @@
       "runpod": {
         "workerClass": "text-music",
         "gpuType": "NVIDIA A100",
-        "gpuTypes": [
-          "NVIDIA A100",
-          "NVIDIA H100",
-          "NVIDIA RTX 4090"
-        ],
+        "gpuTypes": ["NVIDIA A100", "NVIDIA H100", "NVIDIA RTX 4090"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 1,
         "flashboot": true,
@@ -67,9 +61,7 @@
       "sourceModel": {
         "slug": "Bge_M3_INT8",
         "displayName": "BGE M3 ONNX INT8",
-        "tasks": [
-          "txt2embedding"
-        ]
+        "tasks": ["txt2embedding"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -83,11 +75,7 @@
       "runpod": {
         "workerClass": "embeddings-text",
         "gpuType": "NVIDIA L4",
-        "gpuTypes": [
-          "NVIDIA L4",
-          "NVIDIA RTX 4090",
-          "NVIDIA A6000"
-        ],
+        "gpuTypes": ["NVIDIA L4", "NVIDIA RTX 4090", "NVIDIA A6000"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 1,
         "flashboot": true,
@@ -125,9 +113,7 @@
       "sourceModel": {
         "slug": "Ben2",
         "displayName": "BEN2",
-        "tasks": [
-          "img-rmbg"
-        ]
+        "tasks": ["img-rmbg"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -141,11 +127,7 @@
       "runpod": {
         "workerClass": "background-removal",
         "gpuType": "NVIDIA A4000",
-        "gpuTypes": [
-          "NVIDIA A4000",
-          "NVIDIA RTX 4090",
-          "NVIDIA A6000"
-        ],
+        "gpuTypes": ["NVIDIA A4000", "NVIDIA RTX 4090", "NVIDIA A6000"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 3,
         "flashboot": true,
@@ -183,10 +165,7 @@
       "sourceModel": {
         "slug": "Flux_2_Klein_4B_BF16",
         "displayName": "FLUX.2 Klein 4B BF16",
-        "tasks": [
-          "txt2img",
-          "img2img"
-        ]
+        "tasks": ["txt2img", "img2img"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -200,11 +179,7 @@
       "runpod": {
         "workerClass": "diffusers-image",
         "gpuType": "NVIDIA A100",
-        "gpuTypes": [
-          "NVIDIA A100",
-          "NVIDIA H100",
-          "NVIDIA RTX 4090"
-        ],
+        "gpuTypes": ["NVIDIA A100", "NVIDIA H100", "NVIDIA RTX 4090"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 10,
         "flashboot": true,
@@ -242,28 +217,21 @@
       "sourceModel": {
         "slug": "Ltx2_3_22B_Dist_INT8",
         "displayName": "LTX-2.3 22B Distilled INT8",
-        "tasks": [
-          "txt2video",
-          "img2video"
-        ]
+        "tasks": ["txt2video", "img2video"]
       },
       "openSource": {
         "kind": "huggingface",
-        "repo": "deAPI-ai/ltx2-3-22b-dist-int8",
+        "repo": "dryAPI-ai/ltx2-3-22b-dist-int8",
         "revision": "04676ace2a25544f56a8f59eccde925bc7ed8177",
         "artifact": "ltx-2.3-22b-distilled_qint8.safetensors",
-        "imageTag": "hf://deAPI-ai/ltx2-3-22b-dist-int8@04676ace2a25544f56a8f59eccde925bc7ed8177#ltx-2.3-22b-distilled_qint8.safetensors",
+        "imageTag": "hf://dryAPI-ai/ltx2-3-22b-dist-int8@04676ace2a25544f56a8f59eccde925bc7ed8177#ltx-2.3-22b-distilled_qint8.safetensors",
         "confidence": "high",
         "notes": []
       },
       "runpod": {
         "workerClass": "ltx-video",
         "gpuType": "NVIDIA H100",
-        "gpuTypes": [
-          "NVIDIA H100",
-          "NVIDIA A100",
-          "NVIDIA A6000"
-        ],
+        "gpuTypes": ["NVIDIA H100", "NVIDIA A100", "NVIDIA A6000"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 20,
         "flashboot": true,
@@ -279,13 +247,13 @@
         "MODEL_SLUG": "Ltx2_3_22B_Dist_INT8",
         "MODEL_DISPLAY_NAME": "LTX-2.3 22B Distilled INT8",
         "MODEL_TASKS": "txt2video,img2video",
-        "MODEL_HUGGINGFACE_MODEL": "deAPI-ai/ltx2-3-22b-dist-int8",
-        "HUGGINGFACE_MODEL": "deAPI-ai/ltx2-3-22b-dist-int8",
+        "MODEL_HUGGINGFACE_MODEL": "dryAPI-ai/ltx2-3-22b-dist-int8",
+        "HUGGINGFACE_MODEL": "dryAPI-ai/ltx2-3-22b-dist-int8",
         "MODEL_OPEN_SOURCE_KIND": "huggingface",
-        "MODEL_OPEN_SOURCE_REPO": "deAPI-ai/ltx2-3-22b-dist-int8",
+        "MODEL_OPEN_SOURCE_REPO": "dryAPI-ai/ltx2-3-22b-dist-int8",
         "MODEL_OPEN_SOURCE_REVISION": "04676ace2a25544f56a8f59eccde925bc7ed8177",
         "MODEL_OPEN_SOURCE_ARTIFACT": "ltx-2.3-22b-distilled_qint8.safetensors",
-        "MODEL_OPEN_SOURCE_IMAGE_TAG": "hf://deAPI-ai/ltx2-3-22b-dist-int8@04676ace2a25544f56a8f59eccde925bc7ed8177#ltx-2.3-22b-distilled_qint8.safetensors",
+        "MODEL_OPEN_SOURCE_IMAGE_TAG": "hf://dryAPI-ai/ltx2-3-22b-dist-int8@04676ace2a25544f56a8f59eccde925bc7ed8177#ltx-2.3-22b-distilled_qint8.safetensors",
         "MODEL_MIN_CUDA_VERSION": "12.2",
         "MODEL_GPU_CANDIDATES": "NVIDIA H100,NVIDIA A100,NVIDIA A6000",
         "MODEL_QUEUE_DELAY_SECONDS": "20",
@@ -301,9 +269,7 @@
       "sourceModel": {
         "slug": "Nanonets_Ocr_S_F16",
         "displayName": "Nanonets OCR S",
-        "tasks": [
-          "img2txt"
-        ]
+        "tasks": ["img2txt"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -317,11 +283,7 @@
       "runpod": {
         "workerClass": "vlm-ocr",
         "gpuType": "NVIDIA L4",
-        "gpuTypes": [
-          "NVIDIA L4",
-          "NVIDIA RTX 4090",
-          "NVIDIA A6000"
-        ],
+        "gpuTypes": ["NVIDIA L4", "NVIDIA RTX 4090", "NVIDIA A6000"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 5,
         "flashboot": true,
@@ -359,9 +321,7 @@
       "sourceModel": {
         "slug": "Qwen3_TTS_12Hz_1_7B_CustomVoice",
         "displayName": "Qwen3 TTS CustomVoice",
-        "tasks": [
-          "txt2audio"
-        ]
+        "tasks": ["txt2audio"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -375,11 +335,7 @@
       "runpod": {
         "workerClass": "tts-customvoice",
         "gpuType": "NVIDIA A100",
-        "gpuTypes": [
-          "NVIDIA A100",
-          "NVIDIA H100",
-          "NVIDIA RTX 4090"
-        ],
+        "gpuTypes": ["NVIDIA A100", "NVIDIA H100", "NVIDIA RTX 4090"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 1,
         "flashboot": true,
@@ -417,9 +373,7 @@
       "sourceModel": {
         "slug": "RealESRGAN_x4",
         "displayName": "RealESRGAN x4plus",
-        "tasks": [
-          "img-upscale"
-        ]
+        "tasks": ["img-upscale"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -433,11 +387,7 @@
       "runpod": {
         "workerClass": "image-upscale",
         "gpuType": "NVIDIA A4000",
-        "gpuTypes": [
-          "NVIDIA A4000",
-          "NVIDIA RTX 4090",
-          "NVIDIA A6000"
-        ],
+        "gpuTypes": ["NVIDIA A4000", "NVIDIA RTX 4090", "NVIDIA A6000"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 3,
         "flashboot": true,
@@ -475,9 +425,7 @@
       "sourceModel": {
         "slug": "WhisperLargeV3",
         "displayName": "Whisper Large v3",
-        "tasks": [
-          "vid2txt"
-        ]
+        "tasks": ["vid2txt"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -491,11 +439,7 @@
       "runpod": {
         "workerClass": "audio-transcribe",
         "gpuType": "NVIDIA A100",
-        "gpuTypes": [
-          "NVIDIA A100",
-          "NVIDIA H100",
-          "NVIDIA RTX 4090"
-        ],
+        "gpuTypes": ["NVIDIA A100", "NVIDIA H100", "NVIDIA RTX 4090"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 2,
         "flashboot": true,
@@ -533,9 +477,7 @@
       "sourceModel": {
         "slug": "ZImageTurbo_INT8",
         "displayName": "Z-Image-Turbo INT8",
-        "tasks": [
-          "txt2img"
-        ]
+        "tasks": ["txt2img"]
       },
       "openSource": {
         "kind": "huggingface",
@@ -549,11 +491,7 @@
       "runpod": {
         "workerClass": "diffusers-image",
         "gpuType": "NVIDIA A100",
-        "gpuTypes": [
-          "NVIDIA A100",
-          "NVIDIA H100",
-          "NVIDIA RTX 4090"
-        ],
+        "gpuTypes": ["NVIDIA A100", "NVIDIA H100", "NVIDIA RTX 4090"],
         "minCudaVersion": "12.2",
         "queueDelaySeconds": 2,
         "flashboot": true,

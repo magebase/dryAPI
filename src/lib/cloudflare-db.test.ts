@@ -36,7 +36,14 @@ describe("createCloudflareDbAccessors", () => {
     const { getDb } = createCloudflareDbAccessors("ANALYTICS_DB", schema);
 
     expect(getDb()).toEqual({ binding, schema });
-    expect(drizzleMock).toHaveBeenCalledWith(binding, { schema });
+    expect(drizzleMock).toHaveBeenCalledTimes(1);
+    const [instrumentedBinding, drizzleOptions] = drizzleMock.mock.calls[0] as [
+      { prepare?: unknown },
+      { schema: unknown },
+    ];
+    expect(instrumentedBinding).not.toBe(binding);
+    expect(typeof instrumentedBinding.prepare).toBe("function");
+    expect(drizzleOptions).toEqual({ schema });
   });
 
   it("resolves an async Cloudflare D1 binding", async () => {
@@ -53,7 +60,14 @@ describe("createCloudflareDbAccessors", () => {
     const { getDbAsync } = createCloudflareDbAccessors("ANALYTICS_DB", schema);
 
     await expect(getDbAsync()).resolves.toEqual({ binding, schema });
-    expect(drizzleMock).toHaveBeenCalledWith(binding, { schema });
+    expect(drizzleMock).toHaveBeenCalledTimes(1);
+    const [instrumentedBinding, drizzleOptions] = drizzleMock.mock.calls[0] as [
+      { prepare?: unknown },
+      { schema: unknown },
+    ];
+    expect(instrumentedBinding).not.toBe(binding);
+    expect(typeof instrumentedBinding.prepare).toBe("function");
+    expect(drizzleOptions).toEqual({ schema });
   });
 
   it("fails fast when the binding is missing", () => {

@@ -1,7 +1,7 @@
 {
   "slug": "/playground/text-to-image",
   "navLabel": "Text To Image Playground",
-  "seoTitle": "Text To Image Playground | deAPI",
+  "seoTitle": "Text To Image Playground | dryAPI",
   "seoDescription": "Interactive text to image playground tooling with unified API keys, usage tracking, and deployment-ready outputs.",
   "pageContent": {
     "elements": [

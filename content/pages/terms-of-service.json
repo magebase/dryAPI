@@ -1,8 +1,8 @@
 {
   "slug": "/terms-of-service",
   "navLabel": "Terms of Service",
-  "seoTitle": "Terms of Service | deAPI",
-  "seoDescription": "Review deAPI service terms, usage obligations, and platform responsibilities.",
+  "seoTitle": "Terms of Service | dryAPI",
+  "seoDescription": "Review dryAPI service terms, usage obligations, and platform responsibilities.",
   "pageContent": {
     "elements": [
       {
@@ -26,7 +26,7 @@
   "hero": {
     "kicker": "Legal",
     "heading": "Terms Of Service",
-    "body": "These terms define the responsibilities, acceptable use boundaries, and service conditions for deAPI customers.",
+    "body": "These terms define the responsibilities, acceptable use boundaries, and service conditions for dryAPI customers.",
     "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
     "actions": [
       {

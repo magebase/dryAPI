@@ -47,6 +47,12 @@ export type WorkerBindings = {
   API_KEY?: string
   ORIGIN_URL?: string
   INTERNAL_API_KEY?: string
+  LOG_LEVEL?: string
+  PERF_LOG_LEVEL?: string
+  SERVER_PERF_LOG?: string
+  SERVER_PERF_SLOW_MS?: string
+  HONO_PERF_LOG?: string
+  HONO_PERF_SLOW_MS?: string
   EDGE_IP_LIMITER?: EdgeRateLimitBinding
   EDGE_IP_LIMIT_PER_MINUTE?: string
   API_KEY_QUOTA_DO?: ApiKeyQuotaDurableObjectNamespace

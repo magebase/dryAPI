@@ -95,7 +95,7 @@ const MODEL_CARD_GRADIENTS: Record<ModelCardGradientName, string> = {
   [ModelCardGradientName.BlueFlame]:
     "radial-gradient(ellipse at bottom, #fde68a, #7c3aed, #0c4a6e)",
   [ModelCardGradientName.Azure]:
-    "linear-gradient(to right, #dbeafe, #60a5fa, #1d4ed8)",
+    "linear-gradient(to right, #0f172a, #1e3a8a, #1d4ed8)",
 }
 
 const MODEL_CARD_HARMONIC_ROWS: [

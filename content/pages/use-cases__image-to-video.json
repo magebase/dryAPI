@@ -1,7 +1,7 @@
 {
   "slug": "/use-cases/image-to-video",
   "navLabel": "Image To Video Use Case",
-  "seoTitle": "Image To Video Use Case | deAPI",
+  "seoTitle": "Image To Video Use Case | dryAPI",
   "seoDescription": "Implementation blueprint for image to video use case with model selection, routing, and observability guidance.",
   "pageContent": {
     "elements": [

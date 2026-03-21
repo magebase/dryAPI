@@ -1,7 +1,7 @@
 {
   "slug": "/playground/text-to-speech",
   "navLabel": "Text To Speech Playground",
-  "seoTitle": "Text To Speech Playground | deAPI",
+  "seoTitle": "Text To Speech Playground | dryAPI",
   "seoDescription": "Interactive text to speech playground tooling with unified API keys, usage tracking, and deployment-ready outputs.",
   "pageContent": {
     "elements": [

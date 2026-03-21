@@ -1,5 +1,5 @@
 {
-  "seoTitle": "deAPI | Thousands Of Models Through One AI API",
+  "seoTitle": "dryAPI | Thousands Of Models Through One AI API",
   "seoDescription": "Access chat, image, speech, video, OCR, embeddings, and rerank models through one OpenAI/OpenRouter-compatible API with cheap pricing and elastic scale.",
   "hero": {
     "visible": true,
@@ -33,7 +33,7 @@
       "id": "spotlight-sales",
       "visible": true,
       "title": "OpenAI And OpenRouter Compatible",
-      "description": "Point your existing client at deAPI, keep familiar request shapes, and start calling new models in minutes.",
+      "description": "Point your existing client at dryAPI, keep familiar request shapes, and start calling new models in minutes.",
       "image": "/landing/chatbot-dashboard.png",
       "icon": "settings"
     },
@@ -251,7 +251,7 @@
         "id": "resource-1",
         "visible": true,
         "title": "OpenAI SDK Quickstart",
-        "summary": "Get running with deAPI by changing your base URL and model name instead of rebuilding your client stack.",
+        "summary": "Get running with dryAPI by changing your base URL and model name instead of rebuilding your client stack.",
         "image": "/landing/chatbot-dashboard.png",
         "href": "/blog",
         "tag": "Guide",
@@ -368,12 +368,12 @@
   "testimonialsSection": {
     "visible": true,
     "kicker": "Customer Outcomes",
-    "title": "What Teams Say After Moving To deAPI",
+    "title": "What Teams Say After Moving To dryAPI",
     "items": [
       {
         "id": "testimonial-1",
         "company": "Northline Infrastructure",
-        "quote": "We replaced multiple provider integrations with deAPI and cut onboarding time for new AI features dramatically.",
+        "quote": "We replaced multiple provider integrations with dryAPI and cut onboarding time for new AI features dramatically.",
         "person": "Riley M.",
         "role": "Platform Lead",
         "metric": "3 integrations unified"

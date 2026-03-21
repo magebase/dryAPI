@@ -28,6 +28,14 @@ type SessionRecord = {
   userAgent?: string | null;
 };
 
+type AccountPlanSummary = {
+  slug: string;
+  label: string;
+  status: string;
+  monthlyCredits: number;
+  discountPercent: number;
+};
+
 function formatLoginMethod(value: string | null | undefined): string {
   const normalized = value?.trim();
   if (!normalized) {
@@ -43,14 +51,20 @@ export function AccountSettingsPanel() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [planLoadError, setPlanLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [signOutPending, setSignOutPending] = useState(false);
   const [signOutOthersPending, setSignOutOthersPending] = useState(false);
   const [deleteRequestPending, setDeleteRequestPending] = useState(false);
   const [activeSessions, setActiveSessions] = useState<SessionRecord[]>([]);
+  const [currentPlan, setCurrentPlan] = useState<AccountPlanSummary | null>(null);
 
   useEffect(() => {
     let active = true;
+
+    setLoading(true);
+    setLoadError(null);
+    setPlanLoadError(null);
 
     async function loadSession() {
       try {
@@ -89,14 +103,45 @@ export function AccountSettingsPanel() {
         if (active) {
           setLoadError("Unable to load account session details.");
         }
-      } finally {
+      }
+    }
+
+    async function loadPlan() {
+      try {
+        const accountResponse = await fetch("/api/dashboard/settings/account", {
+          cache: "no-store",
+          credentials: "include",
+        });
+
+        if (!accountResponse.ok) {
+          throw new Error(`Failed to load account summary (${accountResponse.status})`);
+        }
+
+        const payload = (await accountResponse.json().catch(() => null)) as {
+          data?: { currentPlan?: AccountPlanSummary | null };
+        } | null;
+
+        if (!payload || typeof payload !== "object" || !("data" in payload)) {
+          throw new Error("Invalid account summary payload.");
+        }
+
         if (active) {
-          setLoading(false);
+          setCurrentPlan(payload?.data?.currentPlan ?? null);
+          setPlanLoadError(null);
+        }
+      } catch {
+        if (active) {
+          setCurrentPlan(null);
+          setPlanLoadError("Unable to load plan details.");
         }
       }
     }
 
-    void loadSession();
+    void Promise.allSettled([loadSession(), loadPlan()]).then(() => {
+      if (active) {
+        setLoading(false);
+      }
+    });
 
     return () => {
       active = false;
@@ -232,12 +277,37 @@ export function AccountSettingsPanel() {
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
             Plan
           </p>
-          <div className="mt-1 flex items-center gap-2">
-            <Badge variant="secondary">Developer</Badge>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              Upgrade from Billing to unlock higher limits.
-            </span>
-          </div>
+          {loading ? (
+            <div className="mt-1 space-y-2">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+          ) : planLoadError ? (
+            <div className="mt-2 space-y-2">
+              <p className="text-xs text-red-600 dark:text-red-300">
+                {planLoadError}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setReloadToken((value) => value + 1)}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-1 flex items-center gap-2">
+              <Badge variant="secondary">
+                {currentPlan?.label || "No active plan"}
+              </Badge>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {currentPlan
+                  ? "Upgrade from Billing to unlock higher limits."
+                  : "Subscribe from Billing to unlock higher limits."}
+              </span>
+            </div>
+          )}
         </div>
 
         <div>

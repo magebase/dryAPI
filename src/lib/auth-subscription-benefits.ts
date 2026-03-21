@@ -37,6 +37,14 @@ type AuthSubscriptionRow = {
   referenceId: string
 }
 
+export type CurrentUserSubscriptionPlanSummary = {
+  slug: string
+  label: string
+  status: string
+  monthlyCredits: number
+  discountPercent: number
+}
+
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"])
 
 async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
@@ -74,13 +82,16 @@ async function getUserByReferenceId(referenceId: string): Promise<AuthUserRow | 
   return response.results[0] ?? null
 }
 
-async function getLatestActiveSubscriptionForEmail(email: string): Promise<AuthSubscriptionRow | null> {
+async function getLatestActiveSubscriptionForEmail(
+  email: string,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<AuthSubscriptionRow | null> {
   const normalizedEmail = email.trim().toLowerCase()
   if (!normalizedEmail) {
     return null
   }
 
-  const db = await resolveAuthDb()
+  const db = options?.db ?? (await resolveAuthDb())
   if (!db) {
     return null
   }
@@ -99,6 +110,23 @@ async function getLatestActiveSubscriptionForEmail(email: string): Promise<AuthS
     .all<AuthSubscriptionRow>()
 
   return response.results.find((row) => ACTIVE_SUBSCRIPTION_STATUSES.has((row.status || "").toLowerCase())) ?? null
+}
+
+function resolveCurrentUserSubscriptionPlanSummaryFromSubscription(
+  subscription: AuthSubscriptionRow,
+): CurrentUserSubscriptionPlanSummary | null {
+  const plan = resolveSaasPlan(subscription.plan)
+  if (!plan) {
+    return null
+  }
+
+  return {
+    slug: plan.slug,
+    label: plan.label,
+    status: subscription.status.trim().toLowerCase(),
+    monthlyCredits: plan.monthlyCredits,
+    discountPercent: plan.discountPercent,
+  }
 }
 
 async function syncBenefitsForUser(email: string, subscription: AuthSubscriptionRow) {
@@ -154,6 +182,18 @@ export async function ensureCurrentUserSubscriptionBenefits(email: string) {
   }
 
   return syncBenefitsForUser(email, subscription)
+}
+
+export async function resolveCurrentUserSubscriptionPlanSummary(
+  email: string,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<CurrentUserSubscriptionPlanSummary | null> {
+  const subscription = await getLatestActiveSubscriptionForEmail(email, options)
+  if (!subscription) {
+    return null
+  }
+
+  return resolveCurrentUserSubscriptionPlanSummaryFromSubscription(subscription)
 }
 
 export async function syncSubscriptionBenefitsForReferenceId(referenceId: string) {

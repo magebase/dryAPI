@@ -1,7 +1,25 @@
 import type { Hono } from 'hono'
 
 import { jsonError, jsonUnauthorized } from './errors'
+import { createRequestPerfTracker, emitRequestPerfSummary, type RequestPerfTracker } from './observability'
 import type { AppContext, WorkerEnv } from '../types'
+
+type AuthorizationResult = {
+  ok: boolean
+  quotaKey?: string
+  minuteLimit?: number
+  creditUserId?: string
+}
+
+type CachedAuthorizationEntry = {
+  value: AuthorizationResult
+  expiresAt: number
+}
+
+const AUTH_CACHE_TTL_MS = 5_000
+const AUTH_CACHE_MAX_ENTRIES = 1_024
+const apiKeyVerificationCache = new Map<string, CachedAuthorizationEntry>()
+const sessionAuthenticationCache = new Map<string, CachedAuthorizationEntry>()
 
 function parseLimit(value: unknown, fallback: number): number {
   if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
@@ -16,6 +34,41 @@ function parseLimit(value: unknown, fallback: number): number {
   }
 
   return fallback
+}
+
+function readCachedAuthorization(
+  cache: Map<string, CachedAuthorizationEntry>,
+  cacheKey: string,
+): AuthorizationResult | null {
+  const cachedEntry = cache.get(cacheKey)
+  if (!cachedEntry) {
+    return null
+  }
+
+  if (cachedEntry.expiresAt <= Date.now()) {
+    cache.delete(cacheKey)
+    return null
+  }
+
+  return cachedEntry.value
+}
+
+function writeCachedAuthorization(
+  cache: Map<string, CachedAuthorizationEntry>,
+  cacheKey: string,
+  value: AuthorizationResult,
+): void {
+  if (cache.size >= AUTH_CACHE_MAX_ENTRIES && !cache.has(cacheKey)) {
+    const firstKey = cache.keys().next().value
+    if (typeof firstKey === 'string') {
+      cache.delete(firstKey)
+    }
+  }
+
+  cache.set(cacheKey, {
+    value,
+    expiresAt: Date.now() + AUTH_CACHE_TTL_MS,
+  })
 }
 
 function getClientIp(c: AppContext): string {
@@ -33,6 +86,15 @@ function normalizeOrigin(origin: string | undefined): string {
 function getBearerToken(c: AppContext): string {
   const authHeader = c.req.header('authorization') ?? ''
   return authHeader.replace(/^Bearer\s+/i, '').trim()
+}
+
+function getRequestPerf(c: AppContext): RequestPerfTracker {
+  const perf = c.get('requestPerf') as RequestPerfTracker | undefined
+  if (!perf) {
+    throw new Error('requestPerf context missing')
+  }
+
+  return perf
 }
 
 export function hasStaticApiKeyMatch(c: AppContext, token: string): boolean {
@@ -68,7 +130,12 @@ function readRateLimitRpm(payload: unknown): number | undefined {
   return nested > 0 ? nested : undefined
 }
 
-export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<{ ok: boolean; quotaKey?: string; minuteLimit?: number; creditUserId?: string }> {
+export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<AuthorizationResult> {
+  const cachedResult = readCachedAuthorization(apiKeyVerificationCache, token)
+  if (cachedResult) {
+    return cachedResult
+  }
+
   const origin = normalizeOrigin(c.env.ORIGIN_URL)
   if (!origin) {
     return { ok: false }
@@ -102,7 +169,11 @@ export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promi
   }
 
   if (!response.ok) {
-    return { ok: false }
+    const failedResult = { ok: false }
+    if (response.status === 401 || response.status === 403) {
+      writeCachedAuthorization(apiKeyVerificationCache, token, failedResult)
+    }
+    return failedResult
   }
 
   const payload = await response.json().catch(() => null) as {
@@ -117,18 +188,26 @@ export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promi
       ? payload.principal.userEmail.trim().toLowerCase()
       : undefined
 
-  return {
+  const successfulResult = {
     ok: true,
     quotaKey,
     ...(creditUserId ? { creditUserId } : {}),
     ...(minuteLimit > 0 ? { minuteLimit } : {}),
   }
+
+  writeCachedAuthorization(apiKeyVerificationCache, token, successfulResult)
+  return successfulResult
 }
 
-export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok: boolean; quotaKey?: string; minuteLimit?: number; creditUserId?: string }> {
+export async function authenticateSessionViaOrigin(c: AppContext): Promise<AuthorizationResult> {
   const cookie = c.req.header('cookie') ?? ''
   if (!cookie) {
     return { ok: false }
+  }
+
+  const cachedResult = readCachedAuthorization(sessionAuthenticationCache, cookie)
+  if (cachedResult) {
+    return cachedResult
   }
 
   const origin = normalizeOrigin(c.env.ORIGIN_URL)
@@ -150,7 +229,11 @@ export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok:
   }
 
   if (!response.ok) {
-    return { ok: false }
+    const failedResult = { ok: false }
+    if (response.status === 401 || response.status === 403) {
+      writeCachedAuthorization(sessionAuthenticationCache, cookie, failedResult)
+    }
+    return failedResult
   }
 
   const payload = await response.json().catch(() => null)
@@ -183,15 +266,18 @@ export async function authenticateSessionViaOrigin(c: AppContext): Promise<{ ok:
     }
   }
 
-  return {
+  const successfulResult = {
     ok: true,
     quotaKey: userEmail || undefined,
     ...(userEmail ? { creditUserId: userEmail } : {}),
     ...(minuteLimit ? { minuteLimit } : {}),
   }
+
+  writeCachedAuthorization(sessionAuthenticationCache, cookie, successfulResult)
+  return successfulResult
 }
 
-export async function authorizeRequest(c: AppContext): Promise<{ ok: boolean; quotaKey?: string; minuteLimit?: number; creditUserId?: string }> {
+export async function authorizeRequest(c: AppContext): Promise<AuthorizationResult> {
   const token = getBearerToken(c)
   if (token) {
     if (hasStaticApiKeyMatch(c, token)) {
@@ -209,6 +295,24 @@ export async function authorizeRequest(c: AppContext): Promise<{ ok: boolean; qu
 
 export function registerCommonMiddleware(app: Hono<WorkerEnv>) {
   app.use('*', async (c, next) => {
+    const tracker = createRequestPerfTracker(c)
+    c.set('traceId', tracker.traceId)
+    c.set('requestPerf', tracker)
+
+    try {
+      await next()
+    } finally {
+      c.header('x-trace-id', tracker.traceId)
+      const serverTiming = tracker.toServerTiming()
+      if (serverTiming) {
+        c.header('Server-Timing', serverTiming)
+      }
+
+      emitRequestPerfSummary(c, tracker)
+    }
+  })
+
+  app.use('*', async (c, next) => {
     c.header('Access-Control-Allow-Origin', '*')
     c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
     c.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS')
@@ -220,9 +324,11 @@ export function registerCommonMiddleware(app: Hono<WorkerEnv>) {
   })
 
   app.use('/v1/*', async (c, next) => {
+    const tracker = getRequestPerf(c)
+
     if (c.env.EDGE_IP_LIMITER) {
       const ipKey = getClientIp(c)
-      const edgeResult = await c.env.EDGE_IP_LIMITER.limit({ key: ipKey })
+      const edgeResult = await tracker.measure('edge.ip-limit', () => c.env.EDGE_IP_LIMITER!.limit({ key: ipKey }))
       const edgeSuccess = typeof edgeResult === 'boolean' ? edgeResult : edgeResult.success
 
       if (!edgeSuccess) {
@@ -230,7 +336,7 @@ export function registerCommonMiddleware(app: Hono<WorkerEnv>) {
       }
     }
 
-    const authResult = await authorizeRequest(c)
+    const authResult = await tracker.measure('auth.authorize', () => authorizeRequest(c))
     if (!authResult.ok) {
       return jsonUnauthorized(c)
     }
@@ -246,7 +352,7 @@ export function registerCommonMiddleware(app: Hono<WorkerEnv>) {
       const id = c.env.API_KEY_QUOTA_DO.idFromName(quotaKey)
       const stub = c.env.API_KEY_QUOTA_DO.get(id)
       const quotaUrl = `https://quota.internal/consume?key=${encodeURIComponent(quotaKey)}&minute=${minuteLimit}&day=${dayLimit}`
-      const quotaResponse = await stub.fetch(quotaUrl, { method: 'POST' })
+      const quotaResponse = await tracker.measure('quota.consume', () => stub.fetch(quotaUrl, { method: 'POST' }))
 
       if (!quotaResponse.ok) {
         const quotaPayload = await quotaResponse.json().catch(() => null)
@@ -272,6 +378,6 @@ export function registerCommonMiddleware(app: Hono<WorkerEnv>) {
       }
     }
 
-    await next()
+    await tracker.measure('route.handler', next)
   })
 }

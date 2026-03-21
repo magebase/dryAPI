@@ -11,7 +11,7 @@ Reference goals:
 
 ## Core Product Intent
 
-- Build a deAPI-style platform that unifies model inference behind one API and one dashboard.
+- Build a dryAPI-style platform that unifies model inference behind one API and one dashboard.
 - Route inference requests through Cloudflare Workers to serverless GPU providers (RunPod first).
 - Provide prepaid/subscription billing with Stripe and usage-based credit deduction.
 - Preserve operational safety: stable routing, no auth regressions, predictable API behavior.
@@ -51,7 +51,7 @@ Reference goals:
 - Tina backend route: `src/pages/api/tina/[...routes].ts`
 - Content source: `content/**/*.json`
 - Content validation/loading: `src/lib/site-content-loader.ts`, `src/lib/*schema*.ts`
-- deAPI docs mirror + OpenAPI snapshot: `docs/deapi-mirror/**`
+- dryAPI docs mirror + OpenAPI snapshot: `docs/deapi-mirror/**`
 - Docs sync script: `scripts/sync-deapi-docs.ts`
 - Cloudflare container package: `cloudflare/container/**`
 - Cloudflare workflows package: `cloudflare/workflows/**`

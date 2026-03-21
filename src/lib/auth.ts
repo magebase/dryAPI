@@ -56,6 +56,7 @@ import {
   formatExpectedBindings,
   resolveD1Binding,
 } from "@/lib/d1-bindings";
+import { instrumentD1Binding } from "@/lib/d1-observability";
 import { resolveBrandForCheckoutSession } from "@/lib/stripe-branding";
 import {
   listSaasPlans,
@@ -1228,8 +1229,12 @@ function resolveBetterAuthDatabase() {
   const d1Binding = resolveAuthD1Binding();
 
   if (d1Binding) {
-    maybeCleanupExpiredSessions(d1Binding);
-    const db = drizzle(d1Binding);
+    const instrumentedBinding = instrumentD1Binding(d1Binding, {
+      bindingName: D1_BINDING_PRIORITY.auth[0],
+      component: "better-auth",
+    });
+    maybeCleanupExpiredSessions(instrumentedBinding);
+    const db = drizzle(instrumentedBinding);
     return drizzleAdapter(db, {
       provider: "sqlite",
       schema: authSchema,

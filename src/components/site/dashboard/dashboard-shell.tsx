@@ -267,7 +267,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               data-flux-navlist
             >
               <a
-                href="https://x.com/intent/follow?screen_name=deAPI_"
+                href="https://x.com/intent/follow?screen_name=dryAPI_"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={getNavItemClass(false)}

@@ -66,6 +66,15 @@ describe("GET /api/dashboard/billing/portal", () => {
         return makeSessionResponse("owner@dryapi.dev")
       }
 
+      if (url.startsWith("https://api.stripe.com/v1/customers/cus_123")) {
+        return new Response(JSON.stringify({ id: "cus_123" }), {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        })
+      }
+
       if (url === "https://api.stripe.com/v1/billing_portal/sessions") {
         return new Response(
           JSON.stringify({ url: "https://billing.stripe.com/session/test" }),
@@ -87,7 +96,58 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     expect(res.status).toBe(302)
     expect(res.headers.get("location")).toBe("https://billing.stripe.com/session/test")
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it("falls back to the signed-in email when the configured customer id is stale", async () => {
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+    vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "cus_stale")
+
+    const fetchMock = vi.fn(async (input) => {
+      const url = typeof input === "string" ? input : input.url
+
+      if (url.endsWith("/api/auth/get-session")) {
+        return makeSessionResponse("owner@dryapi.dev")
+      }
+
+      if (url.startsWith("https://api.stripe.com/v1/customers/cus_stale")) {
+        return new Response(null, { status: 404 })
+      }
+
+      if (url.startsWith("https://api.stripe.com/v1/customers?")) {
+        return new Response(
+          JSON.stringify({ data: [{ id: "cus_email" }] }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        )
+      }
+
+      if (url === "https://api.stripe.com/v1/billing_portal/sessions") {
+        return new Response(
+          JSON.stringify({ url: "https://billing.stripe.com/session/fallback" }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        )
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(302)
+    expect(res.headers.get("location")).toBe("https://billing.stripe.com/session/fallback")
+    expect(fetchMock).toHaveBeenCalledTimes(4)
   })
 
   it("returns a clear error when Stripe portal creation fails", async () => {
@@ -99,6 +159,15 @@ describe("GET /api/dashboard/billing/portal", () => {
 
       if (url.endsWith("/api/auth/get-session")) {
         return makeSessionResponse("owner@dryapi.dev")
+      }
+
+      if (url.startsWith("https://api.stripe.com/v1/customers/cus_123")) {
+        return new Response(JSON.stringify({ id: "cus_123" }), {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        })
       }
 
       if (url === "https://api.stripe.com/v1/billing_portal/sessions") {

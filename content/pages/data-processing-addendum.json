@@ -1,8 +1,8 @@
 {
   "slug": "/data-processing-addendum",
   "navLabel": "Data Processing Addendum",
-  "seoTitle": "Data Processing Addendum | deAPI",
-  "seoDescription": "Review deAPI data processing terms, controller-processor boundaries, and security obligations for enterprise teams.",
+  "seoTitle": "Data Processing Addendum | dryAPI",
+  "seoDescription": "Review dryAPI data processing terms, controller-processor boundaries, and security obligations for enterprise teams.",
   "pageContent": {
     "elements": [
       {
@@ -50,7 +50,7 @@
         {
           "id": "roles-card-1",
           "title": "Controller and Processor Roles",
-          "description": "Clarify when customers act as controllers and when deAPI acts as a processor.",
+          "description": "Clarify when customers act as controllers and when dryAPI acts as a processor.",
           "href": "/terms-of-service",
           "ctaLabel": "Terms Details"
         },

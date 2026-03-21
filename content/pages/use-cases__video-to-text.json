@@ -1,7 +1,7 @@
 {
   "slug": "/use-cases/video-to-text",
   "navLabel": "Video To Text Use Case",
-  "seoTitle": "Video To Text Use Case | deAPI",
+  "seoTitle": "Video To Text Use Case | dryAPI",
   "seoDescription": "Implementation blueprint for video to text use case with model selection, routing, and observability guidance.",
   "pageContent": {
     "elements": [
