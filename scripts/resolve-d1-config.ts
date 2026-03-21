@@ -2,9 +2,7 @@ import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
+import { updateD1DatabaseIdsInConfig } from "./lib/resolve-d1-config"
 
 function main() {
   const [configPathArg, ...databaseNames] = process.argv.slice(2)
@@ -87,31 +85,10 @@ function main() {
     }
   }
 
-  let content = fs.readFileSync(configPath, "utf8")
+  const content = fs.readFileSync(configPath, "utf8")
+  const updatedContent = updateD1DatabaseIdsInConfig(content, databaseNames, idsByName)
 
-  for (const databaseName of databaseNames) {
-    const databaseId = idsByName.get(databaseName)
-
-    if (!databaseId) {
-      throw new Error(`Missing remote D1 database named ${databaseName}`)
-    }
-
-    const pattern = new RegExp(
-      `^(\\s*)"database_name":\\s*"${escapeRegExp(databaseName)}",\\n(?:\\1"database_id":\\s*"[^"]*",\\n)?`,
-      "gm",
-    )
-
-    if (!pattern.test(content)) {
-      throw new Error(`Could not find database_name entry for ${databaseName} in ${configPath}`)
-    }
-
-    content = content.replace(
-      pattern,
-      `$1"database_name": "${databaseName}",\n$1"database_id": "${databaseId}",\n`,
-    )
-  }
-
-  fs.writeFileSync(configPath, content)
+  fs.writeFileSync(configPath, updatedContent)
 }
 
 main()
