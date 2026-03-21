@@ -6,6 +6,10 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  signOutCurrentSession,
+  signOutOtherSessions,
+} from "@/lib/auth-session-actions";
 
 type SessionUser = {
   id?: string | null;
@@ -99,7 +103,7 @@ export function AccountSettingsPanel() {
     };
   }, [reloadToken]);
 
-  async function handleSignOutEverywhere() {
+  async function handleSignOutCurrentSession() {
     if (signOutPending) {
       return;
     }
@@ -107,12 +111,7 @@ export function AccountSettingsPanel() {
     setSignOutPending(true);
 
     try {
-      await fetch("/api/auth/sign-out", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        cache: "no-store",
-      });
+      await signOutCurrentSession();
 
       toast.success("Signed out", {
         description: "You have been signed out of the current session.",
@@ -133,22 +132,7 @@ export function AccountSettingsPanel() {
     setSignOutOthersPending(true);
 
     try {
-      const response = await fetch("/api/auth/revoke-other-sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      const payload = (await response.json().catch(() => null)) as {
-        status?: boolean;
-        message?: string;
-      } | null;
-
-      if (!response.ok || payload?.status === false) {
-        toast.error(payload?.message || "Unable to sign out other sessions");
-        return;
-      }
+      await signOutOtherSessions();
 
       setReloadToken((value) => value + 1);
       toast.success("Signed out other sessions");
@@ -309,7 +293,7 @@ export function AccountSettingsPanel() {
           <Button
             type="button"
             variant="outline"
-            onClick={handleSignOutEverywhere}
+            onClick={handleSignOutCurrentSession}
             disabled={signOutPending}
           >
             {signOutPending ? "Signing out..." : "Sign out current session"}

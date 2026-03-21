@@ -15,6 +15,7 @@ import {
   logServerAuthEvent,
   summarizeCookieHeader,
 } from "@/lib/auth-debug"
+import { isPhpProbePath } from "@/lib/blocked-routes"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 
 const SUCCESS_PATH = "/success"
@@ -324,8 +325,13 @@ function resolveVersionedDocsPath(pathname: string): string | null {
 }
 
 export async function middleware(request: NextRequest) {
-  const traceId = createAuthTraceId(request.headers.get("x-request-id"))
   const pathname = request.nextUrl.pathname
+
+  if (isPhpProbePath(pathname)) {
+    return new NextResponse("Not Found", { status: 404 })
+  }
+
+  const traceId = createAuthTraceId(request.headers.get("x-request-id"))
   const isAuthObservedPath =
     pathname === "/login"
     || pathname === "/register"
@@ -483,6 +489,7 @@ export const config = {
   matcher: [
     // Avoid running middleware/proxy on static assets and framework internals.
     "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|sw.js|.*\\..*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|sw.js).*\\.php.*)",
     "/admin",
     "/admin/:path*",
     "/admin/index.html",

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { WebPageJsonLd } from "@/components/site/seo-jsonld";
 import { TinaBlogPostPage } from "@/components/site/tina-blog-post-page";
 import { TinaRoutePage } from "@/components/site/tina-route-page";
+import { isPhpProbePath } from "@/lib/blocked-routes";
 import { getLatestDeapiPricingSnapshot } from "@/lib/deapi-pricing-store";
 import { isManualBlogEnabled } from "@/lib/feature-flags";
 import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
@@ -151,6 +152,10 @@ export async function generateMetadata({
     notFound();
   }
 
+  if (isPhpProbePath(pathname)) {
+    notFound();
+  }
+
   const site = await readSiteConfig();
   const siteName = site.brand.name || site.brand.mark;
 
@@ -260,6 +265,10 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
   const pathname = toPath(slug);
 
   if (isReservedAppPath(pathname)) {
+    notFound();
+  }
+
+  if (isPhpProbePath(pathname)) {
     notFound();
   }
 

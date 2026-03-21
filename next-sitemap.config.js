@@ -3,10 +3,26 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "ht
 
 module.exports = {
   siteUrl,
+  generateIndexSitemap: false,
   generateRobotsTxt: false,
   outDir: "public",
   sitemapSize: 5000,
   autoLastmod: true,
   changefreq: "weekly",
-  exclude: ["/admin/*", "/api/*", "/404", "/500"],
+  exclude: [
+    "/admin",
+    "/admin/*",
+    "/api/*",
+    "/dashboard",
+    "/dashboard/*",
+    "/forgot",
+    "/login",
+    "/register",
+    "/reset-password",
+    "/reset-password/*",
+    "/success",
+    "/success/*",
+    "/404",
+    "/500",
+  ],
 }

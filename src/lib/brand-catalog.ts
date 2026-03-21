@@ -1,7 +1,8 @@
-import { promises as fs } from "node:fs"
 import path from "node:path"
 
 import { z } from "zod"
+
+import brandCatalogContentArtifact from "../../content/site/brands.json"
 
 const requiredText = z.string().trim().min(1)
 const brandKeySchema = z
@@ -63,7 +64,6 @@ export type BrandProfile = z.infer<typeof brandProfileSchema>
 export type BrandCatalog = z.infer<typeof brandCatalogSchema>
 
 const CONTENT_ROOT = path.join(process.cwd(), "content")
-const BRAND_CATALOG_PATH = path.join(CONTENT_ROOT, "site", "brands.json")
 
 let brandCatalogPromise: Promise<BrandCatalog> | null = null
 
@@ -78,15 +78,10 @@ export function normalizeBrandKey(value: string | undefined | null): string {
     .replace(/[^a-z0-9-]+/g, "")
 }
 
-async function readJsonFile<T>(filePath: string): Promise<T> {
-  const raw = await fs.readFile(filePath, "utf8")
-  return JSON.parse(raw) as T
-}
-
 export async function readBrandCatalog(): Promise<BrandCatalog> {
   if (!brandCatalogPromise) {
-    brandCatalogPromise = readJsonFile<unknown>(BRAND_CATALOG_PATH).then((payload) =>
-      brandCatalogSchema.parse(payload)
+    brandCatalogPromise = Promise.resolve(
+      brandCatalogSchema.parse(brandCatalogContentArtifact as unknown),
     )
   }
 

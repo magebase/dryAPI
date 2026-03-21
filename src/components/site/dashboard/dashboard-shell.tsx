@@ -20,10 +20,12 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { modelCategories } from "@/components/site/dashboard/model-categories";
 import { buildModelTaskSectionId } from "@/components/site/dashboard/model-section-id";
+import { signOutCurrentSession } from "@/lib/auth-session-actions";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "../brand-logo";
 
@@ -73,17 +75,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
     setSignOutPending(true);
 
     try {
-      await fetch("/api/auth/sign-out", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        cache: "no-store",
-      });
-    } catch {
-      // Redirect regardless so the user can re-authenticate even if sign-out request fails.
-    } finally {
+      await signOutCurrentSession();
+
       setMobileSidebarOpen(false);
       window.location.replace("/login");
+    } catch {
+      toast.error("Unable to sign out");
+    } finally {
+      setSignOutPending(false);
     }
   }
 
