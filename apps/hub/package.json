@@ -20,9 +20,10 @@
     "db:migrate:remote": "pnpm db:migrate:remote:auth && pnpm db:migrate:remote:analytics",
     "db:migrate:remote:auth": "wrangler d1 migrations apply \"${CF_D1_DATABASE_NAME_HUB_AUTH:-apiscore-auth-db}\" --remote --config wrangler.jsonc",
     "db:migrate:remote:analytics": "wrangler d1 migrations apply \"${CF_D1_DATABASE_NAME_HUB_ANALYTICS:-apiscore-analytics-db}\" --remote --config wrangler.jsonc",
-    "cf:build": "rm -rf .open-next .next && opennextjs-cloudflare build && pnpm sitemap",
+    "cf:build": "rm -rf .open-next && opennextjs-cloudflare build && pnpm sitemap",
     "cf:preview": "opennextjs-cloudflare preview",
-    "cf:deploy": "pnpm cf:build && opennextjs-cloudflare deploy",
+    "cf:deploy:only": "opennextjs-cloudflare deploy",
+    "cf:deploy": "pnpm cf:build && pnpm cf:deploy:only",
     "sitemap": "next-sitemap"
   },
   "dependencies": {
