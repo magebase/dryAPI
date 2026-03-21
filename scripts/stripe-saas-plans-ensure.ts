@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // @ts-nocheck
 
+import path from "node:path"
+import { pathToFileURL } from "node:url"
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 
 const STRIPE_API_BASE = "https://api.stripe.com"
@@ -11,6 +13,9 @@ const PLAN_SPECS = [
     label: "Starter",
     monthlyEnvKey: "STRIPE_SAAS_PRICE_STARTER",
     annualEnvKey: "STRIPE_SAAS_ANNUAL_PRICE_STARTER",
+    portalProductEnvKey: "STRIPE_PORTAL_BASIC_PRODUCT_ID",
+    portalMonthlyEnvKey: "STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID",
+    portalAnnualEnvKey: "STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID",
     defaultMonthlyUnitAmountCents: 4900,
     annualDiscountPercent: 15,
     discountPercent: 15,
@@ -21,6 +26,9 @@ const PLAN_SPECS = [
     label: "Growth",
     monthlyEnvKey: "STRIPE_SAAS_PRICE_GROWTH",
     annualEnvKey: "STRIPE_SAAS_ANNUAL_PRICE_GROWTH",
+    portalProductEnvKey: "STRIPE_PORTAL_GROWTH_PRODUCT_ID",
+    portalMonthlyEnvKey: "STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID",
+    portalAnnualEnvKey: "STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID",
     defaultMonthlyUnitAmountCents: 19900,
     annualDiscountPercent: 10,
     discountPercent: 10,
@@ -31,12 +39,35 @@ const PLAN_SPECS = [
     label: "Scale",
     monthlyEnvKey: "STRIPE_SAAS_PRICE_SCALE",
     annualEnvKey: "STRIPE_SAAS_ANNUAL_PRICE_SCALE",
+    portalProductEnvKey: "STRIPE_PORTAL_PRO_PRODUCT_ID",
+    portalMonthlyEnvKey: "STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID",
+    portalAnnualEnvKey: "STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID",
     defaultMonthlyUnitAmountCents: 79900,
     annualDiscountPercent: 5,
     discountPercent: 5,
     monthlyTokens: 2_000_000,
   },
 ]
+
+function buildPlanEnvOutput(plan, { productId, monthlyPriceId, annualPriceId }) {
+  return {
+    [plan.monthlyEnvKey]: monthlyPriceId,
+    [plan.annualEnvKey]: annualPriceId,
+    [plan.portalProductEnvKey]: productId,
+    [plan.portalMonthlyEnvKey]: monthlyPriceId,
+    [plan.portalAnnualEnvKey]: annualPriceId,
+  }
+}
+
+function isEntrypoint() {
+  const argvPath = process.argv[1]
+
+  if (!argvPath) {
+    return false
+  }
+
+  return pathToFileURL(path.resolve(argvPath)).href === import.meta.url
+}
 
 function loadEnvFile(filePath) {
   if (!existsSync(filePath)) {
@@ -408,8 +439,14 @@ async function main() {
       interval: "year",
     })
 
-    envOutput[plan.monthlyEnvKey] = monthlyPrice.id
-    envOutput[plan.annualEnvKey] = annualPrice.id
+    Object.assign(
+      envOutput,
+      buildPlanEnvOutput(plan, {
+        productId: product.id,
+        monthlyPriceId: monthlyPrice.id,
+        annualPriceId: annualPrice.id,
+      }),
+    )
   }
 
   for (const row of summary) {
@@ -440,7 +477,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Failed to ensure Stripe SaaS plans", error)
-  process.exit(1)
-})
+if (isEntrypoint()) {
+  main().catch((error) => {
+    console.error("Failed to ensure Stripe SaaS plans", error)
+    process.exit(1)
+  })
+}
+
+export { buildPlanEnvOutput }

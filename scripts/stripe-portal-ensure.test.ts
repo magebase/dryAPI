@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  buildTierProducts,
-  shouldEnableStripePortalEnsure,
-} from "./stripe-portal-ensure";
+import { buildTierProducts } from "./stripe-portal-ensure";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -48,35 +45,5 @@ describe("buildTierProducts", () => {
     expect(() => buildTierProducts(env)).toThrow(
       "Missing STRIPE_PORTAL_BASIC_PRODUCT_ID for Starter portal configuration.",
     );
-  });
-});
-
-describe("shouldEnableStripePortalEnsure", () => {
-  it("skips the portal ensure step when the Stripe private key is missing", () => {
-    expect(
-      shouldEnableStripePortalEnsure({
-        STRIPE_PORTAL_BASIC_PRODUCT_ID: "prod_basic",
-        STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID: "price_basic_monthly",
-      } as NodeJS.ProcessEnv),
-    ).toBe(false);
-  });
-
-  it("skips the portal ensure step when a plan is only partially configured", () => {
-    expect(
-      shouldEnableStripePortalEnsure({
-        STRIPE_PRIVATE_KEY: "sk_test_123",
-        STRIPE_PORTAL_BASIC_PRODUCT_ID: "prod_basic",
-      } as NodeJS.ProcessEnv),
-    ).toBe(false);
-  });
-
-  it("enables the portal ensure step when at least one plan is fully configured", () => {
-    expect(
-      shouldEnableStripePortalEnsure({
-        STRIPE_PRIVATE_KEY: "sk_test_123",
-        STRIPE_PORTAL_BASIC_PRODUCT_ID: "prod_basic",
-        STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID: "price_basic_monthly",
-      } as NodeJS.ProcessEnv),
-    ).toBe(true);
   });
 });

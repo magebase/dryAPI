@@ -110,15 +110,6 @@ jobs:
           STRIPE_PORTAL_BUSINESS_HEADLINE: ${{ secrets.STRIPE_PORTAL_BUSINESS_HEADLINE }}
           STRIPE_PORTAL_PRIVACY_POLICY_URL: ${{ secrets.STRIPE_PORTAL_PRIVACY_POLICY_URL }}
           STRIPE_PORTAL_TERMS_URL: ${{ secrets.STRIPE_PORTAL_TERMS_URL }}
-          STRIPE_PORTAL_BASIC_PRODUCT_ID: ${{ secrets.STRIPE_PORTAL_BASIC_PRODUCT_ID }}
-          STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID }}
-          STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID }}
-          STRIPE_PORTAL_GROWTH_PRODUCT_ID: ${{ secrets.STRIPE_PORTAL_GROWTH_PRODUCT_ID }}
-          STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID }}
-          STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID }}
-          STRIPE_PORTAL_PRO_PRODUCT_ID: ${{ secrets.STRIPE_PORTAL_PRO_PRODUCT_ID }}
-          STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID }}
-          STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID }}
         run: |
           set -euo pipefail
 
@@ -170,17 +161,11 @@ jobs:
             printf 'SYNC_SECRET_SITE_URL=%q\n' "${SITE_URL}" >> "${sync_env_file}"
           fi
 
-          portal_enabled="false"
-          if [[ "$(pnpm exec tsx scripts/stripe-portal-config-status.ts)" == "true" ]]; then
-            portal_enabled="true"
-          fi
-
           sync_enabled="false"
           if [[ -s "${sync_env_file}" ]]; then
             sync_enabled="true"
           fi
 
-          echo "portal_enabled=${portal_enabled}" >> "${GITHUB_OUTPUT}"
           echo "sync_enabled=${sync_enabled}" >> "${GITHUB_OUTPUT}"
           echo "portal_env_file=${portal_env_file}" >> "${GITHUB_OUTPUT}"
           echo "sync_env_file=${sync_env_file}" >> "${GITHUB_OUTPUT}"
@@ -234,8 +219,23 @@ jobs:
 
           printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
+      - name: Ensure Stripe SaaS products and prices
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${SYNC_SECRET_STRIPE_PRIVATE_KEY:-}" ]]; then
+            echo "SYNC_SECRET_STRIPE_PRIVATE_KEY is required before upserting Stripe SaaS products and prices."
+            exit 1
+          fi
+
+          export STRIPE_PRIVATE_KEY="${SYNC_SECRET_STRIPE_PRIVATE_KEY}"
+
+          plans_env_file="${RUNNER_TEMP}/stripe-saas-plans.env"
+          pnpm exec tsx scripts/stripe-saas-plans-ensure.ts --write-env "${plans_env_file}"
+
+          cat "${plans_env_file}" >> "$GITHUB_ENV"
+
       - name: Ensure Stripe billing portal configuration
-        if: ${{ steps.stripe_portal.outputs.portal_enabled == 'true' }}
         run: |
           set -euo pipefail
 
@@ -245,10 +245,6 @@ jobs:
           set +a
 
           pnpm stripe:portal:ensure
-
-      - name: Skip Stripe billing portal configuration
-        if: ${{ steps.stripe_portal.outputs.portal_enabled != 'true' }}
-        run: echo "Skipping Stripe portal ensure (missing or incomplete Stripe portal secrets)."
 
       - name: Apply D1 migrations (remote)
         run: pnpm db:migrate:remote
