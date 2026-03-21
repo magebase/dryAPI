@@ -117,6 +117,11 @@ while read -r secret_name _rest; do
   secret_count=$((secret_count + 1))
 done < <(gh secret list --repo "$REPO")
 
+if (( secret_count > MAX_REPO_SECRETS )); then
+  echo "Repository secret count (${secret_count}) exceeds hard limit (${MAX_REPO_SECRETS}). Delete secrets before syncing." >&2
+  exit 1
+fi
+
 while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
   line="${raw_line%$'\r'}"
   trimmed="${line#"${line%%[![:space:]]*}"}"
@@ -159,72 +164,9 @@ while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
     continue
   fi
 
-  is_existing_secret=0
-  if [[ -n "${existing_secret_keys[$key]+x}" ]]; then
-    is_existing_secret=1
-  fi
-
-  if (( is_existing_secret == 0 && secret_count >= MAX_REPO_SECRETS )); then
-    skipped_limit=$((skipped_limit + 1))
-    echo "Skipping $key: repository secret limit ($MAX_REPO_SECRETS) reached"
-    continue
-  fi
-
-  if (( is_existing_secret == 0 )); then
-    # Reserve capacity before dispatch so we do not queue more than the repo limit.
-    existing_secret_keys["$key"]=1
-    secret_count=$((secret_count + 1))
-  fi
-
   sync_keys+=("$key")
   sync_values+=("$value")
 done < "$ENV_FILE"
-
-if (( ${#sync_keys[@]} > 0 )); then
-  declare -a sync_pids=()
-  declare -a sync_result_files=()
-  active_sync_jobs=0
-
-  for i in "${!sync_keys[@]}"; do
-    while (( active_sync_jobs >= MAX_PARALLEL_REQUESTS )); do
-      wait -n || true
-      active_sync_jobs=$((active_sync_jobs - 1))
-    done
-
-    result_file="$(mktemp)"
-    run_set_secret_job "$REPO" "${sync_keys[$i]}" "${sync_values[$i]}" "$result_file" &
-    sync_pids+=("$!")
-    sync_result_files+=("$result_file")
-    active_sync_jobs=$((active_sync_jobs + 1))
-  done
-
-  for pid in "${sync_pids[@]}"; do
-    wait "$pid" || true
-  done
-
-  for result_file in "${sync_result_files[@]}"; do
-    IFS=$'\t' read -r result_status result_key result_message <"$result_file" || true
-    rm -f "$result_file"
-
-    if [[ "$result_status" == "ok" ]]; then
-      echo "Synced $result_key"
-      synced=$((synced + 1))
-      continue
-    fi
-
-    failed=$((failed + 1))
-    if [[ -n "$result_message" ]]; then
-      echo "Failed to sync $result_key: $result_message"
-    else
-      echo "Failed to sync $result_key"
-    fi
-  done
-fi
-
-if (( failed > 0 && STRICT_MODE != 0 )); then
-  echo "GitHub secret sync aborted after failure (strict mode enabled)."
-  exit 1
-fi
 
 if (( PRUNE_MODE != 0 )); then
   for existing_key in "${!existing_secret_keys[@]}"; do
@@ -264,6 +206,10 @@ if (( PRUNE_MODE != 0 )); then
       if [[ "$result_status" == "ok" ]]; then
         echo "Deleted $result_key (missing from $ENV_FILE)"
         deleted=$((deleted + 1))
+        unset "existing_secret_keys[$result_key]"
+        if (( secret_count > 0 )); then
+          secret_count=$((secret_count - 1))
+        fi
         continue
       fi
 
@@ -280,6 +226,78 @@ if (( PRUNE_MODE != 0 )); then
     echo "GitHub secret prune aborted after failure (strict mode enabled)."
     exit 1
   fi
+fi
+
+declare -a sync_dispatch_keys=()
+declare -a sync_dispatch_values=()
+
+for i in "${!sync_keys[@]}"; do
+  key="${sync_keys[$i]}"
+  value="${sync_values[$i]}"
+
+  is_existing_secret=0
+  if [[ -n "${existing_secret_keys[$key]+x}" ]]; then
+    is_existing_secret=1
+  fi
+
+  if (( is_existing_secret == 0 && secret_count >= MAX_REPO_SECRETS )); then
+    echo "Repository secret limit (${MAX_REPO_SECRETS}) reached before syncing ${key}. Remove stale secrets and retry." >&2
+    exit 1
+  fi
+
+  if (( is_existing_secret == 0 )); then
+    existing_secret_keys["$key"]=1
+    secret_count=$((secret_count + 1))
+  fi
+
+  sync_dispatch_keys+=("$key")
+  sync_dispatch_values+=("$value")
+done
+
+if (( ${#sync_dispatch_keys[@]} > 0 )); then
+  declare -a sync_pids=()
+  declare -a sync_result_files=()
+  active_sync_jobs=0
+
+  for i in "${!sync_dispatch_keys[@]}"; do
+    while (( active_sync_jobs >= MAX_PARALLEL_REQUESTS )); do
+      wait -n || true
+      active_sync_jobs=$((active_sync_jobs - 1))
+    done
+
+    result_file="$(mktemp)"
+    run_set_secret_job "$REPO" "${sync_dispatch_keys[$i]}" "${sync_dispatch_values[$i]}" "$result_file" &
+    sync_pids+=("$!")
+    sync_result_files+=("$result_file")
+    active_sync_jobs=$((active_sync_jobs + 1))
+  done
+
+  for pid in "${sync_pids[@]}"; do
+    wait "$pid" || true
+  done
+
+  for result_file in "${sync_result_files[@]}"; do
+    IFS=$'\t' read -r result_status result_key result_message <"$result_file" || true
+    rm -f "$result_file"
+
+    if [[ "$result_status" == "ok" ]]; then
+      echo "Synced $result_key"
+      synced=$((synced + 1))
+      continue
+    fi
+
+    failed=$((failed + 1))
+    if [[ -n "$result_message" ]]; then
+      echo "Failed to sync $result_key: $result_message"
+    else
+      echo "Failed to sync $result_key"
+    fi
+  done
+fi
+
+if (( failed > 0 && STRICT_MODE != 0 )); then
+  echo "GitHub secret sync aborted after failure (strict mode enabled)."
+  exit 1
 fi
 
 echo "GitHub secret sync complete for $REPO (synced=$synced skipped_empty=$skipped skipped_limit=$skipped_limit invalid=$invalid failed=$failed deleted=$deleted delete_failed=$delete_failed strict_mode=$STRICT_MODE prune_mode=$PRUNE_MODE)."
