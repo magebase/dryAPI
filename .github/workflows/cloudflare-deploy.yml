@@ -234,19 +234,6 @@ jobs:
 
           printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
-      - name: Sync GitHub secrets to Cloudflare Worker secrets
-        run: |
-          set -euo pipefail
-
-          if [[ "${{ steps.stripe_portal.outputs.sync_enabled }}" == "true" ]]; then
-            set -a
-            # shellcheck source=/dev/null
-            source "${{ steps.stripe_portal.outputs.sync_env_file }}"
-            set +a
-          fi
-
-          bash ./scripts/sync-github-secrets.sh
-
       - name: Ensure Stripe billing portal configuration
         if: ${{ steps.stripe_portal.outputs.portal_enabled == 'true' }}
         run: |
@@ -297,6 +284,19 @@ jobs:
             echo "Cloudflare deploy attempt ${attempt}/${max_attempts} failed; retrying in ${sleep_seconds}s..."
             sleep "${sleep_seconds}"
           done
+
+      - name: Sync GitHub secrets to Cloudflare Worker secrets
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ steps.stripe_portal.outputs.sync_enabled }}" == "true" ]]; then
+            set -a
+            # shellcheck source=/dev/null
+            source "${{ steps.stripe_portal.outputs.sync_env_file }}"
+            set +a
+          fi
+
+          bash ./scripts/sync-github-secrets.sh
 
   deploy-hub:
     runs-on: ubuntu-latest
@@ -463,10 +463,6 @@ jobs:
 
           printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
-      - name: Sync GitHub secrets to Cloudflare API worker secrets
-        working-directory: cloudflare/api
-        run: bash ../../scripts/sync-github-secrets.sh
-
       - name: Ensure API runpod batch queue exists
         working-directory: cloudflare/api
         run: |
@@ -541,6 +537,10 @@ jobs:
             echo "API deploy attempt ${attempt}/${max_attempts} failed; retrying in ${sleep_seconds}s..."
             sleep "${sleep_seconds}"
           done
+
+      - name: Sync GitHub secrets to Cloudflare API worker secrets
+        working-directory: cloudflare/api
+        run: bash ../../scripts/sync-github-secrets.sh
 
   test-hub:
     runs-on: ubuntu-latest
