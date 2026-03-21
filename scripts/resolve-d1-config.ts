@@ -12,11 +12,13 @@ function main() {
   }
 
   const configPath = path.resolve(process.cwd(), configPathArg)
+  const commandCwd = process.cwd()
+
   const listOutput = execFileSync(
     "pnpm",
-    ["exec", "wrangler", "d1", "list", "--json"],
+    ["exec", "wrangler", "d1", "list", "--json", "--config", configPath],
     {
-      cwd: path.dirname(configPath),
+      cwd: commandCwd,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -46,9 +48,9 @@ function main() {
   for (const databaseName of missingDatabaseNames) {
     execFileSync(
       "pnpm",
-      ["exec", "wrangler", "d1", "create", databaseName],
+      ["exec", "wrangler", "d1", "create", databaseName, "--config", configPath],
       {
-        cwd: path.dirname(configPath),
+        cwd: commandCwd,
         encoding: "utf8",
         stdio: "inherit",
       },
@@ -58,9 +60,9 @@ function main() {
   if (missingDatabaseNames.length > 0) {
     const refreshedOutput = execFileSync(
       "pnpm",
-      ["exec", "wrangler", "d1", "list", "--json"],
+      ["exec", "wrangler", "d1", "list", "--json", "--config", configPath],
       {
-        cwd: path.dirname(configPath),
+        cwd: commandCwd,
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       },
