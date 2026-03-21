@@ -32,7 +32,10 @@ import { StripeCustomerPortalButton } from "@/components/site/dashboard/billing/
 import { SaasPlanCards } from "@/components/site/dashboard/billing/saas-plan-cards";
 import { BillingTopUpControls } from "@/components/site/dashboard/billing/billing-top-up-controls";
 import { resolveActiveBrand } from "@/lib/brand-catalog";
-import { resolveStripeCustomerLookup } from "@/lib/dashboard-billing";
+import {
+  resolveStripeCustomerLookup,
+  shouldRenderStripeBillingSummaryErrors,
+} from "@/lib/dashboard-billing";
 import {
   BILLING_SAFEGUARDS,
   getStoredAutoTopUpSettings,
@@ -1024,7 +1027,10 @@ export default async function DashboardBillingPage({
               </div>
             )}
 
-            {stripeSummary.errors.length > 0 ? (
+            {shouldRenderStripeBillingSummaryErrors({
+              customerId: stripeSummary.customerId,
+              errors: stripeSummary.errors,
+            }) ? (
               <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-800 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-200">
                 {stripeSummary.errors.join(" ")}
               </div>

@@ -10,6 +10,13 @@ type StripeCustomerLookupResult = {
   errors: string[]
 }
 
+export function shouldRenderStripeBillingSummaryErrors(input: {
+  customerId: string | null
+  errors: readonly string[]
+}): boolean {
+  return input.customerId !== null && input.errors.length > 0
+}
+
 function readPath(payload: unknown, path: readonly string[]): unknown {
   let current: unknown = payload
 

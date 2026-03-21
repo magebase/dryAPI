@@ -6,6 +6,7 @@ import {
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
   resolveStripeCustomerLookup,
+  shouldRenderStripeBillingSummaryErrors,
 } from "@/lib/dashboard-billing"
 
 function makeRequest(headers: Record<string, string> = {}) {
@@ -358,6 +359,35 @@ describe("dashboard-billing", () => {
         customerId: "cus_found",
         errors: [],
       })
+    })
+
+    it("hides the summary error box when there is no Stripe customer", () => {
+      expect(
+        shouldRenderStripeBillingSummaryErrors({
+          customerId: null,
+          errors: [
+            "No Stripe customer was found for this account. Add STRIPE_METER_BILLING_CUSTOMER_ID or create a customer with the signed-in email.",
+          ],
+        }),
+      ).toBe(false)
+    })
+
+    it("shows the summary error box when a Stripe customer exists", () => {
+      expect(
+        shouldRenderStripeBillingSummaryErrors({
+          customerId: "cus_found",
+          errors: ["Unable to load Stripe invoices."],
+        }),
+      ).toBe(true)
+    })
+
+    it("hides the summary error box when there are no errors", () => {
+      expect(
+        shouldRenderStripeBillingSummaryErrors({
+          customerId: "cus_found",
+          errors: [],
+        }),
+      ).toBe(false)
     })
   })
 
