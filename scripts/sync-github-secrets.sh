@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "${script_dir}/.." && pwd)"
+pnpm_root_exec=(pnpm --dir "${repo_root}" exec)
+
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
   echo "CLOUDFLARE_API_TOKEN is required."
   exit 1
@@ -137,7 +141,7 @@ sync_worker_secrets_bulk() {
 
   while :; do
     local output
-    if output=$(pnpm wrangler versions secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" --env="" 2>&1); then
+    if output=$("${pnpm_root_exec[@]}" wrangler versions secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" --env="" 2>&1); then
       return 0
     fi
 
