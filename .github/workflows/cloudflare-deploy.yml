@@ -467,6 +467,16 @@ jobs:
         working-directory: cloudflare/api
         run: bash ../../scripts/sync-github-secrets.sh
 
+      - name: Ensure API runpod batch queue exists
+        working-directory: cloudflare/api
+        run: |
+          set -euo pipefail
+
+          queue_name="dryapi-runpod-batch"
+          if ! "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" queues info "${queue_name}" --config wrangler.toml >/dev/null 2>&1; then
+            "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" queues create "${queue_name}" --config wrangler.toml
+          fi
+
       - name: Deploy API worker to Cloudflare Workers
         working-directory: cloudflare/api
         run: |
