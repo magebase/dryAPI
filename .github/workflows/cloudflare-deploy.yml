@@ -367,8 +367,6 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      TINA_ALLOWED_GOOGLE_EMAILS: ${{ secrets.TINA_ALLOWED_GOOGLE_EMAILS }}
-      TINA_ALLOWED_GOOGLE_DOMAINS: ${{ secrets.TINA_ALLOWED_GOOGLE_DOMAINS }}
 
     steps:
       - name: Checkout
@@ -419,41 +417,6 @@ jobs:
             process.stdout.write(`SYNC_SECRET_${key}<<__SYNC_SECRET_EOF__\n${value}\n__SYNC_SECRET_EOF__\n`);
           }
           NODE
-
-      - name: Provision Cloudflare Zero Trust for Tina
-        run: |
-          set -euo pipefail
-
-          if [[ -z "${TINA_ALLOWED_GOOGLE_EMAILS:-}" && -z "${TINA_ALLOWED_GOOGLE_DOMAINS:-}" ]]; then
-            echo "Skipping Zero Trust provisioning (no TINA_ALLOWED_GOOGLE_EMAILS or TINA_ALLOWED_GOOGLE_DOMAINS configured)."
-            exit 0
-          fi
-
-          provision_args=(
-            --brand-key dryapi
-            --cal-host cal.dryapi.dev
-          )
-
-          if [[ -n "${TINA_ALLOWED_GOOGLE_EMAILS:-}" ]]; then
-            provision_args+=(--allow-emails "${TINA_ALLOWED_GOOGLE_EMAILS}")
-          fi
-
-          if [[ -n "${TINA_ALLOWED_GOOGLE_DOMAINS:-}" ]]; then
-            provision_args+=(--allow-domains "${TINA_ALLOWED_GOOGLE_DOMAINS}")
-          fi
-
-          provision_output="$(pnpm cf:access:admin:provision -- "${provision_args[@]}")"
-          printf '%s\n' "${provision_output}"
-
-          while IFS='=' read -r key value; do
-            case "${key}" in
-              CLOUDFLARE_ACCESS_TEAM_DOMAIN|CLOUDFLARE_ACCESS_AUD)
-                printf 'SYNC_SECRET_%s=%s\n' "${key}" "${value}" >> "$GITHUB_ENV"
-                ;;
-            esac
-          done < <(
-            printf '%s\n' "${provision_output}" | grep -E '^(CLOUDFLARE_ACCESS_TEAM_DOMAIN|CLOUDFLARE_ACCESS_AUD)='
-          )
 
       - name: Resolve internal auth secret
         run: |
