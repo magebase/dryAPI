@@ -1,7 +1,5 @@
 import { execSync } from "child_process";
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
-
 const ENV_FILE = ".env.local";
 const PULUMI_DIR = "cloudflare/clients/stripe/pulumi";
 
@@ -51,9 +49,18 @@ async function main() {
     // We export them from index.ts as productIds and priceIds
     const updates: Record<string, string> = {
         STRIPE_PORTAL_CONFIGURATION_ID: data.portalConfigId,
+        STRIPE_PORTAL_BASIC_PRODUCT_ID: data.productIds[0],
         STRIPE_SAAS_PRICE_STARTER: data.priceIds[0],
+        STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID: data.priceIds[0],
+        STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID: data.priceIds[1],
+        STRIPE_PORTAL_GROWTH_PRODUCT_ID: data.productIds[1],
         STRIPE_SAAS_ANNUAL_PRICE_STARTER: data.priceIds[1],
+        STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID: data.priceIds[2],
+        STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID: data.priceIds[3],
+        STRIPE_PORTAL_PRO_PRODUCT_ID: data.productIds[2],
         STRIPE_SAAS_PRICE_GROWTH: data.priceIds[2],
+        STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID: data.priceIds[4],
+        STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID: data.priceIds[5],
         STRIPE_SAAS_ANNUAL_PRICE_GROWTH: data.priceIds[3],
         STRIPE_SAAS_PRICE_SCALE: data.priceIds[4],
         STRIPE_SAAS_ANNUAL_PRICE_SCALE: data.priceIds[5],

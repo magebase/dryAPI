@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// @ts-nocheck
 
-import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const STRIPE_API_BASE = "https://api.stripe.com";
 const DEFAULT_SITE_URL = "https://dryapi.dev";
@@ -10,20 +10,23 @@ const PLAN_SPECS = [
   {
     key: "starter",
     label: "Starter",
-    priceEnv: "STRIPE_SAAS_PRICE_STARTER",
-    annualPriceEnv: "STRIPE_SAAS_ANNUAL_PRICE_STARTER",
+    productEnv: "STRIPE_PORTAL_BASIC_PRODUCT_ID",
+    monthlyPriceEnv: "STRIPE_PORTAL_BASIC_MONTHLY_PRICE_ID",
+    annualPriceEnv: "STRIPE_PORTAL_BASIC_ANNUAL_PRICE_ID",
   },
   {
     key: "growth",
     label: "Growth",
-    priceEnv: "STRIPE_SAAS_PRICE_GROWTH",
-    annualPriceEnv: "STRIPE_SAAS_ANNUAL_PRICE_GROWTH",
+    productEnv: "STRIPE_PORTAL_GROWTH_PRODUCT_ID",
+    monthlyPriceEnv: "STRIPE_PORTAL_GROWTH_MONTHLY_PRICE_ID",
+    annualPriceEnv: "STRIPE_PORTAL_GROWTH_ANNUAL_PRICE_ID",
   },
   {
     key: "scale",
     label: "Scale",
-    priceEnv: "STRIPE_SAAS_PRICE_SCALE",
-    annualPriceEnv: "STRIPE_SAAS_ANNUAL_PRICE_SCALE",
+    productEnv: "STRIPE_PORTAL_PRO_PRODUCT_ID",
+    monthlyPriceEnv: "STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID",
+    annualPriceEnv: "STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID",
   },
 ];
 
@@ -95,27 +98,50 @@ async function stripeRequest(apiKey, path, { method = "GET", body } = {}) {
   return responseText ? JSON.parse(responseText) : {};
 }
 
-function buildTierProducts() {
+function isEntrypoint() {
+  const argvPath = process.argv[1];
+  if (!argvPath) {
+    return false;
+  }
+
+  return pathToFileURL(path.resolve(argvPath)).href === import.meta.url;
+}
+
+function buildTierProducts(env = process.env) {
   const products = [];
 
   for (const plan of PLAN_SPECS) {
+    const product = clean(env[plan.productEnv]);
     const prices = [
-      clean(process.env[plan.priceEnv]),
-      clean(process.env[plan.annualPriceEnv]),
+      clean(env[plan.monthlyPriceEnv]),
+      clean(env[plan.annualPriceEnv]),
     ].filter(Boolean);
 
-    if (prices.length === 0) {
+    if (!product && prices.length === 0) {
       continue;
     }
 
+    if (!product) {
+      throw new Error(
+        `Missing ${plan.productEnv} for ${plan.label} portal configuration.`,
+      );
+    }
+
+    if (prices.length === 0) {
+      throw new Error(
+        `Missing ${plan.monthlyPriceEnv} and ${plan.annualPriceEnv} for ${plan.label} portal configuration.`,
+      );
+    }
+
     products.push({
+      product,
       prices,
     });
   }
 
   if (products.length === 0) {
     throw new Error(
-      "No tier prices configured. Set at least one of STRIPE_SAAS_PRICE_* or STRIPE_SAAS_ANNUAL_PRICE_* env values.",
+      "No Stripe portal products configured. Set STRIPE_PORTAL_*_PRODUCT_ID plus at least one STRIPE_PORTAL_*_MONTHLY_PRICE_ID or STRIPE_PORTAL_*_ANNUAL_PRICE_ID env value.",
     );
   }
 
@@ -217,7 +243,7 @@ async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const apiKey = clean(process.env.STRIPE_PRIVATE_KEY);
 
-  const products = buildTierProducts();
+  const products = buildTierProducts(process.env);
 
   const payload = buildPortalPayload(products);
 
@@ -256,7 +282,11 @@ async function main() {
   console.log(`Set STRIPE_PORTAL_CONFIGURATION_ID=${result.id}`);
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+if (isEntrypoint()) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}
+
+export { buildPortalPayload, buildTierProducts };

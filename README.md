@@ -425,7 +425,7 @@ API endpoint:
 
 Request body supports either `amount` (major units, e.g. `150.00`) or `amountCents` (minor units), plus optional `calcomBookingUrl`, `successUrl`, `cancelUrl`, `customerEmail`, `description`, and `metadata`.
 
-Tier product/price IDs are optional when `STRIPE_PRIVATE_KEY` is set and your Stripe catalog contains recognizable Basic/Growth/Pro recurring prices (or `plan_tier` metadata), because the portal script can auto-discover them.
+Tier product/price IDs must be set before running `pnpm stripe:portal:ensure`. Populate them with `pnpm stripe:portal:init-local`, then fill in the Stripe product and price IDs from your catalog.
 
 To create or update a portal configuration in Stripe:
 
