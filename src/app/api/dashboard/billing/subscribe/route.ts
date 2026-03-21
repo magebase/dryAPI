@@ -234,8 +234,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const annualPriceId = resolveSaasPlanStripeAnnualPriceId(plan);
+
   if (billingPeriod === "annual") {
-    const annualPriceId = resolveSaasPlanStripeAnnualPriceId(plan);
     if (!annualPriceId) {
       return NextResponse.json(
         {
@@ -248,9 +249,7 @@ export async function GET(request: NextRequest) {
   }
 
   const selectedPriceId =
-    billingPeriod === "annual"
-      ? resolveSaasPlanStripeAnnualPriceId(plan)
-      : monthlyPriceId;
+    billingPeriod === "annual" ? annualPriceId! : monthlyPriceId;
 
   const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim() || "";
   const stripePortalConfigurationId =
