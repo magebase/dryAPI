@@ -134,6 +134,11 @@ sync_worker_secrets_bulk() {
   local target_worker_name="$1"
   local target_worker_config="$2"
   local bulk_payload_file="$3"
+  local resolved_worker_config="${target_worker_config}"
+
+  if [[ "${resolved_worker_config}" != /* ]]; then
+    resolved_worker_config="$(cd -- "$(dirname -- "${resolved_worker_config}")" && pwd)/$(basename -- "${resolved_worker_config}")"
+  fi
 
   local attempt=1
   local backoff_seconds=2
@@ -141,7 +146,7 @@ sync_worker_secrets_bulk() {
 
   while :; do
     local output
-    if output=$("${pnpm_root_exec[@]}" wrangler versions secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${target_worker_config}" --env="" 2>&1); then
+    if output=$("${pnpm_root_exec[@]}" wrangler versions secret bulk "${bulk_payload_file}" --name "${target_worker_name}" --config "${resolved_worker_config}" --env="" 2>&1); then
       return 0
     fi
 
