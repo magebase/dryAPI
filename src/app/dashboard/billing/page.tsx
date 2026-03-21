@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StripeCustomerPortalButton } from "@/components/site/dashboard/billing/stripe-customer-portal-button";
 import { SaasPlanCards } from "@/components/site/dashboard/billing/saas-plan-cards";
 import { BillingTopUpControls } from "@/components/site/dashboard/billing/billing-top-up-controls";
 import { resolveActiveBrand } from "@/lib/brand-catalog";
@@ -852,11 +853,10 @@ export default async function DashboardBillingPage({
             place.
           </CardDescription>
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Button asChild size="sm">
-              <Link href="/api/dashboard/billing/portal" prefetch={false}>
-                Open Stripe Customer Portal
-              </Link>
-            </Button>
+            <StripeCustomerPortalButton
+              customerId={stripeSummary.customerId}
+              label="Open Stripe Customer Portal"
+            />
             <Button asChild size="sm" variant="outline">
               <Link href="/plans">View Plans</Link>
             </Button>
@@ -1030,11 +1030,11 @@ export default async function DashboardBillingPage({
             ) : null}
 
             <div className="pt-1">
-              <Button asChild size="sm" variant="outline">
-                <Link href="/api/dashboard/billing/portal" prefetch={false}>
-                  Manage In Stripe Customer Portal
-                </Link>
-              </Button>
+              <StripeCustomerPortalButton
+                customerId={stripeSummary.customerId}
+                label="Manage In Stripe Customer Portal"
+                variant="outline"
+              />
             </div>
           </CardContent>
         </Card>
