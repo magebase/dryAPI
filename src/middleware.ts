@@ -22,13 +22,14 @@ import {
   resolvePerfSlowThresholdMs,
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
+import { buildSessionCheckCookieHeader } from "@/lib/session-check-cookies"
 
 const SUCCESS_PATH = "/success"
 const CRM_HOSTNAMES = new Set(["crm.dryapi.dev", "www.crm.dryapi.dev"])
 const DASHBOARD_PREFIX = "/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
-const SESSION_CHECK_CACHE_TTL_MS = 5_000
+const SESSION_CHECK_CACHE_TTL_MS = 60_000
 const SESSION_CHECK_TIMEOUT_MS = 2_500
 const SESSION_CHECK_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_SESSION_CHECK_SLOW_MS", 150)
 
@@ -210,6 +211,18 @@ async function isDashboardUserAuthenticated(
     const sessionUrl = request.nextUrl.clone()
     sessionUrl.pathname = "/api/auth/get-session"
     sessionUrl.search = ""
+    const sessionCookieHeader = buildSessionCheckCookieHeader((cookieName) =>
+      request.cookies.get(cookieName)?.value,
+    )
+
+    if (!sessionCookieHeader) {
+      logServerAuthEvent("error", "middleware.dashboard.session-check.cookies-missing", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+      })
+      writeCachedSessionAuth(sessionToken, false)
+      return false
+    }
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS)
@@ -225,7 +238,7 @@ async function isDashboardUserAuthenticated(
       method: "GET",
       headers: {
         accept: "application/json",
-        cookie: request.headers.get("cookie") || "",
+        cookie: sessionCookieHeader,
       },
       cache: "no-store",
       signal: controller.signal,

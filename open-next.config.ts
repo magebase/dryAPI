@@ -13,7 +13,8 @@ export default defineCloudflareConfig({
   }),
   queue: queueCache(doQueue, {
     regionalCacheTtlSec: 5,
-    waitForQueueAck: true,
+    // Do not block responses on cache queue acknowledgements.
+    waitForQueueAck: false,
   }),
   tagCache: doShardedTagCache({
     baseShardSize: 12,
