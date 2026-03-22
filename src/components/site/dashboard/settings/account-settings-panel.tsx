@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session";
 import {
   signOutCurrentSession,
   signOutOtherSessions,
@@ -68,10 +69,9 @@ export function AccountSettingsPanel() {
 
     async function loadSession() {
       try {
-        const [sessionResponse, sessionsResponse] = await Promise.all([
-          fetch("/api/auth/get-session", {
-            cache: "no-store",
-            credentials: "include",
+        const [sessionSnapshot, sessionsResponse] = await Promise.all([
+          getClientAuthSessionSnapshot({
+            forceRefresh: reloadToken > 0,
           }),
           fetch("/api/auth/list-sessions", {
             cache: "no-store",
@@ -79,21 +79,18 @@ export function AccountSettingsPanel() {
           }),
         ]);
 
-        if (!sessionResponse.ok || !sessionsResponse.ok) {
+        if (!sessionsResponse.ok) {
           throw new Error(
-            `Failed to load session (${sessionResponse.status}/${sessionsResponse.status})`,
+            `Failed to load session (${sessionsResponse.status})`,
           );
         }
 
-        const payload = (await sessionResponse.json().catch(() => null)) as {
-          user?: SessionUser | null;
-        } | null;
         const sessionsPayload = (await sessionsResponse
           .json()
           .catch(() => null)) as SessionRecord[] | null;
 
         if (active) {
-          setUser(payload?.user ?? null);
+          setUser((sessionSnapshot.user as SessionUser | null) ?? null);
           setActiveSessions(
             Array.isArray(sessionsPayload) ? sessionsPayload : [],
           );

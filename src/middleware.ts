@@ -226,6 +226,25 @@ async function isDashboardUserAuthenticated(
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS)
+    const sessionHeaders = new Headers({
+      accept: "application/json",
+      cookie: sessionCookieHeader,
+    })
+    const forwardedFor = request.headers.get("x-forwarded-for")?.trim()
+    const connectingIp = request.headers.get("cf-connecting-ip")?.trim()
+    const realIp = request.headers.get("x-real-ip")?.trim()
+
+    if (forwardedFor) {
+      sessionHeaders.set("x-forwarded-for", forwardedFor)
+    }
+
+    if (connectingIp) {
+      sessionHeaders.set("cf-connecting-ip", connectingIp)
+    }
+
+    if (realIp) {
+      sessionHeaders.set("x-real-ip", realIp)
+    }
 
     logServerAuthEvent("log", "middleware.dashboard.session-check.start", {
       traceId,
@@ -236,10 +255,7 @@ async function isDashboardUserAuthenticated(
 
     const response = await fetch(sessionUrl.toString(), {
       method: "GET",
-      headers: {
-        accept: "application/json",
-        cookie: sessionCookieHeader,
-      },
+      headers: sessionHeaders,
       cache: "no-store",
       signal: controller.signal,
     }).finally(() => {
@@ -469,16 +485,23 @@ export async function middleware(request: NextRequest) {
       return createDashboardLoginRedirect(request, traceId)
     }
 
-    const authenticated = await isDashboardUserAuthenticated(request, traceId, sessionToken)
+    if (isPrefetchRequest(request) || isRscRequest(request)) {
+      logServerAuthEvent("log", "middleware.dashboard.session-check.skip-internal", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+      })
+    } else {
+      const authenticated = await isDashboardUserAuthenticated(request, traceId, sessionToken)
 
-    logServerAuthEvent("log", "middleware.dashboard.decision", {
-      traceId,
-      pathname: request.nextUrl.pathname,
-      authenticated,
-    })
+      logServerAuthEvent("log", "middleware.dashboard.decision", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+        authenticated,
+      })
 
-    if (!authenticated) {
-      return createDashboardLoginRedirect(request, traceId)
+      if (!authenticated) {
+        return createDashboardLoginRedirect(request, traceId)
+      }
     }
   }
 

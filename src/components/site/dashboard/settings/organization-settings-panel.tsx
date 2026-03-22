@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 
 type SessionPayload = {
   user?: {
@@ -331,10 +332,9 @@ export function OrganizationSettingsPanel() {
 
     async function loadOrganizations() {
       try {
-        const [sessionResponse, orgResponse] = await Promise.all([
-          fetch("/api/auth/get-session", {
-            cache: "no-store",
-            credentials: "include",
+        const [sessionSnapshot, orgResponse] = await Promise.all([
+          getClientAuthSessionSnapshot({
+            forceRefresh: reloadToken > 0,
           }),
           fetch("/api/auth/organization/list", {
             cache: "no-store",
@@ -342,11 +342,10 @@ export function OrganizationSettingsPanel() {
           }),
         ])
 
-        if (!sessionResponse.ok || !orgResponse.ok) {
+        if (!orgResponse.ok) {
           throw new Error("Failed to load organization data")
         }
 
-        const sessionPayload = (await sessionResponse.json().catch(() => null)) as SessionPayload | null
         const organizationsPayload = (await orgResponse.json().catch(() => null)) as OrganizationsResponse | null
 
         if (!active) {
@@ -354,10 +353,12 @@ export function OrganizationSettingsPanel() {
         }
 
         const nextOrganizations = Array.isArray(organizationsPayload) ? organizationsPayload : []
-        const nextActiveOrganizationId = sessionPayload?.session?.activeOrganizationId ?? null
+        const sessionUser = (sessionSnapshot.user as SessionPayload["user"] | null) ?? null
+        const sessionRecord = (sessionSnapshot.session as SessionPayload["session"] | null) ?? null
+        const nextActiveOrganizationId = sessionRecord?.activeOrganizationId ?? null
 
         setOrganizations(nextOrganizations)
-        setCurrentUserId(sessionPayload?.user?.id ?? null)
+        setCurrentUserId(sessionUser?.id ?? null)
         setActiveOrganizationId(nextActiveOrganizationId)
 
         if (nextActiveOrganizationId) {

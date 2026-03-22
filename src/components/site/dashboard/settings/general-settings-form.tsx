@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session";
 import {
   Select,
   SelectContent,
@@ -38,29 +39,23 @@ function toUsername(name: string): string {
 }
 
 async function loadGeneralSettings(): Promise<DashboardGeneralSettingsFormValues> {
-  const [sessionResponse, settingsResponse] = await Promise.all([
-    fetch("/api/auth/get-session", {
-      cache: "no-store",
-      credentials: "include",
-    }),
+  const [sessionSnapshot, settingsResponse] = await Promise.all([
+    getClientAuthSessionSnapshot(),
     fetch("/api/dashboard/settings", {
       cache: "no-store",
       credentials: "include",
     }),
   ]);
 
-  if (!sessionResponse.ok || !settingsResponse.ok) {
+  if (!settingsResponse.ok) {
     throw new Error("Unable to load general settings.");
   }
 
-  const sessionPayload = (await sessionResponse.json().catch(() => null)) as {
-    user?: SessionUser | null;
-  } | null;
   const settingsPayload = (await settingsResponse.json().catch(() => null)) as {
     data?: { general?: Partial<DashboardGeneralSettingsFormValues> };
   } | null;
 
-  const user = sessionPayload?.user;
+  const user = (sessionSnapshot.user as SessionUser | null) ?? null;
   const generalSettings = settingsPayload?.data?.general ?? {};
   const base = { ...DASHBOARD_SETTINGS_DEFAULTS.general, ...generalSettings };
   const candidateFullName = user?.name?.trim() || "";

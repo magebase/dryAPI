@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 import { cn } from "@/lib/utils"
 
 type TwoFactorSessionPayload = {
@@ -87,16 +88,12 @@ export function TwoFactorSettingsCard() {
 
     async function loadSession() {
       try {
-        const response = await fetch("/api/auth/get-session", {
-          cache: "no-store",
-          credentials: "include",
+        const snapshot = await getClientAuthSessionSnapshot({
+          forceRefresh: reloadToken > 0,
         })
-
-        if (!response.ok) {
-          throw new Error("Failed to load session")
-        }
-
-        const payload = (await response.json().catch(() => null)) as TwoFactorSessionPayload | null
+        const payload = {
+          user: (snapshot.user as TwoFactorSessionPayload["user"] | null) ?? null,
+        } satisfies TwoFactorSessionPayload
 
         if (!active) {
           return

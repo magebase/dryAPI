@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 
 type AdminSessionPayload = {
   user?: {
@@ -75,16 +76,12 @@ export function AdminSettingsPanel() {
 
     async function loadAdminData() {
       try {
-        const sessionResponse = await fetch("/api/auth/get-session", {
-          cache: "no-store",
-          credentials: "include",
+        const sessionSnapshot = await getClientAuthSessionSnapshot({
+          forceRefresh: reloadToken > 0,
         })
-
-        if (!sessionResponse.ok) {
-          throw new Error("Failed to load current session")
-        }
-
-        const sessionPayload = (await sessionResponse.json().catch(() => null)) as AdminSessionPayload | null
+        const sessionPayload = {
+          user: (sessionSnapshot.user as AdminSessionPayload["user"] | null) ?? null,
+        } satisfies AdminSessionPayload
         const role = sessionPayload?.user?.role?.trim().toLowerCase() || "user"
 
         if (!active) {

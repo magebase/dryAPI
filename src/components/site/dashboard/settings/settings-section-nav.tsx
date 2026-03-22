@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useEffect, useMemo, useState, type ComponentType } from "react"
 import { BellRing, Building2, KeyRound, Settings2, Shield, ShieldCheck, UserRound } from "lucide-react"
 
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 import { toRoute } from "@/lib/route"
 import { cn } from "@/lib/utils"
 
@@ -63,19 +64,19 @@ export function SettingsSectionNav() {
     let active = true
 
     async function loadSession() {
-      const response = await fetch("/api/auth/get-session", {
-        cache: "no-store",
-        credentials: "include",
-      }).catch(() => null)
-
-      if (!active || !response?.ok) {
-        return
+      try {
+        const snapshot = await getClientAuthSessionSnapshot()
+        if (active) {
+          setSessionUser((snapshot.user as SessionUser | null) ?? null)
+        }
+      } catch {
+        if (active) {
+          setSessionUser(null)
+        }
       }
 
-      const payload = (await response.json().catch(() => null)) as { user?: SessionUser | null } | null
-
-      if (active) {
-        setSessionUser(payload?.user ?? null)
+      if (!active) {
+        return
       }
     }
 

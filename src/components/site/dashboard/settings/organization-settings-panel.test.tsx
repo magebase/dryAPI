@@ -15,6 +15,7 @@ vi.mock("sonner", () => ({
 }))
 
 import { OrganizationSettingsPanel } from "@/components/site/dashboard/settings/organization-settings-panel"
+import { invalidateClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 
 type MockState = {
   organizations: Array<{ id: string; name: string; slug: string }>
@@ -203,11 +204,13 @@ describe("OrganizationSettingsPanel invitation flows", () => {
   const originalFetch = global.fetch
 
   beforeEach(() => {
+    invalidateClientAuthSessionSnapshot()
     toastSuccess.mockClear()
     toastError.mockClear()
   })
 
   afterEach(() => {
+    invalidateClientAuthSessionSnapshot()
     global.fetch = originalFetch
     vi.restoreAllMocks()
   })

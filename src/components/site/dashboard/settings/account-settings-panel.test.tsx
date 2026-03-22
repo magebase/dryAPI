@@ -23,6 +23,7 @@ vi.mock("@/lib/auth-session-actions", () => ({
 }))
 
 import { AccountSettingsPanel } from "@/components/site/dashboard/settings/account-settings-panel"
+import { invalidateClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -97,6 +98,7 @@ describe("AccountSettingsPanel", () => {
   const originalFetch = global.fetch
 
   beforeEach(() => {
+    invalidateClientAuthSessionSnapshot()
     signOutCurrentSessionMock.mockResolvedValue(undefined)
     signOutOtherSessionsMock.mockResolvedValue(undefined)
     toastError.mockClear()
@@ -105,6 +107,7 @@ describe("AccountSettingsPanel", () => {
   })
 
   afterEach(() => {
+    invalidateClientAuthSessionSnapshot()
     global.fetch = originalFetch
     vi.restoreAllMocks()
   })
