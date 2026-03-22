@@ -1,23 +1,23 @@
 // @vitest-environment node
 
-import { createClient, type Client as LibsqlClient } from "@libsql/client"
+import { createClient, type Client as LibsqlClient, type InValue } from "@libsql/client"
 import { afterEach, describe, expect, it } from "vitest"
 
 import { createHotColdDataLayer } from "@/lib/hot-cold-data-layer"
 
 class TestD1PreparedStatement {
-  private readonly params: unknown[]
+  private readonly params: InValue[]
 
   constructor(
     private readonly client: LibsqlClient,
     private readonly query: string,
-    params: unknown[] = []
+    params: InValue[] = []
   ) {
     this.params = params
   }
 
   bind(...params: unknown[]): TestD1PreparedStatement {
-    return new TestD1PreparedStatement(this.client, this.query, params)
+    return new TestD1PreparedStatement(this.client, this.query, params as InValue[])
   }
 
   async run(): Promise<{ success: true }> {

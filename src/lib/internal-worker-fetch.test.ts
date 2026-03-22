@@ -21,15 +21,14 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 describe("internalWorkerFetch", () => {
   const originalFetch = global.fetch
-  const originalNodeEnv = process.env.NODE_ENV
 
   beforeEach(() => {
-    process.env.NODE_ENV = "test"
+    vi.stubEnv("NODE_ENV", "test")
     getCloudflareContextMock.mockReset()
   })
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv
+    vi.unstubAllEnvs()
     global.fetch = originalFetch
     vi.restoreAllMocks()
   })

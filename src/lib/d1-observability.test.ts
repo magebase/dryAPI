@@ -4,6 +4,16 @@ vi.mock("server-only", () => ({}));
 
 import { instrumentD1Binding } from "@/lib/d1-observability";
 
+type TestPreparedStatement = {
+  bind: (...values: unknown[]) => TestPreparedStatement;
+  run: () => Promise<unknown>;
+};
+
+type TestD1Binding = {
+  prepare: (query: string) => TestPreparedStatement;
+  batch?: (statements: unknown[]) => Promise<unknown[]>;
+};
+
 describe("instrumentD1Binding", () => {
   const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
   const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -32,12 +42,18 @@ describe("instrumentD1Binding", () => {
         served_by_region: "WEUR",
       },
     });
-    const statement = {
-      bind: vi.fn(() => statement),
+    const statement: TestPreparedStatement = {
+      bind: vi.fn((...values: unknown[]) => {
+        void values;
+        return statement;
+      }),
       run,
     };
-    const binding = {
-      prepare: vi.fn(() => statement),
+    const binding: TestD1Binding = {
+      prepare: vi.fn((query: string) => {
+        void query;
+        return statement;
+      }),
     };
     const nowSpy = vi
       .spyOn(performance, "now")
@@ -49,7 +65,7 @@ describe("instrumentD1Binding", () => {
       component: "better-auth",
     });
 
-    await instrumentedBinding.prepare("SELECT * FROM session WHERE token = ?").bind?.("abc").run?.();
+    await instrumentedBinding.prepare("SELECT * FROM session WHERE token = ?").bind("abc").run();
 
     expect(binding.prepare).toHaveBeenCalledWith(
       "SELECT * FROM session WHERE token = ?",
@@ -77,10 +93,19 @@ describe("instrumentD1Binding", () => {
   it("unwraps proxied statements before batch execution", async () => {
     process.env.SERVER_PERF_LOG = "1";
 
-    const statement = { run: vi.fn() };
+    const statement: TestPreparedStatement = {
+      bind: (...values: unknown[]) => {
+        void values;
+        return statement;
+      },
+      run: vi.fn(),
+    };
     const batch = vi.fn().mockResolvedValue([]);
-    const binding = {
-      prepare: vi.fn(() => statement),
+    const binding: TestD1Binding = {
+      prepare: vi.fn((query: string) => {
+        void query;
+        return statement;
+      }),
       batch,
     };
 
@@ -90,7 +115,11 @@ describe("instrumentD1Binding", () => {
     });
 
     const preparedStatement = instrumentedBinding.prepare("SELECT 1");
-    await instrumentedBinding.batch?.([preparedStatement]);
+    if (!instrumentedBinding.batch) {
+      throw new Error("Expected batch() to be defined");
+    }
+
+    await instrumentedBinding.batch([preparedStatement]);
 
     expect(batch).toHaveBeenCalledWith([statement]);
     expect(logSpy).toHaveBeenCalledOnce();

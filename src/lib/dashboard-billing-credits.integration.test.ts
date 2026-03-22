@@ -87,6 +87,20 @@ const FULL_PROFILE_COLUMNS = [
   "updated_at",
 ] as const
 
+type TestPreparedResult<T> = {
+  results: T[]
+}
+
+type TestPreparedStatement = {
+  bind: (...values: unknown[]) => TestPreparedStatement
+  run: () => Promise<{ meta?: { changes?: number } }>
+  all: <T>() => Promise<TestPreparedResult<T>>
+}
+
+type TestD1DatabaseLike = {
+  prepare: (query: string) => TestPreparedStatement
+}
+
 function createState(): FakeState {
   return {
     profileColumns: new Set(FULL_PROFILE_COLUMNS),
@@ -144,11 +158,11 @@ class FakePreparedStatement {
     private readonly params: unknown[] = [],
   ) {}
 
-  bind(...values: unknown[]) {
+  bind(...values: unknown[]): FakePreparedStatement {
     return new FakePreparedStatement(this.state, this.query, values)
   }
 
-  async run() {
+  async run(): Promise<{ meta?: { changes?: number } }> {
     const query = this.query.toLowerCase().replace(/\s+/g, " ").trim()
 
     if (query.includes("create table if not exists credit_balance_profiles")) {
@@ -296,7 +310,7 @@ class FakePreparedStatement {
     throw new Error(`Unhandled run query: ${this.query}`)
   }
 
-  async all<T>() {
+  async all<T>(): Promise<TestPreparedResult<T>> {
     const query = this.query.toLowerCase().replace(/\s+/g, " ").trim()
 
     if (query.startsWith("pragma table_info(")) {
@@ -364,7 +378,7 @@ class FakePreparedStatement {
 class FakeD1Database {
   constructor(private readonly state: FakeState) {}
 
-  prepare(query: string) {
+  prepare(query: string): FakePreparedStatement {
     return new FakePreparedStatement(this.state, query)
   }
 }
@@ -736,19 +750,19 @@ describe("dashboard-billing-credits", () => {
   })
 
   it("returns null when updated profile rows disappear after write operations", async () => {
-    const createSelectlessDb = (mode: "update" | "increment") => {
+    const createSelectlessDb = (mode: "update" | "increment"): TestD1DatabaseLike => {
       let profileSelectCalls = 0
 
       return {
         prepare(query: string) {
           const normalized = query.toLowerCase().replace(/\s+/g, " ")
-          const statement = {
+          const statement: TestPreparedStatement = {
             async run() {
               return { meta: { changes: 1 } }
             },
-            async all() {
+            async all<T>() {
               if (normalized.startsWith("pragma table_info(")) {
-                return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) }
+                return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
               }
 
               if (normalized.includes("select customer_ref, balance_credits, updated_at")) {
@@ -767,16 +781,17 @@ describe("dashboard-billing-credits", () => {
                         auto_top_up_monthly_spent_credits: 2,
                         auto_top_up_monthly_window_start_at: currentWindowStartMs("2026-03-21T12:00:00.000Z"),
                       },
-                    ],
+                    ] as T[],
                   }
                 }
 
-                return { results: [] }
+                return { results: [] as T[] }
               }
 
-              return { results: [] }
+              return { results: [] as T[] }
             },
-            bind() {
+            bind(...values: unknown[]) {
+              void values
               return statement
             },
           }
@@ -1017,10 +1032,10 @@ describe("dashboard-billing-credits", () => {
   })
 
   it("treats missing insert metadata as a duplicate credit event", async () => {
-    const fallbackInsertDb = {
+    const fallbackInsertDb: TestD1DatabaseLike = {
       prepare(query: string) {
         const normalized = query.toLowerCase().replace(/\s+/g, " ")
-        const statement = {
+        const statement: TestPreparedStatement = {
           async run() {
             if (normalized.includes("insert or ignore into billing_credit_events")) {
               return {}
@@ -1028,9 +1043,9 @@ describe("dashboard-billing-credits", () => {
 
             return { meta: { changes: 0 } }
           },
-          async all() {
+          async all<T>() {
             if (normalized.startsWith("pragma table_info(")) {
-              return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) }
+              return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
             if (normalized.includes("select balance_credits, updated_at") && normalized.includes("from credit_balance_profiles")) {
@@ -1040,13 +1055,14 @@ describe("dashboard-billing-credits", () => {
                     balance_credits: 7,
                     updated_at: 1710835200000,
                   },
-                ],
+                ] as T[],
               }
             }
 
-            return { results: [] }
+            return { results: [] as T[] }
           },
-          bind() {
+          bind(...values: unknown[]) {
+            void values
             return statement
           },
         }
@@ -1107,25 +1123,26 @@ describe("dashboard-billing-credits", () => {
   })
 
   it("returns zero lifetime deposits for malformed aggregate rows", async () => {
-    const malformedAggregateDb = {
+    const malformedAggregateDb: TestD1DatabaseLike = {
       prepare(query: string) {
         const normalized = query.toLowerCase().replace(/\s+/g, " ")
-        const statement = {
+        const statement: TestPreparedStatement = {
           async run() {
             return { meta: { changes: 0 } }
           },
-          async all() {
+          async all<T>() {
             if (normalized.startsWith("pragma table_info(")) {
-              return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) }
+              return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
             if (normalized.includes("sum(case when credits_delta > 0")) {
-              return { results: [{ lifetime_deposited_credits: "not-a-number" }] }
+              return { results: [{ lifetime_deposited_credits: "not-a-number" }] as T[] }
             }
 
-            return { results: [] }
+            return { results: [] as T[] }
           },
-          bind() {
+          bind(...values: unknown[]) {
+            void values
             return statement
           },
         }
@@ -1238,25 +1255,26 @@ describe("dashboard-billing-credits", () => {
   })
 
   it("returns null when the token bucket row cannot be read after upsert", async () => {
-    const missingBucketDb = {
+    const missingBucketDb: TestD1DatabaseLike = {
       prepare(query: string) {
         const normalized = query.toLowerCase().replace(/\s+/g, " ")
-        const statement = {
+        const statement: TestPreparedStatement = {
           async run() {
             return { meta: { changes: 1 } }
           },
-          async all() {
+          async all<T>() {
             if (normalized.startsWith("pragma table_info(")) {
-              return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) }
+              return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
             if (normalized.includes("from saas_monthly_token_buckets")) {
-              return { results: [] }
+              return { results: [] as T[] }
             }
 
-            return { results: [] }
+            return { results: [] as T[] }
           },
-          bind() {
+          bind(...values: unknown[]) {
+            void values
             return statement
           },
         }

@@ -1,11 +1,29 @@
 import { render, screen } from "@testing-library/react";
+import type { AnchorHTMLAttributes, ElementType, ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { BlogPostPageTemplate } from "@/components/site/blog-post-page-template";
 import type { BlogPost, SiteConfig } from "@/lib/site-content-schema";
 
-let articleJsonLdProps: any = null;
-let tinaMarkdownContent: any = null;
+type JsonLdProps = Record<string, unknown>;
+type MockImageProps = {
+  alt?: string;
+  priority?: boolean;
+  src?: string | { src?: string };
+};
+type QuoteAwareLinkMockProps = {
+  href: string;
+  forceQuoteModal?: boolean;
+  quoteLabel?: string;
+  children?: ReactNode;
+} & AnchorHTMLAttributes<HTMLAnchorElement>;
+type RevealMockProps = {
+  as?: ElementType;
+  children?: ReactNode;
+} & Record<string, unknown>;
+
+let articleJsonLdProps: JsonLdProps | null = null;
+let tinaMarkdownContent: BlogPost["body"] | null = null;
 
 const bodyFixture = {
   type: "root",
@@ -21,7 +39,6 @@ const siteFixture: SiteConfig = {
   brand: {
     name: "Load Ready",
     mark: "DRYAPI",
-    siteUrl: "https://dryapi.dev",
   },
   contact: {
     contactEmail: "sales@dryapi.dev",
@@ -93,11 +110,22 @@ function findLinkByHref(href: string) {
 }
 
 vi.mock("next/image", () => ({
-  default: ({ priority: _priority, ...props }: any) => <img {...props} />,
+  default: (props: MockImageProps) => {
+    const { priority, alt = "", src } = props;
+    void priority;
+
+    return (
+      <span
+        data-alt={alt}
+        data-src={typeof src === "string" ? src : src?.src ?? ""}
+        data-testid="mock-next-image"
+      />
+    );
+  },
 }));
 
 vi.mock("next-seo", () => ({
-  ArticleJsonLd: (props: any) => {
+  ArticleJsonLd: (props: JsonLdProps) => {
     articleJsonLdProps = props;
     return <div data-testid="article-jsonld" />;
   },
@@ -114,12 +142,12 @@ vi.mock("citemet", () => ({
 }));
 
 vi.mock("tinacms/dist/react", () => ({
-  tinaField: (_value: any, fieldName?: string) =>
+  tinaField: (_value: unknown, fieldName?: string) =>
     `field:${fieldName ?? "value"}`,
 }));
 
 vi.mock("tinacms/dist/rich-text", () => ({
-  TinaMarkdown: ({ content }: { content: any }) => {
+  TinaMarkdown: ({ content }: { content: BlogPost["body"] }) => {
     tinaMarkdownContent = content;
     return <div data-testid="tina-markdown" />;
   },
@@ -129,24 +157,30 @@ vi.mock("@/components/site/quote-aware-link", () => ({
   QuoteAwareLink: ({
     href,
     forceQuoteModal,
-    quoteLabel: _quoteLabel,
+    quoteLabel,
     children,
     ...props
-  }: any) => (
-    <a
-      data-force-quote-modal={forceQuoteModal ? "true" : "false"}
-      href={href}
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  }: QuoteAwareLinkMockProps) => {
+    void quoteLabel;
+
+    return (
+      <a
+        data-force-quote-modal={forceQuoteModal ? "true" : "false"}
+        href={href}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
 }));
 
 vi.mock("@/components/site/reveal", () => ({
-  Reveal: ({ as: Component = "section", children, ...props }: any) => (
-    <Component {...props}>{children}</Component>
-  ),
+  Reveal: ({ as: Component = "section", children, ...props }: RevealMockProps) => {
+    const Tag = Component;
+
+    return <Tag {...props}>{children}</Tag>;
+  },
 }));
 
 vi.mock("@/lib/brand-catalog", () => ({

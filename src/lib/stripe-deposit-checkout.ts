@@ -127,7 +127,9 @@ export function normalizeCurrencyCode(input?: string | null): string {
   return normalized
 }
 
-export function sanitizeDepositMetadata(metadata?: Record<string, string | number | boolean | null>) {
+export function sanitizeDepositMetadata(
+  metadata?: Record<string, string | number | boolean | null | undefined>
+) {
   const output: Record<string, string> = {}
 
   if (!metadata) {

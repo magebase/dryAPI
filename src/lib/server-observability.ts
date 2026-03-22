@@ -27,7 +27,19 @@ export type RequestPerfTracker = {
   summary: (extra?: Record<string, unknown>) => Record<string, unknown>;
 };
 
+export type TimedServerLogger = {
+  log: (message: string, payload?: Record<string, unknown>) => void;
+  info: (message: string, payload?: Record<string, unknown>) => void;
+  warn: (message: string, payload?: Record<string, unknown>) => void;
+  error: (
+    message: string,
+    error?: unknown,
+    payload?: Record<string, unknown>,
+  ) => void;
+};
+
 type RequestPerfContext = Record<string, unknown>;
+type TimedServerLoggerContext = Record<string, unknown>;
 
 const TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
 
@@ -176,6 +188,39 @@ function sanitizeServerTimingToken(name: string): string {
   return sanitized || "stage";
 }
 
+function resolveStageSlowThresholdMs(): number {
+  return resolvePerfSlowThresholdMs(
+    "SERVER_PERF_STAGE_SLOW_MS",
+    resolvePerfSlowThresholdMs("SERVER_PERF_SLOW_MS", 500),
+  );
+}
+
+function maybeEmitRequestStage(
+  context: RequestPerfContext,
+  stage: RequestPerfStage,
+  totalElapsedMs: number,
+): void {
+  const slowThresholdMs = resolveStageSlowThresholdMs();
+  const isSlow = stage.durationMs >= slowThresholdMs;
+
+  if (!isSlow && !shouldEmitServerPerf("log")) {
+    return;
+  }
+
+  logServerPerfEvent(
+    isSlow ? "warn" : "log",
+    `request.stage${isSlow ? ".slow" : ""}`,
+    {
+      ...context,
+      stage: stage.name,
+      durationMs: stage.durationMs,
+      totalElapsedMs,
+      slowThresholdMs,
+      ...(stage.detail ? { detail: stage.detail } : {}),
+    },
+  );
+}
+
 export function shouldEmitServerPerf(level: ServerPerfLogLevel): boolean {
   return shouldEmit(level, resolveServerPerfThreshold());
 }
@@ -216,6 +261,25 @@ export function createRequestPerfTracker(
   const startedAt = nowMs();
   const stages: RequestPerfStage[] = [];
 
+  const finalizeStage = (
+    name: string,
+    durationMs: number,
+    detail?: Record<string, unknown>,
+  ): void => {
+    const stage: RequestPerfStage = {
+      name,
+      durationMs: normalizeDurationMs(durationMs),
+      ...(detail ? { detail } : {}),
+    };
+
+    stages.push(stage);
+    maybeEmitRequestStage(
+      context,
+      stage,
+      normalizeDurationMs(nowMs() - startedAt),
+    );
+  };
+
   return {
     measure: async <T>(
       name: string,
@@ -227,11 +291,7 @@ export function createRequestPerfTracker(
       try {
         return await operation();
       } finally {
-        stages.push({
-          name,
-          durationMs: normalizeDurationMs(nowMs() - stageStartedAt),
-          ...(detail ? { detail } : {}),
-        });
+        finalizeStage(name, nowMs() - stageStartedAt, detail);
       }
     },
     record: (
@@ -239,11 +299,7 @@ export function createRequestPerfTracker(
       durationMs: number,
       detail?: Record<string, unknown>,
     ): void => {
-      stages.push({
-        name,
-        durationMs: normalizeDurationMs(durationMs),
-        ...(detail ? { detail } : {}),
-      });
+      finalizeStage(name, durationMs, detail);
     },
     getTotalDurationMs: (): number => normalizeDurationMs(nowMs() - startedAt),
     getStages: (): RequestPerfStage[] => stages.map((stage) => ({ ...stage })),
@@ -265,6 +321,49 @@ export function createRequestPerfTracker(
       })),
       ...(extra || {}),
     }),
+  };
+}
+
+export function createTimedServerLogger(
+  context: TimedServerLoggerContext = {},
+): TimedServerLogger {
+  const startedAt = nowMs();
+
+  const buildPayload = (payload?: Record<string, unknown>) => ({
+    ...context,
+    ...(payload || {}),
+    durationMs: normalizeDurationMs(nowMs() - startedAt),
+  });
+
+  return {
+    log: (message, payload = {}) => {
+      if (!shouldEmitServerPerf("log")) {
+        return;
+      }
+
+      console.log(message, buildPayload(payload));
+    },
+    info: (message, payload = {}) => {
+      if (!shouldEmitServerPerf("info")) {
+        return;
+      }
+
+      console.info(message, buildPayload(payload));
+    },
+    warn: (message, payload = {}) => {
+      if (!shouldEmitServerPerf("warn")) {
+        return;
+      }
+
+      console.warn(message, buildPayload(payload));
+    },
+    error: (message, error, payload = {}) => {
+      if (!shouldEmitServerPerf("error")) {
+        return;
+      }
+
+      console.error(message, error, buildPayload(payload));
+    },
   };
 }
 

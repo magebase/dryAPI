@@ -3,6 +3,7 @@
 import { pathToFileURL } from "node:url"
 
 type FetchLike = typeof fetch
+type EnvLike = Record<string, string | undefined>
 
 type AiSearchRecrawlConfig = {
   accountId: string
@@ -32,7 +33,7 @@ function nonEmpty(value: string | undefined): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
-function firstNonEmpty(env: NodeJS.ProcessEnv, keys: string[]): string | null {
+function firstNonEmpty(env: EnvLike, keys: string[]): string | null {
   for (const key of keys) {
     const value = nonEmpty(env[key])
     if (value) {
@@ -65,7 +66,7 @@ function uniqueValues(values: string[]): string[] {
   return Array.from(new Set(values))
 }
 
-function resolveSourceUrls(env: NodeJS.ProcessEnv): string[] {
+function resolveSourceUrls(env: EnvLike): string[] {
   const explicitSourceUrls = nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE_URLS)
   if (explicitSourceUrls) {
     const sourceUrls = splitUrlList(explicitSourceUrls).map(normalizeUrl)
@@ -81,7 +82,7 @@ function resolveSourceUrls(env: NodeJS.ProcessEnv): string[] {
 }
 
 export function resolveAiSearchRecrawlConfig(
-  env: NodeJS.ProcessEnv = process.env,
+  env: EnvLike = process.env,
 ): AiSearchRecrawlConfig {
   const accountId = firstNonEmpty(env, ACCOUNT_ID_KEYS)
   if (!accountId) {
@@ -181,7 +182,7 @@ async function createAiSearchIndexingJob(
 }
 
 export async function runAiSearchRecrawl(args: {
-  env?: NodeJS.ProcessEnv
+  env?: EnvLike
   fetchImpl?: FetchLike
 } = {}): Promise<{ jobId: string; sourceUrls: string[] }> {
   const env = args.env ?? process.env

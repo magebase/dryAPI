@@ -1,6 +1,12 @@
 import "server-only"
 
 import { getAuth } from "@/lib/auth"
+import {
+  createRequestPerfTracker,
+  logServerPerfEvent,
+  resolvePerfSlowThresholdMs,
+  shouldEmitServerPerf,
+} from "@/lib/server-observability"
 
 type CreateApiKeyInput = {
   userId: string
@@ -29,6 +35,33 @@ type InvokeAuthHandlerInput = {
 type InvokeAuthHandlerResult<T> = {
   response: Response
   data: T | null
+}
+
+const AUTH_HANDLER_PROXY_SLOW_MS = 250
+
+function emitAuthHandlerProxyPerfSummary(
+  event: string,
+  tracker: ReturnType<typeof createRequestPerfTracker>,
+  extra: Record<string, unknown>,
+): void {
+  const totalDurationMs = tracker.getTotalDurationMs()
+  const slowThresholdMs = resolvePerfSlowThresholdMs(
+    "AUTH_HANDLER_PROXY_SLOW_MS",
+    AUTH_HANDLER_PROXY_SLOW_MS,
+  )
+  const payload = tracker.summary({
+    slowThresholdMs,
+    ...extra,
+  })
+
+  if (totalDurationMs >= slowThresholdMs) {
+    logServerPerfEvent("warn", `${event}.slow`, payload)
+    return
+  }
+
+  if (shouldEmitServerPerf("log")) {
+    logServerPerfEvent("log", event, payload)
+  }
 }
 
 function normalizeBaseUrl(value: string | undefined): string | undefined {
@@ -82,45 +115,124 @@ export function resolveAuthInvocationOrigin(request?: Request): string {
 }
 
 export async function invokeAuthHandler<T = unknown>(input: InvokeAuthHandlerInput): Promise<InvokeAuthHandlerResult<T>> {
-  const origin = resolveAuthInvocationOrigin(input.request)
-  const headers = new Headers(input.headers)
-  headers.set("origin", origin)
+  const method = input.method ?? "GET"
+  const tracker = createRequestPerfTracker({
+    component: "auth-handler-proxy",
+    method,
+    pathname: input.path,
+  })
 
-  const forwardedCookie = input.request?.headers.get("cookie")
-  if (forwardedCookie) {
-    headers.set("cookie", forwardedCookie)
+  try {
+    const origin = await tracker.measure(
+      "auth.origin.resolve",
+      () => resolveAuthInvocationOrigin(input.request),
+    )
+    const headers = new Headers(input.headers)
+    headers.set("origin", origin)
+
+    const forwardedCookie = input.request?.headers.get("cookie")
+    if (forwardedCookie) {
+      headers.set("cookie", forwardedCookie)
+    }
+
+    let body: string | undefined
+    if (input.body !== undefined) {
+      headers.set("content-type", "application/json")
+      body = JSON.stringify(input.body)
+    }
+
+    const response = await tracker.measure(
+      "auth.handler.invoke",
+      () =>
+        getAuth().handler(
+          new Request(new URL(input.path, origin), {
+            method,
+            headers,
+            body,
+          }),
+        ),
+      {
+        authOrigin: origin,
+        hasCookie: Boolean(forwardedCookie),
+        hasBody: body !== undefined,
+      },
+    )
+
+    const data = (await tracker.measure(
+      "auth.response.parse",
+      () => response.clone().json().catch(() => null),
+      {
+        status: response.status,
+      },
+    )) as T | null
+
+    emitAuthHandlerProxyPerfSummary("auth.handler-proxy.invoke", tracker, {
+      authOrigin: origin,
+      status: response.status,
+      hasRequest: Boolean(input.request),
+      hasCookie: Boolean(forwardedCookie),
+      hasBody: body !== undefined,
+    })
+
+    return { response, data }
+  } catch (error) {
+    emitAuthHandlerProxyPerfSummary("auth.handler-proxy.invoke.error", tracker, {
+      message: error instanceof Error ? error.message : String(error),
+    })
+    throw error
   }
-
-  let body: string | undefined
-  if (input.body !== undefined) {
-    headers.set("content-type", "application/json")
-    body = JSON.stringify(input.body)
-  }
-
-  const response = await getAuth().handler(
-    new Request(new URL(input.path, origin), {
-      method: input.method ?? "GET",
-      headers,
-      body,
-    }),
-  )
-
-  const data = (await response.clone().json().catch(() => null)) as T | null
-  return { response, data }
 }
 
 export async function createAuthApiKey<T = unknown>(input: CreateApiKeyInput): Promise<T> {
-  const authApi = getAuth().api as unknown as AuthApiWithApiKey
-
-  return authApi.createApiKey({
+  const tracker = createRequestPerfTracker({
+    component: "auth-handler-proxy",
     method: "POST",
-    body: {
-      userId: input.userId,
-      ...(input.name ? { name: input.name } : {}),
-      ...(input.prefix ? { prefix: input.prefix } : {}),
-      ...(input.expiresIn ? { expiresIn: input.expiresIn } : {}),
-      ...(input.permissions ? { permissions: input.permissions } : {}),
-      ...(input.metadata ? { metadata: input.metadata } : {}),
-    },
-  }) as Promise<T>
+    pathname: "/api/auth/api-key",
+  })
+
+  try {
+    const authApi = getAuth().api as unknown as AuthApiWithApiKey
+
+    const result = await tracker.measure(
+      "auth.api-key.create",
+      () =>
+        authApi.createApiKey({
+          method: "POST",
+          body: {
+            userId: input.userId,
+            ...(input.name ? { name: input.name } : {}),
+            ...(input.prefix ? { prefix: input.prefix } : {}),
+            ...(input.expiresIn ? { expiresIn: input.expiresIn } : {}),
+            ...(input.permissions ? { permissions: input.permissions } : {}),
+            ...(input.metadata ? { metadata: input.metadata } : {}),
+          },
+        }),
+      {
+        hasName: Boolean(input.name),
+        hasPrefix: Boolean(input.prefix),
+        hasExpiresIn: Boolean(input.expiresIn),
+        permissionCount: input.permissions
+          ? Object.keys(input.permissions).length
+          : 0,
+        hasMetadata: Boolean(input.metadata),
+      },
+    )
+
+    emitAuthHandlerProxyPerfSummary("auth.handler-proxy.create-api-key", tracker, {
+      hasName: Boolean(input.name),
+      hasPrefix: Boolean(input.prefix),
+      hasExpiresIn: Boolean(input.expiresIn),
+      permissionCount: input.permissions
+        ? Object.keys(input.permissions).length
+        : 0,
+      hasMetadata: Boolean(input.metadata),
+    })
+
+    return result as T
+  } catch (error) {
+    emitAuthHandlerProxyPerfSummary("auth.handler-proxy.create-api-key.error", tracker, {
+      message: error instanceof Error ? error.message : String(error),
+    })
+    throw error
+  }
 }
