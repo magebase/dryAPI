@@ -86,7 +86,6 @@ describe("GET /api/v1/client/balance", () => {
   it("returns a balance payload for an authenticated user", async () => {
     requireApiTokenIfConfiguredMock.mockReturnValue(null)
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: TEST_EMAIL })
-    ensureCurrentUserSubscriptionBenefitsMock.mockResolvedValue(undefined)
     getStoredCreditBalanceMock.mockResolvedValue({
       balanceCredits: 50.25,
       updatedAt: "2024-03-19T10:00:00Z",
@@ -116,6 +115,11 @@ describe("GET /api/v1/client/balance", () => {
         policy: expect.stringContaining("deposit_tier"),
       }),
     })
+    expect(ensureCurrentUserSubscriptionBenefitsMock).not.toHaveBeenCalled()
+    expect(getDashboardSessionSnapshotMock).toHaveBeenCalledOnce()
+    expect(getStoredCreditBalanceMock).toHaveBeenCalledOnce()
+    expect(getStoredSubscriptionCreditsMock).toHaveBeenCalledOnce()
+    expect(getLifetimeDepositedCreditsMock).toHaveBeenCalledOnce()
   })
 
   it("falls back to the configured balance when no session email is available", async () => {
@@ -144,10 +148,9 @@ describe("GET /api/v1/client/balance", () => {
     }
   })
 
-  it("swallows storage and benefit refresh failures and returns fallbacks", async () => {
+  it("swallows storage failures and returns fallbacks", async () => {
     requireApiTokenIfConfiguredMock.mockReturnValue(null)
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: TEST_EMAIL })
-    ensureCurrentUserSubscriptionBenefitsMock.mockRejectedValue(new Error("refresh failed"))
     getStoredCreditBalanceMock.mockRejectedValue(new Error("db failed"))
     getStoredSubscriptionCreditsMock.mockRejectedValue(new Error("split failed"))
     getLifetimeDepositedCreditsMock.mockRejectedValue(new Error("history failed"))
@@ -161,6 +164,7 @@ describe("GET /api/v1/client/balance", () => {
       const payload = await res.json()
 
       expect(res.status).toBe(200)
+      expect(ensureCurrentUserSubscriptionBenefitsMock).not.toHaveBeenCalled()
       expect(payload.data).toMatchObject({
         balance: 12,
         credits: 12,

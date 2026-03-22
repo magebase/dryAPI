@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { requireApiTokenIfConfigured } from "@/app/api/v1/client/_shared";
 import { resolveAccountRpmLimit } from "@/lib/account-rate-limits";
-import { ensureCurrentUserSubscriptionBenefits } from "@/lib/auth-subscription-benefits";
 import { resolveConfiguredBalance } from "@/lib/configured-balance";
 import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing";
 import {
@@ -27,12 +26,6 @@ export async function GET(request: NextRequest) {
         },
       },
       { status: 401 },
-    );
-  }
-
-  if (session.email) {
-    await ensureCurrentUserSubscriptionBenefits(session.email).catch(
-      () => null,
     );
   }
 
