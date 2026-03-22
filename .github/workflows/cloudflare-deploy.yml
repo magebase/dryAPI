@@ -234,11 +234,10 @@ jobs:
           internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-${SYNC_SECRET_BETTER_AUTH_SECRET:-}}}}}"
 
           if [[ -z "${internal_api_key}" ]]; then
-            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, SYNC_SECRET_DEAPI_API_KEY, or SYNC_SECRET_BETTER_AUTH_SECRET is required."
-            exit 1
+            echo "No internal auth secret was provided; continuing without SYNC_SECRET_INTERNAL_API_KEY."
+          else
+            printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
           fi
-
-          printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
       - name: Ensure Stripe SaaS products and prices
         run: |
@@ -379,11 +378,10 @@ jobs:
           internal_api_key="${SYNC_SECRET_INTERNAL_API_KEY:-${SYNC_SECRET_API_KEY:-${SYNC_SECRET_DASHBOARD_API_KEY:-${SYNC_SECRET_DEAPI_API_KEY:-${SYNC_SECRET_BETTER_AUTH_SECRET:-}}}}}"
 
           if [[ -z "${internal_api_key}" ]]; then
-            echo "One of SYNC_SECRET_INTERNAL_API_KEY, SYNC_SECRET_API_KEY, SYNC_SECRET_DASHBOARD_API_KEY, SYNC_SECRET_DEAPI_API_KEY, or SYNC_SECRET_BETTER_AUTH_SECRET is required."
-            exit 1
+            echo "No internal auth secret was provided; continuing without SYNC_SECRET_INTERNAL_API_KEY."
+          else
+            printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
           fi
-
-          printf 'SYNC_SECRET_INTERNAL_API_KEY<<__SYNC_SECRET_EOF__\n%s\n__SYNC_SECRET_EOF__\n' "${internal_api_key}" >> "$GITHUB_ENV"
 
       - name: Ensure API runpod batch queue exists
         working-directory: cloudflare/api
