@@ -2,11 +2,14 @@ import { NextRequest } from "next/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 const createStripeBillingPortalUrlMock = vi.fn()
+const authorizeDashboardBillingAccessMock = vi.fn()
 const getDashboardSessionSnapshotMock = vi.fn()
 const resolveRequestOriginFromRequestMock = vi.fn()
 const resolveStripeCustomerLookupMock = vi.fn()
 
 vi.mock("@/lib/dashboard-billing", () => ({
+  authorizeDashboardBillingAccess: (...args: unknown[]) =>
+    authorizeDashboardBillingAccessMock(...args),
   createStripeBillingPortalUrl: (...args: unknown[]) => createStripeBillingPortalUrlMock(...args),
   getDashboardSessionSnapshot: (...args: unknown[]) =>
     getDashboardSessionSnapshotMock(...args),
@@ -25,6 +28,7 @@ function makeRequest() {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
+  authorizeDashboardBillingAccessMock.mockReset()
   createStripeBillingPortalUrlMock.mockReset()
   getDashboardSessionSnapshotMock.mockReset()
   resolveRequestOriginFromRequestMock.mockReset()
@@ -34,6 +38,10 @@ afterEach(() => {
 describe("GET /api/dashboard/billing/portal mocked branches", () => {
   it("uses the fallback customer-not-found message when the lookup returned no errors", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+    authorizeDashboardBillingAccessMock.mockResolvedValue({
+      ok: true,
+      customerRef: "owner@dryapi.dev",
+    })
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
     resolveRequestOriginFromRequestMock.mockReturnValue("https://dryapi.dev")
     resolveStripeCustomerLookupMock.mockResolvedValue({ customerId: null, errors: [] })
