@@ -23,6 +23,7 @@ type D1PreparedStatement = {
 
 type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
+  batch: (statements: D1PreparedStatement[]) => Promise<unknown>
 }
 
 type CreditBalanceRow = {
@@ -201,9 +202,11 @@ async function resolveBillingDb(): Promise<D1DatabaseLike | null> {
 }
 
 async function ensureBillingTables(db: D1DatabaseLike): Promise<void> {
-  await db.prepare(CREATE_BALANCE_TABLE_SQL).run()
-  await db.prepare(CREATE_EVENTS_TABLE_SQL).run()
-  await db.prepare(CREATE_SAAS_BUCKETS_TABLE_SQL).run()
+  await db.batch([
+    db.prepare(CREATE_BALANCE_TABLE_SQL),
+    db.prepare(CREATE_EVENTS_TABLE_SQL),
+    db.prepare(CREATE_SAAS_BUCKETS_TABLE_SQL),
+  ])
   await ensureBalanceProfileColumns(db)
 }
 
@@ -236,8 +239,8 @@ async function ensureBalanceProfileColumns(db: D1DatabaseLike): Promise<void> {
     statements.push("ALTER TABLE credit_balance_profiles ADD COLUMN auto_top_up_monthly_window_start_at INTEGER NOT NULL DEFAULT 0")
   }
 
-  for (const statement of statements) {
-    await db.prepare(statement).run()
+  if (statements.length > 0) {
+    await db.batch(statements.map((statement) => db.prepare(statement)))
   }
 }
 

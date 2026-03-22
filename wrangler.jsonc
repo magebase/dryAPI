@@ -82,6 +82,12 @@
       "bucket_name": "dryapi-site-opennext-cache",
     },
   ],
+  "kv_namespaces": [
+    {
+      "binding": "DRIZZLE_CACHE_KV",
+      "id": "drizzle_cache_kv_prod",
+    },
+  ],
   "d1_databases": [
     {
       "binding": "AUTH_DB",
@@ -126,5 +132,8 @@
     "CLOUDFLARE_AI_SEARCH_MAX_RESULTS": "4",
     "CLOUDFLARE_AI_SEARCH_SOURCE": "",
     "CLOUDFLARE_AI_SEARCH_ENDPOINT": "",
+    "DRIZZLE_CACHE_DEFAULT_TTL_SECONDS": "15",
+    "DRIZZLE_CACHE_INDEX_TTL_SECONDS": "300",
+    "DRIZZLE_CACHE_GLOBAL": "false",
   },
 }

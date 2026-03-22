@@ -60,6 +60,7 @@ import {
   resolveD1Binding,
 } from "@/lib/d1-bindings";
 import { instrumentD1Binding } from "@/lib/d1-observability";
+import { resolveDrizzleCache } from "@/lib/drizzle-cache";
 import { resolveBrandForCheckoutSession } from "@/lib/stripe-branding";
 import {
   listSaasPlans,
@@ -76,6 +77,9 @@ type SocialProviderConfig = {
 };
 
 type SupportedSocialProvider = "google" | "github";
+type D1SessionCapableBinding = D1Binding & {
+  withSession?: (constraint?: string) => D1Binding;
+};
 
 function normalizeBaseUrl(value: string | undefined): string | undefined {
   const raw = value?.trim();
@@ -1265,7 +1269,15 @@ function resolveBetterAuthDatabase() {
       component: "better-auth",
     });
     maybeCleanupExpiredSessions(instrumentedBinding);
-    const db = drizzle(instrumentedBinding);
+    const primaryBinding =
+      typeof (instrumentedBinding as D1SessionCapableBinding).withSession === "function"
+        ? (instrumentedBinding as D1SessionCapableBinding).withSession!("first-primary")
+        : instrumentedBinding;
+    const drizzleCache = resolveDrizzleCache();
+    const db = drizzle(primaryBinding, {
+      schema: authSchema,
+      ...(drizzleCache ? { cache: drizzleCache } : {}),
+    });
     return drizzleAdapter(db, {
       provider: "sqlite",
       schema: authSchema,

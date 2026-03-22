@@ -10,6 +10,8 @@ type D1BindingLike = {
   prepare: (query: string) => D1PreparedStatementLike;
   batch?: (statements: unknown[]) => Promise<unknown>;
   exec?: (query: string) => Promise<unknown>;
+  withSession?: (constraint?: string) => D1BindingLike;
+  getBookmark?: () => string | null;
 };
 
 type D1PreparedStatementLike = {
@@ -389,6 +391,10 @@ export function instrumentD1Binding<T extends D1BindingLike>(
             throw error;
           }
         };
+      }
+
+      if (property === "withSession" && typeof target.withSession === "function") {
+        return (constraint?: string) => instrumentD1Binding(target.withSession!(constraint), options);
       }
 
       return Reflect.get(target, property, receiver);

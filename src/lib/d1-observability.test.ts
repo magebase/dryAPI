@@ -12,6 +12,7 @@ type TestPreparedStatement = {
 type TestD1Binding = {
   prepare: (query: string) => TestPreparedStatement;
   batch?: (statements: unknown[]) => Promise<unknown[]>;
+  withSession?: (constraint?: string) => TestD1Binding;
 };
 
 describe("instrumentD1Binding", () => {
@@ -123,5 +124,40 @@ describe("instrumentD1Binding", () => {
 
     expect(batch).toHaveBeenCalledWith([statement]);
     expect(logSpy).toHaveBeenCalledOnce();
+  });
+
+  it("instruments D1 sessions returned by withSession", async () => {
+    const run = vi.fn().mockResolvedValue({ meta: { duration: 10 } });
+    const sessionStatement: TestPreparedStatement = {
+      bind: vi.fn((...values: unknown[]) => {
+        void values;
+        return sessionStatement;
+      }),
+      run,
+    };
+    const sessionBinding: TestD1Binding = {
+      prepare: vi.fn(() => sessionStatement),
+    };
+    const withSession = vi.fn(() => sessionBinding);
+    const binding: TestD1Binding = {
+      prepare: vi.fn(() => sessionStatement),
+      withSession,
+    };
+
+    const instrumentedBinding = instrumentD1Binding(binding, {
+      bindingName: "AUTH_DB",
+      component: "better-auth",
+    });
+
+    const session = instrumentedBinding.withSession?.("first-primary");
+    if (!session) {
+      throw new Error("Expected withSession() to be defined");
+    }
+
+    await session.prepare("SELECT 1").run();
+
+    expect(withSession).toHaveBeenCalledWith("first-primary");
+    expect(sessionBinding.prepare).toHaveBeenCalledWith("SELECT 1");
+    expect(run).toHaveBeenCalledOnce();
   });
 });

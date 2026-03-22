@@ -99,6 +99,11 @@ type TestPreparedStatement = {
 
 type TestD1DatabaseLike = {
   prepare: (query: string) => TestPreparedStatement
+  batch: (statements: TestPreparedStatement[]) => Promise<unknown[]>
+}
+
+async function runBatch(statements: TestPreparedStatement[]): Promise<unknown[]> {
+  return Promise.all(statements.map((statement) => statement.run()))
 }
 
 function createState(): FakeState {
@@ -380,6 +385,10 @@ class FakeD1Database {
 
   prepare(query: string): FakePreparedStatement {
     return new FakePreparedStatement(this.state, query)
+  }
+
+  async batch(statements: TestPreparedStatement[]): Promise<unknown[]> {
+    return runBatch(statements)
   }
 }
 
@@ -798,6 +807,9 @@ describe("dashboard-billing-credits", () => {
 
           return statement
         },
+        batch(statements: TestPreparedStatement[]) {
+          return runBatch(statements)
+        },
       }
     }
 
@@ -1069,6 +1081,9 @@ describe("dashboard-billing-credits", () => {
 
         return statement
       },
+      batch(statements: TestPreparedStatement[]) {
+        return runBatch(statements)
+      },
     }
 
     const result = await applyBillingCreditGrant(
@@ -1148,6 +1163,9 @@ describe("dashboard-billing-credits", () => {
         }
 
         return statement
+      },
+      batch(statements: TestPreparedStatement[]) {
+        return runBatch(statements)
       },
     }
 
@@ -1280,6 +1298,9 @@ describe("dashboard-billing-credits", () => {
         }
 
         return statement
+      },
+      batch(statements: TestPreparedStatement[]) {
+        return runBatch(statements)
       },
     }
 

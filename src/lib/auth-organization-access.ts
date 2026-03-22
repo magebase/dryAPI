@@ -1,29 +1,18 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare"
+import { and, asc, eq } from "drizzle-orm"
 
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
+import { member } from "@/db/auth-schema"
+import { createCloudflareDbAccessors } from "@/lib/cloudflare-db"
+import { D1_BINDING_PRIORITY } from "@/lib/d1-bindings"
 
-type D1PreparedResult<T> = {
-  results: T[]
-}
+const MEMBERSHIP_CACHE_CONFIG = { ex: 15 }
 
-type D1PreparedStatement = {
-  bind: (...values: unknown[]) => D1PreparedStatement
-  all: <T>() => Promise<D1PreparedResult<T>>
-}
+const { getDbAsync } = createCloudflareDbAccessors(D1_BINDING_PRIORITY.auth, {
+  member,
+})
 
-type D1DatabaseLike = {
-  prepare: (query: string) => D1PreparedStatement
-}
-
-type OrganizationMembershipRow = {
-  organizationId: string
-  role: string
-}
-
-async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
+async function resolveAuthDb() {
   try {
-    const { env } = await getCloudflareContext({ async: true })
-    return resolveD1Binding<D1DatabaseLike>(env as Record<string, unknown>, D1_BINDING_PRIORITY.auth)
+    return await getDbAsync()
   } catch {
     return null
   }
@@ -43,23 +32,21 @@ export async function resolveSingleOrganizationIdForUser(
   }
 
   const response = await db
-    .prepare(
-      `
-      SELECT organizationId, role
-      FROM member
-      WHERE userId = ?
-      ORDER BY createdAt ASC
-      LIMIT 2
-      `,
-    )
-    .bind(userId)
-    .all<OrganizationMembershipRow>()
+    .select({
+      organizationId: member.organizationId,
+      role: member.role,
+    })
+    .from(member)
+    .where(eq(member.userId, userId))
+    .orderBy(asc(member.createdAt))
+    .limit(2)
+    .$withCache({ config: MEMBERSHIP_CACHE_CONFIG })
 
-  if (response.results.length !== 1) {
+  if (response.length !== 1) {
     return null
   }
 
-  const organizationId = response.results[0]?.organizationId?.trim()
+  const organizationId = response[0]?.organizationId?.trim()
   return organizationId || null
 }
 
@@ -86,18 +73,13 @@ export async function authorizeOrganizationBillingReference(input: {
   }
 
   const response = await db
-    .prepare(
-      `
-      SELECT role
-      FROM member
-      WHERE organizationId = ? AND userId = ?
-      LIMIT 1
-      `,
-    )
-    .bind(referenceId, userId)
-    .all<OrganizationMembershipRow>()
+    .select({ role: member.role })
+    .from(member)
+    .where(and(eq(member.organizationId, referenceId), eq(member.userId, userId)))
+    .limit(1)
+    .$withCache({ config: MEMBERSHIP_CACHE_CONFIG })
 
-  const normalizedRoles = (response.results[0]?.role || "")
+  const normalizedRoles = (response[0]?.role || "")
     .split(",")
     .map((role) => role.trim().toLowerCase())
     .filter(Boolean)

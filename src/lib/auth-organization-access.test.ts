@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-const { getCloudflareContextMock } = vi.hoisted(() => ({
-  getCloudflareContextMock: vi.fn(),
+vi.mock("server-only", () => ({}))
+
+const { getDbAsyncMock } = vi.hoisted(() => ({
+  getDbAsyncMock: vi.fn(),
 }))
 
-vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext: (...args: unknown[]) => getCloudflareContextMock(...args),
+vi.mock("@/lib/cloudflare-db", () => ({
+  createCloudflareDbAccessors: () => ({
+    getDbAsync: (...args: unknown[]) => getDbAsyncMock(...args),
+  }),
 }))
 
 import {
@@ -14,29 +18,33 @@ import {
 } from "@/lib/auth-organization-access"
 
 function createAuthDb(results: Array<{ organizationId?: string; role: string }>) {
-  const all = vi.fn().mockResolvedValue({
-    results,
-  })
-  const bind = vi.fn().mockReturnValue({ all })
-  const prepare = vi.fn().mockReturnValue({ bind, all })
+  const queryBuilder = {
+    from: vi.fn(() => queryBuilder),
+    where: vi.fn(() => queryBuilder),
+    orderBy: vi.fn(() => queryBuilder),
+    limit: vi.fn(() => queryBuilder),
+    $withCache: vi.fn().mockResolvedValue(results),
+  }
+  const select = vi.fn(() => queryBuilder)
+
+  const db = { select }
 
   return {
-    db: { prepare },
-    prepare,
-    bind,
-    all,
+    db,
+    select,
+    queryBuilder,
   }
 }
 
 afterEach(() => {
   vi.restoreAllMocks()
-  getCloudflareContextMock.mockReset()
+  getDbAsyncMock.mockReset()
 })
 
 describe("resolveSingleOrganizationIdForUser", () => {
   it("returns the organization id only when the user belongs to exactly one org", async () => {
     const { db } = createAuthDb([{ organizationId: "org_single", role: "member" }])
-    getCloudflareContextMock.mockResolvedValue({ env: { AUTH_DB: db } })
+    getDbAsyncMock.mockResolvedValue(db)
 
     await expect(resolveSingleOrganizationIdForUser("user_1")).resolves.toBe("org_single")
   })
@@ -46,7 +54,7 @@ describe("resolveSingleOrganizationIdForUser", () => {
       { organizationId: "org_one", role: "member" },
       { organizationId: "org_two", role: "member" },
     ])
-    getCloudflareContextMock.mockResolvedValue({ env: { AUTH_DB: db } })
+    getDbAsyncMock.mockResolvedValue(db)
 
     await expect(resolveSingleOrganizationIdForUser("user_1")).resolves.toBeNull()
   })
@@ -54,7 +62,7 @@ describe("resolveSingleOrganizationIdForUser", () => {
 
 describe("authorizeOrganizationBillingReference", () => {
   it("allows global admins without querying organization membership", async () => {
-    getCloudflareContextMock.mockRejectedValue(new Error("no context"))
+    getDbAsyncMock.mockRejectedValue(new Error("no context"))
 
     await expect(
       authorizeOrganizationBillingReference({
@@ -66,8 +74,8 @@ describe("authorizeOrganizationBillingReference", () => {
   })
 
   it("allows organization owners and admins", async () => {
-    const { db, prepare } = createAuthDb([{ organizationId: "org_123", role: "member,admin" }])
-    getCloudflareContextMock.mockResolvedValue({ env: { AUTH_DB: db } })
+    const { db, select } = createAuthDb([{ organizationId: "org_123", role: "member,admin" }])
+    getDbAsyncMock.mockResolvedValue(db)
 
     await expect(
       authorizeOrganizationBillingReference({
@@ -77,12 +85,12 @@ describe("authorizeOrganizationBillingReference", () => {
       }),
     ).resolves.toBe(true)
 
-    expect(prepare).toHaveBeenCalled()
+    expect(select).toHaveBeenCalled()
   })
 
   it("rejects regular organization members", async () => {
     const { db } = createAuthDb([{ organizationId: "org_123", role: "member" }])
-    getCloudflareContextMock.mockResolvedValue({ env: { AUTH_DB: db } })
+    getDbAsyncMock.mockResolvedValue(db)
 
     await expect(
       authorizeOrganizationBillingReference({
