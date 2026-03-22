@@ -28,6 +28,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { resolveAccountRpmLimit } from "@/lib/account-rate-limits";
+import { internalWorkerFetch } from "@/lib/internal-worker-fetch";
 import { toRoute } from "@/lib/route";
 import { listActiveRunpodModels } from "@/lib/runpod-active-models";
 import {
@@ -312,10 +313,14 @@ async function fetchFirstEndpointJson(
 
   for (const endpoint of endpoints) {
     try {
-      const response = await fetch(`${origin}${endpoint}`, {
-        method: "GET",
-        headers: requestHeaders,
-        cache: "no-store",
+      const response = await internalWorkerFetch({
+        path: endpoint,
+        fallbackOrigin: origin,
+        init: {
+          method: "GET",
+          headers: requestHeaders,
+          cache: "no-store",
+        },
       });
 
       const data = await response.json().catch(() => null);

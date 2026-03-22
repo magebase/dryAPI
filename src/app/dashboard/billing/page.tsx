@@ -42,6 +42,7 @@ import {
   syncDashboardTopUpFromStripeCheckout,
   type AutoTopUpSettingsSnapshot,
 } from "@/lib/dashboard-billing-credits";
+import { internalWorkerFetch } from "@/lib/internal-worker-fetch";
 import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 import {
   listSaasPlans,
@@ -216,10 +217,14 @@ async function fetchFirstEndpointJson(
 
   for (const endpoint of endpoints) {
     try {
-      const response = await fetch(`${origin}${endpoint}`, {
-        method: "GET",
-        headers: requestHeaders,
-        cache: "no-store",
+      const response = await internalWorkerFetch({
+        path: endpoint,
+        fallbackOrigin: origin,
+        init: {
+          method: "GET",
+          headers: requestHeaders,
+          cache: "no-store",
+        },
       });
 
       const data = await response.json().catch(() => null);

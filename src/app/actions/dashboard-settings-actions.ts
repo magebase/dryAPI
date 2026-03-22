@@ -10,6 +10,7 @@ import {
   type DashboardSettingsBundle,
 } from "@/lib/dashboard-settings-schema"
 import { updateDashboardSettingsSection } from "@/lib/dashboard-settings-store"
+import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 
 type SessionPayload = {
   user?: {
@@ -59,12 +60,16 @@ async function resolveAuthenticatedUserEmail(): Promise<string> {
   const headerStore = await headers()
   const origin = resolveOriginFromHeaders(headerStore)
 
-  const response = await fetch(`${origin}/api/auth/get-session`, {
-    method: "GET",
-    cache: "no-store",
-    headers: {
-      accept: "application/json",
-      cookie: headerStore.get("cookie") || "",
+  const response = await internalWorkerFetch({
+    path: "/api/auth/get-session",
+    fallbackOrigin: origin,
+    init: {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        accept: "application/json",
+        cookie: headerStore.get("cookie") || "",
+      },
     },
   })
 

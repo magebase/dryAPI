@@ -12,14 +12,14 @@ export default defineCloudflareConfig({
     bypassTagCacheOnCacheHit: true,
   }),
   queue: queueCache(doQueue, {
-    regionalCacheTtlSec: 5,
+    regionalCacheTtlSec: 30,
     // Do not block responses on cache queue acknowledgements.
     waitForQueueAck: false,
   }),
   tagCache: doShardedTagCache({
     baseShardSize: 12,
     regionalCache: true,
-    regionalCacheTtlSec: 5,
+    regionalCacheTtlSec: 30,
   }),
   cachePurge: purgeCache({ type: "durableObject" }),
   enableCacheInterception: true,

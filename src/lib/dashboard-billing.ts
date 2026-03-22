@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server"
 
+import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
+
 type SessionSnapshot = {
   authenticated: boolean
   email: string | null
@@ -77,13 +79,17 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
   const origin = resolveRequestOriginFromRequest(request)
 
   try {
-    const response = await fetch(`${origin}/api/auth/get-session`, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        cookie: request.headers.get("cookie") || "",
+    const response = await internalWorkerFetch({
+      path: "/api/auth/get-session",
+      fallbackOrigin: origin,
+      init: {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          cookie: request.headers.get("cookie") || "",
+        },
+        cache: "no-store",
       },
-      cache: "no-store",
     })
 
     if (!response.ok) {
