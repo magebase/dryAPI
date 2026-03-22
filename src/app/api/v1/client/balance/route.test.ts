@@ -1,10 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const requireApiTokenIfConfiguredMock = vi.fn()
 const resolveAccountRpmLimitMock = vi.fn()
 const ensureCurrentUserSubscriptionBenefitsMock = vi.fn()
 const resolveConfiguredBalanceMock = vi.fn()
 const getDashboardSessionSnapshotMock = vi.fn()
+const authorizeActiveOrganizationBillingAccessMock = vi.fn()
+const resolveDashboardBillingCustomerRefMock = vi.fn()
 const getLifetimeDepositedCreditsMock = vi.fn()
 const getStoredCreditBalanceMock = vi.fn()
 const getStoredSubscriptionCreditsMock = vi.fn()
@@ -30,6 +32,10 @@ vi.mock("@/lib/configured-balance", () => ({
 vi.mock("@/lib/dashboard-billing", () => ({
   getDashboardSessionSnapshot: (...args: unknown[]) =>
     getDashboardSessionSnapshotMock(...args),
+  authorizeActiveOrganizationBillingAccess: (...args: unknown[]) =>
+    authorizeActiveOrganizationBillingAccessMock(...args),
+  resolveDashboardBillingCustomerRef: (...args: unknown[]) =>
+    resolveDashboardBillingCustomerRefMock(...args),
 }))
 
 vi.mock("@/lib/dashboard-billing-credits", () => ({
@@ -56,9 +62,19 @@ afterEach(() => {
   ensureCurrentUserSubscriptionBenefitsMock.mockReset()
   resolveConfiguredBalanceMock.mockReset()
   getDashboardSessionSnapshotMock.mockReset()
+  authorizeActiveOrganizationBillingAccessMock.mockReset()
+  resolveDashboardBillingCustomerRefMock.mockReset()
   getLifetimeDepositedCreditsMock.mockReset()
   getStoredCreditBalanceMock.mockReset()
   getStoredSubscriptionCreditsMock.mockReset()
+})
+
+beforeEach(() => {
+  resolveDashboardBillingCustomerRefMock.mockImplementation(
+    (session: { activeOrganizationId?: string | null; email?: string | null }) =>
+      session.activeOrganizationId ?? session.email ?? null,
+  )
+  authorizeActiveOrganizationBillingAccessMock.mockResolvedValue({ ok: true })
 })
 
 describe("GET /api/v1/client/balance", () => {
@@ -120,6 +136,36 @@ describe("GET /api/v1/client/balance", () => {
     expect(getStoredCreditBalanceMock).toHaveBeenCalledOnce()
     expect(getStoredSubscriptionCreditsMock).toHaveBeenCalledOnce()
     expect(getLifetimeDepositedCreditsMock).toHaveBeenCalledOnce()
+  })
+
+  it("returns 403 when active organization billing access is denied", async () => {
+    requireApiTokenIfConfiguredMock.mockReturnValue(null)
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: TEST_EMAIL,
+      userId: "user_member",
+      activeOrganizationId: "org_123",
+    })
+    authorizeActiveOrganizationBillingAccessMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "organization_billing_forbidden",
+      message: "Only workspace owners and admins can manage workspace billing.",
+    })
+
+    const res = await GET(makeApiRequest(BALANCE_URL))
+    const payload = await res.json()
+
+    expect(res.status).toBe(403)
+    expect(payload).toEqual({
+      error: {
+        code: "organization_billing_forbidden",
+        message: "Only workspace owners and admins can manage workspace billing.",
+      },
+    })
+    expect(getStoredCreditBalanceMock).not.toHaveBeenCalled()
+    expect(getStoredSubscriptionCreditsMock).not.toHaveBeenCalled()
+    expect(getLifetimeDepositedCreditsMock).not.toHaveBeenCalled()
   })
 
   it("falls back to the configured balance when no session email is available", async () => {

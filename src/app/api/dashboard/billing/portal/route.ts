@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  authorizeDashboardBillingAccess,
   createStripeBillingPortalUrl,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
@@ -9,13 +10,14 @@ import {
 
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
-  if (!session.authenticated) {
+  const access = await authorizeDashboardBillingAccess(session);
+  if (!access.ok) {
     return NextResponse.json(
       {
-        error: "unauthorized",
-        message: "Sign in to access billing portal.",
+        error: access.error,
+        message: access.message,
       },
-      { status: 401 },
+      { status: access.status },
     );
   }
 
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
   const { customerId, errors } = await resolveStripeCustomerLookup({
     stripePrivateKey,
     sessionEmail: session.email,
+    activeOrganizationId: session.activeOrganizationId,
   });
 
   if (!customerId) {

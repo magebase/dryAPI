@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const getDashboardSessionSnapshotMock = vi.fn()
+const resolveDashboardBillingCustomerRefMock = vi.fn()
+const authorizeDashboardBillingAccessMock = vi.fn()
 const getStoredAutoTopUpSettingsMock = vi.fn()
 const getStoredCreditBalanceMock = vi.fn()
 const updateStoredAutoTopUpSettingsMock = vi.fn()
@@ -9,6 +11,10 @@ const updateStoredAutoTopUpSettingsMock = vi.fn()
 vi.mock("@/lib/dashboard-billing", () => ({
   getDashboardSessionSnapshot: (...args: unknown[]) =>
     getDashboardSessionSnapshotMock(...args),
+  authorizeDashboardBillingAccess: (...args: unknown[]) =>
+    authorizeDashboardBillingAccessMock(...args),
+  resolveDashboardBillingCustomerRef: (...args: unknown[]) =>
+    resolveDashboardBillingCustomerRefMock(...args),
 }))
 
 vi.mock("@/lib/dashboard-billing-credits", async () => {
@@ -53,9 +59,37 @@ function makeBrokenJsonRequest() {
 afterEach(() => {
   vi.restoreAllMocks()
   getDashboardSessionSnapshotMock.mockReset()
+  resolveDashboardBillingCustomerRefMock.mockReset()
+  authorizeDashboardBillingAccessMock.mockReset()
   getStoredAutoTopUpSettingsMock.mockReset()
   getStoredCreditBalanceMock.mockReset()
   updateStoredAutoTopUpSettingsMock.mockReset()
+})
+
+beforeEach(() => {
+  resolveDashboardBillingCustomerRefMock.mockImplementation(
+    (session: { activeOrganizationId?: string | null; email?: string | null }) =>
+      session.activeOrganizationId ?? session.email ?? null,
+  )
+  authorizeDashboardBillingAccessMock.mockImplementation(
+    async (session: { authenticated?: boolean; activeOrganizationId?: string | null; email?: string | null }) => {
+      const customerRef = session.activeOrganizationId ?? session.email ?? null
+
+      if (!session.authenticated || !customerRef) {
+        return {
+          ok: false,
+          status: 401,
+          error: "unauthorized",
+          message: "Sign in to manage billing.",
+        }
+      }
+
+      return {
+        ok: true,
+        customerRef,
+      }
+    },
+  )
 })
 
 describe("/api/dashboard/billing/auto-top-up", () => {
@@ -92,6 +126,29 @@ describe("/api/dashboard/billing/auto-top-up", () => {
         balanceUpdatedAt: null,
       },
     })
+  })
+
+  it("returns 403 when workspace billing access is denied", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "member@dryapi.dev",
+      userId: "user_member",
+      activeOrganizationId: "org_123",
+    })
+    authorizeDashboardBillingAccessMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "organization_billing_forbidden",
+      message: "Only workspace owners and admins can manage workspace billing.",
+    })
+
+    const response = await GET(makeRequest())
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toMatchObject({
+      error: "organization_billing_forbidden",
+    })
+    expect(getStoredAutoTopUpSettingsMock).not.toHaveBeenCalled()
   })
 
   it("returns stored GET settings and balance", async () => {

@@ -134,6 +134,19 @@ describe("stripe deposit checkout helpers", () => {
     );
   });
 
+  it("builds checkout session payload for an existing Stripe customer id", () => {
+    const payload = buildStripeDepositCheckoutParams({
+      amountCents: 2500,
+      currency: "usd",
+      successUrl: "https://dryapi.dev/success",
+      cancelUrl: "https://dryapi.dev/cancel",
+      customerId: "cus_org_123",
+    });
+
+    expect(payload.get("customer")).toBe("cus_org_123");
+    expect(payload.get("customer_email")).toBeNull();
+  });
+
   it("omits optional checkout params when they are blank", () => {
     const payload = buildStripeDepositCheckoutParams({
       amountCents: 2500,

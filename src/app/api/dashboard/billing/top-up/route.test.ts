@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const buildStripeDepositCheckoutParamsMock = vi.fn()
 const normalizeCurrencyCodeMock = vi.fn()
@@ -12,7 +12,10 @@ const resolveCurrentMonthlyTokenCycleStartIsoMock = vi.fn()
 const resolveMonthlyTokenExpiryIsoMock = vi.fn()
 const resolveSaasPlanMock = vi.fn()
 const getDashboardSessionSnapshotMock = vi.fn()
+const resolveDashboardBillingCustomerRefMock = vi.fn()
+const authorizeDashboardBillingAccessMock = vi.fn()
 const resolveRequestOriginFromRequestMock = vi.fn()
+const resolveStripeCustomerLookupMock = vi.fn()
 const buildBrandedCheckoutCancelUrlMock = vi.fn()
 const buildBrandedCheckoutSuccessUrlMock = vi.fn()
 const resolveStripeCheckoutMessagingMock = vi.fn()
@@ -46,8 +49,14 @@ vi.mock("@/lib/stripe-saas-plans", () => ({
 vi.mock("@/lib/dashboard-billing", () => ({
   getDashboardSessionSnapshot: (...args: unknown[]) =>
     getDashboardSessionSnapshotMock(...args),
+  authorizeDashboardBillingAccess: (...args: unknown[]) =>
+    authorizeDashboardBillingAccessMock(...args),
+  resolveDashboardBillingCustomerRef: (...args: unknown[]) =>
+    resolveDashboardBillingCustomerRefMock(...args),
   resolveRequestOriginFromRequest: (...args: unknown[]) =>
     resolveRequestOriginFromRequestMock(...args),
+  resolveStripeCustomerLookup: (...args: unknown[]) =>
+    resolveStripeCustomerLookupMock(...args),
 }))
 
 vi.mock("@/lib/stripe-branding", () => ({
@@ -85,15 +94,49 @@ afterEach(() => {
   resolveMonthlyTokenExpiryIsoMock.mockReset()
   resolveSaasPlanMock.mockReset()
   getDashboardSessionSnapshotMock.mockReset()
+  resolveDashboardBillingCustomerRefMock.mockReset()
+  authorizeDashboardBillingAccessMock.mockReset()
   resolveRequestOriginFromRequestMock.mockReset()
+  resolveStripeCustomerLookupMock.mockReset()
   buildBrandedCheckoutCancelUrlMock.mockReset()
   buildBrandedCheckoutSuccessUrlMock.mockReset()
   resolveStripeCheckoutMessagingMock.mockReset()
 })
 
+beforeEach(() => {
+  resolveDashboardBillingCustomerRefMock.mockImplementation(
+    (session: { activeOrganizationId?: string | null; email?: string | null }) =>
+      session.activeOrganizationId ?? session.email ?? null,
+  )
+  authorizeDashboardBillingAccessMock.mockImplementation(
+    async (session: { authenticated?: boolean; activeOrganizationId?: string | null; email?: string | null }) => {
+      const customerRef = session.activeOrganizationId ?? session.email ?? null
+
+      if (!session.authenticated || !customerRef) {
+        return {
+          ok: false,
+          status: 401,
+          error: "unauthorized",
+          message: "Sign in to manage billing.",
+        }
+      }
+
+      return {
+        ok: true,
+        customerRef,
+      }
+    },
+  )
+  resolveStripeCustomerLookupMock.mockResolvedValue({
+    customerId: "cus_org_123",
+    errors: [],
+  })
+})
+
 describe("GET /api/dashboard/billing/top-up", () => {
   it("returns 401 when the user is not authenticated", async () => {
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: false, email: null })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue(null)
 
     const response = await GET(makeRequest())
 
@@ -105,6 +148,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
 
   it("returns 404 when Stripe deposits are disabled", async () => {
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(false)
 
     const response = await GET(makeRequest())
@@ -115,8 +159,32 @@ describe("GET /api/dashboard/billing/top-up", () => {
     })
   })
 
+  it("returns 403 when workspace billing access is denied", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "member@dryapi.dev",
+      userId: "user_member",
+      activeOrganizationId: "org_123",
+    })
+    authorizeDashboardBillingAccessMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "organization_billing_forbidden",
+      message: "Only workspace owners and admins can manage workspace billing.",
+    })
+
+    const response = await GET(makeRequest("amount=25"))
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toMatchObject({
+      error: "organization_billing_forbidden",
+    })
+    expect(parseDepositAmountToCentsMock).not.toHaveBeenCalled()
+  })
+
   it("returns 501 when STRIPE_PRIVATE_KEY is missing", async () => {
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
 
     const response = await GET(makeRequest())
@@ -130,6 +198,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("returns 400 for an unknown plan", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
 
@@ -144,6 +213,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("returns 400 when checkout input parsing fails", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
     parseDepositAmountToCentsMock.mockImplementation(() => {
@@ -163,6 +233,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("returns 502 when Stripe checkout creation fails", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
     parseDepositAmountToCentsMock.mockReturnValue(2_500)
@@ -210,6 +281,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("falls back to a default Stripe checkout failure message when the payload is invalid", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
     parseDepositAmountToCentsMock.mockReturnValue(2_500)
@@ -257,6 +329,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("redirects to Stripe checkout for standard top-ups", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
     parseDepositAmountToCentsMock.mockReturnValue(2_500)
@@ -308,6 +381,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("builds discounted plan metadata for SaaS-linked top-ups", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue({
       slug: "growth",
@@ -369,7 +443,13 @@ describe("GET /api/dashboard/billing/top-up", () => {
 
   it("uses the default top-up amount and omits customer email when the session email is absent", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
-    getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: null })
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: null,
+      userId: "user_owner",
+      activeOrganizationId: "org_123",
+    })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("org_123")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
     parseDepositAmountToCentsMock.mockReturnValue(1_000)
@@ -419,6 +499,7 @@ describe("GET /api/dashboard/billing/top-up", () => {
   it("uses the fallback non-Error message for thrown unknown failures", async () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: true, email: "owner@dryapi.dev" })
+    resolveDashboardBillingCustomerRefMock.mockReturnValue("owner@dryapi.dev")
     isStripeDepositsEnabledServerMock.mockReturnValue(true)
     resolveSaasPlanMock.mockReturnValue(null)
     parseDepositAmountToCentsMock.mockImplementation(() => {

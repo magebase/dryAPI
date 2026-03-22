@@ -1,6 +1,15 @@
 import { NextRequest } from "next/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+const { authorizeOrganizationBillingReferenceMock } = vi.hoisted(() => ({
+  authorizeOrganizationBillingReferenceMock: vi.fn(),
+}))
+
+vi.mock("@/lib/auth-organization-access", () => ({
+  authorizeOrganizationBillingReference: (...args: unknown[]) =>
+    authorizeOrganizationBillingReferenceMock(...args),
+}))
+
 import { GET } from "@/app/api/dashboard/billing/portal/route"
 
 function makeRequest() {
@@ -24,9 +33,36 @@ function makeSessionResponse(email: string) {
   )
 }
 
+function makeOrganizationSessionResponse(input: {
+  email: string
+  userId: string
+  activeOrganizationId: string
+  userRole?: string
+}) {
+  return new Response(
+    JSON.stringify({
+      user: {
+        id: input.userId,
+        email: input.email,
+        role: input.userRole || "user",
+      },
+      session: {
+        activeOrganizationId: input.activeOrganizationId,
+      },
+    }),
+    {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+      },
+    },
+  )
+}
+
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
+  authorizeOrganizationBillingReferenceMock.mockReset()
 })
 
 describe("GET /api/dashboard/billing/portal", () => {
@@ -53,6 +89,35 @@ describe("GET /api/dashboard/billing/portal", () => {
     expect(await res.json()).toMatchObject({
       error: "stripe_not_configured",
     })
+  })
+
+  it("returns 403 when a non-admin workspace member opens org billing", async () => {
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
+    authorizeOrganizationBillingReferenceMock.mockResolvedValue(false)
+
+    const fetchMock = vi.fn(async (input) => {
+      const url = typeof input === "string" ? input : input.url
+
+      if (url.endsWith("/api/auth/get-session")) {
+        return makeOrganizationSessionResponse({
+          email: "member@dryapi.dev",
+          userId: "user_member",
+          activeOrganizationId: "org_123",
+        })
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(403)
+    expect(await res.json()).toMatchObject({
+      error: "organization_billing_forbidden",
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("redirects to Stripe when a customer id is available", async () => {

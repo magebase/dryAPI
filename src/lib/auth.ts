@@ -32,6 +32,10 @@ import {
   type PasswordResetEmailPayload,
   type VerificationEmailPayload,
 } from "@/lib/auth-user-emails";
+import {
+  authorizeOrganizationBillingReference,
+  resolveSingleOrganizationIdForUser,
+} from "@/lib/auth-organization-access";
 import { sendOrganizationInvitationEmail } from "@/lib/auth-organization-invitations";
 import { sendTwoFactorOtpEmail } from "@/lib/auth-two-factor-otp-email";
 import {
@@ -45,7 +49,6 @@ import {
   toEnvBrandSuffix,
 } from "@/lib/auth-stripe-utils";
 import {
-  ensureCurrentUserSubscriptionBenefits,
   syncSubscriptionBenefitsForReferenceId,
 } from "@/lib/auth-subscription-benefits";
 import { sendBrevoReactEmail } from "@/lib/brevo-email";
@@ -1047,6 +1050,17 @@ function buildStripePlugin() {
       enabled: true,
       requireEmailVerification: requireEmailVerificationForSubscriptions,
       plans,
+      authorizeReference: async ({ user, referenceId }) => {
+        if (!referenceId) {
+          return false;
+        }
+
+        return authorizeOrganizationBillingReference({
+          referenceId,
+          userId: user.id,
+          userRole: user.role,
+        });
+      },
       onSubscriptionCreated: async ({ subscription }) => {
         await syncSubscriptionBenefits(subscription.referenceId);
       },
@@ -1059,20 +1073,37 @@ function buildStripePlugin() {
       onSubscriptionDeleted: async ({ subscription }) => {
         await syncSubscriptionBenefits(subscription.referenceId);
       },
+      getCheckoutSessionParams: async () => {
+        return {
+          params: {
+            tax_id_collection: {
+              enabled: true,
+            },
+            allow_promotion_codes: true,
+            automatic_tax: {
+              enabled: true,
+            },
+          },
+        };
+      },
     },
+    organization: {
+      enabled: true,
+    },
+
     onEvent: async (event) => {
       await handleStripePluginEvent(event, {
         stripeClient,
         stripePrivateKey,
         resolveCheckoutCustomerEmail: readCheckoutSessionEmail,
+        resolveCheckoutCustomerRef: (session) =>
+          readStringMetadata(
+            session.metadata as Record<string, string> | null | undefined,
+            "customerRef",
+          ) || readCheckoutSessionEmail(session) || null,
         resolveCheckoutFlow: resolveCheckoutEmailFlow,
-        resolveInvoiceCustomerEmail: async (invoice) =>
-          resolveCustomerEmailFromStripeCustomer({
-            stripeClient,
-            customer: invoice.customer,
-          }),
         syncTopUp: syncDashboardTopUpFromStripeCheckout,
-        ensureSubscriptionBenefits: ensureCurrentUserSubscriptionBenefits,
+        ensureSubscriptionBenefits: syncSubscriptionBenefits,
         sendCheckoutSuccessEmail: sendBrandedCheckoutSuccessEmail,
         sendInvoiceReceiptEmail: sendBrandedInvoiceReceiptEmail,
         sendInvoicePaymentFailedEmail: sendBrandedInvoicePaymentFailedEmail,
@@ -1275,6 +1306,29 @@ function buildAuthOptions(): Parameters<typeof betterAuth>[0] {
     trustedOrigins: resolveTrustedOrigins(baseURL),
     secret: process.env.BETTER_AUTH_SECRET,
     ...(database ? { database } : {}),
+    databaseHooks: {
+      session: {
+        create: {
+          before: async (session) => {
+            if (typeof session.activeOrganizationId === "string" && session.activeOrganizationId.trim().length > 0) {
+              return;
+            }
+
+            const activeOrganizationId = await resolveSingleOrganizationIdForUser(session.userId);
+            if (!activeOrganizationId) {
+              return;
+            }
+
+            return {
+              data: {
+                ...session,
+                activeOrganizationId,
+              },
+            };
+          },
+        },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,

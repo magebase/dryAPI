@@ -30,6 +30,7 @@ function createDeps(overrides?: Partial<Parameters<typeof handleStripePluginEven
     stripeClient: {} as Stripe,
     stripePrivateKey: "sk_test_123",
     resolveCheckoutCustomerEmail: vi.fn().mockReturnValue("owner@example.com"),
+    resolveCheckoutCustomerRef: vi.fn().mockReturnValue("owner@example.com"),
     resolveCheckoutFlow: vi.fn().mockReturnValue("subscription" as CheckoutEmailFlow),
     resolveInvoiceCustomerEmail: vi.fn().mockResolvedValue("owner@example.com"),
     syncTopUp: vi.fn().mockResolvedValue({}),
@@ -70,16 +71,20 @@ describe("handleStripePluginEvent", () => {
       buildEvent("checkout.session.completed", {
         id: "cs_test_123",
         mode: "payment",
+        client_reference_id: "org_123",
+        metadata: {
+          customerRef: "owner@example.com",
+        },
       }),
       deps,
     )
 
     expect(deps.syncTopUp).toHaveBeenCalledWith({
       checkoutSessionId: "cs_test_123",
-      customerEmail: "owner@example.com",
+      customerRef: "owner@example.com",
       stripePrivateKey: "sk_test_123",
     })
-    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("owner@example.com")
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
     expect(deps.sendCheckoutSuccessEmail).toHaveBeenCalledTimes(1)
   })
 
@@ -91,12 +96,13 @@ describe("handleStripePluginEvent", () => {
     await handleStripePluginEvent(
       buildEvent("checkout.session.completed", {
         id: "cs_test_123",
+        client_reference_id: "org_123",
       }),
       deps,
     )
 
     expect(deps.syncTopUp).not.toHaveBeenCalled()
-    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("owner@example.com")
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
     expect(deps.sendCheckoutSuccessEmail).toHaveBeenCalledTimes(1)
   })
 
@@ -129,6 +135,10 @@ describe("handleStripePluginEvent", () => {
     await handleStripePluginEvent(
       buildEvent("checkout.session.completed", {
         id: "cs_test_123",
+        client_reference_id: "org_123",
+        metadata: {
+          customerRef: "owner@example.com",
+        },
       }),
       deps,
     )
@@ -143,12 +153,15 @@ describe("handleStripePluginEvent", () => {
       buildEvent("invoice.paid", {
         id: "in_123",
         customer_email: "billing@example.com",
+        metadata: {
+          referenceId: "org_123",
+        },
       }),
       deps,
     )
 
     expect(deps.sendInvoiceReceiptEmail).toHaveBeenCalledTimes(1)
-    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("billing@example.com")
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
   })
 
   it("falls back to resolving the invoice customer email when customer_email is blank", async () => {
@@ -160,12 +173,14 @@ describe("handleStripePluginEvent", () => {
       buildEvent("invoice.paid", {
         id: "in_123",
         customer_email: "   ",
+        metadata: {
+          referenceId: "org_123",
+        },
       }),
       deps,
     )
 
-    expect(deps.resolveInvoiceCustomerEmail).toHaveBeenCalledTimes(1)
-    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("resolved@example.com")
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
   })
 
   it("swallows receipt email failures and skips benefits when no invoice email can be resolved", async () => {
@@ -179,6 +194,9 @@ describe("handleStripePluginEvent", () => {
       buildEvent("invoice.paid", {
         id: "in_123",
         customer_email: "",
+        metadata: {
+          referenceId: "org_123",
+        },
       }),
       deps,
     )
@@ -187,7 +205,7 @@ describe("handleStripePluginEvent", () => {
       "[auth] Failed to send branded Stripe receipt email",
       expect.any(Error),
     )
-    expect(deps.ensureSubscriptionBenefits).not.toHaveBeenCalled()
+    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
   })
 
   it("swallows subscription benefit refresh failures after invoice payment", async () => {
@@ -200,6 +218,9 @@ describe("handleStripePluginEvent", () => {
         buildEvent("invoice.paid", {
           id: "in_123",
           customer_email: "billing@example.com",
+          metadata: {
+            referenceId: "org_123",
+          },
         }),
         deps,
       ),

@@ -1,11 +1,38 @@
 import type { NextRequest } from "next/server"
 
+import { authorizeOrganizationBillingReference } from "@/lib/auth-organization-access"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 
 type SessionSnapshot = {
   authenticated: boolean
   email: string | null
+  userId: string | null
+  userRole: string | null
+  activeOrganizationId: string | null
 }
+
+type DashboardBillingAccessResult =
+  | {
+      ok: true
+      customerRef: string
+    }
+  | {
+      ok: false
+      status: 401 | 403
+      error: string
+      message: string
+    }
+
+type DashboardOrganizationBillingAccessResult =
+  | {
+      ok: true
+    }
+  | {
+      ok: false
+      status: 401 | 403
+      error: string
+      message: string
+    }
 
 type StripeCustomerLookupResult = {
   customerId: string | null
@@ -96,6 +123,9 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
       return {
         authenticated: false,
         email: null,
+        userId: null,
+        userRole: null,
+        activeOrganizationId: null,
       }
     }
 
@@ -104,12 +134,101 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
     return {
       authenticated: hasSessionPayload(payload),
       email: readFirstString(payload, [["user", "email"], ["session", "user", "email"], ["session", "email"]]),
+      userId: readFirstString(payload, [["user", "id"], ["session", "user", "id"], ["session", "userId"]]),
+      userRole: readFirstString(payload, [["user", "role"], ["session", "user", "role"]]),
+      activeOrganizationId: readFirstString(payload, [["session", "activeOrganizationId"], ["session", "session", "activeOrganizationId"]]),
     }
   } catch {
     return {
       authenticated: false,
       email: null,
+      userId: null,
+      userRole: null,
+      activeOrganizationId: null,
     }
+  }
+}
+
+export function resolveDashboardBillingCustomerRef(session: SessionSnapshot): string | null {
+  const activeOrganizationId = session.activeOrganizationId?.trim()
+  if (activeOrganizationId) {
+    return activeOrganizationId
+  }
+
+  const email = session.email?.trim()
+  return email || null
+}
+
+export async function authorizeActiveOrganizationBillingAccess(
+  session: SessionSnapshot,
+): Promise<DashboardOrganizationBillingAccessResult> {
+  const activeOrganizationId = session.activeOrganizationId?.trim()
+  if (!activeOrganizationId) {
+    return {
+      ok: true,
+    }
+  }
+
+  if (!session.authenticated) {
+    return {
+      ok: false,
+      status: 401,
+      error: "unauthorized",
+      message: "Sign in to manage billing.",
+    }
+  }
+
+  const userId = session.userId?.trim()
+  if (!userId) {
+    return {
+      ok: false,
+      status: 401,
+      error: "unauthorized",
+      message: "Sign in again to manage workspace billing.",
+    }
+  }
+
+  const authorized = await authorizeOrganizationBillingReference({
+    referenceId: activeOrganizationId,
+    userId,
+    userRole: session.userRole,
+  })
+
+  if (!authorized) {
+    return {
+      ok: false,
+      status: 403,
+      error: "organization_billing_forbidden",
+      message: "Only workspace owners and admins can manage workspace billing.",
+    }
+  }
+
+  return {
+    ok: true,
+  }
+}
+
+export async function authorizeDashboardBillingAccess(
+  session: SessionSnapshot,
+): Promise<DashboardBillingAccessResult> {
+  const customerRef = resolveDashboardBillingCustomerRef(session)
+  if (!session.authenticated || !customerRef) {
+    return {
+      ok: false,
+      status: 401,
+      error: "unauthorized",
+      message: "Sign in to manage billing.",
+    }
+  }
+
+  const organizationAccess = await authorizeActiveOrganizationBillingAccess(session)
+  if (!organizationAccess.ok) {
+    return organizationAccess
+  }
+
+  return {
+    ok: true,
+    customerRef,
   }
 }
 
@@ -160,7 +279,43 @@ function resolveStripeCustomerId(payload: unknown): string | null {
 export async function resolveStripeCustomerLookup(input: {
   stripePrivateKey: string
   sessionEmail: string | null
+  activeOrganizationId?: string | null
 }): Promise<StripeCustomerLookupResult> {
+  const activeOrganizationId = input.activeOrganizationId?.trim() || ""
+  if (activeOrganizationId) {
+    const payload = await fetchStripeJson(
+      input.stripePrivateKey,
+      "customers/search",
+      new URLSearchParams({
+        query: `metadata[\"organizationId\"]:\"${activeOrganizationId}\" AND metadata[\"customerType\"]:\"organization\"`,
+        limit: "1",
+      }),
+    )
+
+    if (!payload) {
+      return {
+        customerId: null,
+        errors: ["Stripe customer lookup failed."],
+      }
+    }
+
+    const entries = payload.data
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return {
+        customerId: null,
+        errors: ["No Stripe customer matched the active organization."],
+      }
+    }
+
+    const first = entries[0]
+    const resolvedCustomerId = resolveStripeCustomerId(first)
+
+    return {
+      customerId: resolvedCustomerId,
+      errors: resolvedCustomerId ? [] : ["Stripe customer id was missing from lookup response."],
+    }
+  }
+
   const customerIdFromEnv = process.env.STRIPE_METER_BILLING_CUSTOMER_ID?.trim() || ""
   if (customerIdFromEnv) {
     const configuredCustomer = await fetchStripeJson(

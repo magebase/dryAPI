@@ -804,7 +804,7 @@ export default async function DashboardBillingPage({
   if (checkoutStatus === "success" && checkoutSessionId && customerEmail) {
     await syncDashboardTopUpFromStripeCheckout({
       checkoutSessionId,
-      customerEmail,
+      customerRef: customerEmail,
       stripePrivateKey: process.env.STRIPE_PRIVATE_KEY?.trim() || "",
     }).catch(() => null);
   }

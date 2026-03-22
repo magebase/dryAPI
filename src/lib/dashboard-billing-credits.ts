@@ -66,6 +66,7 @@ type StripeCheckoutSessionPayload = {
   mode?: string
   status?: string
   payment_status?: string
+  customer?: string | null
   customer_email?: string | null
   customer_details?: {
     email?: string | null
@@ -155,7 +156,7 @@ CREATE TABLE IF NOT EXISTS saas_monthly_token_buckets (
 
 function sanitizeCustomerRef(value: string): string {
   const normalized = value.trim().toLowerCase()
-  if (normalized.length < 3 || !normalized.includes("@")) {
+  if (normalized.length === 0) {
     throw new Error("A valid customer ref is required")
   }
 
@@ -853,6 +854,16 @@ function readCheckoutEmail(payload: StripeCheckoutSessionPayload): string | null
   return null
 }
 
+function readCheckoutCustomerRef(metadata: Record<string, unknown>): string | null {
+  const raw = metadata.customerRef
+  if (typeof raw !== "string") {
+    return null
+  }
+
+  const normalized = raw.trim().toLowerCase()
+  return normalized.length > 0 ? normalized : null
+}
+
 function readCheckoutCreditsGranted(metadata: Record<string, unknown>): number | null {
   const raw = metadata.creditsGranted
   const parsed = toFiniteNumber(raw)
@@ -874,7 +885,7 @@ function normalizeStripeCheckoutSessionId(value: string): string {
 
 export async function syncDashboardTopUpFromStripeCheckout(input: {
   checkoutSessionId: string
-  customerEmail: string
+  customerRef: string
   stripePrivateKey: string
   initialBalanceCredits?: number
   db?: D1DatabaseLike | null
@@ -888,7 +899,7 @@ export async function syncDashboardTopUpFromStripeCheckout(input: {
     }
   }
 
-  const normalizedCustomerRef = sanitizeCustomerRef(input.customerEmail)
+  const normalizedInputCustomerRef = sanitizeCustomerRef(input.customerRef)
   const checkoutSessionId = normalizeStripeCheckoutSessionId(input.checkoutSessionId)
 
   const response = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(checkoutSessionId)}`, {
@@ -944,8 +955,18 @@ export async function syncDashboardTopUpFromStripeCheckout(input: {
     }
   }
 
+  const metadataCustomerRef = readCheckoutCustomerRef(metadata)
+  if (metadataCustomerRef && metadataCustomerRef !== normalizedInputCustomerRef) {
+    return {
+      applied: false,
+      balance: null,
+      reason: "stripe_session_customer_mismatch",
+    }
+  }
+
+  const normalizedCustomerRef = metadataCustomerRef || normalizedInputCustomerRef
   const checkoutEmail = readCheckoutEmail(payload)
-  if (checkoutEmail && checkoutEmail !== normalizedCustomerRef) {
+  if (!metadataCustomerRef && checkoutEmail && checkoutEmail !== normalizedCustomerRef) {
     return {
       applied: false,
       balance: null,

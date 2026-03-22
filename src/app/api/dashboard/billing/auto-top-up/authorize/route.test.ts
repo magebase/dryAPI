@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 const resolveActiveBrandMock = vi.fn()
 const getDashboardSessionSnapshotMock = vi.fn()
+const authorizeDashboardBillingAccessMock = vi.fn()
 const resolveRequestOriginFromRequestMock = vi.fn()
 const resolveStripeCustomerLookupMock = vi.fn()
 const resolveStripeCheckoutMessagingMock = vi.fn()
@@ -14,6 +15,8 @@ vi.mock("@/lib/brand-catalog", () => ({
 vi.mock("@/lib/dashboard-billing", () => ({
   getDashboardSessionSnapshot: (...args: unknown[]) =>
     getDashboardSessionSnapshotMock(...args),
+  authorizeDashboardBillingAccess: (...args: unknown[]) =>
+    authorizeDashboardBillingAccessMock(...args),
   resolveRequestOriginFromRequest: (...args: unknown[]) =>
     resolveRequestOriginFromRequestMock(...args),
   resolveStripeCustomerLookup: (...args: unknown[]) =>
@@ -42,12 +45,34 @@ afterEach(() => {
   vi.unstubAllGlobals()
   resolveActiveBrandMock.mockReset()
   getDashboardSessionSnapshotMock.mockReset()
+  authorizeDashboardBillingAccessMock.mockReset()
   resolveRequestOriginFromRequestMock.mockReset()
   resolveStripeCustomerLookupMock.mockReset()
   resolveStripeCheckoutMessagingMock.mockReset()
 })
 
 describe("GET /api/dashboard/billing/auto-top-up/authorize", () => {
+  beforeEach(() => {
+    authorizeDashboardBillingAccessMock.mockImplementation(
+      async (session: { authenticated?: boolean; activeOrganizationId?: string | null; email?: string | null }) => {
+        const customerRef = session.activeOrganizationId ?? session.email ?? null
+
+        if (!session.authenticated || !customerRef) {
+          return {
+            ok: false,
+            status: 401,
+            error: "unauthorized",
+            message: "Sign in to manage billing.",
+          }
+        }
+
+        return {
+          ok: true,
+          customerRef,
+        }
+      },
+    )
+  })
   it("returns 401 when the user is not authenticated", async () => {
     getDashboardSessionSnapshotMock.mockResolvedValue({ authenticated: false, email: null })
 
@@ -64,6 +89,29 @@ describe("GET /api/dashboard/billing/auto-top-up/authorize", () => {
 
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toMatchObject({ error: "stripe_not_configured" })
+  })
+
+  it("returns 403 when workspace billing access is denied", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "member@dryapi.dev",
+      userId: "user_member",
+      activeOrganizationId: "org_123",
+    })
+    authorizeDashboardBillingAccessMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "organization_billing_forbidden",
+      message: "Only workspace owners and admins can manage workspace billing.",
+    })
+
+    const response = await GET(makeRequest())
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toMatchObject({
+      error: "organization_billing_forbidden",
+    })
+    expect(resolveStripeCustomerLookupMock).not.toHaveBeenCalled()
   })
 
   it("returns 404 when no Stripe customer can be resolved", async () => {

@@ -18,7 +18,7 @@ export const authClient = createAuthClient({
     i18nClient(),
     lastLoginMethodClient(),
     organizationClient(),
-    stripeClient(),
+    stripeClient({ subscription: true }),
     twoFactorClient(),
   ],
 })

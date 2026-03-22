@@ -15,8 +15,10 @@ import {
   resolveSaasPlan,
 } from "@/lib/stripe-saas-plans";
 import {
+  authorizeDashboardBillingAccess,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
+  resolveStripeCustomerLookup,
 } from "@/lib/dashboard-billing";
 import {
   buildBrandedCheckoutCancelUrl,
@@ -45,15 +47,18 @@ function resolveAmountMajor(request: NextRequest): number {
 
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
-  if (!session.authenticated) {
+  const access = await authorizeDashboardBillingAccess(session)
+  if (!access.ok) {
     return NextResponse.json(
       {
-        error: "unauthorized",
-        message: "Sign in to create a top-up checkout session.",
+        error: access.error,
+        message: access.message,
       },
-      { status: 401 },
+      { status: access.status },
     );
   }
+
+  const billingCustomerRef = access.customerRef
 
   if (!isStripeDepositsEnabledServer()) {
     return NextResponse.json(
@@ -108,6 +113,26 @@ export async function GET(request: NextRequest) {
       brandMark: brand.mark,
     });
 
+    const customerLookup = session.activeOrganizationId
+      ? await resolveStripeCustomerLookup({
+          stripePrivateKey,
+          sessionEmail: null,
+          activeOrganizationId: session.activeOrganizationId,
+        })
+      : { customerId: null, errors: [] as string[] }
+
+    if (session.activeOrganizationId && !customerLookup.customerId) {
+      return NextResponse.json(
+        {
+          error: "stripe_customer_not_found",
+          message:
+            customerLookup.errors[0] ||
+            "No Stripe customer was found for this workspace.",
+        },
+        { status: 404 },
+      )
+    }
+
     const monthlyTokenCycleStart = plan
       ? resolveCurrentMonthlyTokenCycleStartIso()
       : null;
@@ -115,6 +140,7 @@ export async function GET(request: NextRequest) {
 
     const metadata = sanitizeDepositMetadata({
       source: "dryapi-dashboard-top-up",
+      customerRef: billingCustomerRef,
       creditsGranted: topUp.creditsGranted,
       dryapi_brand_key: brand.key,
       pricingMode: plan ? "saas-tier-discount" : "standard-top-up",
@@ -149,7 +175,8 @@ export async function GET(request: NextRequest) {
         flow: "topup",
       }),
       description: `${topUp.creditsGranted.toFixed(2)} credits top-up${discountDescription}`,
-      customerEmail: session.email || undefined,
+      customerId: customerLookup.customerId || undefined,
+      customerEmail: customerLookup.customerId ? undefined : session.email || undefined,
       metadata,
       statementDescriptorSuffix: checkoutMessaging.statementDescriptorSuffix,
       checkoutSubmitMessage: checkoutMessaging.checkoutSubmitMessage,

@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiTokenIfConfigured } from "@/app/api/v1/client/_shared";
 import { resolveAccountRpmLimit } from "@/lib/account-rate-limits";
 import { resolveConfiguredBalance } from "@/lib/configured-balance";
-import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing";
+import {
+  authorizeActiveOrganizationBillingAccess,
+  getDashboardSessionSnapshot,
+  resolveDashboardBillingCustomerRef,
+} from "@/lib/dashboard-billing";
 import {
   getLifetimeDepositedCredits,
   getStoredCreditBalance,
@@ -29,14 +33,28 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const stored = session.email
-    ? await getStoredCreditBalance(session.email).catch(() => null)
+  const organizationAccess = await authorizeActiveOrganizationBillingAccess(session)
+  if (!organizationAccess.ok) {
+    return NextResponse.json(
+      {
+        error: {
+          code: organizationAccess.error,
+          message: organizationAccess.message,
+        },
+      },
+      { status: organizationAccess.status },
+    )
+  }
+
+  const customerRef = resolveDashboardBillingCustomerRef(session);
+  const stored = customerRef
+    ? await getStoredCreditBalance(customerRef).catch(() => null)
     : null;
-  const creditsSplit = session.email
-    ? await getStoredSubscriptionCredits(session.email).catch(() => null)
+  const creditsSplit = customerRef
+    ? await getStoredSubscriptionCredits(customerRef).catch(() => null)
     : null;
-  const lifetimeDepositedUsd = session.email
-    ? await getLifetimeDepositedCredits(session.email).catch(() => null)
+  const lifetimeDepositedUsd = customerRef
+    ? await getLifetimeDepositedCredits(customerRef).catch(() => null)
     : null;
   const rpmLimit = resolveAccountRpmLimit(lifetimeDepositedUsd ?? 0);
   const balance = stored?.balanceCredits ?? resolveConfiguredBalance();

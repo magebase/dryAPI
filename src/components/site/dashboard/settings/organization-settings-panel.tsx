@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
+import { getClientAuthSessionSnapshot, invalidateClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 
 type SessionPayload = {
   user?: {
@@ -76,6 +76,7 @@ type OrganizationDetailsResponse = {
 }
 
 const ORGANIZATION_ROLES = ["owner", "admin", "member"] as const
+const PERSONAL_WORKSPACE_SWITCH_KEY = "__personal_workspace__"
 
 const createOrganizationSchema = z.object({
   name: z.string().trim().min(1, "Workspace name is required."),
@@ -104,10 +105,36 @@ function toRoleLabel(role: (typeof ORGANIZATION_ROLES)[number]): string {
   return role.charAt(0).toUpperCase() + role.slice(1)
 }
 
+function parseOrganizationRoles(value: string | null | undefined): Array<(typeof ORGANIZATION_ROLES)[number]> {
+  return (value || "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter((entry): entry is (typeof ORGANIZATION_ROLES)[number] =>
+      ORGANIZATION_ROLES.includes(entry as (typeof ORGANIZATION_ROLES)[number]),
+    )
+}
+
+function describeOrganizationRole(value: string | null | undefined): string {
+  const roles = parseOrganizationRoles(value)
+  if (roles.length === 0) {
+    return "none"
+  }
+
+  return roles.map((role) => toRoleLabel(role)).join(", ")
+}
+
+function hasOrganizationManagementRole(value: string | null | undefined): boolean {
+  const roles = parseOrganizationRoles(value)
+  return roles.includes("owner") || roles.includes("admin")
+}
+
 function normalizeOrganizationRole(value: string | null | undefined): (typeof ORGANIZATION_ROLES)[number] {
-  const normalized = (value || "").trim().toLowerCase()
-  if (ORGANIZATION_ROLES.includes(normalized as (typeof ORGANIZATION_ROLES)[number])) {
-    return normalized as (typeof ORGANIZATION_ROLES)[number]
+  const roles = parseOrganizationRoles(value)
+
+  for (const role of ORGANIZATION_ROLES) {
+    if (roles.includes(role)) {
+      return role
+    }
   }
 
   return "member"
@@ -221,6 +248,7 @@ export function OrganizationSettingsPanel() {
       return payload
     },
     onSuccess: (payload) => {
+      invalidateClientAuthSessionSnapshot()
       createOrganizationForm.reset(CREATE_ORGANIZATION_DEFAULTS)
       setSlugTouched(false)
       setReloadToken((current) => current + 1)
@@ -390,12 +418,14 @@ export function OrganizationSettingsPanel() {
     }
   }, [reloadToken])
 
-  async function handleSetActiveOrganization(organizationId: string) {
+  async function handleSetActiveOrganization(organizationId: string | null) {
+    const nextSwitchingId = organizationId || PERSONAL_WORKSPACE_SWITCH_KEY
+
     if (switchingId) {
       return
     }
 
-    setSwitchingId(organizationId)
+    setSwitchingId(nextSwitchingId)
 
     try {
       const response = await fetch("/api/auth/organization/set-active", {
@@ -407,16 +437,25 @@ export function OrganizationSettingsPanel() {
         body: JSON.stringify({ organizationId }),
       })
 
-      const payload = (await response.json().catch(() => null)) as { message?: string; id?: string } | null
+      const payload = (await response.json().catch(() => null)) as { message?: string; id?: string | null } | null
 
       if (!response.ok) {
         toast.error(payload?.message || "Unable to switch workspace")
         return
       }
 
-      await loadOrganizationDetails(organizationId)
+      invalidateClientAuthSessionSnapshot()
+
+      if (organizationId) {
+        await loadOrganizationDetails(organizationId)
+      } else {
+        setMembers([])
+        setInvitations([])
+        setMemberRoleUpdates({})
+      }
+
       setActiveOrganizationId(organizationId)
-      toast.success("Active workspace updated")
+      toast.success(organizationId ? "Active workspace updated" : "Personal workspace active")
     } catch {
       toast.error("Unable to switch workspace")
     } finally {
@@ -425,7 +464,8 @@ export function OrganizationSettingsPanel() {
   }
 
   async function handleUpdateMemberRole(memberId: string) {
-    if (!activeOrganizationId) {
+    const activeMembership = members.find((member) => member.userId === currentUserId) ?? null
+    if (!activeOrganizationId || !hasOrganizationManagementRole(activeMembership?.role)) {
       return
     }
 
@@ -463,7 +503,8 @@ export function OrganizationSettingsPanel() {
   }
 
   async function handleRemoveMember(member: OrganizationMember) {
-    if (!activeOrganizationId) {
+    const activeMembership = members.find((member) => member.userId === currentUserId) ?? null
+    if (!activeOrganizationId || !hasOrganizationManagementRole(activeMembership?.role)) {
       return
     }
 
@@ -499,7 +540,8 @@ export function OrganizationSettingsPanel() {
   }
 
   async function handleCancelInvitation(invitationId: string) {
-    if (!activeOrganizationId) {
+    const activeMembership = members.find((member) => member.userId === currentUserId) ?? null
+    if (!activeOrganizationId || !hasOrganizationManagementRole(activeMembership?.role)) {
       return
     }
 
@@ -556,6 +598,7 @@ export function OrganizationSettingsPanel() {
         return
       }
 
+      invalidateClientAuthSessionSnapshot()
       await loadUserInvitations()
       setReloadToken((value) => value + 1)
       toast.success(action === "accept" ? "Invitation accepted" : "Invitation rejected")
@@ -583,6 +626,8 @@ export function OrganizationSettingsPanel() {
 
   const activeOrganization = organizations.find((organization) => organization.id === activeOrganizationId) ?? null
   const activeMember = members.find((member) => member.userId === currentUserId) ?? null
+  const canManageOrganizationMembers = activeOrganizationId !== null && hasOrganizationManagementRole(activeMember?.role)
+  const isPersonalWorkspaceActive = activeOrganizationId === null
 
   return (
     <div className="space-y-5">
@@ -602,6 +647,27 @@ export function OrganizationSettingsPanel() {
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             Use Better Auth organizations to separate billing context, members, and API key ownership.
           </p>
+        </div>
+
+        <div className="flex flex-col gap-3 rounded-lg border border-zinc-200/80 p-3 dark:border-zinc-700/80 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Personal workspace</p>
+              {isPersonalWorkspaceActive ? <Badge>Active</Badge> : null}
+            </div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Uses your personal billing profile, API keys, and account-level settings.
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            variant={isPersonalWorkspaceActive ? "secondary" : "outline"}
+            disabled={isPersonalWorkspaceActive || switchingId === PERSONAL_WORKSPACE_SWITCH_KEY}
+            onClick={() => void handleSetActiveOrganization(null)}
+          >
+            {switchingId === PERSONAL_WORKSPACE_SWITCH_KEY ? "Switching..." : isPersonalWorkspaceActive ? "Current" : "Use personal workspace"}
+          </Button>
         </div>
 
         {organizations.length > 0 ? (
@@ -722,12 +788,14 @@ export function OrganizationSettingsPanel() {
           <div>
             <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Member access</p>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Invite teammates and manage their organization role for the active workspace.
+              {activeOrganizationId && !canManageOrganizationMembers
+                ? "Only workspace owners and admins can invite members or change access."
+                : "Invite teammates and manage their organization role for the active workspace."}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{members.length} members</Badge>
-            <Badge variant="secondary">Your role: {activeMember?.role || "none"}</Badge>
+            <Badge variant="secondary">Your role: {describeOrganizationRole(activeMember?.role)}</Badge>
           </div>
         </div>
 
@@ -776,7 +844,7 @@ export function OrganizationSettingsPanel() {
         />
 
         <div className="md:col-span-3 flex justify-end border-t border-zinc-200/80 pt-4 dark:border-zinc-700/80">
-          <Button type="submit" disabled={!activeOrganizationId || inviteMemberMutation.isPending || inviteMemberForm.state.isSubmitting}>
+          <Button type="submit" disabled={!activeOrganizationId || !canManageOrganizationMembers || inviteMemberMutation.isPending || inviteMemberForm.state.isSubmitting}>
             {inviteMemberMutation.isPending || inviteMemberForm.state.isSubmitting ? "Inviting..." : "Invite member"}
           </Button>
         </div>
@@ -807,7 +875,7 @@ export function OrganizationSettingsPanel() {
                         [member.id]: normalizeOrganizationRole(value),
                       }))
                     }
-                    disabled={isCurrentUser}
+                    disabled={isCurrentUser || !canManageOrganizationMembers}
                   >
                     <SelectTrigger className="w-full sm:w-36">
                       <SelectValue placeholder="Role" />
@@ -824,7 +892,7 @@ export function OrganizationSettingsPanel() {
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={isCurrentUser || memberActionId === roleActionId}
+                    disabled={isCurrentUser || !canManageOrganizationMembers || memberActionId === roleActionId}
                     onClick={() => void handleUpdateMemberRole(member.id)}
                   >
                     {memberActionId === roleActionId ? "Updating..." : "Update role"}
@@ -833,7 +901,7 @@ export function OrganizationSettingsPanel() {
                   <Button
                     type="button"
                     variant="destructive"
-                    disabled={isCurrentUser || memberActionId === removeActionId}
+                    disabled={isCurrentUser || !canManageOrganizationMembers || memberActionId === removeActionId}
                     onClick={() => void handleRemoveMember(member)}
                   >
                     {memberActionId === removeActionId ? "Removing..." : "Remove"}
@@ -867,7 +935,7 @@ export function OrganizationSettingsPanel() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={invitationActionId === invitation.id}
+                disabled={!canManageOrganizationMembers || invitationActionId === invitation.id}
                 onClick={() => void handleCancelInvitation(invitation.id)}
               >
                 {invitationActionId === invitation.id ? "Canceling..." : "Cancel invite"}

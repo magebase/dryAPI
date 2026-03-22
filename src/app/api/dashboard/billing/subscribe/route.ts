@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { invokeAuthHandler } from "@/lib/auth-handler-proxy";
 import {
+  authorizeDashboardBillingAccess,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
 } from "@/lib/dashboard-billing";
@@ -180,14 +181,15 @@ async function validateStripePortalConfigurationForPrice(input: {
 
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
+  const access = await authorizeDashboardBillingAccess(session)
 
-  if (!session.authenticated) {
+  if (!access.ok) {
     return NextResponse.json(
       {
-        error: "unauthorized",
-        message: "Sign in to create a subscription checkout session.",
+        error: access.error,
+        message: access.message,
       },
-      { status: 401 },
+      { status: access.status },
     );
   }
 
@@ -285,6 +287,7 @@ export async function GET(request: NextRequest) {
   }
 
   const origin = resolveRequestOriginFromRequest(request);
+  const customerType = session.activeOrganizationId ? "organization" : "user";
 
   const { response, data } =
     await invokeAuthHandler<StripeSubscriptionUpgradeResponse>({
@@ -294,6 +297,12 @@ export async function GET(request: NextRequest) {
       body: {
         plan: plan.slug,
         annual: billingPeriod === "annual",
+        ...(customerType === "organization"
+          ? {
+              customerType,
+              referenceId: session.activeOrganizationId,
+            }
+          : {}),
         successUrl: buildBrandedCheckoutSuccessUrl({
           origin,
           flow: "subscription",

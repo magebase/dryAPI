@@ -166,6 +166,7 @@ export function buildStripeDepositCheckoutParams(input: {
   successUrl: string
   cancelUrl: string
   description?: string
+  customerId?: string
   customerEmail?: string
   metadata?: Record<string, string>
   statementDescriptorSuffix?: string
@@ -190,6 +191,10 @@ export function buildStripeDepositCheckoutParams(input: {
 
   if (input.checkoutSubmitMessage?.trim()) {
     params.set("custom_text[submit][message]", input.checkoutSubmitMessage.trim())
+  }
+
+  if (input.customerId?.trim()) {
+    params.set("customer", input.customerId.trim())
   }
 
   if (input.customerEmail?.trim()) {

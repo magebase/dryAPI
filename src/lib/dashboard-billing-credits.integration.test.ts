@@ -408,7 +408,7 @@ describe("dashboard-billing-credits", () => {
     await expect(getStoredCreditBalance("owner@dryapi.dev")).resolves.toBeNull()
 
     const { db } = createDb()
-    await expect(getStoredCreditBalance("x", { db })).rejects.toThrow(
+    await expect(getStoredCreditBalance("", { db })).rejects.toThrow(
       "A valid customer ref is required",
     )
   })
@@ -1403,7 +1403,7 @@ describe("dashboard-billing-credits", () => {
 
     const result = await syncDashboardTopUpFromStripeCheckout({
       checkoutSessionId: "cs_success_2",
-      customerEmail: "owner@dryapi.dev",
+      customerRef: "owner@dryapi.dev",
       stripePrivateKey: "sk_test_123",
       db,
     })
@@ -1418,7 +1418,7 @@ describe("dashboard-billing-credits", () => {
     await expect(
       syncDashboardTopUpFromStripeCheckout({
         checkoutSessionId: "cs_test_missing_key",
-        customerEmail: "owner@dryapi.dev",
+        customerRef: "owner@dryapi.dev",
         stripePrivateKey: "   ",
         db,
       }),
@@ -1431,7 +1431,7 @@ describe("dashboard-billing-credits", () => {
     await expect(
       syncDashboardTopUpFromStripeCheckout({
         checkoutSessionId: "bad_session_id",
-        customerEmail: "owner@dryapi.dev",
+        customerRef: "owner@dryapi.dev",
         stripePrivateKey: "sk_test_123",
         db,
       }),
@@ -1441,7 +1441,7 @@ describe("dashboard-billing-credits", () => {
     await expect(
       syncDashboardTopUpFromStripeCheckout({
         checkoutSessionId: "cs_test_fetch_fail",
-        customerEmail: "owner@dryapi.dev",
+        customerRef: "owner@dryapi.dev",
         stripePrivateKey: "sk_test_123",
         db,
       }),
@@ -1459,7 +1459,7 @@ describe("dashboard-billing-credits", () => {
     await expect(
       syncDashboardTopUpFromStripeCheckout({
         checkoutSessionId: "cs_test_invalid_payload",
-        customerEmail: "owner@dryapi.dev",
+        customerRef: "owner@dryapi.dev",
         stripePrivateKey: "sk_test_123",
         db,
       }),
@@ -1506,7 +1506,7 @@ describe("dashboard-billing-credits", () => {
       await expect(
         syncDashboardTopUpFromStripeCheckout({
           checkoutSessionId: testCase.payload.id,
-          customerEmail: "owner@dryapi.dev",
+          customerRef: "owner@dryapi.dev",
           stripePrivateKey: "sk_test_123",
           db,
         }),
@@ -1538,7 +1538,7 @@ describe("dashboard-billing-credits", () => {
 
     const first = await syncDashboardTopUpFromStripeCheckout({
       checkoutSessionId: "cs_success_1",
-      customerEmail: "owner@dryapi.dev",
+      customerRef: "owner@dryapi.dev",
       stripePrivateKey: "sk_test_123",
       initialBalanceCredits: 10,
       db,
@@ -1546,7 +1546,7 @@ describe("dashboard-billing-credits", () => {
 
     const second = await syncDashboardTopUpFromStripeCheckout({
       checkoutSessionId: "cs_success_1",
-      customerEmail: "owner@dryapi.dev",
+      customerRef: "owner@dryapi.dev",
       stripePrivateKey: "sk_test_123",
       initialBalanceCredits: 10,
       db,

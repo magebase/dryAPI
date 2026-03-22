@@ -365,6 +365,7 @@ export function PlaygroundPageTemplate({
   const [apiKeys, setApiKeys] = useState<PlaygroundApiKeyRecord[]>([]);
   const [apiKeysLoading, setApiKeysLoading] = useState(true);
   const [apiKeysError, setApiKeysError] = useState<string | null>(null);
+  const [playgroundAuthRequired, setPlaygroundAuthRequired] = useState(false);
   const [selectedApiKeyId, setSelectedApiKeyId] = useState<string>("");
 
   const [activeCategory, setActiveCategory] = useState<string>(
@@ -445,6 +446,7 @@ export function PlaygroundPageTemplate({
       try {
         setApiKeysLoading(true);
         setApiKeysError(null);
+        setPlaygroundAuthRequired(false);
 
         const response = await fetch("/api/playground/api-keys", {
           cache: "no-store",
@@ -452,7 +454,11 @@ export function PlaygroundPageTemplate({
         });
 
         if (response.status === 401) {
-          router.push("/login");
+          if (active) {
+            setPlaygroundAuthRequired(true);
+            setApiKeys([]);
+            setSelectedApiKeyId("");
+          }
           return;
         }
 
@@ -470,6 +476,7 @@ export function PlaygroundPageTemplate({
         }
 
         setApiKeys(availableKeys);
+        setPlaygroundAuthRequired(false);
         setSelectedApiKeyId((previous) => {
           if (
             previous
@@ -598,11 +605,19 @@ export function PlaygroundPageTemplate({
 
   const generateDisabled =
     isGenerating ||
-    !selectedApiKeyId ||
-    !activeModel ||
-    activeCategory !== "text-to-image";
+    (!playgroundAuthRequired && (
+      !selectedApiKeyId ||
+      !activeModel ||
+      activeCategory !== "text-to-image"
+    ));
+
+  const signInToTryPlaygroundHref = `/register?callbackURL=${encodeURIComponent(page.slug)}`;
 
   async function handleGenerateClick() {
+    if (playgroundAuthRequired) {
+      router.push(signInToTryPlaygroundHref);
+      return;
+    }
     if (isGenerating) {
       return;
     }
@@ -654,7 +669,8 @@ export function PlaygroundPageTemplate({
       });
 
       if (generationResponse.status === 401) {
-        router.push("/login");
+        setPlaygroundAuthRequired(true);
+        router.push(signInToTryPlaygroundHref);
         return;
       }
 
@@ -1029,15 +1045,21 @@ export function PlaygroundPageTemplate({
                           ) : null}
                           {!apiKeysLoading && apiKeys.length === 0 ? (
                             <p className="text-[11px] font-semibold text-site-soft">
-                              Create an API key first in{" "}
-                              <Link
-                                href="/dashboard/settings/api-keys"
-                                className="text-primary hover:underline"
-                                prefetch={false}
-                              >
-                                Dashboard Settings
-                              </Link>
-                              .
+                              {playgroundAuthRequired ? (
+                                "Sign in to save an API key and try live generation."
+                              ) : (
+                                <>
+                                  Create an API key first in{" "}
+                                  <Link
+                                    href="/dashboard/settings/api-keys"
+                                    className="text-primary hover:underline"
+                                    prefetch={false}
+                                  >
+                                    Dashboard Settings
+                                  </Link>
+                                  .
+                                </>
+                              )}
                             </p>
                           ) : null}
                         </div>
@@ -1076,7 +1098,11 @@ export function PlaygroundPageTemplate({
                               type="button"
                               disabled={generateDisabled}
                             >
-                              {isGenerating ? "Generating..." : "Generate"}
+                              {playgroundAuthRequired
+                                ? "Sign in to try playground"
+                                : isGenerating
+                                  ? "Generating..."
+                                  : "Generate"}
                             </button>
                           </div>
                         </div>

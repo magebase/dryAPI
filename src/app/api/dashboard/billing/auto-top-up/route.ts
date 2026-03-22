@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing";
+import {
+  authorizeDashboardBillingAccess,
+  getDashboardSessionSnapshot,
+} from "@/lib/dashboard-billing";
 import {
   BILLING_SAFEGUARDS,
   getStoredAutoTopUpSettings,
@@ -38,19 +41,22 @@ function toDefaultSettings() {
 
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
-  if (!session.authenticated || !session.email) {
+  const access = await authorizeDashboardBillingAccess(session)
+  if (!access.ok) {
     return NextResponse.json(
       {
-        error: "unauthorized",
-        message: "Sign in to view auto top-up settings.",
+        error: access.error,
+        message: access.message,
       },
-      { status: 401 },
+      { status: access.status },
     );
   }
 
+  const billingCustomerRef = access.customerRef
+
   const [settings, balance] = await Promise.all([
-    getStoredAutoTopUpSettings(session.email),
-    getStoredCreditBalance(session.email),
+    getStoredAutoTopUpSettings(billingCustomerRef),
+    getStoredCreditBalance(billingCustomerRef),
   ]);
 
   return NextResponse.json({
@@ -65,15 +71,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
-  if (!session.authenticated || !session.email) {
+  const access = await authorizeDashboardBillingAccess(session)
+  if (!access.ok) {
     return NextResponse.json(
       {
-        error: "unauthorized",
-        message: "Sign in to update auto top-up settings.",
+        error: access.error,
+        message: access.message,
       },
-      { status: 401 },
+      { status: access.status },
     );
   }
+
+  const billingCustomerRef = access.customerRef
 
   const payload = await request.json().catch(() => null);
   const parsed = autoTopUpSettingsSchema.safeParse(payload);
@@ -101,7 +110,7 @@ export async function POST(request: NextRequest) {
   }
 
   const updated = await updateStoredAutoTopUpSettings({
-    customerRef: session.email,
+    customerRef: billingCustomerRef,
     enabled: parsed.data.enabled,
     thresholdCredits: parsed.data.thresholdCredits,
     amountCredits: parsed.data.amountCredits,

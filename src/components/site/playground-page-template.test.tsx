@@ -218,6 +218,60 @@ describe("PlaygroundPageTemplate", () => {
     expect(screen.queryByText("Session verified. Continue generation and orchestration in your dashboard workspace.")).toBeNull()
   })
 
+  it("prompts sign-in and redirects to register when playground access is unauthenticated", async () => {
+    const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
+
+      if (requestUrl === "/api/playground/models") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            data: [
+              {
+                id: "flux2-klein-4b",
+                slug: "flux2-klein-4b",
+                model: "flux2-klein-4b",
+                display_name: "FLUX.2 Klein 4B BF16",
+                inference_types: ["text-to-image"],
+                categories: ["text-to-image"],
+                parameter_keys: ["prompt", "size"],
+              },
+            ],
+            meta: { generated_at: new Date().toISOString() },
+          }),
+        })
+      }
+
+      if (requestUrl === "/api/playground/api-keys") {
+        return Promise.resolve({
+          ok: false,
+          status: 401,
+          json: () => Promise.resolve({ error: "unauthorized" }),
+        })
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch call: ${requestUrl}`))
+    })
+
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await act(async () => {
+      render(<PlaygroundPageTemplate page={mockPage} site={mockSite} />)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign in to try playground" })).toBeDefined()
+    })
+
+    expect(routerPushMock).not.toHaveBeenCalled()
+
+    const signInButton = screen.getByRole("button", { name: "Sign in to try playground" })
+    fireEvent.click(signInButton)
+
+    expect(routerPushMock).toHaveBeenCalledWith("/register?callbackURL=%2Fplayground")
+    expect(fetchMock.mock.calls.some(([requestUrl]) => requestUrl === "/api/playground/generate")).toBe(false)
+  })
+
   it("keeps generate disabled when no API keys exist", async () => {
     global.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
       const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url

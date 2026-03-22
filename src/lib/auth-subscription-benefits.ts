@@ -56,13 +56,16 @@ async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
   }
 }
 
-async function getUserByReferenceId(referenceId: string): Promise<AuthUserRow | null> {
-  const normalizedReferenceId = referenceId.trim()
+async function getLatestActiveSubscriptionForReferenceId(
+  referenceId: string,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<AuthSubscriptionRow | null> {
+  const normalizedReferenceId = referenceId.trim().toLowerCase()
   if (!normalizedReferenceId) {
     return null
   }
 
-  const db = await resolveAuthDb()
+  const db = options?.db ?? (await resolveAuthDb())
   if (!db) {
     return null
   }
@@ -70,16 +73,17 @@ async function getUserByReferenceId(referenceId: string): Promise<AuthUserRow | 
   const response = await db
     .prepare(
       `
-      SELECT id, email
-      FROM user
-      WHERE id = ?
+      SELECT id, plan, status, referenceId
+      FROM subscription
+      WHERE referenceId = ?
+      ORDER BY updatedAt DESC, createdAt DESC
       LIMIT 1
       `,
     )
     .bind(normalizedReferenceId)
-    .all<AuthUserRow>()
+    .all<AuthSubscriptionRow>()
 
-  return response.results[0] ?? null
+  return response.results.find((row) => ACTIVE_SUBSCRIPTION_STATUSES.has((row.status || "").toLowerCase())) ?? null
 }
 
 async function getLatestActiveSubscriptionForEmail(
@@ -129,7 +133,7 @@ function resolveCurrentUserSubscriptionPlanSummaryFromSubscription(
   }
 }
 
-async function syncBenefitsForUser(email: string, subscription: AuthSubscriptionRow) {
+async function syncBenefitsForReferenceId(referenceId: string, subscription: AuthSubscriptionRow) {
   const plan = resolveSaasPlan(subscription.plan)
   if (!plan) {
     return {
@@ -144,7 +148,7 @@ async function syncBenefitsForUser(email: string, subscription: AuthSubscription
   const cycleExpireIso = resolveMonthlyTokenExpiryIso()
 
   const result = await ensureSaasSubscriptionCycleBenefits({
-    customerRef: email,
+    customerRef: referenceId,
     subscriptionId: subscription.id,
     planSlug: plan.slug,
     cycleStartIso,
@@ -181,7 +185,7 @@ export async function ensureCurrentUserSubscriptionBenefits(email: string) {
     }
   }
 
-  return syncBenefitsForUser(email, subscription)
+  return syncBenefitsForReferenceId(email, subscription)
 }
 
 export async function resolveCurrentUserSubscriptionPlanSummary(
@@ -197,17 +201,17 @@ export async function resolveCurrentUserSubscriptionPlanSummary(
 }
 
 export async function syncSubscriptionBenefitsForReferenceId(referenceId: string) {
-  const user = await getUserByReferenceId(referenceId)
-  if (!user?.email) {
+  const normalizedReferenceId = referenceId.trim()
+  if (!normalizedReferenceId) {
     return {
       appliedCredits: false,
       balance: null,
       bucket: null,
-      reason: "user_not_found",
+      reason: "reference_id_required",
     }
   }
 
-  const subscription = await getLatestActiveSubscriptionForEmail(user.email)
+  const subscription = await getLatestActiveSubscriptionForReferenceId(normalizedReferenceId)
   if (!subscription) {
     return {
       appliedCredits: false,
@@ -217,5 +221,5 @@ export async function syncSubscriptionBenefitsForReferenceId(referenceId: string
     }
   }
 
-  return syncBenefitsForUser(user.email, subscription)
+  return syncBenefitsForReferenceId(normalizedReferenceId.toLowerCase(), subscription)
 }

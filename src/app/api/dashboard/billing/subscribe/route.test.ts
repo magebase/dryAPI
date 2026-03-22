@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 const invokeAuthHandlerMock = vi.fn()
 const getDashboardSessionSnapshotMock = vi.fn()
+const authorizeDashboardBillingAccessMock = vi.fn()
 const resolveRequestOriginFromRequestMock = vi.fn()
 
 vi.mock("@/lib/auth-handler-proxy", () => ({
@@ -11,6 +12,7 @@ vi.mock("@/lib/auth-handler-proxy", () => ({
 
 vi.mock("@/lib/dashboard-billing", () => ({
   getDashboardSessionSnapshot: (...args: unknown[]) => getDashboardSessionSnapshotMock(...args),
+  authorizeDashboardBillingAccess: (...args: unknown[]) => authorizeDashboardBillingAccessMock(...args),
   resolveRequestOriginFromRequest: (...args: unknown[]) => resolveRequestOriginFromRequestMock(...args),
 }))
 
@@ -32,10 +34,33 @@ afterEach(() => {
   vi.unstubAllEnvs()
   invokeAuthHandlerMock.mockReset()
   getDashboardSessionSnapshotMock.mockReset()
+  authorizeDashboardBillingAccessMock.mockReset()
   resolveRequestOriginFromRequestMock.mockReset()
 })
 
 describe("GET /api/dashboard/billing/subscribe", () => {
+  beforeEach(() => {
+    authorizeDashboardBillingAccessMock.mockImplementation(
+      async (session: { authenticated?: boolean; activeOrganizationId?: string | null; email?: string | null }) => {
+        const customerRef = session.activeOrganizationId ?? session.email ?? null
+
+        if (!session.authenticated || !customerRef) {
+          return {
+            ok: false,
+            status: 401,
+            error: "unauthorized",
+            message: "Sign in to manage billing.",
+          }
+        }
+
+        return {
+          ok: true,
+          customerRef,
+        }
+      },
+    )
+  })
+
   it("returns 401 when user is not authenticated", async () => {
     getDashboardSessionSnapshotMock.mockResolvedValue({
       authenticated: false,
@@ -47,6 +72,29 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     expect(res.status).toBe(401)
     expect(await res.json()).toMatchObject({
       error: "unauthorized",
+    })
+    expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
+  })
+
+  it("returns 403 when workspace billing access is denied", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "member@dryapi.dev",
+      userId: "user_member",
+      activeOrganizationId: "org_123",
+    })
+    authorizeDashboardBillingAccessMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "organization_billing_forbidden",
+      message: "Only workspace owners and admins can manage workspace billing.",
+    })
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(403)
+    expect(await res.json()).toMatchObject({
+      error: "organization_billing_forbidden",
     })
     expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
   })

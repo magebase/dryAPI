@@ -102,6 +102,12 @@ function createFetchMock(state: MockState) {
       return jsonResponse({ id, name: body.name, slug: body.slug })
     }
 
+    if (path === "/api/auth/organization/set-active" && method === "POST") {
+      const body = JSON.parse(String(init?.body || "{}")) as { organizationId?: string | null }
+      state.session.session.activeOrganizationId = body.organizationId ?? null
+      return jsonResponse({ id: body.organizationId ?? null })
+    }
+
     if (path === "/api/auth/organization/invite-member" && method === "POST") {
       const body = JSON.parse(String(init?.body || "{}")) as { email: string; role: string; organizationId: string }
       state.invitations.push({
@@ -282,6 +288,50 @@ describe("OrganizationSettingsPanel invitation flows", () => {
       role: "member",
       organizationId: "org_1",
     })
+  })
+
+  it("switches back to the personal workspace", async () => {
+    const state = createDefaultState()
+    const fetchMock = createFetchMock(state)
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderOrganizationSettingsPanel()
+
+    await screen.findByText("Your workspaces")
+    fireEvent.click(screen.getByRole("button", { name: "Use personal workspace" }))
+
+    await waitFor(() => {
+      expect(toastSuccess).toHaveBeenCalledWith("Personal workspace active")
+    })
+
+    const setActiveCall = fetchMock.mock.calls.find(([input, init]) => {
+      return getRequestPath(input) === "/api/auth/organization/set-active"
+        && (init?.method || "GET").toUpperCase() === "POST"
+    })
+
+    expect(setActiveCall).toBeTruthy()
+    expect(JSON.parse(String(setActiveCall?.[1]?.body || "{}"))).toEqual({
+      organizationId: null,
+    })
+  })
+
+  it("disables member management for non-admin members", async () => {
+    const state = createDefaultState()
+    state.members = [
+      {
+        ...state.members[0],
+        role: "member",
+      },
+    ]
+
+    const fetchMock = createFetchMock(state)
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderOrganizationSettingsPanel()
+
+    await screen.findByText("Member access")
+
+    expect(screen.getByRole("button", { name: "Invite member" })).toBeDisabled()
   })
 
   it("submits cancel-invitation requests from the pending invitation list", async () => {

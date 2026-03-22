@@ -1,7 +1,18 @@
 import { NextRequest } from "next/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+const { authorizeOrganizationBillingReferenceMock } = vi.hoisted(() => ({
+  authorizeOrganizationBillingReferenceMock: vi.fn(),
+}))
+
+vi.mock("@/lib/auth-organization-access", () => ({
+  authorizeOrganizationBillingReference: (...args: unknown[]) =>
+    authorizeOrganizationBillingReferenceMock(...args),
+}))
+
 import {
+  authorizeActiveOrganizationBillingAccess,
+  authorizeDashboardBillingAccess,
   createStripeBillingPortalUrl,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
@@ -18,6 +29,7 @@ function makeRequest(headers: Record<string, string> = {}) {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
+  authorizeOrganizationBillingReferenceMock.mockReset()
 })
 
 describe("dashboard-billing", () => {
@@ -92,6 +104,9 @@ describe("dashboard-billing", () => {
       ).resolves.toEqual({
         authenticated: true,
         email: "owner@dryapi.dev",
+        userId: null,
+        userRole: null,
+        activeOrganizationId: null,
       })
     })
 
@@ -120,6 +135,43 @@ describe("dashboard-billing", () => {
       await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: true,
         email: "nested@dryapi.dev",
+        userId: null,
+        userRole: null,
+        activeOrganizationId: null,
+      })
+    })
+
+    it("reads user identifiers and roles from the session payload", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              user: {
+                id: "user_123",
+                role: "admin",
+                email: "owner@dryapi.dev",
+              },
+              session: {
+                activeOrganizationId: "org_123",
+              },
+            }),
+            {
+              status: 200,
+              headers: {
+                "content-type": "application/json",
+              },
+            },
+          ),
+        ),
+      )
+
+      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
+        authenticated: true,
+        email: "owner@dryapi.dev",
+        userId: "user_123",
+        userRole: "admin",
+        activeOrganizationId: "org_123",
       })
     })
 
@@ -129,6 +181,9 @@ describe("dashboard-billing", () => {
       await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: false,
         email: null,
+        userId: null,
+        userRole: null,
+        activeOrganizationId: null,
       })
     })
 
@@ -148,6 +203,9 @@ describe("dashboard-billing", () => {
       await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: false,
         email: null,
+        userId: null,
+        userRole: null,
+        activeOrganizationId: null,
       })
     })
 
@@ -157,6 +215,129 @@ describe("dashboard-billing", () => {
       await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: false,
         email: null,
+        userId: null,
+        userRole: null,
+        activeOrganizationId: null,
+      })
+    })
+
+    it("reads active organization ids from the session payload", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              session: {
+                activeOrganizationId: "org_123",
+              },
+            }),
+            {
+              status: 200,
+              headers: {
+                "content-type": "application/json",
+              },
+            },
+          ),
+        ),
+      )
+
+      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
+        authenticated: true,
+        email: null,
+        userId: null,
+        userRole: null,
+        activeOrganizationId: "org_123",
+      })
+    })
+  })
+
+  describe("authorizeDashboardBillingAccess", () => {
+    it("allows personal billing reads without checking organization access", async () => {
+      await expect(
+        authorizeActiveOrganizationBillingAccess({
+          authenticated: true,
+          email: null,
+          userId: null,
+          userRole: null,
+          activeOrganizationId: null,
+        }),
+      ).resolves.toEqual({
+        ok: true,
+      })
+      expect(authorizeOrganizationBillingReferenceMock).not.toHaveBeenCalled()
+    })
+
+    it("uses the signed-in email for personal billing access", async () => {
+      await expect(
+        authorizeDashboardBillingAccess({
+          authenticated: true,
+          email: "owner@dryapi.dev",
+          userId: "user_1",
+          userRole: "user",
+          activeOrganizationId: null,
+        }),
+      ).resolves.toEqual({
+        ok: true,
+        customerRef: "owner@dryapi.dev",
+      })
+      expect(authorizeOrganizationBillingReferenceMock).not.toHaveBeenCalled()
+    })
+
+    it("authorizes workspace billing for org owners and admins", async () => {
+      authorizeOrganizationBillingReferenceMock.mockResolvedValue(true)
+
+      await expect(
+        authorizeDashboardBillingAccess({
+          authenticated: true,
+          email: "owner@dryapi.dev",
+          userId: "user_1",
+          userRole: "user",
+          activeOrganizationId: "org_123",
+        }),
+      ).resolves.toEqual({
+        ok: true,
+        customerRef: "org_123",
+      })
+      expect(authorizeOrganizationBillingReferenceMock).toHaveBeenCalledWith({
+        referenceId: "org_123",
+        userId: "user_1",
+        userRole: "user",
+      })
+    })
+
+    it("rejects workspace billing for regular members", async () => {
+      authorizeOrganizationBillingReferenceMock.mockResolvedValue(false)
+
+      await expect(
+        authorizeDashboardBillingAccess({
+          authenticated: true,
+          email: "member@dryapi.dev",
+          userId: "user_2",
+          userRole: "user",
+          activeOrganizationId: "org_member",
+        }),
+      ).resolves.toEqual({
+        ok: false,
+        status: 403,
+        error: "organization_billing_forbidden",
+        message: "Only workspace owners and admins can manage workspace billing.",
+      })
+    })
+
+    it("requires user identity for active organization billing access", async () => {
+      await expect(
+        authorizeActiveOrganizationBillingAccess({
+          authenticated: true,
+          email: "owner@dryapi.dev",
+          userId: null,
+          userRole: null,
+          activeOrganizationId: "org_123",
+        }),
+      ).resolves.toEqual({
+        ok: false,
+        status: 401,
+        error: "unauthorized",
+        message: "Sign in again to manage workspace billing.",
       })
     })
   })
@@ -359,6 +540,38 @@ describe("dashboard-billing", () => {
         customerId: "cus_found",
         errors: [],
       })
+    })
+
+    it("resolves the active organization Stripe customer id", async () => {
+      const fetchMock = vi.fn(async (input) => {
+        const url = typeof input === "string" ? input : input.url
+
+        if (url.startsWith("https://api.stripe.com/v1/customers/search?")) {
+          return new Response(JSON.stringify({ data: [{ id: "cus_org_found" }] }), {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          })
+        }
+
+        throw new Error(`Unexpected fetch: ${url}`)
+      })
+
+      vi.stubGlobal("fetch", fetchMock)
+
+      await expect(
+        resolveStripeCustomerLookup({
+          stripePrivateKey: "sk_test_123",
+          sessionEmail: null,
+          activeOrganizationId: "org_123",
+        }),
+      ).resolves.toEqual({
+        customerId: "cus_org_found",
+        errors: [],
+      })
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
     it("hides the summary error box when there is no Stripe customer", () => {

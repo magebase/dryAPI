@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { resolveActiveBrand } from "@/lib/brand-catalog";
 import {
+  authorizeDashboardBillingAccess,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
   resolveStripeCustomerLookup,
@@ -10,13 +11,14 @@ import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
-  if (!session.authenticated) {
+  const access = await authorizeDashboardBillingAccess(session)
+  if (!access.ok) {
     return NextResponse.json(
       {
-        error: "unauthorized",
-        message: "Sign in to authorize auto top-up.",
+        error: access.error,
+        message: access.message,
       },
-      { status: 401 },
+      { status: access.status },
     );
   }
 
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
   const { customerId, errors } = await resolveStripeCustomerLookup({
     stripePrivateKey,
     sessionEmail: session.email,
+    activeOrganizationId: session.activeOrganizationId,
   });
 
   if (!customerId) {
