@@ -6,21 +6,43 @@ import queueCache from "@opennextjs/cloudflare/overrides/queue/queue-cache"
 import doShardedTagCache from "@opennextjs/cloudflare/overrides/tag-cache/do-sharded-tag-cache"
 import { purgeCache } from "@opennextjs/cloudflare/overrides/cache-purge/index"
 
+import { withOpenNextCacheTiming } from "./src/lib/open-next-cache-observability"
+
 export default defineCloudflareConfig({
-  incrementalCache: withRegionalCache(r2IncrementalCache, {
-    mode: "long-lived",
-    bypassTagCacheOnCacheHit: true,
-  }),
-  queue: queueCache(doQueue, {
-    regionalCacheTtlSec: 30,
-    // Do not block responses on cache queue acknowledgements.
-    waitForQueueAck: false,
-  }),
-  tagCache: doShardedTagCache({
-    baseShardSize: 12,
-    regionalCache: true,
-    regionalCacheTtlSec: 30,
-  }),
-  cachePurge: purgeCache({ type: "durableObject" }),
+  incrementalCache: withRegionalCache(
+    withOpenNextCacheTiming(r2IncrementalCache, {
+      label: "incremental-cache",
+    }),
+    {
+      mode: "long-lived",
+      bypassTagCacheOnCacheHit: true,
+    },
+  ),
+  queue: queueCache(
+    withOpenNextCacheTiming(doQueue, {
+      label: "queue",
+    }),
+    {
+      regionalCacheTtlSec: 30,
+      // Do not block responses on cache queue acknowledgements.
+      waitForQueueAck: false,
+    },
+  ),
+  tagCache: withOpenNextCacheTiming(
+    doShardedTagCache({
+      baseShardSize: 12,
+      regionalCache: true,
+      regionalCacheTtlSec: 30,
+    }),
+    {
+      label: "tag-cache",
+    },
+  ),
+  cachePurge: withOpenNextCacheTiming(
+    purgeCache({ type: "durableObject" }),
+    {
+      label: "cache-purge",
+    },
+  ),
   enableCacheInterception: true,
 })
