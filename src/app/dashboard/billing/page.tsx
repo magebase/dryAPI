@@ -33,6 +33,8 @@ import { SaasPlanCards } from "@/components/site/dashboard/billing/saas-plan-car
 import { BillingTopUpControls } from "@/components/site/dashboard/billing/billing-top-up-controls";
 import { resolveActiveBrand } from "@/lib/brand-catalog";
 import {
+  resolveDashboardBillingCustomerRef,
+  resolveDashboardBillingSessionSnapshot,
   resolveStripeCustomerLookup,
   shouldRenderStripeBillingSummaryErrors,
 } from "@/lib/dashboard-billing";
@@ -338,14 +340,6 @@ function resolveBalance(payload: unknown) {
   };
 }
 
-function resolveSessionEmail(payload: unknown): string | null {
-  return readFirstString(payload, [
-    ["user", "email"],
-    ["session", "user", "email"],
-    ["session", "email"],
-  ]);
-}
-
 function normalizeStripeTimestamp(value: unknown): string | null {
   const timestamp = toFiniteNumber(value);
   if (timestamp === null) {
@@ -558,13 +552,16 @@ function pickSubscription(payload: unknown): StripeSubscriptionSummary | null {
 
 async function getStripeBillingSummary(
   stripePrivateKey: string | null,
-  customerEmail: string | null,
+  session: {
+    email: string | null;
+    activeOrganizationId: string | null;
+  },
 ): Promise<StripeBillingSummary> {
   if (!stripePrivateKey) {
     return {
       configured: false,
       customerId: null,
-      customerEmail,
+      customerEmail: session.email,
       defaultPaymentMethodId: null,
       subscription: null,
       paymentMethods: [],
@@ -576,14 +573,15 @@ async function getStripeBillingSummary(
   const errors: string[] = [];
   const { customerId } = await resolveStripeCustomerLookup({
     stripePrivateKey,
-    sessionEmail: customerEmail,
+    sessionEmail: session.email,
+    activeOrganizationId: session.activeOrganizationId,
   });
 
   if (!customerId) {
     return {
       configured: true,
       customerId: null,
-      customerEmail,
+      customerEmail: session.email,
       defaultPaymentMethodId: null,
       subscription: null,
       paymentMethods: [],
@@ -666,7 +664,7 @@ async function getStripeBillingSummary(
   return {
     configured: true,
     customerId,
-    customerEmail,
+    customerEmail: session.email,
     defaultPaymentMethodId,
     subscription: pickSubscription(subscriptionPayload),
     paymentMethods: mapPaymentMethods(paymentMethodsPayload),
@@ -799,12 +797,13 @@ export default async function DashboardBillingPage({
     requestHeaders,
   );
 
-  const customerEmail = resolveSessionEmail(sessionResult.data);
+  const sessionSnapshot = resolveDashboardBillingSessionSnapshot(sessionResult.data);
+  const billingCustomerRef = resolveDashboardBillingCustomerRef(sessionSnapshot);
 
-  if (checkoutStatus === "success" && checkoutSessionId && customerEmail) {
+  if (checkoutStatus === "success" && checkoutSessionId && billingCustomerRef) {
     await syncDashboardTopUpFromStripeCheckout({
       checkoutSessionId,
-      customerRef: customerEmail,
+      customerRef: billingCustomerRef,
       stripePrivateKey: process.env.STRIPE_PRIVATE_KEY?.trim() || "",
     }).catch(() => null);
   }
@@ -820,11 +819,14 @@ export default async function DashboardBillingPage({
 
   const stripeSummary = await getStripeBillingSummary(
     process.env.STRIPE_PRIVATE_KEY?.trim() || null,
-    customerEmail,
+    {
+      email: sessionSnapshot.email,
+      activeOrganizationId: sessionSnapshot.activeOrganizationId,
+    },
   );
 
-  const autoTopUpSettings = customerEmail
-    ? await getStoredAutoTopUpSettings(customerEmail)
+  const autoTopUpSettings = billingCustomerRef
+    ? await getStoredAutoTopUpSettings(billingCustomerRef)
     : null;
 
   const {

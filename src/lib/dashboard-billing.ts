@@ -80,6 +80,26 @@ function hasSessionPayload(payload: unknown): boolean {
   return Boolean(record.user || record.session)
 }
 
+export function resolveDashboardBillingSessionSnapshot(payload: unknown): SessionSnapshot {
+  if (!hasSessionPayload(payload)) {
+    return {
+      authenticated: false,
+      email: null,
+      userId: null,
+      userRole: null,
+      activeOrganizationId: null,
+    }
+  }
+
+  return {
+    authenticated: true,
+    email: readFirstString(payload, [["user", "email"], ["session", "user", "email"], ["session", "email"]]),
+    userId: readFirstString(payload, [["user", "id"], ["session", "user", "id"], ["session", "userId"]]),
+    userRole: readFirstString(payload, [["user", "role"], ["session", "user", "role"]]),
+    activeOrganizationId: readFirstString(payload, [["session", "activeOrganizationId"], ["session", "session", "activeOrganizationId"]]),
+  }
+}
+
 export function resolveRequestOriginFromRequest(request: NextRequest): string {
   const forwardedHost = request.headers.get("x-forwarded-host")?.trim()
   const host = forwardedHost || request.headers.get("host")?.trim() || ""
@@ -131,13 +151,7 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
 
     const payload = (await response.json().catch(() => null)) as unknown
 
-    return {
-      authenticated: hasSessionPayload(payload),
-      email: readFirstString(payload, [["user", "email"], ["session", "user", "email"], ["session", "email"]]),
-      userId: readFirstString(payload, [["user", "id"], ["session", "user", "id"], ["session", "userId"]]),
-      userRole: readFirstString(payload, [["user", "role"], ["session", "user", "role"]]),
-      activeOrganizationId: readFirstString(payload, [["session", "activeOrganizationId"], ["session", "session", "activeOrganizationId"]]),
-    }
+    return resolveDashboardBillingSessionSnapshot(payload)
   } catch {
     return {
       authenticated: false,
@@ -149,7 +163,9 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
   }
 }
 
-export function resolveDashboardBillingCustomerRef(session: SessionSnapshot): string | null {
+export function resolveDashboardBillingCustomerRef(
+  session: Pick<SessionSnapshot, "email" | "activeOrganizationId">,
+): string | null {
   const activeOrganizationId = session.activeOrganizationId?.trim()
   if (activeOrganizationId) {
     return activeOrganizationId

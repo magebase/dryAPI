@@ -16,6 +16,7 @@ import {
   createStripeBillingPortalUrl,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
+  resolveDashboardBillingSessionSnapshot,
   resolveStripeCustomerLookup,
   shouldRenderStripeBillingSummaryErrors,
 } from "@/lib/dashboard-billing"
@@ -74,6 +75,27 @@ describe("dashboard-billing", () => {
   })
 
   describe("getDashboardSessionSnapshot", () => {
+    it("parses raw session payloads into a snapshot", () => {
+      expect(
+        resolveDashboardBillingSessionSnapshot({
+          user: {
+            id: "user_123",
+            role: "admin",
+            email: "owner@dryapi.dev",
+          },
+          session: {
+            activeOrganizationId: "org_123",
+          },
+        }),
+      ).toEqual({
+        authenticated: true,
+        email: "owner@dryapi.dev",
+        userId: "user_123",
+        userRole: "admin",
+        activeOrganizationId: "org_123",
+      })
+    })
+
     it("returns an authenticated session when user email is present", async () => {
       vi.stubGlobal(
         "fetch",
