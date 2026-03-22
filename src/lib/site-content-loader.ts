@@ -22,6 +22,17 @@ const siteRoot = path.join(contentRoot, "site")
 const pagesRoot = path.join(contentRoot, "pages")
 const blogRoot = path.join(contentRoot, "blog")
 
+type BrandState = {
+  brandKey: string
+  isDefault: boolean
+}
+
+const siteConfigCache = new Map<string, Promise<SiteConfig>>()
+const homeContentCache = new Map<string, Promise<HomeContent>>()
+const routePagesCache = new Map<string, Promise<RoutePage[]>>()
+const routePageCache = new Map<string, Promise<RoutePage | null>>()
+const blogPostsCache = new Map<string, Promise<BlogPost[]>>()
+
 export function routeSlugToRelativePath(slug: string): string | null {
   const normalized = slug.replace(/^\//, "").trim()
 
@@ -69,13 +80,43 @@ async function listJsonFiles(root: string): Promise<string[]> {
   }
 }
 
-async function readBrandOverrideJson(relativePath: string): Promise<unknown | null> {
+function getCachedPromise<T>(
+  cacheStore: Map<string, Promise<T>>,
+  cacheKey: string,
+  loader: () => Promise<T>,
+): Promise<T> {
+  const cachedValue = cacheStore.get(cacheKey)
+  if (cachedValue) {
+    return cachedValue
+  }
+
+  const pendingValue = loader().catch((error) => {
+    cacheStore.delete(cacheKey)
+    throw error
+  })
+
+  cacheStore.set(cacheKey, pendingValue)
+  return pendingValue
+}
+
+async function resolveContentBrandState(): Promise<BrandState> {
   const [activeBrand, isDefault] = await Promise.all([resolveActiveBrand(), isDefaultActiveBrand()])
+  return {
+    brandKey: activeBrand.key,
+    isDefault,
+  }
+}
+
+async function readBrandOverrideJson(
+  brandState: BrandState,
+  relativePath: string,
+): Promise<unknown | null> {
+  const { brandKey, isDefault } = brandState
   if (isDefault) {
     return null
   }
 
-  const brandOverridePath = path.join(getBrandContentRoot(activeBrand.key), relativePath)
+  const brandOverridePath = path.join(getBrandContentRoot(brandKey), relativePath)
   if (!(await pathExists(brandOverridePath))) {
     return null
   }
@@ -83,10 +124,13 @@ async function readBrandOverrideJson(relativePath: string): Promise<unknown | nu
   return readJsonFile<unknown>(brandOverridePath)
 }
 
-async function resolveBrandAwareFilePath(relativePath: string): Promise<string> {
-  const [activeBrand, isDefault] = await Promise.all([resolveActiveBrand(), isDefaultActiveBrand()])
+async function resolveBrandAwareFilePath(
+  brandState: BrandState,
+  relativePath: string,
+): Promise<string> {
+  const { brandKey, isDefault } = brandState
   if (!isDefault) {
-    const overridePath = path.join(getBrandContentRoot(activeBrand.key), relativePath)
+    const overridePath = path.join(getBrandContentRoot(brandKey), relativePath)
     if (await pathExists(overridePath)) {
       return overridePath
     }
@@ -95,15 +139,19 @@ async function resolveBrandAwareFilePath(relativePath: string): Promise<string> 
   return path.join(contentRoot, relativePath)
 }
 
-async function listBrandAwareFiles(defaultRoot: string, relativeRoot: string): Promise<string[]> {
+async function listBrandAwareFiles(
+  brandState: BrandState,
+  defaultRoot: string,
+  relativeRoot: string,
+): Promise<string[]> {
   const defaultFiles = await listJsonFiles(defaultRoot)
 
-  const [activeBrand, isDefault] = await Promise.all([resolveActiveBrand(), isDefaultActiveBrand()])
+  const { brandKey, isDefault } = brandState
   if (isDefault) {
     return defaultFiles
   }
 
-  const brandRoot = path.join(getBrandContentRoot(activeBrand.key), relativeRoot)
+  const brandRoot = path.join(getBrandContentRoot(brandKey), relativeRoot)
   const brandFiles = await listJsonFiles(brandRoot)
 
   return [...new Set([...defaultFiles, ...brandFiles])]
@@ -115,54 +163,73 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 }
 
 export async function readSiteConfig(): Promise<SiteConfig> {
-  const basePayload = siteConfigContentArtifact as unknown
-  const brandOverride = await readBrandOverrideJson(path.join("site", "site-config.json"))
+  const brandState = await resolveContentBrandState()
 
-  if (!brandOverride) {
-    return siteConfigSchema.parse(basePayload)
-  }
+  return getCachedPromise(siteConfigCache, brandState.brandKey, async () => {
+    const basePayload = siteConfigContentArtifact as unknown
+    const brandOverride = await readBrandOverrideJson(brandState, path.join("site", "site-config.json"))
 
-  return siteConfigSchema.parse(mergeJson(basePayload, brandOverride))
+    if (!brandOverride) {
+      return siteConfigSchema.parse(basePayload)
+    }
+
+    return siteConfigSchema.parse(mergeJson(basePayload, brandOverride))
+  })
 }
 
 export async function readHomeContent(): Promise<HomeContent> {
-  const basePayload = homeContentArtifact as unknown
-  const brandOverride = await readBrandOverrideJson(path.join("site", "home.json"))
+  const brandState = await resolveContentBrandState()
 
-  if (!brandOverride) {
-    return homeContentSchema.parse(basePayload)
-  }
+  return getCachedPromise(homeContentCache, brandState.brandKey, async () => {
+    const basePayload = homeContentArtifact as unknown
+    const brandOverride = await readBrandOverrideJson(brandState, path.join("site", "home.json"))
 
-  return homeContentSchema.parse(mergeJson(basePayload, brandOverride))
+    if (!brandOverride) {
+      return homeContentSchema.parse(basePayload)
+    }
+
+    return homeContentSchema.parse(mergeJson(basePayload, brandOverride))
+  })
 }
 
 export async function listRoutePages(): Promise<RoutePage[]> {
-  const files = await listBrandAwareFiles(pagesRoot, "pages")
+  const brandState = await resolveContentBrandState()
 
-  const pages = await Promise.all(
-    files.map(async (fileName) => {
-      const relativePath = path.join("pages", fileName)
-      const payload = await readJsonFile<unknown>(await resolveBrandAwareFilePath(relativePath))
-      return routePageSchema.parse(payload)
-    })
-  )
+  return getCachedPromise(routePagesCache, brandState.brandKey, async () => {
+    const files = await listBrandAwareFiles(brandState, pagesRoot, "pages")
 
-  return pages.sort((left, right) => left.slug.localeCompare(right.slug))
+    const pages = await Promise.all(
+      files.map(async (fileName) => {
+        const relativePath = path.join("pages", fileName)
+        const payload = await readJsonFile<unknown>(
+          await resolveBrandAwareFilePath(brandState, relativePath),
+        )
+        return routePageSchema.parse(payload)
+      })
+    )
+
+    return pages.sort((left, right) => left.slug.localeCompare(right.slug))
+  })
 }
 
 export async function readRoutePage(slug: string): Promise<RoutePage | null> {
+  const brandState = await resolveContentBrandState()
   const relativePath = routeSlugToRelativePath(slug)
 
   if (!relativePath) {
     return null
   }
 
-  try {
-    const payload = await readJsonFile<unknown>(await resolveBrandAwareFilePath(path.join("pages", relativePath)))
-    return routePageSchema.parse(payload)
-  } catch {
-    return null
-  }
+  return getCachedPromise(routePageCache, `${brandState.brandKey}:${relativePath}`, async () => {
+    try {
+      const payload = await readJsonFile<unknown>(
+        await resolveBrandAwareFilePath(brandState, path.join("pages", relativePath)),
+      )
+      return routePageSchema.parse(payload)
+    } catch {
+      return null
+    }
+  })
 }
 
 function toPublishedTime(value: string) {
@@ -171,17 +238,23 @@ function toPublishedTime(value: string) {
 }
 
 export async function listBlogPosts(): Promise<BlogPost[]> {
-  const files = await listBrandAwareFiles(blogRoot, "blog")
+  const brandState = await resolveContentBrandState()
 
-  const posts = await Promise.all(
-    files.map(async (fileName) => {
-      const relativePath = path.join("blog", fileName)
-      const payload = await readJsonFile<unknown>(await resolveBrandAwareFilePath(relativePath))
-      return blogPostSchema.parse(payload)
-    })
-  )
+  return getCachedPromise(blogPostsCache, brandState.brandKey, async () => {
+    const files = await listBrandAwareFiles(brandState, blogRoot, "blog")
 
-  return posts.sort((left, right) => toPublishedTime(right.publishedAt) - toPublishedTime(left.publishedAt))
+    const posts = await Promise.all(
+      files.map(async (fileName) => {
+        const relativePath = path.join("blog", fileName)
+        const payload = await readJsonFile<unknown>(
+          await resolveBrandAwareFilePath(brandState, relativePath),
+        )
+        return blogPostSchema.parse(payload)
+      })
+    )
+
+    return posts.sort((left, right) => toPublishedTime(right.publishedAt) - toPublishedTime(left.publishedAt))
+  })
 }
 
 export async function readBlogPost(slug: string): Promise<BlogPost | null> {

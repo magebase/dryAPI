@@ -6,6 +6,18 @@ type OpenNextCacheTimingOptions = {
 type OpenNextCacheTimingLevel = "log" | "warn" | "error"
 
 const DEFAULT_SLOW_THRESHOLD_MS = 25
+const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"])
+
+function isVerboseCacheTimingEnabled(): boolean {
+  const rawValue =
+    process.env.OPEN_NEXT_CACHE_TIMING_DEBUG ?? process.env.NEXT_PRIVATE_DEBUG_CACHE
+
+  if (!rawValue) {
+    return false
+  }
+
+  return TRUE_VALUES.has(rawValue.trim().toLowerCase())
+}
 
 function nowMs(): number {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
@@ -28,6 +40,10 @@ function emitOpenNextCacheTiming(
   event: string,
   payload: Record<string, unknown>,
 ): void {
+  if (level === "log" && !isVerboseCacheTimingEnabled()) {
+    return
+  }
+
   const writer =
     level === "error"
       ? console.error

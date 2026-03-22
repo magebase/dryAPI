@@ -136,6 +136,7 @@ const withMDX = createMDX({
 const nextConfig: NextConfig = {
   typedRoutes: true,
   cacheComponents: false,
+  reactCompiler: true,
   webpack(config) {
     config.experiments = {
       ...config.experiments,

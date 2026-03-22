@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { promises as nodeFs } from "node:fs"
 
 vi.mock("server-only", () => ({}))
 
@@ -63,6 +64,33 @@ describe("brand-aware site content", () => {
 
     for (const reservedPath of reservedPaths) {
       expect(pages.map((page) => page.slug)).not.toContain(reservedPath)
+    }
+  })
+
+  it("memoizes route page reads per brand within a worker isolate", async () => {
+    const previousBrandKey = process.env.SITE_BRAND_KEY
+    process.env.SITE_BRAND_KEY = "agentapi"
+
+    try {
+      vi.resetModules()
+
+      const readFileSpy = vi.spyOn(nodeFs, "readFile")
+      const { listRoutePages: listRoutePagesFresh } = await import("@/lib/site-content-loader")
+
+      await listRoutePagesFresh()
+      const firstPassReadCount = readFileSpy.mock.calls.length
+
+      expect(firstPassReadCount).toBeGreaterThan(0)
+
+      await listRoutePagesFresh()
+
+      expect(readFileSpy).toHaveBeenCalledTimes(firstPassReadCount)
+    } finally {
+      if (previousBrandKey === undefined) {
+        delete process.env.SITE_BRAND_KEY
+      } else {
+        process.env.SITE_BRAND_KEY = previousBrandKey
+      }
     }
   })
 })
