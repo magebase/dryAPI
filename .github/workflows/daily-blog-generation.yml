@@ -75,11 +75,16 @@ jobs:
           node -e '
             const fs = require("node:fs");
             const payload = JSON.parse(fs.readFileSync("/tmp/generated-blog-response.json", "utf8"));
+            const expectedCount = Number(process.env.GENERATE_COUNT ?? "1");
+
             if (!payload || typeof payload !== "object") {
               throw new Error("Invalid generation response.");
             }
-            if ((payload.createdCount ?? 0) < 1) {
-              throw new Error(`No blog posts were created. Response: ${JSON.stringify(payload)}`);
+            if (!Number.isInteger(expectedCount) || expectedCount < 1) {
+              throw new Error(`Invalid expected count: ${process.env.GENERATE_COUNT}`);
+            }
+            if ((payload.createdCount ?? 0) !== expectedCount) {
+              throw new Error(`Expected ${expectedCount} blog posts, but created ${payload.createdCount ?? 0}. Response: ${JSON.stringify(payload)}`);
             }
             console.log(`createdCount=${payload.createdCount}`);
           '
@@ -103,5 +108,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add content/blog
-          git commit -m "chore(content): generate daily blog post"
+          git commit --no-verify -m "chore(content): generate daily blog post"
           git push
