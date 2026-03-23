@@ -42,6 +42,18 @@ describe("resolveAiSearchRecrawlConfig", () => {
     )
   })
 
+  it("requires a bearer token and ignores token id secrets", () => {
+    expect(() =>
+      resolveAiSearchRecrawlConfig({
+        CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+        CLOUDFLARE_AI_SEARCH_TOKEN_ID: "token-id-123",
+        CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
+      }),
+    ).toThrow(
+      "Missing required Cloudflare AI Search API token. Set one of: CLOUDFLARE_AI_SEARCH_API_TOKEN, CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN, CLOUDFLARE_AI_SEARCH_TOKEN.",
+    )
+  })
+
   it("accepts an explicit source url list override", () => {
     const config = resolveAiSearchRecrawlConfig({
       CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",

@@ -78,9 +78,7 @@ jobs:
           const apiToken = pick(
             "CLOUDFLARE_AI_SEARCH_API_TOKEN",
             "CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN",
-            "CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN_ID",
             "CLOUDFLARE_AI_SEARCH_TOKEN",
-            "CLOUDFLARE_AI_SEARCH_TOKEN_ID",
           );
           const index = pick("CLOUDFLARE_AI_SEARCH_INDEX", "CLOUDFLARE_AI_SEARCH_NAME");
 
