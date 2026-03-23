@@ -17,8 +17,7 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     env:
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-      GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       GENERATE_COUNT: ${{ github.event.inputs.count || '1' }}
 
     steps:
@@ -42,71 +41,27 @@ jobs:
       - name: Validate secrets
         run: |
           set -euo pipefail
-          test -n "${GOOGLE_API_KEY:-}"
+          test -n "${OPENROUTER_API_KEY:-}"
 
-      - name: Start Next.js API server
+      - name: Generate model keyword pages
         run: |
           set -euo pipefail
-          pnpm dev:next > /tmp/next-dev.log 2>&1 &
-          echo $! > /tmp/next-dev.pid
-
-      - name: Wait for server readiness
-        run: |
-          set -euo pipefail
-          for i in $(seq 1 90); do
-            if curl -fsS "http://127.0.0.1:3000" >/dev/null; then
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Next.js server did not start in time"
-          cat /tmp/next-dev.log
-          exit 1
-
-      - name: Generate blog post(s) via endpoint
-        run: |
-          set -euo pipefail
-          response=$(curl -sS -X POST "http://127.0.0.1:3000/api/blog/generate" \
-            -H "content-type: application/json" \
-            -d "{\"provider\":\"gemini\",\"model\":\"gemini-3-flash-preview\",\"count\":${GENERATE_COUNT}}")
-
-          echo "${response}" > /tmp/generated-blog-response.json
-
-          node -e '
-            const fs = require("node:fs");
-            const payload = JSON.parse(fs.readFileSync("/tmp/generated-blog-response.json", "utf8"));
-            const expectedCount = Number(process.env.GENERATE_COUNT ?? "1");
-
-            if (!payload || typeof payload !== "object") {
-              throw new Error("Invalid generation response.");
-            }
-            if (!Number.isInteger(expectedCount) || expectedCount < 1) {
-              throw new Error(`Invalid expected count: ${process.env.GENERATE_COUNT}`);
-            }
-            if ((payload.createdCount ?? 0) !== expectedCount) {
-              throw new Error(`Expected ${expectedCount} blog posts, but created ${payload.createdCount ?? 0}. Response: ${JSON.stringify(payload)}`);
-            }
-            console.log(`createdCount=${payload.createdCount}`);
-          '
-
-      - name: Stop Next.js API server
-        if: always()
-        run: |
-          if [ -f /tmp/next-dev.pid ]; then
-            kill "$(cat /tmp/next-dev.pid)" || true
-          fi
+          pnpm exec tsx scripts/generate-model-keyword-pages.ts \
+            --brand dryapi \
+            --state-file content/.model-seo-state.json \
+            --max-new-posts "${GENERATE_COUNT}"
 
       - name: Commit generated content
         run: |
           set -euo pipefail
-          if [ -z "$(git status --porcelain content/blog)" ]; then
-            echo "No content/blog changes to commit."
+          if [ -z "$(git status --porcelain content/blog content/.model-seo-state.json)" ]; then
+            echo "No generated content changes to commit."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add content/blog
-          git commit --no-verify -m "chore(content): generate daily blog post"
+          git add content/blog content/.model-seo-state.json
+          git commit --no-verify -m "chore(content): generate model keyword pages"
           git push

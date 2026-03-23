@@ -1,7 +1,7 @@
-import { expect as playwrightExpect } from "@playwright/test"
-import { afterAll, beforeAll, describe, expect, it } from "vitest"
-
 // @vitest-environment node
+
+import { expect as playwrightExpect } from "@playwright/test"
+import { afterAll, beforeAll, describe, it } from "vitest"
 
 import {
   createLocalSiteBrowserHarness,
@@ -10,8 +10,6 @@ import {
   siteUrl,
   type LocalSiteBrowserHarness,
 } from "./helpers/local-site-browser"
-
-const liveTest = shouldRunLocalSiteE2E ? it : it.skip
 
 let harness: LocalSiteBrowserHarness | null = null
 
@@ -30,6 +28,15 @@ afterAll(async () => {
 })
 
 describe("local site browser auth e2e", () => {
+  function liveTest(name: string, fn: () => Promise<void>) {
+    if (shouldRunLocalSiteE2E) {
+      it(name, { timeout: 60_000 }, fn)
+      return
+    }
+
+    it.skip(name, fn)
+  }
+
   liveTest("signs in and reaches the dashboard overview", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")

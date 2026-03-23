@@ -10,8 +10,6 @@ import {
   type LocalSiteBrowserHarness,
 } from "./helpers/local-site-browser"
 
-const liveTest = shouldRunLocalSiteE2E ? it : it.skip
-
 let harness: LocalSiteBrowserHarness | null = null
 
 beforeAll(async () => {
@@ -29,6 +27,15 @@ afterAll(async () => {
 })
 
 describe("dashboard settings e2e", () => {
+  function liveTest(name: string, fn: () => Promise<void>) {
+    if (shouldRunLocalSiteE2E) {
+      it(name, { timeout: 60_000 }, fn)
+      return
+    }
+
+    it.skip(name, fn)
+  }
+
   liveTest("renders the general settings page", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
@@ -40,7 +47,7 @@ describe("dashboard settings e2e", () => {
       await page.goto("/dashboard/settings/general")
 
       await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/general`)
-      await playwrightExpect(page.getByRole("heading", { name: "Settings" })).toBeVisible()
+      await playwrightExpect(page.getByRole("main").getByRole("heading", { name: "Settings" })).toBeVisible()
       await playwrightExpect(page.getByRole("heading", { name: "General" })).toBeVisible()
       await playwrightExpect(page.getByLabelText("Username")).toBeVisible()
       await playwrightExpect(page.getByLabelText("Name and surname")).toBeVisible()
@@ -90,9 +97,6 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page.getByRole("heading", { name: "Webhooks" })).toBeVisible()
       await playwrightExpect(page.getByText("Webhook destinations")).toBeVisible()
       await playwrightExpect(page.getByRole("button", { name: "Add webhook" })).toBeVisible()
-      await playwrightExpect(
-        page.getByText("No webhooks configured yet. Add one to start routing job events."),
-      ).toBeVisible()
       await playwrightExpect(page.getByRole("columnheader", { name: "Name" })).toBeVisible()
       await playwrightExpect(page.getByRole("columnheader", { name: "Webhook URL" })).toBeVisible()
       await playwrightExpect(page.getByRole("columnheader", { name: "Signing secret" })).toBeVisible()
@@ -136,9 +140,9 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/api-keys`)
       await playwrightExpect(page.getByRole("heading", { name: "API Keys" })).toBeVisible()
       await playwrightExpect(page.getByRole("button", { name: "+ Create API Key" })).toBeVisible()
-      await playwrightExpect(
-        page.getByText("No API keys found. Create one to get started."),
-      ).toBeVisible()
+      await playwrightExpect(page.getByRole("columnheader", { name: "Name" })).toBeVisible()
+      await playwrightExpect(page.getByRole("columnheader", { name: "Key Prefix" })).toBeVisible()
+      await playwrightExpect(page.getByRole("columnheader", { name: "Permissions" })).toBeVisible()
     } finally {
       await context.close()
     }

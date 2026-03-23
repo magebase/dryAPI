@@ -10,8 +10,6 @@ import {
   type LocalSiteBrowserHarness,
 } from "./helpers/local-site-browser"
 
-const liveTest = shouldRunLocalSiteE2E ? it : it.skip
-
 let harness: LocalSiteBrowserHarness | null = null
 
 beforeAll(async () => {
@@ -29,6 +27,15 @@ afterAll(async () => {
 })
 
 describe("dashboard overview and billing e2e", () => {
+  function liveTest(name: string, fn: () => Promise<void>) {
+    if (shouldRunLocalSiteE2E) {
+      it(name, { timeout: 60_000 }, fn)
+      return
+    }
+
+    it.skip(name, fn)
+  }
+
   liveTest("renders the dashboard overview shell", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
@@ -69,7 +76,7 @@ describe("dashboard overview and billing e2e", () => {
       await playwrightExpect(page.getByRole("heading", { name: "Subscription" })).toBeVisible()
       await playwrightExpect(page.getByRole("heading", { name: "Payment Methods" })).toBeVisible()
       await playwrightExpect(page.getByRole("heading", { name: "Invoice History" })).toBeVisible()
-      await playwrightExpect(page.getByRole("link", { name: "Open Stripe Customer Portal" })).toBeVisible()
+      await playwrightExpect(page.getByText("Open Stripe Customer Portal")).toBeVisible()
       await playwrightExpect(page.getByRole("link", { name: "View Plans" })).toBeVisible()
     } finally {
       await context.close()

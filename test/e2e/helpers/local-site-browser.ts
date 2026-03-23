@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process"
 import { randomUUID } from "node:crypto"
-import { mkdtempSync, rmSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
 import path from "node:path"
 import { tmpdir } from "node:os"
 
@@ -36,6 +36,31 @@ export const siteUrl =
 
 function sqlQuote(value: string): string {
   return `'${value.replace(/'/g, "''")}'`
+}
+
+const localSiteHarnessLockPath = path.join(tmpdir(), "dryapi-local-site-harness.lock")
+
+async function sleep(milliseconds: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, milliseconds)
+  })
+}
+
+async function withLocalSiteHarnessLock<T>(task: () => Promise<T>): Promise<T> {
+  while (true) {
+    try {
+      mkdirSync(localSiteHarnessLockPath)
+      break
+    } catch {
+      await sleep(250)
+    }
+  }
+
+  try {
+    return await task()
+  } finally {
+    rmSync(localSiteHarnessLockPath, { recursive: true, force: true })
+  }
 }
 
 function runLocalD1Sql(sql: string): void {
@@ -107,69 +132,71 @@ export async function createLocalSiteBrowserHarness(
     throw new Error("LOCAL_SITE_E2E must be set to use the local site browser harness")
   }
 
-  const seededUser = await seedBrowserUser(role)
-  const browser = await chromium.launch({ headless: true })
-  const storageStateDir = mkdtempSync(path.join(tmpdir(), "dryapi-local-site-auth-"))
-  const storageStatePath = path.join(storageStateDir, "storage-state.json")
+  return await withLocalSiteHarnessLock(async () => {
+    const seededUser = await seedBrowserUser(role)
+    const browser = await chromium.launch({ headless: true })
+    const storageStateDir = mkdtempSync(path.join(tmpdir(), "dryapi-local-site-auth-"))
+    const storageStatePath = path.join(storageStateDir, "storage-state.json")
 
-  const authContext = await browser.newContext({
-    baseURL: siteUrl,
-    viewport: {
-      width: 1440,
-      height: 1200,
-    },
-  })
-
-  try {
-    const authPage = await authContext.newPage()
-    await authPage.goto("/login")
-    await fillSignInForm(authPage, seededUser.email, seededUser.password)
-    await playwrightExpect(authPage).toHaveURL(`${siteUrl}/dashboard`)
-    await authContext.storageState({ path: storageStatePath })
-  } catch (error) {
-    await authContext.close().catch(() => undefined)
-    await browser.close().catch(() => undefined)
-    await deleteBrowserUser(seededUser.userId).catch(() => undefined)
-    rmSync(storageStateDir, { recursive: true, force: true })
-    throw error
-  } finally {
-    await authContext.close().catch(() => undefined)
-  }
-
-  async function createPage(
-    options?: { authenticated?: boolean },
-  ): Promise<LocalSiteBrowserPage> {
-    const contextOptions: Parameters<Browser["newContext"]>[0] = {
+    const authContext = await browser.newContext({
       baseURL: siteUrl,
       viewport: {
         width: 1440,
         height: 1200,
       },
+    })
+
+    try {
+      const authPage = await authContext.newPage()
+      await authPage.goto("/login")
+      await fillSignInForm(authPage, seededUser.email, seededUser.password)
+      await playwrightExpect(authPage).toHaveURL(`${siteUrl}/dashboard`)
+      await authContext.storageState({ path: storageStatePath })
+    } catch (error) {
+      await authContext.close().catch(() => undefined)
+      await browser.close().catch(() => undefined)
+      await deleteBrowserUser(seededUser.userId).catch(() => undefined)
+      rmSync(storageStateDir, { recursive: true, force: true })
+      throw error
+    } finally {
+      await authContext.close().catch(() => undefined)
     }
 
-    if (options?.authenticated !== false) {
-      contextOptions.storageState = storageStatePath
+    async function createPage(
+      options?: { authenticated?: boolean },
+    ): Promise<LocalSiteBrowserPage> {
+      const contextOptions: Parameters<Browser["newContext"]>[0] = {
+        baseURL: siteUrl,
+        viewport: {
+          width: 1440,
+          height: 1200,
+        },
+      }
+
+      if (options?.authenticated !== false) {
+        contextOptions.storageState = storageStatePath
+      }
+
+      const context = await browser.newContext(contextOptions)
+      const page = await context.newPage()
+
+      return {
+        context,
+        page,
+      }
     }
 
-    const context = await browser.newContext(contextOptions)
-    const page = await context.newPage()
+    async function close(): Promise<void> {
+      await browser.close()
+      await deleteBrowserUser(seededUser.userId)
+      rmSync(storageStateDir, { recursive: true, force: true })
+    }
 
     return {
-      context,
-      page,
+      browser,
+      seededUser,
+      createPage,
+      close,
     }
-  }
-
-  async function close(): Promise<void> {
-    await browser.close()
-    await deleteBrowserUser(seededUser.userId)
-    rmSync(storageStateDir, { recursive: true, force: true })
-  }
-
-  return {
-    browser,
-    seededUser,
-    createPage,
-    close,
-  }
+  })
 }
