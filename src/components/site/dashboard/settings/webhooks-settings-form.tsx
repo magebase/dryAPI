@@ -2,7 +2,7 @@
 /* eslint-disable react/no-children-prop */
 
 import { useEffect } from "react"
-import { useForm } from "@tanstack/react-form"
+import { useForm, useStore } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Check, CircleAlert, Loader2, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -261,7 +261,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
     }
   }, [form, webhooksSettingsQuery.data])
 
-  const webhooks = form.useStore((state) => state.values.webhooks)
+  const webhooks = useStore(form.store, (state) => state.values.webhooks)
   const canSave = webhooks.length === 0 || webhooks.every((webhook) => {
     const state = normalizeValidationState(webhook.health)
     return state === "healthy" && webhook.health.lastStatusCode === 200

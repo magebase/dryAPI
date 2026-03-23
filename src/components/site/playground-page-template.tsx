@@ -243,6 +243,12 @@ function resolveModelLabel(
     : toModelDisplayName(model.slug);
 }
 
+function resolveModelParameterKeys(
+  model: PlaygroundModelRecord | null,
+): string[] {
+  return (model?.parameter_keys ?? []).filter((key) => key !== "prompt");
+}
+
 function getRandomPromptSample(category: string): string {
   const options =
     CATEGORY_PROMPT_SAMPLES[category] ??
@@ -289,7 +295,7 @@ function buildPreviewPayload(
   prompt: string,
   params: Record<string, number>,
 ) {
-  const modelParams = (model?.parameter_keys ?? []).reduce(
+  const modelParams = resolveModelParameterKeys(model).reduce(
     (acc, key) => {
       acc[key] = params[key] ?? DEFAULT_PARAMS[key] ?? 0;
       return acc;
@@ -306,7 +312,7 @@ function buildPreviewPayload(
     options: {
       category,
       inference_types: model?.inference_types ?? [],
-      parameters: model?.parameter_keys ?? [],
+      parameters: resolveModelParameterKeys(model),
     },
   };
 }
@@ -319,7 +325,7 @@ function buildCurlSnippet(
   const safePrompt = prompt.replaceAll('"', '\\"');
   const modelSlug = model?.slug ?? "model-slug";
 
-  const modelParams = (model?.parameter_keys ?? []).reduce(
+  const modelParams = resolveModelParameterKeys(model).reduce(
     (acc, key) => {
       acc[key] = params[key] ?? DEFAULT_PARAMS[key] ?? 0;
       return acc;
@@ -656,7 +662,7 @@ export function PlaygroundPageTemplate({
       model: activeModel.slug,
       prompt,
       ...Object.fromEntries(
-        (activeModel.parameter_keys ?? []).map((key) => [
+        resolveModelParameterKeys(activeModel).map((key) => [
           key,
           params[key] ?? DEFAULT_PARAMS[key],
         ]),

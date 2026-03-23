@@ -1,18 +1,29 @@
 import type { Metadata } from "next";
 
 import { AccountExportUnlockForm } from "@/components/site/account-export-unlock-form";
+import { buildTakumiMetadata } from "@/lib/og/metadata";
+import { readSiteConfig } from "@/lib/site-content-loader";
 
 type AccountExportPageProps = {
   params: Promise<{ token: string }>;
 }
 
-export const metadata: Metadata = {
-  title: "Secure export | dryAPI",
-  description: "Enter the one-time code to unlock your private account export.",
-  robots: {
-    index: false,
-    follow: false,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await readSiteConfig();
+
+  return buildTakumiMetadata({
+    title: "Secure export | dryAPI",
+    description: "Enter the one-time code to unlock your private account export.",
+    canonicalPath: "/account/exports",
+    template: "dashboard",
+    siteName: site.brand.name || site.brand.mark,
+    robots: {
+      index: false,
+      follow: false,
+    },
+    label: "Dashboard",
+    seed: "account-export",
+  });
 }
 
 export default async function AccountExportPage({ params }: AccountExportPageProps) {

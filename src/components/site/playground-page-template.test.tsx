@@ -204,6 +204,16 @@ describe("PlaygroundPageTemplate", () => {
     })
 
     const generateButton = await screen.findByRole("button", { name: "Generate" })
+    await waitFor(() => {
+      expect(generateButton).toBeEnabled()
+    })
+
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: {
+        value: "Create a cinematic product hero shot of a matte black keyboard.",
+      },
+    })
+
     fireEvent.click(generateButton)
 
     await waitFor(() => {
