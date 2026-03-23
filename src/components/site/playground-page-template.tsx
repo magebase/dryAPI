@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { toPricingCategoryLabel } from "@/lib/deapi-pricing-utils";
 import { normalizeSiteUrl } from "@/lib/og/metadata";
+import { toRoute } from "@/lib/route";
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema";
 
 type PlaygroundTab = "preview" | "json" | "curl";
@@ -611,7 +612,9 @@ export function PlaygroundPageTemplate({
       activeCategory !== "text-to-image"
     ));
 
-  const signInToTryPlaygroundHref = `/register?callbackURL=${encodeURIComponent(page.slug)}`;
+  const signInToTryPlaygroundHref = toRoute(
+    `/register?callbackURL=${encodeURIComponent(page.slug)}`,
+  );
 
   async function handleGenerateClick() {
     if (playgroundAuthRequired) {

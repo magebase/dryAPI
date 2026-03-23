@@ -204,12 +204,12 @@ const result = await res.json();`;
   ];
 
   const omnichannelTilePreviewImages = [
-    "chatbot-dashboard",
-    "beam-split-into-models",
+    "agent-chat-generation",
+    "image-generation",
     "audio-speech-generation",
     "text-ocr-embeddings",
-    "image-generator-dashboard",
-    "generic-models-dashboard",
+    "video-generation",
+    "music-generation",
   ];
 
   const frameworkCells = [
@@ -347,19 +347,6 @@ const result = await res.json();`;
                   <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-2 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
                     <div className="h-[280px] w-full md:h-[340px]">
                       <MockWorkflowFrame className="h-full border-none shadow-none bg-white/40" />
-                    </div>
-                    <div className="mt-2 rounded-xl border border-white/45 bg-white/86 p-3">
-                      <div className="flex items-center gap-2">
-                        <div className="size-2 animate-pulse rounded-full bg-emerald-500" />
-                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-                          Gateway Active • 10+ Models
-                        </p>
-                      </div>
-                      <p className="text-site-muted mt-1 text-xs">
-                        Single-surface API dispatch for Chat, Image, Speech and
-                        Embeddings. Optimized for profit margin and elastic
-                        scale.
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -752,11 +739,11 @@ const { output } = await res.json()`}
                     </p>
                   </div>
 
-                  <div className="relative mt-8 aspect-[1.6/1] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 grayscale-[0.3] transition-all duration-700 group-hover:scale-[1.05] group-hover:bg-white group-hover:grayscale-0">
+                  <div className="relative mt-8 aspect-[1.6/1] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 grayscale-[0.1] transition-all duration-700 group-hover:scale-[1.05] group-hover:bg-white group-hover:grayscale-0">
                     <Image
                       alt={tile.title}
                       fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="object-cover transition-transform duration-700 group-hover:scale-110 saturate-150"
                       src={`/landing/${omnichannelTilePreviewImages[idx % omnichannelTilePreviewImages.length]}.png`}
                     />
                   </div>
@@ -1471,99 +1458,20 @@ function MockWorkflowFrame({ className }: { className?: string }) {
         (className ? " " + className : "")
       }
     >
-      <div className="flex items-center gap-1.5 border-b border-black/5 pb-4">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/10 shrink-0">
-          <TerminalSquare className="size-4 text-indigo-600/60" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="h-2 w-32 rounded bg-indigo-900/10" />
-          <div className="h-1.5 w-24 rounded bg-indigo-900/5" />
-        </div>
-        <div className="ml-auto flex gap-1.5">
-          <div className="size-6 rounded-md bg-black/5" />
-          <div className="size-6 rounded-md bg-black/5" />
-        </div>
-      </div>
-
-      <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
-        {/* Card 1: Multi-Model Pipeline */}
-        <div className="flex flex-col rounded-xl border border-indigo-500/10 bg-indigo-50/20 p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-600/70">
-              Pipeline
-            </span>
-            <div className="size-2 animate-pulse rounded-full bg-indigo-500/40" />
+      <Image
+        alt="AI touching mesh"
+        fill
+        className="object-cover rounded-md"
+        src="/landing/ai-touching-mesh.png"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(8,10,20,0.18))]" />
+      <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-white/15 bg-black/20 px-3 py-2 backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70"></p>
+            <p className="text-xs text-white/75"></p>
           </div>
-          <div className="flex flex-1 flex-col justify-center space-y-2">
-            {[
-              { label: "LLAMA 3.3", color: "bg-blue-500/30", w: "w-full" },
-              { label: "FLUX.1", color: "bg-orange-500/30", w: "w-4/5" },
-              { label: "WHISPER", color: "bg-emerald-500/30", w: "w-11/12" },
-            ].map((m, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className={`h-1.5 ${m.w} rounded-full ${m.color}`} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Card 2: Strategic Margin */}
-        <div className="flex flex-col rounded-xl border border-emerald-500/10 bg-emerald-50/20 p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600/70">
-              Profit
-            </span>
-            <TrendingUp className="size-3 text-emerald-500/40" />
-          </div>
-          <div className="flex flex-1 flex-col justify-end">
-            <div className="flex h-12 items-end gap-1">
-              {[40, 70, 45, 90, 60, 80].map((h, i) => (
-                <div
-                  key={i}
-                  style={{ height: `${h}%` }}
-                  className="flex-1 rounded-sm bg-emerald-500/30"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Security & Policy */}
-        <div className="flex flex-col rounded-xl border border-rose-500/10 bg-rose-50/20 p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600/70">
-              Compliance
-            </span>
-            <ShieldCheck className="size-3 text-rose-500/40" />
-          </div>
-          <div className="flex flex-1 flex-col space-y-2 pt-1">
-            <div className="h-1.5 w-full rounded bg-rose-900/10" />
-            <div className="h-1.5 w-3/4 rounded bg-rose-900/10" />
-            <div className="mt-auto flex items-center gap-1">
-              <div className="size-2 rounded-full bg-emerald-500/40" />
-              <div className="h-1 w-8 rounded bg-rose-900/5" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Code Dispatch Panel */}
-      <div className="mt-4 shrink-0 rounded-xl border border-indigo-500/10 bg-indigo-900/[0.03] p-3 font-mono">
-        <div className="mb-2 flex items-center gap-2">
-          <div className="size-1.5 rounded-full bg-indigo-400" />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-400">
-            Request Router Dispatch
-          </span>
-        </div>
-        <div className="space-y-1.5">
-          <div className="flex gap-2">
-            <span className="text-[10px] text-indigo-400 opacity-60">POST</span>
-            <div className="h-2 w-48 rounded bg-indigo-900/10" />
-          </div>
-          <div className="flex gap-2 pl-4">
-            <div className="h-1.5 w-32 rounded bg-indigo-900/10" />
-            <div className="h-1.5 w-12 rounded bg-indigo-900/20" />
-          </div>
+          <div className="h-1.5 w-20 rounded-full bg-emerald-400/50" />
         </div>
       </div>
     </div>
@@ -1589,7 +1497,7 @@ function MockCodePanel({ code }: { code?: string }) {
           <div className="size-2.5 rounded-full bg-white/10" />
           <div className="size-2.5 rounded-full bg-white/10" />
         </div>
-        <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
+        <div className="text-[10px] font-medium uppercase tracking-widest text-white/40">
           typescript
         </div>
       </div>

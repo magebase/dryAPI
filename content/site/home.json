@@ -65,7 +65,7 @@
       "visible": true,
       "title": "Models For Every Category",
       "description": "Pick from flagship chat, image, speech, video, OCR, embedding, rerank, and coding models without splitting your stack.",
-      "image": "/landing/chatbot-dashboard.png",
+      "image": "/landing/beam-split-into-models.png",
       "icon": "settings"
     },
     {
@@ -73,7 +73,7 @@
       "visible": true,
       "title": "Drop-In SDK Usage",
       "description": "Use OpenAI-compatible endpoints from the official OpenAI SDK or OpenRouter-style clients with minimal changes.",
-      "image": "/landing/generic-models-dashboard.png",
+      "image": "/landing/audio-speech-generation.png",
       "icon": "bolt"
     },
     {
@@ -81,7 +81,7 @@
       "visible": true,
       "title": "Consistent API Surface",
       "description": "Keep request and response contracts stable while swapping providers and models behind the gateway.",
-      "image": "/landing/ai-data-visualization-dashboard.png",
+      "image": "/landing/text-ocr-embeddings.png",
       "icon": "shield"
     },
     {

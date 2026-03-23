@@ -32,7 +32,6 @@ function createDeps(overrides?: Partial<Parameters<typeof handleStripePluginEven
     resolveCheckoutCustomerEmail: vi.fn().mockReturnValue("owner@example.com"),
     resolveCheckoutCustomerRef: vi.fn().mockReturnValue("owner@example.com"),
     resolveCheckoutFlow: vi.fn().mockReturnValue("subscription" as CheckoutEmailFlow),
-    resolveInvoiceCustomerEmail: vi.fn().mockResolvedValue("owner@example.com"),
     syncTopUp: vi.fn().mockResolvedValue({}),
     ensureSubscriptionBenefits: vi.fn().mockResolvedValue({}),
     sendCheckoutSuccessEmail: vi.fn().mockResolvedValue(undefined),
@@ -146,15 +145,26 @@ describe("handleStripePluginEvent", () => {
     expect(errorSpy).toHaveBeenCalledTimes(2)
   })
 
-  it("sends invoice receipt and refreshes benefits on invoice.paid", async () => {
+  it("sends invoice receipt and refreshes benefits from expanded subscription metadata", async () => {
     const deps = createDeps()
 
     await handleStripePluginEvent(
       buildEvent("invoice.paid", {
         id: "in_123",
-        customer_email: "billing@example.com",
         metadata: {
-          referenceId: "org_123",
+          invoiceOnly: "true",
+        },
+        parent: {
+          type: "subscription_details",
+          subscription_details: {
+            metadata: null,
+            subscription: {
+              id: "sub_123",
+              metadata: {
+                referenceId: "org_123",
+              },
+            },
+          },
         },
       }),
       deps,
@@ -164,38 +174,56 @@ describe("handleStripePluginEvent", () => {
     expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
   })
 
-  it("falls back to resolving the invoice customer email when customer_email is blank", async () => {
+  it("retrieves the subscription when invoice parent only carries the subscription id", async () => {
+    const retrieve = vi.fn().mockResolvedValue({
+      metadata: {
+        referenceId: "org_123",
+      },
+    })
     const deps = createDeps({
-      resolveInvoiceCustomerEmail: vi.fn().mockResolvedValue("resolved@example.com"),
+      stripeClient: {
+        subscriptions: {
+          retrieve,
+        },
+      } as unknown as Stripe,
     })
 
     await handleStripePluginEvent(
       buildEvent("invoice.paid", {
         id: "in_123",
-        customer_email: "   ",
         metadata: {
-          referenceId: "org_123",
+          invoiceOnly: "true",
+        },
+        parent: {
+          type: "subscription_details",
+          subscription_details: {
+            metadata: null,
+            subscription: "sub_123",
+          },
         },
       }),
       deps,
     )
 
+    expect(retrieve).toHaveBeenCalledWith("sub_123")
     expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
   })
 
-  it("swallows receipt email failures and skips benefits when no invoice email can be resolved", async () => {
+  it("skips benefit refresh when invoice parent has no subscription reference", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
     const deps = createDeps({
       sendInvoiceReceiptEmail: vi.fn().mockRejectedValue(new Error("receipt failed")),
-      resolveInvoiceCustomerEmail: vi.fn().mockResolvedValue(""),
     })
 
     await handleStripePluginEvent(
       buildEvent("invoice.paid", {
         id: "in_123",
-        customer_email: "",
         metadata: {
-          referenceId: "org_123",
+          invoiceOnly: "true",
+        },
+        parent: {
+          type: "subscription_details",
+          subscription_details: null,
         },
       }),
       deps,
@@ -205,7 +233,7 @@ describe("handleStripePluginEvent", () => {
       "[auth] Failed to send branded Stripe receipt email",
       expect.any(Error),
     )
-    expect(deps.ensureSubscriptionBenefits).toHaveBeenCalledWith("org_123")
+    expect(deps.ensureSubscriptionBenefits).not.toHaveBeenCalled()
   })
 
   it("swallows subscription benefit refresh failures after invoice payment", async () => {

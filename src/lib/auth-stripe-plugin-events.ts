@@ -81,7 +81,7 @@ async function resolveInvoiceSubscriptionReferenceId(
     return fromInvoiceMetadata
   }
 
-  const invoiceSubscription = invoice.subscription
+  const invoiceSubscription = invoice.parent?.subscription_details?.subscription
   if (invoiceSubscription && typeof invoiceSubscription !== "string") {
     const fromExpandedSubscription = readMetadataString(
       invoiceSubscription.metadata as Record<string, unknown> | null | undefined,
@@ -92,7 +92,8 @@ async function resolveInvoiceSubscriptionReferenceId(
     }
   }
 
-  const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription.trim() : ""
+  const subscriptionId =
+    typeof invoiceSubscription === "string" ? invoiceSubscription.trim() : ""
   if (!subscriptionId) {
     return null
   }
