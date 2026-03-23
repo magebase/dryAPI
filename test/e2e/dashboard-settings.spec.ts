@@ -251,6 +251,44 @@ describe("dashboard settings e2e", () => {
     }
   })
 
+  liveDashboardTest("adds edits regenerates and removes a webhook row", async () => {
+    if (!harness) {
+      throw new Error("Local site browser harness was not initialized")
+    }
+
+    const { context, page } = await harness.createPage()
+
+    try {
+      await page.goto("/dashboard/settings/webhooks")
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/webhooks`)
+      await page.getByRole("button", { name: "Add webhook" }).click()
+
+      await playwrightExpect(page.getByLabel("Webhook name")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Webhook URL")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Signing secret")).toBeVisible()
+
+      await page.getByLabel("Webhook name").fill("Production events")
+      await page.getByLabel("Webhook URL").fill("https://hooks.example.com/dryapi")
+      await page.getByLabel("Signing secret").fill("whsec_initial")
+
+      const secretField = page.getByLabel("Signing secret")
+      const initialSecret = await secretField.inputValue()
+
+      await page.getByRole("button", { name: "Regenerate" }).click()
+
+      await playwrightExpect(secretField).not.toHaveValue(initialSecret)
+      await playwrightExpect(page.getByRole("button", { name: /Validate Production events/ })).toBeVisible()
+      await playwrightExpect(page.getByRole("button", { name: /Remove Production events/ })).toBeVisible()
+
+      await page.getByRole("button", { name: /Remove Production events/ }).click()
+
+      await playwrightExpect(page.getByText("No webhooks configured yet. Add one to start routing job events.")).toBeVisible()
+    } finally {
+      await context.close()
+    }
+  })
+
   liveDashboardTest("renders the workspace settings page", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
