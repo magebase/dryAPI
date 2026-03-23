@@ -2,6 +2,40 @@ import { z } from "zod"
 
 export const dashboardSettingsSectionSchema = z.enum(["general", "security", "webhooks"])
 
+export const dashboardWebhookHealthSchema = z.object({
+  validationStatus: z.enum(["unknown", "checking", "healthy", "unhealthy"]).default("unknown"),
+  validationMessage: z.string().trim().max(240).default(""),
+  lastValidatedAt: z.number().int().nullable().default(null),
+  lastStatusCode: z.number().int().nullable().default(null),
+  lastSuccessAt: z.number().int().nullable().default(null),
+  lastFailureAt: z.number().int().nullable().default(null),
+  consecutiveFailures: z.number().int().min(0).default(0),
+  alertCount: z.number().int().min(0).default(0),
+  lastAlertAt: z.number().int().nullable().default(null),
+})
+
+export const dashboardWebhookEntrySchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().max(120).default(""),
+  endpointUrl: z.string().trim().url("Enter a valid webhook URL."),
+  signingSecret: z.string().trim().min(1, "Signing secret is required.").max(512),
+  sendOnCompleted: z.boolean().default(true),
+  sendOnFailed: z.boolean().default(true),
+  sendOnQueued: z.boolean().default(false),
+  includeFullPayload: z.boolean().default(false),
+  health: dashboardWebhookHealthSchema.default({
+    validationStatus: "unknown",
+    validationMessage: "",
+    lastValidatedAt: null,
+    lastStatusCode: null,
+    lastSuccessAt: null,
+    lastFailureAt: null,
+    consecutiveFailures: 0,
+    alertCount: 0,
+    lastAlertAt: null,
+  }),
+})
+
 export const dashboardGeneralSettingsSchema = z.object({
   username: z.string().trim().max(80).default(""),
   fullName: z.string().trim().max(120).default(""),
@@ -46,25 +80,17 @@ export const dashboardSecuritySettingsFormSchema = z.object({
 })
 
 export const dashboardWebhooksSettingsSchema = z.object({
-  endpointUrl: z.string().trim().max(2048).default(""),
-  signingSecret: z.string().trim().max(512).default(""),
-  sendOnCompleted: z.boolean().default(true),
-  sendOnFailed: z.boolean().default(true),
-  sendOnQueued: z.boolean().default(false),
-  includeFullPayload: z.boolean().default(false),
+  webhooks: z.array(dashboardWebhookEntrySchema).default([]),
 })
 
 export const dashboardWebhooksSettingsFormSchema = z.object({
-  endpointUrl: z.string().trim().url("Enter a valid webhook URL."),
-  signingSecret: z.string().trim().min(1, "Signing secret is required.").max(512),
-  sendOnCompleted: z.boolean(),
-  sendOnFailed: z.boolean(),
-  sendOnQueued: z.boolean(),
-  includeFullPayload: z.boolean(),
+  webhooks: z.array(dashboardWebhookEntrySchema),
 })
 
 export type DashboardGeneralSettings = z.infer<typeof dashboardGeneralSettingsSchema>
 export type DashboardSecuritySettings = z.infer<typeof dashboardSecuritySettingsSchema>
+export type DashboardWebhookHealth = z.infer<typeof dashboardWebhookHealthSchema>
+export type DashboardWebhookEntry = z.infer<typeof dashboardWebhookEntrySchema>
 export type DashboardWebhooksSettings = z.infer<typeof dashboardWebhooksSettingsSchema>
 
 export type DashboardSettingsBundle = {
@@ -97,11 +123,6 @@ export const DASHBOARD_SETTINGS_DEFAULTS: DashboardSettingsBundle = {
     ipAllowlist: "",
   },
   webhooks: {
-    endpointUrl: "",
-    signingSecret: "",
-    sendOnCompleted: true,
-    sendOnFailed: true,
-    sendOnQueued: false,
-    includeFullPayload: false,
+    webhooks: [],
   },
 }

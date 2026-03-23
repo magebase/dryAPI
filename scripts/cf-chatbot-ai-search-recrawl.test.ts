@@ -11,7 +11,7 @@ describe("resolveAiSearchRecrawlConfig", () => {
       CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID: "account-123",
       CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN: "token-123",
       CLOUDFLARE_AI_SEARCH_NAME: "chatbot",
-      CLOUDFLARE_AI_SEARCH_SOURCE: "dryapi.dev",
+      NEXT_PUBLIC_SITE_URL: "dryapi.dev",
     })
 
     expect(config.accountId).toBe("account-123")
@@ -80,6 +80,7 @@ describe("runAiSearchRecrawl", () => {
         CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
         CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
         CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
+        SITE_URL: "https://dryapi.dev/",
       },
       fetchImpl,
     })

@@ -13,6 +13,7 @@ import {
   haveIBeenPwned,
   lastLoginMethod,
   organization,
+  testUtils,
   twoFactor,
 } from "better-auth/plugins";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -1174,13 +1175,21 @@ function buildAuthPlugins(): NonNullable<BetterAuthOptions["plugins"]> {
     sso({}),
   ];
 
-  const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY?.trim();
+  if (process.env.NODE_ENV !== "production") {
+    plugins.push(testUtils());
+  }
+
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY?.trim();
   if (turnstileSecret) {
     plugins.push(
       captcha({
         provider: "cloudflare-turnstile",
         secretKey: turnstileSecret,
-        endpoints: ["/sign-in/email", "/sign-up/email", "/forget-password"],
+        endpoints: [
+          "/sign-in/email",
+          "/sign-up/email",
+          "/request-password-reset",
+        ],
       }),
     );
   }

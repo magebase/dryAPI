@@ -335,6 +335,7 @@ Required for chatbot grounding with Cloudflare AI Search:
 - `CLOUDFLARE_AI_SEARCH_ACCOUNT_ID`
 - `CLOUDFLARE_AI_SEARCH_API_TOKEN`
 - `CLOUDFLARE_AI_SEARCH_INDEX`
+- `CLOUDFLARE_AI_SEARCH_TOKEN_ID` (needed when provisioning the instance from CI/CD)
 
 Optional Cloudflare AI Search tuning:
 
@@ -344,6 +345,7 @@ Optional Cloudflare AI Search tuning:
 - `CLOUDFLARE_AI_SEARCH_MAX_RESULTS`
 
 `CLOUDFLARE_AI_SEARCH_SOURCE` should be a full origin or domain for your site (for example `https://dryapi.dev` or `dryapi.dev`). The sync/runtime code normalizes domain-only values to `https://...`.
+In CI/CD, the production site origin should come from `NEXT_PUBLIC_SITE_URL` or `SITE_URL`; deploy and recrawl jobs resolve the AI Search source from that value and sync it into `CLOUDFLARE_AI_SEARCH_SOURCE`.
 
 Recommended routing vars for contact/quote/chat queues:
 
@@ -464,13 +466,15 @@ wrangler secret put CLOUDFLARE_AI_SEARCH_MAX_RESULTS
 Chatbot AI Search Wrangler setup helpers:
 
 ```bash
+pnpm cf:chatbot:ai-search:ensure
 pnpm cf:chatbot:ai-search:check
 pnpm cf:chatbot:ai-search:sync
 pnpm cf:chatbot:ai-search:recrawl
 ```
 
 The `check` command validates required `CLOUDFLARE_AI_SEARCH_*` keys in `.env` and shows what will be synced. The `sync` command applies them with `wrangler secret put` to the worker defined in `wrangler.jsonc`.
-The `recrawl` command verifies `https://dryapi.dev` and `https://dryapi.dev/llms-full.txt`, then queues a fresh Cloudflare AI Search indexing job for the active instance.
+The `ensure` command creates or updates the `web-crawler` AI Search instance so it stays bound to the active production origin before recrawls run.
+The `recrawl` command verifies the production site origin from `NEXT_PUBLIC_SITE_URL` or `SITE_URL` plus `/llms-full.txt`, then queues a fresh Cloudflare AI Search indexing job for the active instance.
 
 The weekly recrawl job at [.github/workflows/weekly-ai-search-recrawl.yml](.github/workflows/weekly-ai-search-recrawl.yml) uses the same AI Search account, token, and index values.
 

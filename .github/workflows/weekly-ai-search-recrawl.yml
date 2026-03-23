@@ -12,7 +12,8 @@ jobs:
   recrawl:
     runs-on: ubuntu-latest
     env:
-      CLOUDFLARE_AI_SEARCH_SOURCE_URLS: https://dryapi.dev,https://dryapi.dev/llms-full.txt
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL || vars.SITE_URL || secrets.SITE_URL }}
+      SITE_URL: ${{ vars.SITE_URL || secrets.SITE_URL || vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
 
     steps:
       - name: Checkout
@@ -31,6 +32,20 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Validate production site URL
+        run: |
+          set -euo pipefail
+
+          site_url="${NEXT_PUBLIC_SITE_URL:-${SITE_URL:-}}"
+          if [[ -z "${site_url}" ]]; then
+            echo "Missing production site URL. Set NEXT_PUBLIC_SITE_URL or SITE_URL."
+            exit 1
+          fi
+
+          site_url="${site_url%/}"
+          printf 'NEXT_PUBLIC_SITE_URL=%q\n' "${site_url}" >> "$GITHUB_ENV"
+          printf 'SITE_URL=%q\n' "${site_url}" >> "$GITHUB_ENV"
 
       - name: Resolve AI Search secrets
         env:

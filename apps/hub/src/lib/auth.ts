@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { nextCookies } from "better-auth/next-js"
-import { admin, lastLoginMethod } from "better-auth/plugins"
+import { admin, lastLoginMethod, testUtils } from "better-auth/plugins"
 import { apiKey } from "@better-auth/api-key"
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { drizzle } from "drizzle-orm/d1"
@@ -106,6 +106,7 @@ const authPlugins = [
   admin(),
   lastLoginMethod({ storeInDatabase: true }),
   apiKey(),
+  ...(process.env.NODE_ENV !== "production" ? [testUtils()] : []),
 ] as any
 
 export const auth = betterAuth({

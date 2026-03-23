@@ -46,7 +46,7 @@ function makePatchRequest(body: unknown) {
 const SETTINGS_FIXTURE = {
   general: { displayName: "Test User" },
   security: {},
-  webhooks: {},
+  webhooks: { webhooks: [] },
 }
 
 describe("GET /api/dashboard/settings", () => {

@@ -9,8 +9,10 @@ import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { resolveLocalCallbackUrl } from "@/lib/auth-callback-url"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
+import { buildCaptchaHeaders } from "@/lib/auth-captcha"
 import { toRoute } from "@/lib/route"
 
 const REGISTER_ERROR_TOAST_ID = "register-error"
@@ -29,6 +31,10 @@ const registerFormSchema = z.object({
     .regex(/\d/, "Password must include at least one number."),
 })
 
+  type RegisterMutationValues = z.infer<typeof registerFormSchema> & {
+    turnstileToken: string
+  }
+
 function resolveAuthErrorMessage(
   payload: { message?: string; error?: string } | null,
   fallbackMessage: string,
@@ -44,36 +50,54 @@ export default function RegisterPage() {
   const callbackUrl = useMemo(() => searchParams?.get("callbackURL") || "/", [searchParams])
   const [error, setError] = useState<string | null>(null)
   const [socialProviderPending, setSocialProviderPending] = useState<SocialProvider | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim())
+
+  function resetTurnstileChallenge() {
+    if (!turnstileEnabled) {
+      return
+    }
+
+    setTurnstileToken("")
+    setTurnstileResetKey((previous) => previous + 1)
+  }
 
   const registerMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof registerFormSchema>) => {
+    mutationFn: async (values: RegisterMutationValues) => {
       const safeCallbackUrl = resolveLocalCallbackUrl(callbackUrl, window.location.origin, "/")
+      const { turnstileToken: captchaToken, ...registerValues } = values
 
-      const response = await fetch("/api/auth/sign-up/email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          ...values,
-          callbackURL: (() => {
-            const url = new URL(safeCallbackUrl, window.location.origin)
-            url.searchParams.set("auth", "verified")
-            return `${url.pathname}${url.search}${url.hash}`
-          })(),
-        }),
-      })
+      try {
+        const response = await fetch("/api/auth/sign-up/email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(buildCaptchaHeaders(captchaToken) ?? {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            ...registerValues,
+            callbackURL: (() => {
+              const url = new URL(safeCallbackUrl, window.location.origin)
+              url.searchParams.set("auth", "verified")
+              return `${url.pathname}${url.search}${url.hash}`
+            })(),
+          }),
+        })
 
-      const payload = (await response.json().catch(() => null)) as
-        | { token?: string | null; message?: string; error?: string }
-        | null
+        const payload = (await response.json().catch(() => null)) as
+          | { token?: string | null; message?: string; error?: string }
+          | null
 
-      if (!response.ok) {
-        throw new Error(resolveAuthErrorMessage(payload, "Unable to create your account. Please try again."))
+        if (!response.ok) {
+          throw new Error(resolveAuthErrorMessage(payload, "Unable to create your account. Please try again."))
+        }
+
+        return payload
+      } finally {
+        resetTurnstileChallenge()
       }
-
-      return payload
     },
     onSuccess: (payload) => {
       const email = form.state.values.email.trim().toLowerCase()
@@ -130,6 +154,11 @@ export default function RegisterPage() {
 
       setError(null)
 
+      if (turnstileEnabled && !turnstileToken) {
+        setError("Please complete the verification challenge before creating your account.")
+        return
+      }
+
       logClientAuthEvent("log", "register.submit.start", {
         traceId,
         email: redactEmail(email),
@@ -141,6 +170,7 @@ export default function RegisterPage() {
           name: value.name.trim(),
           email,
           password: value.password,
+          turnstileToken,
         })
       } catch {
         logClientAuthEvent("error", "register.submit.error", {
@@ -362,6 +392,19 @@ export default function RegisterPage() {
             )
           }}
         />
+
+        {turnstileEnabled ? (
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Verification</p>
+            <TurnstileWidget
+              action="auth_sign_up"
+              className="min-h-[65px]"
+              onError={() => setTurnstileToken("")}
+              onTokenChange={setTurnstileToken}
+              resetKey={turnstileResetKey}
+            />
+          </div>
+        ) : null}
 
         <button
           type="submit"

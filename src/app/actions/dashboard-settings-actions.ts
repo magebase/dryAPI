@@ -7,9 +7,11 @@ import {
   dashboardSecuritySettingsFormSchema,
   dashboardSettingsSectionSchema,
   dashboardWebhooksSettingsFormSchema,
+  type DashboardWebhookEntry,
   type DashboardSettingsBundle,
 } from "@/lib/dashboard-settings-schema"
 import { updateDashboardSettingsSection } from "@/lib/dashboard-settings-store"
+import { validateDashboardWebhook } from "@/lib/dashboard-webhooks"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 
 type SessionPayload = {
@@ -42,6 +44,17 @@ function resolveOriginFromHeaders(headerStore: Headers): string {
     forwardedProtocol || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https")
 
   return `${protocol}://${host}`
+}
+
+function resolveRequestHostname(headerStore: Headers): string | null {
+  const forwardedHost = headerStore.get("x-forwarded-host")?.trim()
+  const host = forwardedHost || headerStore.get("host")?.trim() || ""
+
+  if (!host) {
+    return null
+  }
+
+  return host.split(",")[0]?.trim() || null
 }
 
 function readSessionEmail(payload: SessionPayload | null): string | null {
@@ -100,6 +113,11 @@ function normalizeSectionValues(section: UpdateDashboardSettingsActionInput["sec
   }
 }
 
+function buildWebhookSaveError(webhook: DashboardWebhookEntry, message: string): Error {
+  const name = webhook.name.trim() || webhook.id
+  return new Error(`Webhook ${name} must return 200 before saving. ${message}`.trim())
+}
+
 export async function updateDashboardSettingsAction(
   input: UpdateDashboardSettingsActionInput,
 ): Promise<DashboardSettingsBundle> {
@@ -107,9 +125,61 @@ export async function updateDashboardSettingsAction(
   const normalizedValues = normalizeSectionValues(section, input.values)
   const userEmail = await resolveAuthenticatedUserEmail()
 
+  if (section === "webhooks") {
+    const headerStore = await headers()
+    const hostname = resolveRequestHostname(headerStore)
+    const parsedWebhooks = dashboardWebhooksSettingsFormSchema.parse(normalizedValues)
+    const validatedWebhooks: DashboardWebhookEntry[] = []
+
+    for (const webhook of parsedWebhooks.webhooks) {
+      const result = await validateDashboardWebhook({
+        userEmail,
+        webhook,
+        hostname,
+        persistHealth: false,
+      })
+
+      if (!result.probeResult.ok) {
+        throw buildWebhookSaveError(result.webhook, result.probeResult.message)
+      }
+
+      validatedWebhooks.push(result.webhook)
+    }
+
+    return updateDashboardSettingsSection({
+      userEmail,
+      section,
+      values: { webhooks: validatedWebhooks },
+    })
+  }
+
   return updateDashboardSettingsSection({
     userEmail,
     section,
     values: normalizedValues,
   })
+}
+
+export async function validateDashboardWebhookAction(input: {
+  webhook: DashboardWebhookEntry
+}): Promise<{
+  webhook: DashboardWebhookEntry
+  ok: boolean
+  message: string
+}> {
+  const headerStore = await headers()
+  const hostname = resolveRequestHostname(headerStore)
+  const userEmail = await resolveAuthenticatedUserEmail()
+  const result = await validateDashboardWebhook({
+    userEmail,
+    webhook: input.webhook,
+    hostname,
+    persistHealth: true,
+  })
+
+  return {
+    webhook: result.webhook,
+    ok: result.probeResult.ok,
+    message: result.probeResult.message,
+  }
 }

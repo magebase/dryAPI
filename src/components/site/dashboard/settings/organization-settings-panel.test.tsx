@@ -253,6 +253,67 @@ describe("OrganizationSettingsPanel invitation flows", () => {
     })
   })
 
+  it("shows readable create workspace validation errors on empty submit", async () => {
+    const state = createDefaultState()
+    const fetchMock = createFetchMock(state)
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderOrganizationSettingsPanel()
+
+    await screen.findByText("Workspace name")
+    fireEvent.click(screen.getByRole("button", { name: "Create workspace" }))
+
+    await screen.findByText("Workspace name is required.")
+    await screen.findByText("Workspace slug is required.")
+
+    expect(screen.queryByText("[object Object]")).toBeNull()
+    expect(
+      fetchMock.mock.calls.filter(([input, init]) => {
+        return getRequestPath(input) === "/api/auth/organization/create"
+          && (init?.method || "GET").toUpperCase() === "POST"
+      }),
+    ).toHaveLength(0)
+  })
+
+  it("clears create workspace validation errors after the user fills both fields", async () => {
+    const state = createDefaultState()
+    const fetchMock = createFetchMock(state)
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderOrganizationSettingsPanel()
+
+    await screen.findByText("Workspace name")
+    fireEvent.click(screen.getByRole("button", { name: "Create workspace" }))
+
+    await screen.findByText("Workspace name is required.")
+    await screen.findByText("Workspace slug is required.")
+
+    fireEvent.change(screen.getByLabelText("Workspace name"), {
+      target: { value: "DryAPI Ops" },
+    })
+
+    expect(screen.queryByText("Workspace name is required.")).toBeNull()
+
+    fireEvent.change(screen.getByLabelText("Workspace slug"), {
+      target: { value: "dryapi-ops" },
+    })
+
+    expect(screen.queryByText("Workspace slug is required.")).toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Create workspace" }))
+
+    await waitFor(() => {
+      expect(toastSuccess).toHaveBeenCalled()
+    })
+
+    const createCall = fetchMock.mock.calls.find(([input, init]) => {
+      return getRequestPath(input) === "/api/auth/organization/create"
+        && (init?.method || "GET").toUpperCase() === "POST"
+    })
+
+    expect(createCall).toBeTruthy()
+  })
+
   it("submits invite-member requests and reloads organization invitations", async () => {
     const state = createDefaultState()
     const fetchMock = createFetchMock(state)

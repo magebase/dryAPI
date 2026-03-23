@@ -9,13 +9,19 @@ import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { resolveLocalCallbackUrl } from "@/lib/auth-callback-url"
+import { buildCaptchaHeaders } from "@/lib/auth-captcha"
 
 const RESET_REQUEST_TOAST_ID = "reset-request"
 
 const forgotPasswordSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
 })
+
+type ForgotPasswordMutationValues = z.infer<typeof forgotPasswordSchema> & {
+  turnstileToken: string
+}
 
 function resolveRedirectTarget(callbackUrl: string): string {
   return resolveLocalCallbackUrl(callbackUrl, window.location.origin, "/login?reset=1")
@@ -34,36 +40,55 @@ export default function ForgotPasswordPage() {
   const callbackUrl = useMemo(() => searchParams?.get("callbackURL") || "", [searchParams])
   const [error, setError] = useState<string | null>(null)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim())
+
+  function resetTurnstileChallenge() {
+    if (!turnstileEnabled) {
+      return
+    }
+
+    setTurnstileToken("")
+    setTurnstileResetKey((previous) => previous + 1)
+  }
 
   const resetRequestMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof forgotPasswordSchema>) => {
+    mutationFn: async (values: ForgotPasswordMutationValues) => {
       const redirectTo = new URL(resolveRedirectTarget(callbackUrl), window.location.origin).toString()
-      const response = await fetch("/api/auth/request-password-reset", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: values.email.trim().toLowerCase(),
-          redirectTo,
-        }),
-      })
+      const { turnstileToken: captchaToken, ...forgotValues } = values
 
-      const payload = (await response.json().catch(() => null)) as
-        | { message?: string; error?: string }
-        | null
+      try {
+        const response = await fetch("/api/auth/request-password-reset", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(buildCaptchaHeaders(captchaToken) ?? {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            email: forgotValues.email.trim().toLowerCase(),
+            redirectTo,
+          }),
+        })
 
-      if (!response.ok) {
-        throw new Error(
-          resolveAuthErrorMessage(
-            payload,
-            "Unable to send a reset link right now. Please try again.",
-          ),
-        )
+        const payload = (await response.json().catch(() => null)) as
+          | { message?: string; error?: string }
+          | null
+
+        if (!response.ok) {
+          throw new Error(
+            resolveAuthErrorMessage(
+              payload,
+              "Unable to send a reset link right now. Please try again.",
+            ),
+          )
+        }
+
+        return payload
+      } finally {
+        resetTurnstileChallenge()
       }
-
-      return payload
     },
     onSuccess: () => {
       setIsSubmitted(true)
@@ -84,7 +109,16 @@ export default function ForgotPasswordPage() {
     },
     onSubmit: async ({ value }) => {
       setError(null)
-      await resetRequestMutation.mutateAsync(value)
+
+      if (turnstileEnabled && !turnstileToken) {
+        setError("Please complete the verification challenge before requesting a reset link.")
+        return
+      }
+
+      await resetRequestMutation.mutateAsync({
+        ...value,
+        turnstileToken,
+      })
     },
   })
 
@@ -148,6 +182,19 @@ export default function ForgotPasswordPage() {
               )
             }}
           />
+
+          {turnstileEnabled ? (
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Verification</p>
+              <TurnstileWidget
+                action="auth_request_password_reset"
+                className="min-h-[65px]"
+                onError={() => setTurnstileToken("")}
+                onTokenChange={setTurnstileToken}
+                resetKey={turnstileResetKey}
+              />
+            </div>
+          ) : null}
 
           <button
             type="submit"

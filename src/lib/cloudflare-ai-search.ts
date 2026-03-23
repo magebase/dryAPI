@@ -59,12 +59,12 @@ function normalizeSourceFilter(value: string | null): string | null {
 
   const directUrl = toSafeUrl(trimmed);
   if (directUrl) {
-    return directUrl.toString().replace(/\/+$/, "");
+    return directUrl.origin;
   }
 
   const httpsUrl = toSafeUrl(`https://${trimmed}`);
   if (httpsUrl) {
-    return httpsUrl.toString().replace(/\/+$/, "");
+    return httpsUrl.origin;
   }
 
   return trimmed;
@@ -146,7 +146,11 @@ function resolveConfig(env: NodeJS.ProcessEnv): AiSearchConfig | null {
     accountId,
     apiToken,
     index,
-    source: normalizeSourceFilter(nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE)),
+    source: normalizeSourceFilter(
+      nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE) ||
+        nonEmpty(env.NEXT_PUBLIC_SITE_URL) ||
+        nonEmpty(env.SITE_URL),
+    ),
     endpoint: nonEmpty(env.CLOUDFLARE_AI_SEARCH_ENDPOINT),
     timeoutMs: parsePositiveInt(env.CLOUDFLARE_AI_SEARCH_TIMEOUT_MS, 2500, 20_000),
     maxResults: parsePositiveInt(env.CLOUDFLARE_AI_SEARCH_MAX_RESULTS, 4, 12),

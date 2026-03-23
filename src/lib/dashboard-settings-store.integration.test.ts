@@ -114,12 +114,50 @@ describe("dashboard settings store integration", () => {
         userEmail: "owner@dryapi.dev",
         section: "webhooks",
         values: {
-          endpointUrl: "https://hooks.example.com/dryapi",
-          signingSecret: "whsec_test_secret",
-          sendOnCompleted: true,
-          sendOnFailed: true,
-          sendOnQueued: true,
-          includeFullPayload: false,
+          webhooks: [
+            {
+              id: "wh_1",
+              name: "Primary deliveries",
+              endpointUrl: "https://hooks.example.com/dryapi",
+              signingSecret: "whsec_test_secret",
+              sendOnCompleted: true,
+              sendOnFailed: true,
+              sendOnQueued: true,
+              includeFullPayload: false,
+              health: {
+                validationStatus: "healthy",
+                validationMessage: "Webhook returned HTTP 200.",
+                lastValidatedAt: 1700000000000,
+                lastStatusCode: 200,
+                lastSuccessAt: 1700000000000,
+                lastFailureAt: null,
+                consecutiveFailures: 0,
+                alertCount: 0,
+                lastAlertAt: null,
+              },
+            },
+            {
+              id: "wh_2",
+              name: "Failed deliveries",
+              endpointUrl: "https://hooks.example.com/fallback",
+              signingSecret: "whsec_test_secret_2",
+              sendOnCompleted: true,
+              sendOnFailed: false,
+              sendOnQueued: false,
+              includeFullPayload: true,
+              health: {
+                validationStatus: "unknown",
+                validationMessage: "",
+                lastValidatedAt: null,
+                lastStatusCode: null,
+                lastSuccessAt: null,
+                lastFailureAt: null,
+                consecutiveFailures: 0,
+                alertCount: 0,
+                lastAlertAt: null,
+              },
+            },
+          ],
         },
       },
       { db },
@@ -131,8 +169,11 @@ describe("dashboard settings store integration", () => {
     expect(loaded.general.defaultModelScope).toBe("quality")
     expect(loaded.security.requireMfa).toBe(true)
     expect(loaded.security.sessionTimeoutMinutes).toBe("45")
-    expect(loaded.webhooks.endpointUrl).toBe("https://hooks.example.com/dryapi")
-    expect(loaded.webhooks.sendOnQueued).toBe(true)
+    expect(loaded.webhooks.webhooks).toHaveLength(2)
+    expect(loaded.webhooks.webhooks[0]?.endpointUrl).toBe("https://hooks.example.com/dryapi")
+    expect(loaded.webhooks.webhooks[0]?.health.validationStatus).toBe("healthy")
+    expect(loaded.webhooks.webhooks[1]?.name).toBe("Failed deliveries")
+    expect(loaded.webhooks.webhooks[1]?.sendOnQueued).toBe(false)
   })
 
   it("preserves other sections when updating one section", async () => {

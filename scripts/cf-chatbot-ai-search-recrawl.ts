@@ -27,6 +27,11 @@ const API_TOKEN_KEYS = [
   "CLOUDFLARE_AI_SEARCH_TOKEN_ID",
 ]
 const INDEX_KEYS = ["CLOUDFLARE_AI_SEARCH_INDEX", "CLOUDFLARE_AI_SEARCH_NAME"]
+const SOURCE_ORIGIN_KEYS = [
+  "CLOUDFLARE_AI_SEARCH_SOURCE",
+  "NEXT_PUBLIC_SITE_URL",
+  "SITE_URL",
+]
 
 function nonEmpty(value: string | undefined): string | null {
   const normalized = value?.trim() || ""
@@ -55,6 +60,17 @@ function normalizeUrl(value: string): string {
   return parsed.toString().replace(/\/+$/, "")
 }
 
+function normalizeOrigin(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    throw new Error("Empty URL values are not allowed.")
+  }
+
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  const parsed = new URL(withProtocol)
+  return parsed.origin
+}
+
 function splitUrlList(value: string): string[] {
   return value
     .split(/[\n,]+/)
@@ -77,7 +93,7 @@ function resolveSourceUrls(env: EnvLike): string[] {
     return uniqueValues(sourceUrls)
   }
 
-  const sourceOrigin = normalizeUrl(nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE) ?? DEFAULT_SITE_ORIGIN)
+  const sourceOrigin = normalizeOrigin(firstNonEmpty(env, SOURCE_ORIGIN_KEYS) ?? DEFAULT_SITE_ORIGIN)
   return uniqueValues([sourceOrigin, `${sourceOrigin}/llms-full.txt`])
 }
 

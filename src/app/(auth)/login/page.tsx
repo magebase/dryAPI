@@ -8,7 +8,9 @@ import { parseAsString, useQueryStates } from "nuqs"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
+import { buildCaptchaHeaders } from "@/lib/auth-captcha"
 
 const LOGIN_REGISTERED_TOAST_ID = "login-registered"
 const LOGIN_ERROR_TOAST_ID = "login-error"
@@ -82,6 +84,9 @@ export default function LoginPage() {
 
   const [error, setError] = useState<string | null>(null)
   const [socialProviderPending, setSocialProviderPending] = useState<SocialProvider | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim())
   const defaultValues = useMemo(
     () => ({
       email: prefillEmail,
@@ -89,6 +94,15 @@ export default function LoginPage() {
     }),
     [prefillEmail],
   )
+
+  function resetTurnstileChallenge() {
+    if (!turnstileEnabled) {
+      return
+    }
+
+    setTurnstileToken("")
+    setTurnstileResetKey((previous) => previous + 1)
+  }
 
   const form = useForm({
     defaultValues,
@@ -102,6 +116,11 @@ export default function LoginPage() {
 
       setError(null)
 
+      if (turnstileEnabled && !turnstileToken) {
+        setError("Please complete the verification challenge before signing in.")
+        return
+      }
+
       logClientAuthEvent("log", "login.submit.start", {
         traceId,
         email: redactEmail(email),
@@ -112,6 +131,7 @@ export default function LoginPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(buildCaptchaHeaders(turnstileToken) ?? {}),
           },
           credentials: "include",
           body: JSON.stringify({
@@ -191,6 +211,8 @@ export default function LoginPage() {
           email: redactEmail(email),
         })
         setError("Unable to sign in right now. Please try again.")
+      } finally {
+        resetTurnstileChallenge()
       }
     },
   })
@@ -432,6 +454,19 @@ export default function LoginPage() {
             )
           }}
         />
+
+        {turnstileEnabled ? (
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Verification</p>
+            <TurnstileWidget
+              action="auth_sign_in"
+              className="min-h-[65px]"
+              onError={() => setTurnstileToken("")}
+              onTokenChange={setTurnstileToken}
+              resetKey={turnstileResetKey}
+            />
+          </div>
+        ) : null}
 
         <button type="submit" disabled={form.state.isSubmitting} className="w-full px-4 py-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-all shadow-sm">
           {form.state.isSubmitting ? "Signing in..." : "Sign in"}

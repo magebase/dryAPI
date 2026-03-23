@@ -32,6 +32,8 @@ Supported aliases are accepted for compatibility:
 
 Optional env keys:
   CLOUDFLARE_AI_SEARCH_SOURCE
+  NEXT_PUBLIC_SITE_URL
+  SITE_URL
   CLOUDFLARE_AI_SEARCH_ENDPOINT
   CLOUDFLARE_AI_SEARCH_TIMEOUT_MS
   CLOUDFLARE_AI_SEARCH_MAX_RESULTS
@@ -159,11 +161,16 @@ normalize_source_value() {
   trimmed="${trimmed%/}"
 
   if [[ "$trimmed" =~ ^https?:// ]]; then
+    if [[ "$trimmed" =~ ^(https?://[^/]+) ]]; then
+      printf '%s' "${BASH_REMATCH[1]}"
+      return 0
+    fi
+
     printf '%s' "$trimmed"
     return 0
   fi
 
-  if [[ "$trimmed" =~ ^[A-Za-z0-9.-]+(:[0-9]+)?(/.*)?$ ]]; then
+  if [[ "$trimmed" =~ ^[A-Za-z0-9.-]+(:[0-9]+)?$ ]]; then
     printf 'https://%s' "$trimmed"
     return 0
   fi
@@ -187,7 +194,6 @@ index_name="$(first_non_empty_value \
   CLOUDFLARE_AI_SEARCH_NAME || true)"
 
 optional_keys=(
-  "CLOUDFLARE_AI_SEARCH_SOURCE"
   "CLOUDFLARE_AI_SEARCH_ENDPOINT"
   "CLOUDFLARE_AI_SEARCH_TIMEOUT_MS"
   "CLOUDFLARE_AI_SEARCH_MAX_RESULTS"
@@ -247,6 +253,16 @@ do_put_secret() {
 do_put_secret "CLOUDFLARE_AI_SEARCH_ACCOUNT_ID" "$account_id"
 do_put_secret "CLOUDFLARE_AI_SEARCH_API_TOKEN" "$api_token"
 do_put_secret "CLOUDFLARE_AI_SEARCH_INDEX" "$index_name"
+
+source_value="$(first_non_empty_value \
+  CLOUDFLARE_AI_SEARCH_SOURCE \
+  NEXT_PUBLIC_SITE_URL \
+  SITE_URL || true)"
+
+if [[ -n "$source_value" ]]; then
+  source_value="$(normalize_source_value "$source_value")"
+  do_put_secret "CLOUDFLARE_AI_SEARCH_SOURCE" "$source_value"
+fi
 
 for key in "${optional_keys[@]}"; do
   value="${ENV_VALUES[$key]:-}"
