@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { chatRequestSchema } from "@/lib/input-validation-schemas"
 import { submitChatContactCaptureAction } from "@/app/actions/submit-chat-contact-capture-action"
+import { ChatMessageMarkdown } from "@/components/site/chat-message-markdown"
 import { openQuoteDialog } from "@/components/site/quote-dialog"
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -441,7 +442,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
       </button>
 
       {isOpen ? (
-        <section className="fixed bottom-20 right-2 z-40 flex h-[min(38rem,74vh)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.24)] md:bottom-24 md:right-4">
+        <section className="fixed bottom-20 right-2 z-40 flex w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.24)] md:bottom-24 md:right-4">
           <header className="border-b border-slate-200 bg-gradient-to-br from-blue-50 via-white to-cyan-50 px-4 py-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-blue-700">dryAPI Assistant</p>
             <p className="mt-1 text-sm text-slate-700">Fast answers on models, pricing, API compatibility, and deployment.</p>
@@ -469,7 +470,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
             <p className="mt-1 text-[11px] text-slate-600">{SERVICE_HOURS_LABEL}</p>
           </header>
 
-          <div className="flex-1 space-y-3 overflow-y-auto bg-gradient-to-b from-slate-50 to-white px-3 py-3">
+          <div aria-live="polite" aria-relevant="additions text" className="space-y-3 bg-gradient-to-b from-slate-50 to-white px-3 py-3" role="log">
             {messages.length <= 1 ? (
               <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
                 <p className="text-xs text-slate-700">Pick the fastest path:</p>
@@ -534,7 +535,14 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
                         : "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
                     }`}
                   >
-                    <p className="whitespace-pre-line">{message.content}</p>
+                    {message.role === "assistant" ? (
+                      <ChatMessageMarkdown
+                        className={message.isError ? "text-red-700" : undefined}
+                        content={message.content}
+                      />
+                    ) : (
+                      <p className="whitespace-pre-line">{message.content}</p>
+                    )}
                     {message.showQuoteButton ? (
                       <button
                         className="mt-3 inline-flex rounded-md border border-blue-300 bg-blue-600 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:brightness-110"
