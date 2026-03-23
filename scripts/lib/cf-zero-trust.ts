@@ -57,7 +57,6 @@ export function buildZeroTrustRouteDefinitions(args: {
   brandLabel: string
   siteHost: string
   calHost: string
-  crmHost: string
 }): ZeroTrustRouteDefinition[] {
   const brandLabel = args.brandLabel.trim() || "TinaCMS"
 
@@ -139,18 +138,6 @@ export function buildZeroTrustRouteDefinitions(args: {
       domain: `${args.calHost}/apps/admin/*`,
       name: `${brandLabel} Cal Admin (/apps/admin/*)`,
       includeInOriginAud: false,
-    },
-    {
-      key: "crm-root",
-      domain: args.crmHost,
-      name: `${brandLabel} CRM (root)`,
-      includeInOriginAud: true,
-    },
-    {
-      key: "crm-prefix",
-      domain: `${args.crmHost}/*`,
-      name: `${brandLabel} CRM (all paths)`,
-      includeInOriginAud: true,
     },
   ]
 }

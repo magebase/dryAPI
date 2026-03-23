@@ -98,6 +98,45 @@ describe("resolveDrizzleCache", () => {
     );
   });
 
+  it("clamps the default TTL to Cloudflare KV minimums", async () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("DRIZZLE_CACHE_DEFAULT_TTL_SECONDS", "15");
+
+    const kv = createFakeKv();
+    getCloudflareContextMock.mockReturnValue({
+      env: {
+        DRIZZLE_CACHE_KV: kv,
+        DRIZZLE_CACHE_DEFAULT_TTL_SECONDS: "15",
+      },
+    });
+
+    const { resolveDrizzleCache } = await import("@/lib/drizzle-cache");
+    const cache = resolveDrizzleCache();
+
+    if (!cache) {
+      throw new Error("Expected drizzle cache instance");
+    }
+
+    const nowSpy = vi.spyOn(Date, "now");
+    const baseNow = 1_700_000_000_000;
+
+    nowSpy.mockReturnValue(baseNow);
+
+    await cache.put("callback:google", [{ state: "ok" }], ["better_auth_oauth_state"], false);
+
+    nowSpy.mockReturnValue(baseNow + 16_000);
+    await expect(
+      cache.get("callback:google", ["better_auth_oauth_state"], false, true),
+    ).resolves.toEqual([{ state: "ok" }]);
+
+    nowSpy.mockReturnValue(baseNow + 61_000);
+    await expect(
+      cache.get("callback:google", ["better_auth_oauth_state"], false, true),
+    ).resolves.toBeUndefined();
+
+    nowSpy.mockRestore();
+  });
+
   it("stores and invalidates cached entries by table and tags", async () => {
     vi.stubEnv("NODE_ENV", "test");
 

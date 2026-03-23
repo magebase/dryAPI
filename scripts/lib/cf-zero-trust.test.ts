@@ -26,7 +26,6 @@ describe("cf-zero-trust helpers", () => {
       brandLabel: "dryAPI",
       siteHost: "dryapi.dev",
       calHost: "cal.dryapi.dev",
-      crmHost: "crm.dryapi.dev",
     })
 
     expect(routes.map((route) => route.domain)).toEqual([
@@ -43,12 +42,10 @@ describe("cf-zero-trust helpers", () => {
       "cal.dryapi.dev/admin/*",
       "cal.dryapi.dev/apps/admin",
       "cal.dryapi.dev/apps/admin/*",
-      "crm.dryapi.dev",
-      "crm.dryapi.dev/*",
     ])
 
     expect(routes[0]?.name).toBe("dryAPI Tina Admin (/admin)")
-    expect(routes[13]?.name).toBe("dryAPI CRM (root)")
+    expect(routes.some((route) => route.domain.includes("crm"))).toBe(false)
   })
 
   it("resolves the active brand host and rejects mismatches", async () => {

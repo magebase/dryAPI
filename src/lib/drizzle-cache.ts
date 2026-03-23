@@ -27,7 +27,8 @@ type CloudflareKvCacheOptions = {
 
 const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"]);
 const DEFAULT_CACHE_PREFIX = "__drizzle_cache__";
-const DEFAULT_CACHE_TTL_SECONDS = 15;
+const MIN_CACHE_TTL_SECONDS = 60;
+const DEFAULT_CACHE_TTL_SECONDS = MIN_CACHE_TTL_SECONDS;
 const DEFAULT_INDEX_TTL_SECONDS = 300;
 
 let drizzleCache: Cache | null | undefined;
@@ -51,6 +52,10 @@ function parsePositiveInteger(value: string | undefined, defaultValue: number): 
   }
 
   return parsed;
+}
+
+function normalizeTtlSeconds(value: number): number {
+  return Math.max(value, MIN_CACHE_TTL_SECONDS);
 }
 
 function normalizeStringArray(value: string | null): string[] {
@@ -269,14 +274,14 @@ class CloudflareKvDrizzleCache extends Cache {
     }
 
     if (config?.ex && Number.isFinite(config.ex) && config.ex > 0) {
-      return { expirationTtl: Math.floor(config.ex) };
+      return { expirationTtl: normalizeTtlSeconds(Math.floor(config.ex)) };
     }
 
     if (config?.px && Number.isFinite(config.px) && config.px > 0) {
-      return { expirationTtl: Math.ceil(config.px / 1000) };
+      return { expirationTtl: normalizeTtlSeconds(Math.ceil(config.px / 1000)) };
     }
 
-    return { expirationTtl: fallbackTtlSeconds };
+    return { expirationTtl: normalizeTtlSeconds(fallbackTtlSeconds) };
   }
 }
 
@@ -305,8 +310,12 @@ function resolveCacheOptions(env: Record<string, unknown>): CloudflareKvCacheOpt
 
   return {
     keyPrefix: rawPrefix?.trim() || DEFAULT_CACHE_PREFIX,
-    defaultTtlSeconds: parsePositiveInteger(rawDefaultTtl, DEFAULT_CACHE_TTL_SECONDS),
-    indexTtlSeconds: parsePositiveInteger(rawIndexTtl, DEFAULT_INDEX_TTL_SECONDS),
+    defaultTtlSeconds: normalizeTtlSeconds(
+      parsePositiveInteger(rawDefaultTtl, DEFAULT_CACHE_TTL_SECONDS),
+    ),
+    indexTtlSeconds: normalizeTtlSeconds(
+      parsePositiveInteger(rawIndexTtl, DEFAULT_INDEX_TTL_SECONDS),
+    ),
     useGlobally: parseBoolean(rawGlobal, false),
   };
 }

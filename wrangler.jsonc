@@ -35,14 +35,6 @@
       "pattern": "www.dryapi.dev",
       "custom_domain": true,
     },
-    {
-      "pattern": "crm.dryapi.dev",
-      "custom_domain": true,
-    },
-    {
-      "pattern": "www.crm.dryapi.dev",
-      "custom_domain": true,
-    },
   ],
   "services": [
     {
@@ -140,7 +132,7 @@
     "CLOUDFLARE_AI_SEARCH_MAX_RESULTS": "4",
     "CLOUDFLARE_AI_SEARCH_SOURCE": "",
     "CLOUDFLARE_AI_SEARCH_ENDPOINT": "",
-    "DRIZZLE_CACHE_DEFAULT_TTL_SECONDS": "15",
+    "DRIZZLE_CACHE_DEFAULT_TTL_SECONDS": "60",
     "DRIZZLE_CACHE_INDEX_TTL_SECONDS": "300",
     "DRIZZLE_CACHE_GLOBAL": "false",
   },

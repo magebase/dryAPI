@@ -380,10 +380,8 @@ Optional for contact emails:
 - `BREVO_FROM_NAME_QUOTE`
 - `BREVO_FROM_NAME_CHAT`
 
-Optional for CRM workflow dispatch + mailing list sync:
+Optional for workflow dispatch + mailing list sync:
 
-- `CRM_AUTOMATION_DISPATCH_URL`
-- `CRM_AUTOMATION_API_TOKEN`
 - `BREVO_API_KEY`
 - `BREVO_MARKETING_LIST_ID`
 

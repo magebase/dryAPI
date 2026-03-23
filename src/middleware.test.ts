@@ -73,7 +73,6 @@ describe("dashboard middleware auth checks", () => {
         cookie: "better-auth.session_token=session_1",
       }),
     })
-
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
@@ -81,5 +80,13 @@ describe("dashboard middleware auth checks", () => {
     expect(getRequestPath(fetchMock.mock.calls[0]?.[0] as RequestInfo | URL)).toBe(
       "/api/auth/get-session",
     )
+  })
+
+  it("returns 404 for deprecated crm paths", async () => {
+    const request = new NextRequest("https://dryapi.dev/api/crm/dashboard")
+
+    const response = await middleware(request)
+
+    expect(response.status).toBe(404)
   })
 })

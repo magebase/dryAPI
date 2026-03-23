@@ -25,7 +25,6 @@ import {
 import { buildSessionCheckCookieHeader } from "@/lib/session-check-cookies"
 
 const SUCCESS_PATH = "/success"
-const CRM_HOSTNAMES = new Set(["crm.dryapi.dev", "www.crm.dryapi.dev"])
 const DASHBOARD_PREFIX = "/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
@@ -40,14 +39,6 @@ type SessionAuthCacheEntry = {
 
 const sessionAuthCache = new Map<string, SessionAuthCacheEntry>()
 
-function normalizeHostname(value: string | null): string {
-  return (value || "").split(":")[0]?.trim().toLowerCase() || ""
-}
-
-function isCrmHostname(hostname: string): boolean {
-  return CRM_HOSTNAMES.has(hostname)
-}
-
 function isBypassRewritePath(pathname: string): boolean {
   return (
     pathname.startsWith("/_next")
@@ -59,15 +50,7 @@ function isBypassRewritePath(pathname: string): boolean {
   )
 }
 
-function resolveCrmPath(pathname: string): string {
-  if (pathname.startsWith("/crm")) {
-    return pathname
-  }
-
-  return "/crm"
-}
-
-function isCrmProtectedPath(pathname: string): boolean {
+function isDeprecatedCrmPath(pathname: string): boolean {
   return (
     pathname === "/crm"
     || pathname.startsWith("/crm/")
@@ -472,6 +455,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, 307)
   }
 
+  if (isDeprecatedCrmPath(request.nextUrl.pathname)) {
+    return new NextResponse("Not Found", { status: 404 })
+  }
+
   if (request.nextUrl.pathname === "/ADMIN/INDEX.HTML") {
     const url = request.nextUrl.clone()
     url.pathname = "/admin/index.html"
@@ -536,8 +523,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const hostname = normalizeHostname(request.headers.get("x-forwarded-host") || request.headers.get("host"))
-
   if (isAdminApiProxyPath(request.nextUrl.pathname)) {
     const auth = await verifyCloudflareAccess(request)
     if (!auth.ok) {
@@ -549,24 +534,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(rewriteUrl)
   }
 
-  if (isCrmHostname(hostname) && !isBypassRewritePath(request.nextUrl.pathname)) {
-    const crmUrl = request.nextUrl.clone()
-    const crmPath = resolveCrmPath(request.nextUrl.pathname)
-    crmUrl.pathname = crmPath
-
-    const auth = await verifyCloudflareAccess(request)
-    if (!auth.ok) {
-      return createCloudflareAccessErrorResponse(request.nextUrl.pathname, auth)
-    }
-
-    if (crmPath === request.nextUrl.pathname) {
-      return NextResponse.next()
-    }
-
-    return NextResponse.rewrite(crmUrl)
-  }
-
-  if (!isCloudflareAccessProtectedPath(request.nextUrl.pathname) && !isCrmProtectedPath(request.nextUrl.pathname)) {
+  if (!isCloudflareAccessProtectedPath(request.nextUrl.pathname)) {
     return NextResponse.next()
   }
 

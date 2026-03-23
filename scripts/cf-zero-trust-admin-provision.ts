@@ -32,7 +32,6 @@ Allowlist (required: at least one):
 Optional:
   --brand-key <key>      Brand key from content/site/brands.json (defaults to SITE_BRAND_KEY or dryAPI)
   --site-host <host>     Override public site hostname from the brand catalog
-  --crm-host <host>      CRM hostname (default: crm.<site-host>)
   --policy-name <name>   Access policy name (default: <brand> Zero Trust allowlist)
   --dry-run              Print planned actions without writing changes
   -h, --help             Show this help
@@ -49,7 +48,6 @@ function parseArgs(argv) {
     brandKey: "",
     siteHost: "",
     calHost: "",
-    crmHost: "",
     allowEmails: "",
     allowDomains: "",
     policyName: "",
@@ -88,12 +86,6 @@ function parseArgs(argv) {
 
     if (value === "--cal-host") {
       args.calHost = next
-      index += 1
-      continue
-    }
-
-    if (value === "--crm-host") {
-      args.crmHost = next
       index += 1
       continue
     }
@@ -379,7 +371,6 @@ async function main() {
   const siteHost = resolvedBrand.siteHost
   const brandLabel = resolvedBrand.brand.displayName
   const calHost = ensureHost(args.calHost, "--cal-host")
-  const crmHost = ensureHost(args.crmHost || `crm.${siteHost}`, "--crm-host")
   const policyName = args.policyName || `${brandLabel} Zero Trust allowlist`
 
   const token =
@@ -415,15 +406,17 @@ async function main() {
     brandLabel,
     siteHost,
     calHost,
-    crmHost,
   })
-  const legacyRouteDomains = [`${siteHost}/api/tina/gql`]
+  const legacyRouteDomains = [
+    `${siteHost}/api/tina/gql`,
+    `crm.${siteHost}`,
+    `www.crm.${siteHost}`,
+  ]
 
   console.log(`Using account_id=${accountId}`)
   console.log(`Brand=${brandLabel}${brandKey ? ` (${brandKey})` : ""}`)
   console.log(`Site host=${siteHost}`)
   console.log(`Cal host=${calHost}`)
-  console.log(`CRM host=${crmHost}`)
 
   const results = []
 
@@ -496,11 +489,6 @@ async function main() {
 
   console.log("\nCal admin routes covered:")
   for (const route of results.filter((item) => !item.includeInOriginAud)) {
-    console.log(`- ${route.domain}`)
-  }
-
-  console.log("\nCRM routes covered:")
-  for (const route of results.filter((item) => item.key.startsWith("crm-"))) {
     console.log(`- ${route.domain}`)
   }
 }
