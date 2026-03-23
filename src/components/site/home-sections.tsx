@@ -183,10 +183,10 @@ const result = await res.json();`;
   ];
 
   const omnichannelTilePreviewImages = [
-    "agent-chat-generation",
+    "agent-chatbot-text-generation",
     "image-generation",
-    "audio-speech-generation",
-    "text-ocr-embeddings",
+    "speech-generation",
+    "ocr",
     "video-generation",
     "music-generation",
   ];
@@ -1311,7 +1311,7 @@ function MockUiPreview({
                   <div
                     key={i}
                     className="h-2 rounded-sm bg-black/5 transition-opacity duration-500"
-                    style={{ opacity: 0.5 + (((i * 13) % 5) * 0.1) }}
+                    style={{ opacity: 0.5 + ((i * 13) % 5) * 0.1 }}
                   />
                 ))}
               </div>
@@ -1437,7 +1437,7 @@ function MockWorkflowFrame({ className }: { className?: string }) {
         alt="AI touching mesh"
         fill
         className="object-cover rounded-md"
-        src="/landing/ai-touching-mesh.png"
+        src="/landing/hero.png"
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(8,10,20,0.18))]" />
       <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-white/15 bg-black/20 px-3 py-2 backdrop-blur-sm">

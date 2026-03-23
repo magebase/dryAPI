@@ -37,6 +37,12 @@ type AccountPlanSummary = {
   discountPercent: number;
 };
 
+type AccountSettingsPanelProps = {
+  initialUser?: SessionUser | null;
+  initialSessions?: SessionRecord[];
+  initialCurrentPlan?: AccountPlanSummary | null;
+};
+
 function formatLoginMethod(value: string | null | undefined): string {
   const normalized = value?.trim();
   if (!normalized) {
@@ -48,20 +54,40 @@ function formatLoginMethod(value: string | null | undefined): string {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-export function AccountSettingsPanel() {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AccountSettingsPanel({
+  initialUser,
+  initialSessions,
+  initialCurrentPlan,
+}: AccountSettingsPanelProps) {
+  const hasInitialData =
+    initialUser !== undefined ||
+    initialSessions !== undefined ||
+    initialCurrentPlan !== undefined;
+
+  const [user, setUser] = useState<SessionUser | null>(initialUser ?? null);
+  const [loading, setLoading] = useState(!hasInitialData);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [planLoadError, setPlanLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [signOutPending, setSignOutPending] = useState(false);
   const [signOutOthersPending, setSignOutOthersPending] = useState(false);
   const [deleteRequestPending, setDeleteRequestPending] = useState(false);
-  const [activeSessions, setActiveSessions] = useState<SessionRecord[]>([]);
-  const [currentPlan, setCurrentPlan] = useState<AccountPlanSummary | null>(null);
+  const [activeSessions, setActiveSessions] = useState<SessionRecord[]>(
+    initialSessions ?? [],
+  );
+  const [currentPlan, setCurrentPlan] = useState<AccountPlanSummary | null>(
+    initialCurrentPlan ?? null,
+  );
 
   useEffect(() => {
     let active = true;
+
+    if (hasInitialData && reloadToken === 0) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
 
     setLoading(true);
     setLoadError(null);
@@ -111,7 +137,9 @@ export function AccountSettingsPanel() {
         });
 
         if (!accountResponse.ok) {
-          throw new Error(`Failed to load account summary (${accountResponse.status})`);
+          throw new Error(
+            `Failed to load account summary (${accountResponse.status})`,
+          );
         }
 
         const payload = (await accountResponse.json().catch(() => null)) as {
@@ -143,7 +171,7 @@ export function AccountSettingsPanel() {
     return () => {
       active = false;
     };
-  }, [reloadToken]);
+  }, [hasInitialData, reloadToken]);
 
   async function handleSignOutCurrentSession() {
     if (signOutPending) {

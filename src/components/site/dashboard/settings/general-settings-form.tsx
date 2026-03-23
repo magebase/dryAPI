@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session";
+import { buildGeneralSettingsFormValues } from "@/lib/dashboard-settings-form-values";
 import {
   Select,
   SelectContent,
@@ -30,13 +31,9 @@ type SessionUser = {
   name?: string | null;
 };
 
-function toUsername(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+type GeneralSettingsFormProps = {
+  initialValues?: DashboardGeneralSettingsFormValues;
+};
 
 async function loadGeneralSettings(): Promise<DashboardGeneralSettingsFormValues> {
   const [sessionSnapshot, settingsResponse] = await Promise.all([
@@ -58,18 +55,8 @@ async function loadGeneralSettings(): Promise<DashboardGeneralSettingsFormValues
   const user = (sessionSnapshot.user as SessionUser | null) ?? null;
   const generalSettings = settingsPayload?.data?.general ?? {};
   const base = { ...DASHBOARD_SETTINGS_DEFAULTS.general, ...generalSettings };
-  const candidateFullName = user?.name?.trim() || "";
-  const candidateEmail = user?.email?.trim() || "";
-  const candidateUsername = candidateFullName
-    ? toUsername(candidateFullName)
-    : "";
 
-  return {
-    ...base,
-    fullName: base.fullName || candidateFullName,
-    email: base.email || candidateEmail,
-    username: base.username || candidateUsername,
-  };
+  return buildGeneralSettingsFormValues(base, user);
 }
 
 function GeneralSettingsFormSkeleton() {
@@ -115,11 +102,14 @@ function GeneralSettingsFormSkeleton() {
   );
 }
 
-export function GeneralSettingsForm() {
+export function GeneralSettingsForm({ initialValues }: GeneralSettingsFormProps) {
   const queryClient = useQueryClient();
   const generalSettingsQuery = useQuery<DashboardGeneralSettingsFormValues>({
     queryKey: ["dashboard-settings", "general"],
     queryFn: loadGeneralSettings,
+    enabled: !initialValues,
+    initialData: initialValues,
+    staleTime: initialValues ? Number.POSITIVE_INFINITY : 0,
   });
 
   const saveMutation = useMutation({

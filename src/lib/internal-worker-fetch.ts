@@ -20,6 +20,14 @@ type InternalWorkerFetchInput = {
 }
 
 const INTERNAL_WORKER_FETCH_SLOW_MS = 200
+const WORKER_SELF_REFERENCE_COOLDOWN_MS = 30_000
+let workerSelfReferencePromise: Promise<WorkerServiceBinding | null> | null = null
+let workerSelfReferenceDisabledUntil = 0
+
+export function __resetInternalWorkerFetchCacheForTests(): void {
+  workerSelfReferencePromise = null
+  workerSelfReferenceDisabledUntil = 0
+}
 
 function emitInternalWorkerFetchSummary(
   event: string,
@@ -64,7 +72,25 @@ function normalizePath(path: string): string {
   return normalized
 }
 
+function isWorkerSelfReferenceTemporarilyDisabled(): boolean {
+  return workerSelfReferenceDisabledUntil > Date.now()
+}
+
+function disableWorkerSelfReferenceTemporarily(): void {
+  workerSelfReferencePromise = null
+  workerSelfReferenceDisabledUntil = Date.now() + WORKER_SELF_REFERENCE_COOLDOWN_MS
+}
+
 async function resolveWorkerSelfReference(): Promise<WorkerServiceBinding | null> {
+  if (isWorkerSelfReferenceTemporarilyDisabled()) {
+    return null
+  }
+
+  if (workerSelfReferencePromise) {
+    return workerSelfReferencePromise
+  }
+
+  workerSelfReferencePromise = (async () => {
   try {
     const { env } = await getCloudflareContext({ async: true })
     const binding = (env as Record<string, unknown>).WORKER_SELF_REFERENCE
@@ -76,6 +102,18 @@ async function resolveWorkerSelfReference(): Promise<WorkerServiceBinding | null
 
     return null
   }
+  })().then((binding) => {
+    if (!binding) {
+      workerSelfReferencePromise = null
+    }
+
+    return binding
+  }).catch((error) => {
+    workerSelfReferencePromise = null
+    throw error
+  })
+
+  return workerSelfReferencePromise
 }
 
 export async function internalWorkerFetch(input: InternalWorkerFetchInput): Promise<Response> {
@@ -92,21 +130,54 @@ export async function internalWorkerFetch(input: InternalWorkerFetchInput): Prom
       () => resolveWorkerSelfReference(),
     )
 
+    const fallbackOrigin = input.fallbackOrigin?.trim() || ""
+
     if (binding) {
-      const response = await tracker.measure(
-        "worker.binding.fetch",
-        () => binding.fetch(`https://internal${path}`, input.init),
-      )
+      try {
+        const response = await tracker.measure(
+          "worker.binding.fetch",
+          () => binding.fetch(`https://internal${path}`, input.init),
+        )
 
-      emitInternalWorkerFetchSummary("internal-worker-fetch", tracker, {
-        transport: "service-binding",
-        status: response.status,
-      })
+        emitInternalWorkerFetchSummary("internal-worker-fetch", tracker, {
+          transport: "service-binding",
+          status: response.status,
+        })
 
-      return response
+        return response
+      } catch (bindingError) {
+        disableWorkerSelfReferenceTemporarily()
+
+        if (!fallbackOrigin) {
+          throw bindingError
+        }
+
+        const fallbackResponse = await tracker.measure(
+          "worker.fallback.fetch",
+          () => fetch(`${fallbackOrigin}${path}`, input.init),
+          {
+            fallbackOrigin,
+            bindingError:
+              bindingError instanceof Error
+                ? bindingError.message
+                : String(bindingError),
+          },
+        )
+
+        emitInternalWorkerFetchSummary("internal-worker-fetch", tracker, {
+          transport: "fallback-origin-after-binding-failure",
+          fallbackOrigin,
+          status: fallbackResponse.status,
+          bindingError:
+            bindingError instanceof Error
+              ? bindingError.message
+              : String(bindingError),
+        })
+
+        return fallbackResponse
+      }
     }
 
-    const fallbackOrigin = input.fallbackOrigin?.trim() || ""
     if (!fallbackOrigin) {
       throw new Error(
         `Fallback origin is required when WORKER_SELF_REFERENCE is unavailable (${path})`,

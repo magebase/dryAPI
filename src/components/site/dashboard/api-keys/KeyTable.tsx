@@ -27,6 +27,10 @@ type KeyItem = {
   }
 }
 
+type KeyTableProps = {
+  initialKeys?: KeyItem[]
+}
+
 type UsageSummary = {
   lastUsed: string
   usage24h: string
@@ -135,9 +139,10 @@ function getStatus(key: KeyItem) {
   return "Active"
 }
 
-export default function KeyTable() {
-  const [keys, setKeys] = useState<KeyItem[]>([])
-  const [loading, setLoading] = useState(true)
+export default function KeyTable({ initialKeys }: KeyTableProps) {
+  const hasInitialKeys = Array.isArray(initialKeys)
+  const [keys, setKeys] = useState<KeyItem[]>(initialKeys ?? [])
+  const [loading, setLoading] = useState(!hasInitialKeys)
   const [usageByKey, setUsageByKey] = useState<Record<string, UsageSummary>>({})
   const [usageLoading, setUsageLoading] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -176,8 +181,8 @@ export default function KeyTable() {
   }, [])
 
   useEffect(() => {
-    void loadKeys()
-  }, [loadKeys])
+    void loadKeys({ background: hasInitialKeys })
+  }, [hasInitialKeys, loadKeys])
 
   useEffect(() => {
     let cancelled = false

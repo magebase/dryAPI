@@ -18,6 +18,10 @@ import {
   type DashboardWebhooksSettingsFormValues,
 } from "@/lib/dashboard-settings-schema"
 
+type WebhooksSettingsFormProps = {
+  initialValues?: DashboardWebhooksSettingsFormValues
+}
+
 function randomSecret(): string {
   const bytes = new Uint8Array(18)
   window.crypto.getRandomValues(bytes)
@@ -80,11 +84,14 @@ function WebhooksSettingsFormSkeleton() {
   )
 }
 
-export function WebhooksSettingsForm() {
+export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProps) {
   const queryClient = useQueryClient()
   const webhooksSettingsQuery = useQuery<DashboardWebhooksSettingsFormValues>({
     queryKey: ["dashboard-settings", "webhooks"],
     queryFn: loadWebhookSettings,
+    enabled: !initialValues,
+    initialData: initialValues,
+    staleTime: initialValues ? Number.POSITIVE_INFINITY : 0,
   })
 
   const saveMutation = useMutation({

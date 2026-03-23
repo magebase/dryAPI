@@ -23,6 +23,10 @@ import {
   type DashboardSecuritySettingsFormValues,
 } from "@/lib/dashboard-settings-schema"
 
+type SecuritySettingsFormProps = {
+  initialValues?: DashboardSecuritySettingsFormValues
+}
+
 async function loadSecuritySettings(): Promise<DashboardSecuritySettingsFormValues> {
   const response = await fetch("/api/dashboard/settings", {
     cache: "no-store",
@@ -82,11 +86,14 @@ function SecuritySettingsFormSkeleton() {
   )
 }
 
-export function SecuritySettingsForm() {
+export function SecuritySettingsForm({ initialValues }: SecuritySettingsFormProps) {
   const queryClient = useQueryClient()
   const securitySettingsQuery = useQuery<DashboardSecuritySettingsFormValues>({
     queryKey: ["dashboard-settings", "security"],
     queryFn: loadSecuritySettings,
+    enabled: !initialValues,
+    initialData: initialValues,
+    staleTime: initialValues ? Number.POSITIVE_INFINITY : 0,
   })
 
   const saveMutation = useMutation({

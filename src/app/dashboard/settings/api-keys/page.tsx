@@ -1,9 +1,14 @@
+import { headers } from "next/headers"
 import { KeyRound } from "lucide-react"
 
 import KeyTable from "@/components/site/dashboard/api-keys/KeyTable"
 import { SettingsPageCard } from "@/components/site/dashboard/settings/settings-page-card"
+import { loadDashboardApiKeys } from "@/lib/dashboard-settings-page-data"
 
-export default function DashboardSettingsApiKeysPage() {
+export default async function DashboardSettingsApiKeysPage() {
+  const headerStore = await headers()
+  const initialKeys = await loadDashboardApiKeys(headerStore)
+
   return (
     <SettingsPageCard
       title="API Keys"
@@ -14,7 +19,7 @@ export default function DashboardSettingsApiKeysPage() {
         <p className="text-sm text-zinc-600 dark:text-zinc-300">
           Manage service credentials used by your applications and workflows.
         </p>
-        <KeyTable />
+        <KeyTable initialKeys={initialKeys} />
       </div>
     </SettingsPageCard>
   )

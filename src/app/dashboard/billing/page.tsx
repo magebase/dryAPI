@@ -791,6 +791,16 @@ export default async function DashboardBillingPage({
     ["/api/v1/usage", "/api/v1/client/usage"],
     requestHeaders,
   );
+  const shouldDelayBalanceFetch =
+    checkoutStatus === "success" && Boolean(checkoutSessionId);
+  const balancePromise = shouldDelayBalanceFetch
+    ? null
+    : fetchFirstEndpointJson(
+        origin,
+        ["/api/v1/client/balance", "/api/v1/balance"],
+        requestHeaders,
+      );
+
   const sessionResult = await fetchFirstEndpointJson(
     origin,
     ["/api/auth/get-session"],
@@ -809,11 +819,13 @@ export default async function DashboardBillingPage({
   }
 
   const [balanceResult, usageResult] = await Promise.all([
-    fetchFirstEndpointJson(
-      origin,
-      ["/api/v1/client/balance", "/api/v1/balance"],
-      requestHeaders,
-    ),
+    balancePromise
+      ? balancePromise
+      : fetchFirstEndpointJson(
+          origin,
+          ["/api/v1/client/balance", "/api/v1/balance"],
+          requestHeaders,
+        ),
     usagePromise,
   ]);
 

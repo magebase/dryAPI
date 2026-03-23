@@ -48,12 +48,12 @@ const settingsNavItems: SettingsNavItem[] = [
   },
 ]
 
-type SessionUser = {
-  role?: string | null
-}
-
 function isActiveRoute(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+type SessionUser = {
+  role?: string | null
 }
 
 export function SettingsSectionNav() {
