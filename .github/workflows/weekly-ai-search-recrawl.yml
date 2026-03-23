@@ -74,15 +74,16 @@ jobs:
             return "";
           };
 
-          const accountId = pick("CLOUDFLARE_AI_SEARCH_ACCOUNT_ID", "CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID");
+          const accountId = pick("CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_AI_SEARCH_ACCOUNT_ID");
           const apiToken = pick(
             "CLOUDFLARE_AI_SEARCH_API_TOKEN",
             "CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN",
             "CLOUDFLARE_AI_SEARCH_TOKEN",
           );
           const index = pick("CLOUDFLARE_AI_SEARCH_INDEX", "CLOUDFLARE_AI_SEARCH_NAME");
+          const tokenId = pick("CLOUDFLARE_AI_SEARCH_TOKEN_ID");
 
-          if (!accountId || !apiToken || !index) {
+          if (!accountId || !apiToken || !index || !tokenId) {
             throw new Error("Missing required Cloudflare AI Search secrets.");
           }
 
@@ -94,17 +95,22 @@ jobs:
             process.stdout.write(`${name}<<__SYNC_EOF__\n${value}\n__SYNC_EOF__\n`);
           };
 
-          write("CLOUDFLARE_AI_SEARCH_ACCOUNT_ID", accountId);
+          write("CLOUDFLARE_ACCOUNT_ID", accountId);
           write("CLOUDFLARE_AI_SEARCH_API_TOKEN", apiToken);
           write("CLOUDFLARE_AI_SEARCH_INDEX", index);
+          write("CLOUDFLARE_AI_SEARCH_TOKEN_ID", tokenId);
           NODE
 
       - name: Validate AI Search inputs
         run: |
           set -euo pipefail
-          test -n "${CLOUDFLARE_AI_SEARCH_ACCOUNT_ID}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID}"
           test -n "${CLOUDFLARE_AI_SEARCH_API_TOKEN}"
           test -n "${CLOUDFLARE_AI_SEARCH_INDEX}"
+          test -n "${CLOUDFLARE_AI_SEARCH_TOKEN_ID}"
+
+      - name: Ensure AI Search instance is bound to the production domain
+        run: pnpm cf:chatbot:ai-search:ensure
 
       - name: Trigger AI Search recrawl
         run: pnpm cf:chatbot:ai-search:recrawl

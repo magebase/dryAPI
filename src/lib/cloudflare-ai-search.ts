@@ -126,8 +126,9 @@ function truncate(value: string, maxLength: number): string {
 
 function resolveConfig(env: NodeJS.ProcessEnv): AiSearchConfig | null {
   const accountId =
+    nonEmpty(env.CLOUDFLARE_ACCOUNT_ID) ||
     nonEmpty(env.CLOUDFLARE_AI_SEARCH_ACCOUNT_ID) ||
-    nonEmpty(env.CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID);
+    null;
   const apiToken =
     nonEmpty(env.CLOUDFLARE_AI_SEARCH_API_TOKEN) ||
     nonEmpty(env.CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN) ||

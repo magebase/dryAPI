@@ -25,7 +25,7 @@ Required env keys:
   CLOUDFLARE_AI_SEARCH_INDEX
 
 Supported aliases are accepted for compatibility:
-  CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID -> account id
+  CLOUDFLARE_ACCOUNT_ID,
   CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN,
   CLOUDFLARE_AI_SEARCH_TOKEN -> API token
   CLOUDFLARE_AI_SEARCH_NAME -> index
@@ -179,8 +179,9 @@ normalize_source_value() {
 }
 
 account_id="$(first_non_empty_value \
+  CLOUDFLARE_ACCOUNT_ID \
   CLOUDFLARE_AI_SEARCH_ACCOUNT_ID \
-  CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID || true)"
+  || true)"
 
 api_token="$(first_non_empty_value \
   CLOUDFLARE_AI_SEARCH_API_TOKEN \

@@ -8,7 +8,7 @@ import {
 describe("resolveAiSearchRecrawlConfig", () => {
   it("resolves aliases and defaults the dryAPI recrawl targets", () => {
     const config = resolveAiSearchRecrawlConfig({
-      CLOUDFLARE_AI_SEARCH_SERVICE_CF_API_ID: "account-123",
+      CLOUDFLARE_ACCOUNT_ID: "account-123",
       CLOUDFLARE_AI_SEARCH_MANAGER_TOKEN: "token-123",
       CLOUDFLARE_AI_SEARCH_NAME: "chatbot",
       NEXT_PUBLIC_SITE_URL: "dryapi.dev",
@@ -28,7 +28,7 @@ describe("resolveAiSearchRecrawlConfig", () => {
 
   it("defaults the recrawl origin when no site url env is provided", () => {
     const config = resolveAiSearchRecrawlConfig({
-      CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+      CLOUDFLARE_ACCOUNT_ID: "account-123",
       CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
       CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
     })
@@ -56,7 +56,7 @@ describe("resolveAiSearchRecrawlConfig", () => {
 
   it("accepts an explicit source url list override", () => {
     const config = resolveAiSearchRecrawlConfig({
-      CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+      CLOUDFLARE_ACCOUNT_ID: "account-123",
       CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
       CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
       CLOUDFLARE_AI_SEARCH_SOURCE_URLS: "https://example.com, example.com/llms-full.txt",
@@ -105,7 +105,7 @@ describe("runAiSearchRecrawl", () => {
 
     const result = await runAiSearchRecrawl({
       env: {
-        CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+        CLOUDFLARE_ACCOUNT_ID: "account-123",
         CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
         CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
         SITE_URL: "https://dryapi.dev/",

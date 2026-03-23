@@ -45,7 +45,7 @@ describe("ensureAiSearchInstance", () => {
 
     const result = await ensureAiSearchInstance({
       env: {
-        CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+        CLOUDFLARE_ACCOUNT_ID: "account-123",
         CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
         CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
         CLOUDFLARE_AI_SEARCH_TOKEN_ID: "token-id-123",
@@ -105,7 +105,7 @@ describe("ensureAiSearchInstance", () => {
 
     const result = await ensureAiSearchInstance({
       env: {
-        CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+        CLOUDFLARE_ACCOUNT_ID: "account-123",
         CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
         CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
         CLOUDFLARE_AI_SEARCH_TOKEN_ID: "token-id-123",
