@@ -21,13 +21,63 @@ vi.mock("@/lib/dashboard-webhook-emails", () => ({
   sendWebhookFailureNotification: sendWebhookFailureNotificationMock,
 }))
 
-import { validateDashboardWebhook } from "@/lib/dashboard-webhooks"
+import { shouldPersistWebhookHealth, validateDashboardWebhook } from "@/lib/dashboard-webhooks"
 
 afterEach(() => {
   vi.restoreAllMocks()
   getDashboardSettingsForUserMock.mockReset()
   updateDashboardWebhookHealthMock.mockReset()
   sendWebhookFailureNotificationMock.mockClear()
+})
+
+describe("shouldPersistWebhookHealth", () => {
+  const webhook = {
+    id: "wh_1",
+    name: "Primary",
+    endpointUrl: "https://hooks.example.com/dryapi",
+    signingSecret: "whsec_test_secret",
+    sendOnCompleted: true,
+    sendOnFailed: true,
+    sendOnQueued: false,
+    includeFullPayload: false,
+    health: {
+      validationStatus: "healthy" as const,
+      validationMessage: "Webhook returned HTTP 200.",
+      lastValidatedAt: 1700000000000,
+      lastStatusCode: 200,
+      lastSuccessAt: 1700000000000,
+      lastFailureAt: null,
+      consecutiveFailures: 0,
+      alertCount: 0,
+      lastAlertAt: null,
+    },
+  }
+
+  it("returns false when there is no existing webhook", () => {
+    expect(shouldPersistWebhookHealth(null, webhook)).toBe(false)
+  })
+
+  it("returns true only when the endpoint url and signing secret match", () => {
+    expect(shouldPersistWebhookHealth(webhook, webhook)).toBe(true)
+    expect(
+      shouldPersistWebhookHealth(
+        {
+          ...webhook,
+          endpointUrl: "https://hooks.example.com/other",
+        },
+        webhook,
+      ),
+    ).toBe(false)
+    expect(
+      shouldPersistWebhookHealth(
+        {
+          ...webhook,
+          signingSecret: "whsec_other_secret",
+        },
+        webhook,
+      ),
+    ).toBe(false)
+  })
 })
 
 describe("validateDashboardWebhook", () => {

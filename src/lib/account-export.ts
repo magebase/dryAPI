@@ -126,12 +126,12 @@ async function resolveAuthD1Binding(): Promise<D1DatabaseLike> {
   return binding
 }
 
-function toIsoString(value: string | number | null | undefined): string | null {
+export function toIsoString(value: string | number | null | undefined): string | null {
   if (value === null || value === undefined) {
     return null
   }
 
-  const date = value instanceof Date ? value : new Date(value)
+  const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
     return null
   }

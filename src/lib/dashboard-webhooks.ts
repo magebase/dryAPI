@@ -31,6 +31,20 @@ function buildValidationPayload(webhook: DashboardWebhookEntry, checkedAtIso: st
   }
 }
 
+export function shouldPersistWebhookHealth(
+  existingWebhook: DashboardWebhookEntry | null,
+  webhook: DashboardWebhookEntry,
+): boolean {
+  if (existingWebhook === null) {
+    return false
+  }
+
+  return (
+    existingWebhook.endpointUrl === webhook.endpointUrl &&
+    existingWebhook.signingSecret === webhook.signingSecret
+  )
+}
+
 export type WebhookHealthProbeResult = {
   ok: boolean
   statusCode: number | null

@@ -92,32 +92,32 @@
     {
       "binding": "AUTH_DB",
       "database_name": "dryapi-auth-db",
-      "database_id": "00000000-0000-0000-0000-000000000010",
+      "database_id": "20d4ee45-8d01-4566-b2e4-d172db52707d",
       "migrations_dir": "drizzle/migrations/auth",
     },
     {
       "binding": "BILLING_DB",
       "database_name": "dryapi-billing-db",
-      "database_id": "00000000-0000-0000-0000-000000000020",
+      "database_id": "88e45cf1-f7d9-4e9f-bc99-42b4870b03a7",
       "migrations_dir": "drizzle/migrations/billing",
     },
     {
       "binding": "ANALYTICS_DB",
       "database_name": "dryapi-analytics-db",
-      "database_id": "a977b631-526d-4cc2-b5d0-f0a17a93a9fa",
+      "database_id": "701733da-e6da-4a53-bf74-1c67592b3a87",
       "migrations_dir": "drizzle/migrations/analytics",
     },
     {
       "binding": "METADATA_DB",
       "database_name": "dryapi-metadata-db",
-      "database_id": "00000000-0000-0000-0000-000000000040",
+      "database_id": "bf4d6406-05de-46a4-aa02-5f5c4963456f",
       "migrations_dir": "drizzle/migrations/metadata",
     },
     {
       // Compatibility alias while older paths still reference APP_DB.
       "binding": "APP_DB",
       "database_name": "dryapi-analytics-db",
-      "database_id": "a977b631-526d-4cc2-b5d0-f0a17a93a9fa",
+      "database_id": "701733da-e6da-4a53-bf74-1c67592b3a87",
       "migrations_dir": "drizzle/migrations/analytics",
     },
   ],

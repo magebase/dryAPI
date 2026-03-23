@@ -1,6 +1,12 @@
 import "server-only"
 
-import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import {
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+  type PutObjectCommandInput,
+} from "@aws-sdk/client-s3"
 
 type UploadedFile = {
   key: string
@@ -55,7 +61,7 @@ export async function uploadFileToR2(file: File): Promise<UploadedFile | null> {
 
 type UploadObjectOptions = {
   key: string
-  body: BodyInit
+  body: PutObjectCommandInput["Body"]
   contentType?: string
 }
 

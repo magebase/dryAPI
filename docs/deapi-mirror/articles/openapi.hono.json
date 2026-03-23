@@ -40,6 +40,32 @@
     }
   },
   "paths": {
+    "/v1/account-exports": {
+      "post": {
+        "operationId": "requestAccountExport",
+        "tags": [
+          "Account Exports"
+        ],
+        "summary": "Queue an account export",
+        "description": "Enqueues a private account export job that generates a ZIP, stores it in R2, and emails the secure download page.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Export request accepted and queued."
+          },
+          "401": {
+            "description": "Missing or invalid auth context."
+          },
+          "500": {
+            "description": "Queue configuration or dispatch error."
+          }
+        }
+      }
+    },
     "/v1/chat/completions": {
       "post": {
         "operationId": "createChatCompletion",

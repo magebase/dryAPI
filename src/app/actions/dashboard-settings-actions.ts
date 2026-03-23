@@ -11,7 +11,7 @@ import {
   type DashboardSettingsBundle,
 } from "@/lib/dashboard-settings-schema"
 import { getDashboardSettingsForUser, updateDashboardSettingsSection } from "@/lib/dashboard-settings-store"
-import { validateDashboardWebhook } from "@/lib/dashboard-webhooks"
+import { shouldPersistWebhookHealth, validateDashboardWebhook } from "@/lib/dashboard-webhooks"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 
 type SessionPayload = {
@@ -138,10 +138,7 @@ export async function updateDashboardSettingsAction(
         userEmail,
         webhook,
         hostname,
-        persistHealth:
-          Boolean(existingWebhook) &&
-          existingWebhook.endpointUrl === webhook.endpointUrl &&
-          existingWebhook.signingSecret === webhook.signingSecret,
+        persistHealth: shouldPersistWebhookHealth(existingWebhook, webhook),
       })
 
       if (!result.probeResult.ok) {
@@ -181,10 +178,7 @@ export async function validateDashboardWebhookAction(input: {
     userEmail,
     webhook: input.webhook,
     hostname,
-    persistHealth:
-      Boolean(existingWebhook) &&
-      existingWebhook.endpointUrl === input.webhook.endpointUrl &&
-      existingWebhook.signingSecret === input.webhook.signingSecret,
+    persistHealth: shouldPersistWebhookHealth(existingWebhook, input.webhook),
   })
 
   return {
