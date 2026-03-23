@@ -1,0 +1,57 @@
+# dryAPI Landing Page Draft
+
+## Hero
+Build on one API. Route across the best models.
+
+dryAPI gives teams a single OpenAI-compatible layer for model access, billing, usage control, and routing.
+
+- One API surface for chat, image, audio, and embeddings
+- Fast model routing with cost-aware defaults
+- API keys, credits, and usage tracking in one dashboard
+
+Primary CTA: Get started
+Secondary CTA: View docs
+
+## Social Proof
+Trusted by teams shipping AI products that need stable routing and clear usage controls.
+
+## Capability Grid
+### Unified API
+Keep your app integrated once while switching providers behind the scenes.
+
+### Billing Controls
+Prepaid credits and subscription flows that map to real usage.
+
+### Model Catalog
+Browse supported models with capabilities, limits, and pricing.
+
+### Safe Routing
+Rate limits, auth, and normalized responses on every request.
+
+## Workflow
+1. Create an API key.
+2. Pick a model or let routing choose one.
+3. Send requests through one endpoint.
+4. Track usage and balance in the dashboard.
+
+## API Example
+```json
+POST /api/v1/inference
+{
+  "model": "gpt-4o-mini",
+  "input": "Write a product summary for our landing page."
+}
+```
+
+## Why Teams Switch
+- Reduce provider lock-in
+- Keep pricing and margins visible
+- Make usage predictable for finance and ops
+
+## Pricing Preview
+Simple plans for teams that want to test, launch, and scale without reworking their stack.
+
+## Final CTA
+Launch with one API today.
+
+Button: Start building
