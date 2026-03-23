@@ -17,8 +17,8 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     env:
-      BLOG_GENERATOR_SECRET: ${{ secrets.BLOG_GENERATOR_SECRET }}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
       GENERATE_COUNT: ${{ github.event.inputs.count || '1' }}
 
     steps:
@@ -42,8 +42,7 @@ jobs:
       - name: Validate secrets
         run: |
           set -euo pipefail
-          test -n "${BLOG_GENERATOR_SECRET}"
-          test -n "${GEMINI_API_KEY}"
+          test -n "${GOOGLE_API_KEY:-}"
 
       - name: Start Next.js API server
         run: |
@@ -69,7 +68,6 @@ jobs:
           set -euo pipefail
           response=$(curl -sS -X POST "http://127.0.0.1:3000/api/blog/generate" \
             -H "content-type: application/json" \
-            -H "authorization: Bearer ${BLOG_GENERATOR_SECRET}" \
             -d "{\"provider\":\"gemini\",\"model\":\"gemini-3-flash-preview\",\"count\":${GENERATE_COUNT}}")
 
           echo "${response}" > /tmp/generated-blog-response.json

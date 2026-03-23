@@ -31,9 +31,9 @@ const registerFormSchema = z.object({
     .regex(/\d/, "Password must include at least one number."),
 })
 
-  type RegisterMutationValues = z.infer<typeof registerFormSchema> & {
-    turnstileToken: string
-  }
+type RegisterMutationValues = z.infer<typeof registerFormSchema> & {
+  turnstileToken: string
+}
 
 function resolveAuthErrorMessage(
   payload: { message?: string; error?: string } | null,

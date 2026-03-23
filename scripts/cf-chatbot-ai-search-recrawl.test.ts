@@ -26,6 +26,22 @@ describe("resolveAiSearchRecrawlConfig", () => {
     )
   })
 
+  it("defaults the recrawl origin when no site url env is provided", () => {
+    const config = resolveAiSearchRecrawlConfig({
+      CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
+      CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
+      CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
+    })
+
+    expect(config.sourceUrls).toEqual([
+      "https://dryapi.dev",
+      "https://dryapi.dev/llms-full.txt",
+    ])
+    expect(config.description).toBe(
+      "Weekly dryAPI recrawl for https://dryapi.dev and https://dryapi.dev/llms-full.txt",
+    )
+  })
+
   it("accepts an explicit source url list override", () => {
     const config = resolveAiSearchRecrawlConfig({
       CLOUDFLARE_AI_SEARCH_ACCOUNT_ID: "account-123",
