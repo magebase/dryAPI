@@ -20,14 +20,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid media id" }, { status: 400 });
   }
 
-  const deleted = await deleteR2File(mediaId);
-
-  if (!deleted) {
+  try {
+    await deleteR2File(mediaId);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
     return NextResponse.json(
-      { error: "R2 is not configured" },
+      {
+        error: error instanceof Error ? error.message : "Unable to delete media from Cloudflare R2.",
+      },
       { status: 500 },
     );
   }
-
-  return NextResponse.json({ ok: true });
 }

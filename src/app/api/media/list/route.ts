@@ -9,20 +9,29 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const files = await listR2Files();
+  try {
+    const files = await listR2Files();
 
-  return NextResponse.json(
-    files.map((file) => ({
-      id: file.key,
-      type: "file",
-      filename: file.key.split("/").pop() || file.key,
-      directory: "",
-      src: file.url,
-      thumbnails: {
-        "75x75": file.url,
-        "400x400": file.url,
-        "1000x1000": file.url,
+    return NextResponse.json(
+      files.map((file) => ({
+        id: file.key,
+        type: "file",
+        filename: file.key.split("/").pop() || file.key,
+        directory: "",
+        src: file.url,
+        thumbnails: {
+          "75x75": file.url,
+          "400x400": file.url,
+          "1000x1000": file.url,
+        },
+      })),
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unable to list media from Cloudflare R2.",
       },
-    })),
-  );
+      { status: 500 },
+    );
+  }
 }

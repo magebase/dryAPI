@@ -81,6 +81,14 @@
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "dryapi-site-opennext-cache",
     },
+    {
+      "binding": "MEDIA_R2_BUCKET",
+      "bucket_name": "dryapi-site-media",
+    },
+    {
+      "binding": "ACCOUNT_EXPORTS_R2_BUCKET",
+      "bucket_name": "dryapi-site-account-exports",
+    },
   ],
   "kv_namespaces": [
     {

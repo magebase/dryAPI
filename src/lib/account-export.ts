@@ -1,16 +1,17 @@
 import "server-only"
 
-import { createHash, createHmac } from "crypto"
-
 import JSZip from "jszip"
-import { SignJWT, jwtVerify } from "jose"
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 
+import {
+  deriveAccountExportOtp,
+  hashAccountExportOtp,
+  signAccountExportRequestToken,
+} from "@/lib/account-export-tokens"
 import { listDashboardApiKeysForUser } from "@/lib/dashboard-api-keys-store"
 import { getDashboardSettingsForUser } from "@/lib/dashboard-settings-store"
 import { resolveCurrentUserSubscriptionPlanSummary } from "@/lib/auth-subscription-benefits"
-import { putObjectToR2 } from "@/lib/r2-storage"
-import { createR2SignedDownloadUrl } from "@/lib/r2-presign"
+import { putPrivateObjectToR2 } from "@/lib/r2-storage"
 import { sendAccountExportEmail } from "@/lib/account-export-email"
 import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
 
@@ -86,7 +87,6 @@ export type AccountExportDelivery = {
   zipKey: string
   zipFileName: string
   downloadPageUrl: string
-  downloadUrl: string
   otp: string
   token: string
   expiresAt: string
@@ -103,16 +103,6 @@ function resolveSiteUrl(): string {
     "https://dryapi.dev"
 
   return value.replace(/\/$/, "")
-}
-
-function resolveExportSecret(): string {
-  const secret = process.env.BETTER_AUTH_SECRET?.trim()
-
-  if (!secret) {
-    throw new Error("BETTER_AUTH_SECRET is required for account export tokens.")
-  }
-
-  return secret
 }
 
 async function resolveAuthD1Binding(): Promise<D1DatabaseLike> {
@@ -137,72 +127,6 @@ export function toIsoString(value: string | number | null | undefined): string |
   }
 
   return date.toISOString()
-}
-
-function deriveOtp({ requestId, userEmail }: AccountExportRequest): string {
-  const digest = createHmac("sha256", resolveExportSecret())
-    .update(`${requestId}:${userEmail.trim().toLowerCase()}`)
-    .digest("hex")
-
-  const numeric = Number.parseInt(digest.slice(0, 10), 16) % 1_000_000
-  return numeric.toString().padStart(6, "0")
-}
-
-function hashOtp(otp: string, requestId: string): string {
-  return createHash("sha256")
-    .update(`${resolveExportSecret()}:${requestId}:${otp}`)
-    .digest("hex")
-}
-
-async function signExportToken(payload: {
-  requestId: string
-  userEmail: string
-  zipKey: string
-  otpHash: string
-  zipFileName: string
-}): Promise<string> {
-  return new SignJWT({
-    requestId: payload.requestId,
-    zipKey: payload.zipKey,
-    otpHash: payload.otpHash,
-    zipFileName: payload.zipFileName,
-  })
-    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-    .setSubject(payload.userEmail.trim().toLowerCase())
-    .setAudience("account-export")
-    .setIssuedAt()
-    .setExpirationTime(`${EXPORT_TOKEN_TTL_SECONDS}s`)
-    .sign(new TextEncoder().encode(resolveExportSecret()))
-}
-
-async function verifyExportToken(token: string): Promise<{
-  requestId: string
-  userEmail: string
-  zipKey: string
-  otpHash: string
-  zipFileName: string
-}> {
-  const { payload } = await jwtVerify(token, new TextEncoder().encode(resolveExportSecret()), {
-    audience: "account-export",
-  })
-
-  const requestId = typeof payload.requestId === "string" ? payload.requestId : ""
-  const zipKey = typeof payload.zipKey === "string" ? payload.zipKey : ""
-  const otpHash = typeof payload.otpHash === "string" ? payload.otpHash : ""
-  const zipFileName = typeof payload.zipFileName === "string" ? payload.zipFileName : ""
-  const userEmail = typeof payload.sub === "string" ? payload.sub : ""
-
-  if (!requestId || !zipKey || !otpHash || !zipFileName || !userEmail) {
-    throw new Error("Invalid account export token payload.")
-  }
-
-  return {
-    requestId,
-    userEmail,
-    zipKey,
-    otpHash,
-    zipFileName,
-  }
 }
 
 async function loadAuthUserExportData(userEmail: string): Promise<AccountExportData["user"]> {
@@ -319,10 +243,10 @@ async function buildZipBuffer(data: AccountExportData): Promise<Uint8Array> {
 export async function createAccountExportDelivery(request: AccountExportRequest): Promise<AccountExportDelivery> {
   const data = await buildAccountExportData(request)
   const zipFileName = `account-export-${request.requestId}.zip`
-  const zipKey = `private/account-exports/${data.user.email.toLowerCase()}/${zipFileName}`
-  const otp = deriveOtp(request)
-  const otpHash = hashOtp(otp, request.requestId)
-  const token = await signExportToken({
+  const zipKey = `private/account-exports/${request.requestId}/${zipFileName}`
+  const otp = deriveAccountExportOtp(request)
+  const otpHash = hashAccountExportOtp(otp, request.requestId)
+  const token = await signAccountExportRequestToken({
     requestId: request.requestId,
     userEmail: data.user.email,
     zipKey,
@@ -332,21 +256,11 @@ export async function createAccountExportDelivery(request: AccountExportRequest)
   const downloadPageUrl = `${resolveSiteUrl()}/account/exports/${encodeURIComponent(token)}`
 
   const zipBuffer = await buildZipBuffer(data)
-  const stored = await putObjectToR2({
+  await putPrivateObjectToR2({
     key: zipKey,
     body: zipBuffer,
     contentType: "application/zip",
   })
-
-  if (!stored) {
-    throw new Error("R2 storage is required to deliver account exports.")
-  }
-
-  const downloadUrl = await createR2SignedDownloadUrl(zipKey)
-
-  if (!downloadUrl) {
-    throw new Error("R2 download signing is not configured for account exports.")
-  }
 
   await sendAccountExportEmail({
     user: {
@@ -364,33 +278,8 @@ export async function createAccountExportDelivery(request: AccountExportRequest)
     zipKey,
     zipFileName,
     downloadPageUrl,
-    downloadUrl,
     otp,
     token,
     expiresAt: new Date(Date.now() + EXPORT_TOKEN_TTL_SECONDS * 1000).toISOString(),
-  }
-}
-
-export async function resolveAccountExportDownloadUrl(token: string, otp: string): Promise<{
-  downloadUrl: string
-  zipFileName: string
-  userEmail: string
-}> {
-  const decoded = await verifyExportToken(token)
-  const expectedOtpHash = hashOtp(otp.trim(), decoded.requestId)
-
-  if (expectedOtpHash !== decoded.otpHash) {
-    throw new Error("Invalid account export OTP.")
-  }
-
-  const downloadUrl = await createR2SignedDownloadUrl(decoded.zipKey)
-  if (!downloadUrl) {
-    throw new Error("R2 download signing is not configured for account exports.")
-  }
-
-  return {
-    downloadUrl,
-    zipFileName: decoded.zipFileName,
-    userEmail: decoded.userEmail,
   }
 }

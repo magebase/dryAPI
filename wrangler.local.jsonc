@@ -62,6 +62,14 @@
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "dryapi-site-opennext-cache-local",
     },
+    {
+      "binding": "MEDIA_R2_BUCKET",
+      "bucket_name": "dryapi-site-media-local",
+    },
+    {
+      "binding": "ACCOUNT_EXPORTS_R2_BUCKET",
+      "bucket_name": "dryapi-site-account-exports-local",
+    },
   ],
   "d1_databases": [
     {

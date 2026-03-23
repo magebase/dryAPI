@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { resolveAccountExportDownloadUrl } from "@/lib/account-export";
+import {
+  buildAccountExportDownloadUrl,
+  hashAccountExportOtp,
+  signAccountExportDownloadToken,
+  verifyAccountExportRequestToken,
+} from "@/lib/account-export-tokens";
 
 const accountExportVerifySchema = z.object({
   token: z.string().min(1),
@@ -22,14 +27,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await resolveAccountExportDownloadUrl(parsed.data.token, parsed.data.otp);
+    const requestToken = await verifyAccountExportRequestToken(parsed.data.token);
+
+    if (hashAccountExportOtp(parsed.data.otp, requestToken.requestId) !== requestToken.otpHash) {
+      throw new Error("Invalid account export OTP.");
+    }
+
+    const downloadToken = await signAccountExportDownloadToken({
+      requestId: requestToken.requestId,
+      userEmail: requestToken.userEmail,
+      zipKey: requestToken.zipKey,
+      zipFileName: requestToken.zipFileName,
+    });
 
     return NextResponse.json({
       ok: true,
-      downloadUrl: result.downloadUrl,
-      zipFileName: result.zipFileName,
-      userEmail: result.userEmail,
-    })
+      downloadUrl: buildAccountExportDownloadUrl(downloadToken),
+      zipFileName: requestToken.zipFileName,
+      userEmail: requestToken.userEmail,
+    });
   } catch (error) {
     return NextResponse.json(
       {

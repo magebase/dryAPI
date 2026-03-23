@@ -1,12 +1,8 @@
 import "server-only"
 
-import {
-  DeleteObjectCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-  S3Client,
-  type PutObjectCommandInput,
-} from "@aws-sdk/client-s3"
+import { randomUUID } from "node:crypto"
+
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 
 type UploadedFile = {
   key: string
@@ -14,77 +10,70 @@ type UploadedFile = {
   directory: string
 }
 
-const MEDIA_KEY_PREFIX = "media/"
-
-function getR2Config() {
-  const accountId = process.env.R2_ACCOUNT_ID
-  const bucket = process.env.R2_BUCKET
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
-  const publicUrl = process.env.R2_PUBLIC_URL
-
-  if (!accountId || !bucket || !accessKeyId || !secretAccessKey || !publicUrl) {
-    return null
+type R2ObjectBodyLike = {
+  body: ReadableStream
+  size: number
+  httpMetadata?: {
+    contentType?: string
   }
+}
 
-  return {
-    bucket,
-    publicUrl,
-    endpoint: process.env.R2_ENDPOINT || `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
+type R2BucketLike = {
+  put: (
+    key: string,
+    value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null | Blob,
+    options?: {
+      httpMetadata?: {
+        contentType?: string
+      }
+      customMetadata?: Record<string, string>
     },
-  }
+  ) => Promise<unknown>
+  get: (key: string) => Promise<R2ObjectBodyLike | null>
+  delete: (keys: string | string[]) => Promise<void>
+  list: (options?: {
+    limit?: number
+    prefix?: string
+  }) => Promise<{
+    objects: Array<{
+      key: string
+    }>
+  }>
 }
 
-function getClient() {
-  const config = getR2Config()
+const MEDIA_KEY_PREFIX = "media/"
+const MEDIA_BUCKET_BINDING = "MEDIA_R2_BUCKET"
+const ACCOUNT_EXPORTS_BUCKET_BINDING = "ACCOUNT_EXPORTS_R2_BUCKET"
 
-  if (!config) {
-    return null
+function resolvePublicMediaUrl(): string {
+  const publicUrl = process.env.R2_PUBLIC_URL?.trim()
+
+  if (!publicUrl) {
+    throw new Error("R2_PUBLIC_URL is required for media URLs.")
   }
 
-  return {
-    config,
-    client: new S3Client({
-      region: "auto",
-      endpoint: config.endpoint,
-      credentials: config.credentials,
-    }),
-  }
+  return publicUrl.replace(/\/$/, "")
 }
 
-export async function uploadFileToR2(file: File): Promise<UploadedFile | null> {
+async function resolveR2Bucket(
+  bindingName: typeof MEDIA_BUCKET_BINDING | typeof ACCOUNT_EXPORTS_BUCKET_BINDING,
+): Promise<R2BucketLike> {
+  const { env } = await getCloudflareContext({ async: true })
+  const bucket = (env as Record<string, unknown>)[bindingName]
+
+  if (!bucket || typeof bucket !== "object") {
+    throw new Error(`${bindingName} binding is required.`)
+  }
+
+  return bucket as R2BucketLike
+}
+
+function buildMediaUrl(key: string): string {
+  return `${resolvePublicMediaUrl()}/${key}`
+}
+
+export async function uploadFileToR2(file: File): Promise<UploadedFile> {
   return uploadFileToR2WithOptions(file, { directory: "" })
-}
-
-type UploadObjectOptions = {
-  key: string
-  body: PutObjectCommandInput["Body"]
-  contentType?: string
-}
-
-export async function putObjectToR2(options: UploadObjectOptions): Promise<{ key: string; url: string } | null> {
-  const context = getClient()
-
-  if (!context) {
-    return null
-  }
-
-  await context.client.send(
-    new PutObjectCommand({
-      Bucket: context.config.bucket,
-      Key: options.key,
-      Body: options.body,
-      ...(options.contentType ? { ContentType: options.contentType } : {}),
-    })
-  )
-
-  return {
-    key: options.key,
-    url: `${context.config.publicUrl.replace(/\/$/, "")}/${options.key}`,
-  }
 }
 
 type UploadFileOptions = {
@@ -115,60 +104,43 @@ function normalizeDirectory(directory: string | undefined): string {
   return segments.join("/")
 }
 
-export async function uploadFileToR2WithOptions(file: File, options: UploadFileOptions): Promise<UploadedFile | null> {
-  const context = getClient()
-
-  if (!context) {
-    return null
-  }
-
+export async function uploadFileToR2WithOptions(file: File, options: UploadFileOptions): Promise<UploadedFile> {
   const directory = normalizeDirectory(options.directory)
 
-  const extension = file.name.includes(".") ? file.name.split(".").pop() : "bin"
+  const extension = file.name.includes(".")
+    ? file.name.split(".").pop() || "bin"
+    : "bin"
   const timestamp = Date.now()
-  const random = Math.random().toString(16).slice(2)
+  const random = randomUUID()
   const keySuffix = `${timestamp}-${random}.${extension}`
   const key = directory ? `media/${directory}/${keySuffix}` : `media/${keySuffix}`
 
-  const buffer = Buffer.from(await file.arrayBuffer())
+  const bucket = await resolveR2Bucket(MEDIA_BUCKET_BINDING)
 
-  await context.client.send(
-    new PutObjectCommand({
-      Bucket: context.config.bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type || "application/octet-stream",
-    })
-  )
+  await bucket.put(key, file, {
+    httpMetadata: {
+      contentType: file.type || "application/octet-stream",
+    },
+  })
 
   return {
     key,
-    url: `${context.config.publicUrl.replace(/\/$/, "")}/${key}`,
+    url: buildMediaUrl(key),
     directory,
   }
 }
 
 export async function listR2Files() {
-  const context = getClient()
+  const bucket = await resolveR2Bucket(MEDIA_BUCKET_BINDING)
+  const result = await bucket.list({
+    prefix: MEDIA_KEY_PREFIX,
+    limit: 200,
+  })
 
-  if (!context) {
-    return []
-  }
-
-  const result = await context.client.send(
-    new ListObjectsV2Command({
-      Bucket: context.config.bucket,
-      Prefix: "media/",
-      MaxKeys: 200,
-    })
-  )
-
-  return (result.Contents || [])
-    .filter((item) => item.Key)
-    .map((item) => ({
-      key: item.Key as string,
-      url: `${context.config.publicUrl.replace(/\/$/, "")}/${item.Key}`,
-    }))
+  return result.objects.map((item) => ({
+    key: item.key,
+    url: buildMediaUrl(item.key),
+  }))
 }
 
 export function isDeletableMediaKey(key: string): boolean {
@@ -177,21 +149,32 @@ export function isDeletableMediaKey(key: string): boolean {
 
 export async function deleteR2File(key: string) {
   if (!isDeletableMediaKey(key)) {
-    return false
+    throw new Error("Invalid media id.")
   }
 
-  const context = getClient()
+  const bucket = await resolveR2Bucket(MEDIA_BUCKET_BINDING)
+  await bucket.delete(key)
+}
 
-  if (!context) {
-    return false
-  }
+export async function putPrivateObjectToR2(options: {
+  key: string
+  body: ArrayBuffer | ArrayBufferView | Blob | ReadableStream | string | null
+  contentType?: string
+}): Promise<void> {
+  const bucket = await resolveR2Bucket(ACCOUNT_EXPORTS_BUCKET_BINDING)
 
-  await context.client.send(
-    new DeleteObjectCommand({
-      Bucket: context.config.bucket,
-      Key: key,
-    })
-  )
+  await bucket.put(options.key, options.body, {
+    ...(options.contentType
+      ? {
+          httpMetadata: {
+            contentType: options.contentType,
+          },
+        }
+      : {}),
+  })
+}
 
-  return true
+export async function readPrivateObjectFromR2(key: string): Promise<R2ObjectBodyLike | null> {
+  const bucket = await resolveR2Bucket(ACCOUNT_EXPORTS_BUCKET_BINDING)
+  return bucket.get(key)
 }

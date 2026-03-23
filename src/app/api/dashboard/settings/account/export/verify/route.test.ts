@@ -3,12 +3,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-const { resolveAccountExportDownloadUrlMock } = vi.hoisted(() => ({
-  resolveAccountExportDownloadUrlMock: vi.fn(),
+const {
+  hashAccountExportOtpMock,
+  signAccountExportDownloadTokenMock,
+  verifyAccountExportRequestTokenMock,
+} = vi.hoisted(() => ({
+  hashAccountExportOtpMock: vi.fn(),
+  signAccountExportDownloadTokenMock: vi.fn(),
+  verifyAccountExportRequestTokenMock: vi.fn(),
 }))
 
-vi.mock("@/lib/account-export", () => ({
-  resolveAccountExportDownloadUrl: resolveAccountExportDownloadUrlMock,
+vi.mock("@/lib/account-export-tokens", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/account-export-tokens")>("@/lib/account-export-tokens")
+
+  return {
+    ...actual,
+    hashAccountExportOtp: hashAccountExportOtpMock,
+    signAccountExportDownloadToken: signAccountExportDownloadTokenMock,
+    verifyAccountExportRequestToken: verifyAccountExportRequestTokenMock,
+  }
 }))
 
 import { POST } from "@/app/api/dashboard/settings/account/export/verify/route"
@@ -25,7 +38,9 @@ function makeRequest(body: unknown) {
 
 describe("POST /api/dashboard/settings/account/export/verify", () => {
   beforeEach(() => {
-    resolveAccountExportDownloadUrlMock.mockReset()
+    hashAccountExportOtpMock.mockReset()
+    signAccountExportDownloadTokenMock.mockReset()
+    verifyAccountExportRequestTokenMock.mockReset()
   })
 
   afterEach(() => {
@@ -42,26 +57,45 @@ describe("POST /api/dashboard/settings/account/export/verify", () => {
   })
 
   it("returns the temporary download url when the OTP is valid", async () => {
-    resolveAccountExportDownloadUrlMock.mockResolvedValue({
-      downloadUrl: "https://r2.example.com/private/account-exports/account-export-1.zip?sig=abc",
-      zipFileName: "account-export-1.zip",
+    verifyAccountExportRequestTokenMock.mockResolvedValue({
+      requestId: "request-123",
       userEmail: "owner@dryapi.dev",
+      zipKey: "private/account-exports/request-123/account-export-1.zip",
+      zipFileName: "account-export-1.zip",
+      otpHash: "otp-hash-abc",
     })
+    hashAccountExportOtpMock.mockReturnValue("otp-hash-abc")
+    signAccountExportDownloadTokenMock.mockResolvedValue("download-token-123")
 
     const response = await POST(makeRequest({ token: "token-123", otp: "123456" }))
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
       ok: true,
-      downloadUrl: "https://r2.example.com/private/account-exports/account-export-1.zip?sig=abc",
+      downloadUrl:
+        "/api/dashboard/settings/account/export/download?downloadToken=download-token-123",
       zipFileName: "account-export-1.zip",
       userEmail: "owner@dryapi.dev",
     })
-    expect(resolveAccountExportDownloadUrlMock).toHaveBeenCalledWith("token-123", "123456")
+    expect(verifyAccountExportRequestTokenMock).toHaveBeenCalledWith("token-123")
+    expect(hashAccountExportOtpMock).toHaveBeenCalledWith("123456", "request-123")
+    expect(signAccountExportDownloadTokenMock).toHaveBeenCalledWith({
+      requestId: "request-123",
+      userEmail: "owner@dryapi.dev",
+      zipKey: "private/account-exports/request-123/account-export-1.zip",
+      zipFileName: "account-export-1.zip",
+    })
   })
 
   it("returns 403 when the token or otp is invalid", async () => {
-    resolveAccountExportDownloadUrlMock.mockRejectedValue(new Error("Invalid account export OTP."))
+    verifyAccountExportRequestTokenMock.mockResolvedValue({
+      requestId: "request-123",
+      userEmail: "owner@dryapi.dev",
+      zipKey: "private/account-exports/request-123/account-export-1.zip",
+      zipFileName: "account-export-1.zip",
+      otpHash: "otp-hash-abc",
+    })
+    hashAccountExportOtpMock.mockReturnValue("other-hash")
 
     const response = await POST(makeRequest({ token: "token-123", otp: "654321" }))
 

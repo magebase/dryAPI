@@ -17,36 +17,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
 
-  let uploaded
   try {
-    uploaded = await uploadFileToR2WithOptions(file, {
+    const uploaded = await uploadFileToR2WithOptions(file, {
       directory: typeof directory === "string" ? directory : "",
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid media directory."
-    return NextResponse.json({ error: message }, { status: 400 })
-  }
-
-  if (!uploaded) {
-    return NextResponse.json(
-      {
-        error:
-          "R2 is not configured. Set R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_PUBLIC_URL.",
+    return NextResponse.json({
+      id: uploaded.key,
+      type: "file",
+      filename: file.name,
+      directory: uploaded.directory,
+      src: uploaded.url,
+      thumbnails: {
+        "75x75": uploaded.url,
+        "400x400": uploaded.url,
+        "1000x1000": uploaded.url,
       },
-      { status: 500 },
-    );
-  }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to upload media to Cloudflare R2."
+    const status = message === "Invalid media directory." ? 400 : 500
 
-  return NextResponse.json({
-    id: uploaded.key,
-    type: "file",
-    filename: file.name,
-    directory: uploaded.directory,
-    src: uploaded.url,
-    thumbnails: {
-      "75x75": uploaded.url,
-      "400x400": uploaded.url,
-      "1000x1000": uploaded.url,
-    },
-  });
+    return NextResponse.json({ error: message }, { status })
+  }
 }
