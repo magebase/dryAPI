@@ -119,4 +119,58 @@ describe("runAiSearchRecrawl", () => {
     })
     expect(fetchImpl).toHaveBeenCalledTimes(3)
   })
+
+  it("retries sync cooldown responses before giving up", async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+
+      if (url === "https://dryapi.dev" || url === "https://dryapi.dev/llms-full.txt") {
+        return new Response("ok", { status: 200 })
+      }
+
+      if (url === "https://api.cloudflare.com/client/v4/accounts/account-123/ai-search/instances/chatbot/jobs") {
+        const attemptCount = fetchImpl.mock.calls.filter((call) => String(call[0]) === url).length
+
+        if (attemptCount === 1) {
+          return new Response(JSON.stringify({ success: false, errors: [{ code: 7020, message: "sync_in_cooldown" }] }), {
+            status: 429,
+            headers: {
+              "content-type": "application/json",
+            },
+          })
+        }
+
+        expect(init?.method).toBe("POST")
+
+        return new Response(JSON.stringify({ success: true, result: { id: "job-123" } }), {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        })
+      }
+
+      throw new Error(`Unexpected fetch target: ${url}`)
+    })
+
+    const sleepImpl = vi.fn(async () => undefined)
+
+    const result = await runAiSearchRecrawl({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "account-123",
+        CLOUDFLARE_AI_SEARCH_API_TOKEN: "token-123",
+        CLOUDFLARE_AI_SEARCH_INDEX: "chatbot",
+        SITE_URL: "https://dryapi.dev/",
+      },
+      fetchImpl,
+      sleepImpl,
+    })
+
+    expect(result).toEqual({
+      jobId: "job-123",
+      sourceUrls: ["https://dryapi.dev", "https://dryapi.dev/llms-full.txt"],
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(4)
+    expect(sleepImpl).toHaveBeenCalledTimes(1)
+  })
 })

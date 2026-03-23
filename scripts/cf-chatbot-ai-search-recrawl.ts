@@ -3,6 +3,7 @@
 import { pathToFileURL } from "node:url"
 
 type FetchLike = typeof fetch
+type SleepLike = (milliseconds: number) => Promise<void>
 type EnvLike = Record<string, string | undefined>
 
 type AiSearchRecrawlConfig = {
@@ -80,6 +81,12 @@ function uniqueValues(values: string[]): string[] {
   return Array.from(new Set(values))
 }
 
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds)
+  })
+}
+
 function resolveSourceUrls(env: EnvLike): string[] {
   const explicitSourceUrls = nonEmpty(env.CLOUDFLARE_AI_SEARCH_SOURCE_URLS)
   if (explicitSourceUrls) {
@@ -133,6 +140,27 @@ async function readResponseBody(response: Response): Promise<string> {
   return response.text().catch(() => "")
 }
 
+function isSyncCooldownResponse(response: Response, responseBody: string): boolean {
+  if (response.status !== 429) {
+    return false
+  }
+
+  try {
+    const payload = JSON.parse(responseBody) as {
+      errors?: Array<{ code?: unknown; message?: unknown }>
+    }
+
+    return (
+      Array.isArray(payload.errors) &&
+      payload.errors.some(
+        (error) => error?.code === 7020 || String(error?.message ?? "").includes("sync_in_cooldown"),
+      )
+    )
+  } catch {
+    return responseBody.includes("sync_in_cooldown")
+  }
+}
+
 async function preflightSourceUrl(fetchImpl: FetchLike, sourceUrl: string): Promise<void> {
   const response = await fetchImpl(sourceUrl, {
     method: "GET",
@@ -152,62 +180,76 @@ async function preflightSourceUrl(fetchImpl: FetchLike, sourceUrl: string): Prom
 async function createAiSearchIndexingJob(
   fetchImpl: FetchLike,
   config: AiSearchRecrawlConfig,
+  sleepImpl: SleepLike,
 ): Promise<string> {
-  const response = await fetchImpl(config.jobUrl, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${config.apiToken}`,
-      "content-type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      description: config.description,
-    }),
-    cache: "no-store",
-  })
+  const maxAttempts = 3
 
-  const responseBody = await readResponseBody(response)
-  if (!response.ok) {
-    const suffix = responseBody ? `: ${responseBody.slice(0, 512)}` : ""
-    throw new Error(`AI Search indexing job request failed with ${response.status}${suffix}`)
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetchImpl(config.jobUrl, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${config.apiToken}`,
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        description: config.description,
+      }),
+      cache: "no-store",
+    })
+
+    const responseBody = await readResponseBody(response)
+    if (!response.ok) {
+      if (isSyncCooldownResponse(response, responseBody) && attempt < maxAttempts) {
+        await sleepImpl(30_000)
+        continue
+      }
+
+      const suffix = responseBody ? `: ${responseBody.slice(0, 512)}` : ""
+      throw new Error(`AI Search indexing job request failed with ${response.status}${suffix}`)
+    }
+
+    let payload: unknown
+    try {
+      payload = JSON.parse(responseBody)
+    } catch {
+      throw new Error(`AI Search indexing job returned invalid JSON: ${responseBody}`)
+    }
+
+    if (!payload || typeof payload !== "object") {
+      throw new Error(`AI Search indexing job returned an unexpected payload: ${responseBody}`)
+    }
+
+    const typed = payload as {
+      success?: boolean
+      result?: { id?: unknown }
+    }
+
+    if (typed.success !== true || typeof typed.result?.id !== "string" || typed.result.id.trim().length === 0) {
+      throw new Error(`AI Search indexing job creation returned a malformed response: ${responseBody}`)
+    }
+
+    return typed.result.id
   }
 
-  let payload: unknown
-  try {
-    payload = JSON.parse(responseBody)
-  } catch {
-    throw new Error(`AI Search indexing job returned invalid JSON: ${responseBody}`)
-  }
-
-  if (!payload || typeof payload !== "object") {
-    throw new Error(`AI Search indexing job returned an unexpected payload: ${responseBody}`)
-  }
-
-  const typed = payload as {
-    success?: boolean
-    result?: { id?: unknown }
-  }
-
-  if (typed.success !== true || typeof typed.result?.id !== "string" || typed.result.id.trim().length === 0) {
-    throw new Error(`AI Search indexing job creation returned a malformed response: ${responseBody}`)
-  }
-
-  return typed.result.id
+  throw new Error("AI Search indexing job request failed after retrying sync cooldown.")
 }
 
 export async function runAiSearchRecrawl(args: {
   env?: EnvLike
   fetchImpl?: FetchLike
+  sleepImpl?: SleepLike
 } = {}): Promise<{ jobId: string; sourceUrls: string[] }> {
   const env = args.env ?? process.env
   const fetchImpl = args.fetchImpl ?? fetch
+  const sleepImpl = args.sleepImpl ?? sleep
   const config = resolveAiSearchRecrawlConfig(env)
 
   for (const sourceUrl of config.sourceUrls) {
     await preflightSourceUrl(fetchImpl, sourceUrl)
   }
 
-  const jobId = await createAiSearchIndexingJob(fetchImpl, config)
+  const jobId = await createAiSearchIndexingJob(fetchImpl, config, sleepImpl)
   return { jobId, sourceUrls: config.sourceUrls }
 }
 
