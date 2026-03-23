@@ -186,13 +186,13 @@
         "visible": true,
         "title": "Speech And Transcription Pipelines",
         "summary": "Handle transcription, translation, and speech generation behind one stable API contract as volume grows.",
-        "image": "/landing/ai-data-visualization-dashboard.png",
+        "image": "/landing/audio-speech-generation.png",
         "href": "/use-cases/video-to-text",
         "tag": "Use Case",
         "galleryImages": [
           {
             "id": "project-3-01",
-            "src": "/landing/ai-data-visualization-dashboard.png",
+            "src": "/landing/audio-speech-generation.png",
             "alt": "Video To Text Pipelines image 1",
             "caption": "Video To Text Pipelines image 1"
           },
@@ -215,13 +215,13 @@
         "visible": true,
         "title": "Search, OCR, And Embedding Workflows",
         "summary": "Power retrieval, document extraction, and search features with the right embedding and OCR models for each job.",
-        "image": "/landing/ocr reader-dashboard.png",
+        "image": "/landing/text-ocr-embeddings.png",
         "href": "/use-cases/n8n-ai-workflows",
         "tag": "Use Case",
         "galleryImages": [
           {
             "id": "project-4-01",
-            "src": "/landing/ai-data-visualization-dashboard.png",
+            "src": "/landing/text-ocr-embeddings.png",
             "alt": "n8n Automation Integrations image 1",
             "caption": "n8n Automation Integrations image 1"
           },
@@ -281,13 +281,13 @@
         "visible": true,
         "title": "Model Selection By Category",
         "summary": "Choose the right chat, image, speech, and embedding models based on quality, speed, and price targets.",
-        "image": "/landing/generic-models-dashboard.png",
+        "image": "/landing/beam-split-into-models.png",
         "href": "/blog",
         "tag": "Guide",
         "galleryImages": [
           {
             "id": "resource-2-01",
-            "src": "/landing/generic-models-dashboard.png",
+            "src": "/landing/beam-split-into-models.png",
             "alt": "Model Selection By Category image 1",
             "caption": "Model Selection By Category image 1"
           },

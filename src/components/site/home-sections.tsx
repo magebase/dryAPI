@@ -203,6 +203,15 @@ const result = await res.json();`;
     },
   ];
 
+  const omnichannelTilePreviewImages = [
+    "chatbot-dashboard",
+    "beam-split-into-models",
+    "audio-speech-generation",
+    "text-ocr-embeddings",
+    "image-generator-dashboard",
+    "generic-models-dashboard",
+  ];
+
   const frameworkCells = [
     { label: "Choose", body: "Pick the best model by task" },
     { label: "Plug In", body: "Connect via simple TypeScript fetch" },
@@ -748,7 +757,7 @@ const { output } = await res.json()`}
                       alt={tile.title}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      src={`/landing/${idx % 2 === 0 ? "chatbot-dashboard" : "generic-models-dashboard"}.png`}
+                      src={`/landing/${omnichannelTilePreviewImages[idx % omnichannelTilePreviewImages.length]}.png`}
                     />
                   </div>
 
@@ -797,7 +806,7 @@ const { output } = await res.json()`}
                 icon={FileText}
                 title="Document Intelligence"
                 type="embeddings"
-                image="/landing/ocr reader-dashboard.png"
+                image="/landing/text-ocr-embeddings.png"
               />
               <UseCaseCard
                 body="High-volume, low-cost image pipelines with professional quality tiers."
