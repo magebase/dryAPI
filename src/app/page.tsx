@@ -1,12 +1,12 @@
 import type { Metadata } from "next"
 
+import { HomeSections } from "@/components/site/home-sections"
+import { SiteFrame } from "@/components/site/site-frame"
+import { HybridHomePage } from "@/components/site/tina-hybrid-renderers"
 import { WebPageJsonLd } from "@/components/site/seo-jsonld"
-import { TinaHomePage } from "@/components/site/tina-home-page"
 import { buildTakumiMetadata } from "@/lib/og/metadata"
 import { readHomeContent, readSiteConfig } from "@/lib/site-content-loader"
 import { tinaHomeQuery, tinaSiteConfigQuery } from "@/lib/tina-documents"
-
-
 
 export async function generateMetadata(): Promise<Metadata> {
   const [home, site] = await Promise.all([readHomeContent(), readSiteConfig()])
@@ -33,7 +33,7 @@ export default async function HomePage() {
         scriptId="home-page"
         title={home.seoTitle}
       />
-      <TinaHomePage
+      <HybridHomePage
         homeDocument={{
           query: tinaHomeQuery,
           variables: { relativePath: "home.json" },
@@ -44,7 +44,11 @@ export default async function HomePage() {
           variables: { relativePath: "site-config.json" },
           data: { siteConfig: site },
         }}
-      />
+      >
+        <SiteFrame site={site}>
+          <HomeSections home={home} site={site} />
+        </SiteFrame>
+      </HybridHomePage>
     </>
   )
 }

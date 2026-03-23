@@ -46,12 +46,10 @@ type DashboardSettingsRow = {
   webhooksJson: string
 }
 
-const SETTINGS_CACHE_CONFIG = { ex: 15 }
 const settingsTableReady = new WeakSet<object>()
 const settingsTableReadyPromises = new WeakMap<object, Promise<void>>()
 
 const {
-  getDbAsync: getMetadataDbAsync,
   getPrimaryBindingAsync: getPrimaryMetadataBindingAsync,
   getPrimaryDbAsync: getPrimaryMetadataDbAsync,
 } = createCloudflareDbAccessors(D1_BINDING_PRIORITY.metadata, {
@@ -181,22 +179,6 @@ async function selectRow(db: D1DatabaseLike, userEmail: string): Promise<Dashboa
   return response.results[0] ?? null
 }
 
-async function selectCachedRow(userEmail: string): Promise<DashboardSettingsRow | null> {
-  const db = await getMetadataDbAsync()
-  const response = await db
-    .select({
-      generalJson: dashboardSettingsProfiles.generalJson,
-      securityJson: dashboardSettingsProfiles.securityJson,
-      webhooksJson: dashboardSettingsProfiles.webhooksJson,
-    })
-    .from(dashboardSettingsProfiles)
-    .where(eq(dashboardSettingsProfiles.userEmail, userEmail))
-    .limit(1)
-    .$withCache({ config: SETTINGS_CACHE_CONFIG })
-
-  return response[0] ?? null
-}
-
 async function upsertStoredRow(input: {
   userEmail: string
   generalJson: string
@@ -242,7 +224,8 @@ export async function getDashboardSettingsForUser(
   }
 
   await ensurePrimaryMetadataTable()
-  const row = await selectCachedRow(resolvedEmail)
+  const dbPrimary = await getPrimaryMetadataDbAsync()
+  const row = await selectRow(dbPrimary as unknown as D1DatabaseLike, resolvedEmail)
   return normalizeBundleFromRow(row)
 }
 

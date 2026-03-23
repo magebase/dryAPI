@@ -808,6 +808,7 @@ export default async function DashboardOverviewPage() {
               </p>
               <Link
                 href={toRoute(item.href)}
+                prefetch={false}
                 className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-white underline-offset-4 hover:underline"
               >
                 {item.ctaLabel}

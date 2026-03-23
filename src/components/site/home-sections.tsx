@@ -1,9 +1,7 @@
 import {
   ArrowRight,
-  Code2,
   FileText,
   Image as ImageIcon,
-  Layers,
   MessageSquare,
   Mic,
   Music,
@@ -36,22 +34,10 @@ export function HomeSections({
   const spotlightCards = home.spotlightCards
     .filter((card) => card.visible)
     .slice(0, 3);
-  const capabilityCards = home.capabilityCards.filter((card) => card.visible);
-  const valueCards = capabilityCards.slice(0, 3);
-  const stories = home.projectShowcase.items
-    .filter((item) => item.visible)
+  const valueCards = home.capabilityCards
+    .filter((card) => card.visible)
     .slice(0, 3);
-  const workflowStory = stories[0];
-  const resourcePreview = home.resourceShowcase.items.find(
-    (item) => item.visible,
-  );
   const trustedLogos = home.trustedBySection.logos.slice(0, 8);
-  const trustedMarqueeLogos = [
-    ...trustedLogos,
-    ...trustedLogos,
-    ...trustedLogos,
-  ];
-  const testimonial = home.testimonialsSection.items[0];
 
   const capabilitySignals = [
     {
@@ -101,11 +87,6 @@ export function HomeSections({
     site,
     "home.spotlightAction.2",
     "Browse Categories",
-  );
-  const spotlightAction3 = resolveSiteUiText(
-    site,
-    "home.spotlightAction.3",
-    "Review Pricing",
   );
 
   const operationalHeading = resolveSiteUiText(
@@ -167,8 +148,6 @@ const result = await res.json();`;
   "output": ["https://assets.dryapi.dev/img/32dk..."],
   "meta": { "latency": "1.2s", "cost": 0.003 }
 }`;
-
-  const heroMediaImage = workflowStory?.image ?? home.hero.backgroundImage;
 
   const omnichannelTiles = [
     {
@@ -366,12 +345,12 @@ const result = await res.json();`;
 
                 <div className="marquee-vignette relative left-1/2 mt-4 w-screen max-w-none -translate-x-1/2 overflow-hidden border-0 bg-transparent px-2 py-3 [--marquee-vignette-tint:transparent] md:px-4">
                   <div className="marquee-track bg-transparent flex w-max gap-2 [--marquee-duration:26s]">
-                    {trustedMarqueeLogos.map((logo, index) => (
+                    {/* {trustedMarqueeLogos.map((logo, index) => (
                       <TrustedLogoPill
                         key={`${logo.id}-${index}`}
                         logo={logo}
                       />
-                    ))}
+                    ))} */}
                   </div>
                 </div>
               </Reveal>
@@ -437,10 +416,10 @@ const result = await res.json();`;
 
           <div className="mt-12 md:mt-20">
             <div className="grid gap-6 border-y border-[#dedede] py-8 sm:grid-cols-3">
-              {frameworkCells.map((cell, index) => (
-                <Reveal as="div" delay={index * 0.06} key={cell.label} y={12}>
+              {frameworkCells.map((cell) => (
+                <div key={cell.label}>
                   <FrameworkCell body={cell.body} label={cell.label} />
-                </Reveal>
+                </div>
               ))}
             </div>
 
@@ -537,10 +516,8 @@ const result = await res.json();`;
 
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {valueCards.map((card, index) => (
-                <Reveal
-                  as="article"
+                <article
                   className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
-                  delay={index * 0.08}
                   key={card.id}
                 >
                   <div className="relative h-40 rounded-lg border border-[#f0f0f0] overflow-hidden bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_50%,#fdfaff_100%)]">
@@ -575,7 +552,7 @@ const result = await res.json();`;
                   >
                     {card.description}
                   </p>
-                </Reveal>
+                </article>
               ))}
             </div>
           </div>
@@ -714,9 +691,8 @@ const { output } = await res.json()`}
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {omnichannelTiles.map((tile, idx) => (
-                <Reveal
+                <article
                   key={tile.title}
-                  delay={idx * 0.05}
                   className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-slate-300 hover:shadow-2xl"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -752,7 +728,7 @@ const { output } = await res.json()`}
                     <div className="h-px w-8 bg-slate-200 transition-all group-hover:w-12 group-hover:bg-slate-900" />
                     Explore {tile.title}
                   </div>
-                </Reveal>
+                </article>
               ))}
             </div>
           </Reveal>
@@ -786,7 +762,7 @@ const { output } = await res.json()`}
                 icon={MessageSquare}
                 title="Customer Support"
                 type="chat"
-                image="/landing/chatbot-dashboard.png"
+                image="/landing/agent-chat-generation.png"
               />
               <UseCaseCard
                 body="OCR, embeddings, and retrieval to extract value from massive datasets."
@@ -800,7 +776,7 @@ const { output } = await res.json()`}
                 icon={ImageIcon}
                 title="Image Generation"
                 type="image"
-                image="/landing/image-generator-dashboard.png"
+                image="/landing/image-generation.png"
               />
             </div>
           </Reveal>
@@ -965,13 +941,13 @@ const { output } = await res.json()`}
 
                 <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl md:p-12">
                   <div className="mb-8 flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-indigo-500" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+                    {/* <div className="size-2 rounded-full bg-indigo-500" /> */}
+                    {/* <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
                       Customer Success
-                    </p>
+                    </p> */}
                   </div>
 
-                  {testimonial ? (
+                  {/* {testimonial ? (
                     <div className="space-y-6">
                       <p className="font-display text-xl italic leading-relaxed text-white md:text-2xl">
                         &ldquo;{testimonial.quote}&rdquo;
@@ -996,7 +972,7 @@ const { output } = await res.json()`}
                       dryAPI and cut onboarding time for new AI features
                       dramatically.&rdquo;
                     </p>
-                  )}
+                  )} */}
 
                   <div className="mt-12 pt-10 border-t border-white/10">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">
@@ -1058,8 +1034,7 @@ function FeatureStory({
   }
 
   return (
-    <Reveal
-      as="article"
+    <article
       className={`group grid gap-8 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-[color:var(--cta-cool-a)] hover:shadow-2xl md:p-8 ${reverse ? "lg:grid-cols-[1.05fr_0.95fr]" : "lg:grid-cols-[0.95fr_1.05fr]"}`}
     >
       <div
@@ -1107,7 +1082,7 @@ function FeatureStory({
           </div>
         </div>
       </div>
-    </Reveal>
+    </article>
   );
 }
 
@@ -1140,7 +1115,7 @@ function UseCaseCard({
       </h4>
       <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
 
-      <div className="mt-6 aspect-[1.4/1] w-full overflow-hidden rounded-xl border border-black/5 bg-slate-50/50 grayscale-[0.2] transition-all duration-500 group-hover:bg-white group-hover:grayscale-0">
+      <div className="mt-6 aspect-[1.4/1] w-full overflow-hidden rounded-xl border border-black/5 bg-slate-50/50  transition-all duration-500 group-hover:bg-white group-hover:grayscale-0">
         <div className="relative h-full w-full">
           <Image
             alt={title}
@@ -1311,7 +1286,7 @@ function MockUiPreview({
                 {Array.from({ length: 24 }).map((_, i) => (
                   <div
                     key={i}
-                    style={{ height: `${Math.random() * 80 + 20}%` }}
+                    style={{ height: `${24 + ((i * 17) % 61)}%` }}
                     className="flex-1 rounded-t-sm bg-indigo-400/20"
                   />
                 ))}
@@ -1336,7 +1311,7 @@ function MockUiPreview({
                   <div
                     key={i}
                     className="h-2 rounded-sm bg-black/5 transition-opacity duration-500"
-                    style={{ opacity: Math.random() * 0.5 + 0.5 }}
+                    style={{ opacity: 0.5 + (((i * 13) % 5) * 0.1) }}
                   />
                 ))}
               </div>
