@@ -456,6 +456,16 @@ jobs:
             "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" queues create "${queue_name}" --config wrangler.toml
           fi
 
+      - name: Ensure API account export queue exists
+        working-directory: cloudflare/api
+        run: |
+          set -euo pipefail
+
+          queue_name="dryapi-account-exports"
+          if ! "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" queues info "${queue_name}" --config wrangler.toml >/dev/null 2>&1; then
+            "${GITHUB_WORKSPACE}/node_modules/.bin/wrangler" queues create "${queue_name}" --config wrangler.toml
+          fi
+
       - name: Resolve API queue metrics KV namespace ID
         working-directory: cloudflare/api
         run: |
