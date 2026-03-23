@@ -35,6 +35,7 @@ import { toPricingCategoryLabel } from "@/lib/deapi-pricing-utils";
 import { normalizeSiteUrl } from "@/lib/og/metadata";
 import { toRoute } from "@/lib/route";
 import type { RoutePage, SiteConfig } from "@/lib/site-content-schema";
+import { playgroundGenerateSchema } from "@/lib/input-validation-schemas";
 
 type PlaygroundTab = "preview" | "json" | "curl";
 
@@ -650,6 +651,25 @@ export function PlaygroundPageTemplate({
     setGeneratedPayload(null);
     setIsGenerating(true);
 
+    const generationInput = {
+      apiKeyId: selectedApiKeyId,
+      model: activeModel.slug,
+      prompt,
+      ...Object.fromEntries(
+        (activeModel.parameter_keys ?? []).map((key) => [
+          key,
+          params[key] ?? DEFAULT_PARAMS[key],
+        ]),
+      ),
+    };
+
+    const parsedGenerationInput = playgroundGenerateSchema.safeParse(generationInput);
+    if (!parsedGenerationInput.success) {
+      setIsGenerating(false);
+      setGenerateError(parsedGenerationInput.error.issues[0]?.message ?? "Invalid generation request.");
+      return;
+    }
+
     try {
       const generationResponse = await fetch("/api/playground/generate", {
         method: "POST",
@@ -658,17 +678,7 @@ export function PlaygroundPageTemplate({
         },
         cache: "no-store",
         credentials: "include",
-        body: JSON.stringify({
-          apiKeyId: selectedApiKeyId,
-          model: activeModel.slug,
-          prompt,
-          ...Object.fromEntries(
-            (activeModel.parameter_keys ?? []).map((key) => [
-              key,
-              params[key] ?? DEFAULT_PARAMS[key],
-            ]),
-          ),
-        }),
+        body: JSON.stringify(parsedGenerationInput.data),
       });
 
       if (generationResponse.status === 401) {

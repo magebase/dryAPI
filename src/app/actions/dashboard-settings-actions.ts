@@ -10,7 +10,7 @@ import {
   type DashboardWebhookEntry,
   type DashboardSettingsBundle,
 } from "@/lib/dashboard-settings-schema"
-import { updateDashboardSettingsSection } from "@/lib/dashboard-settings-store"
+import { getDashboardSettingsForUser, updateDashboardSettingsSection } from "@/lib/dashboard-settings-store"
 import { validateDashboardWebhook } from "@/lib/dashboard-webhooks"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 
@@ -129,14 +129,19 @@ export async function updateDashboardSettingsAction(
     const headerStore = await headers()
     const hostname = resolveRequestHostname(headerStore)
     const parsedWebhooks = dashboardWebhooksSettingsFormSchema.parse(normalizedValues)
+    const existingSettings = await getDashboardSettingsForUser(userEmail)
     const validatedWebhooks: DashboardWebhookEntry[] = []
 
     for (const webhook of parsedWebhooks.webhooks) {
+      const existingWebhook = existingSettings.webhooks.webhooks.find((entry) => entry.id === webhook.id) ?? null
       const result = await validateDashboardWebhook({
         userEmail,
         webhook,
         hostname,
-        persistHealth: false,
+        persistHealth:
+          Boolean(existingWebhook) &&
+          existingWebhook.endpointUrl === webhook.endpointUrl &&
+          existingWebhook.signingSecret === webhook.signingSecret,
       })
 
       if (!result.probeResult.ok) {
@@ -170,11 +175,16 @@ export async function validateDashboardWebhookAction(input: {
   const headerStore = await headers()
   const hostname = resolveRequestHostname(headerStore)
   const userEmail = await resolveAuthenticatedUserEmail()
+  const existingSettings = await getDashboardSettingsForUser(userEmail)
+  const existingWebhook = existingSettings.webhooks.webhooks.find((entry) => entry.id === input.webhook.id) ?? null
   const result = await validateDashboardWebhook({
     userEmail,
     webhook: input.webhook,
     hostname,
-    persistHealth: true,
+    persistHealth:
+      Boolean(existingWebhook) &&
+      existingWebhook.endpointUrl === input.webhook.endpointUrl &&
+      existingWebhook.signingSecret === input.webhook.signingSecret,
   })
 
   return {

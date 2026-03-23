@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 import {
   dispatchToRunpodUpstream,
@@ -15,18 +14,7 @@ import {
   getDashboardApiKeyForRequest,
   permissionMatchesPath,
 } from "@/lib/dashboard-api-keys-store";
-
-const playgroundGenerateSchema = z
-  .object({
-    apiKeyId: z.string().trim().min(1),
-    model: z.string().trim().optional(),
-    prompt: z.string().trim().min(1),
-    n: z.number().int().positive().max(8).optional().default(1),
-    size: z.string().trim().optional().default("1024x1024"),
-    expectedRpm: z.number().positive().optional(),
-    allowLowMarginOverride: z.boolean().optional().default(false),
-  })
-  .passthrough();
+import { playgroundGenerateSchema } from "@/lib/input-validation-schemas";
 
 function isExpired(expiresAt: string | null): boolean {
   if (!expiresAt) {

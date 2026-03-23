@@ -10,7 +10,7 @@ import { ApiQuotaDurableObject } from './durable/api-quota'
 import { CreditShardDurableObject } from './durable/credit-shard'
 import { registerOpenApiJsonRoute } from './routes/openapi-json'
 import { registerV1Routes } from './routes/v1'
-import type { AppContext, WorkerEnv } from './types'
+import type { AccountExportQueueMessage, AppContext, WorkerEnv } from './types'
 
 const app = new Hono<WorkerEnv>()
 
@@ -35,6 +35,13 @@ function isRunpodBatchMessage(value: unknown): value is RunpodBatchQueueMessage 
   )
 }
 
+function isAccountExportMessage(value: unknown): value is AccountExportQueueMessage {
+	return isObjectRecord(value)
+		&& typeof value.requestId === 'string'
+		&& typeof value.userEmail === 'string'
+		&& typeof value.requestedAt === 'string'
+}
+
 function makeQueueContext(env: WorkerEnv['Bindings']): AppContext {
   return {
     env,
@@ -49,19 +56,54 @@ const worker = {
 		env: WorkerEnv['Bindings'],
 	): Promise<void> {
 		if (!isRunpodBatchQueueEnabled(env)) {
-			return
+			// Continue to process export jobs even when runpod batching is disabled.
 		}
 
 		const c = makeQueueContext(env)
-		let processedCount = 0
-		let totalRuntimeSeconds = 0
+		let processedRunpodCount = 0
+		let runpodRuntimeSeconds = 0
 
 		for (const message of batch.messages) {
 			const startedAt = Date.now()
 			const body = message.body
 
+			if (isAccountExportMessage(body)) {
+				try {
+					const origin = String(env.ORIGIN_URL ?? '').trim()
+					const internalKey = String(env.INTERNAL_API_KEY ?? '').trim()
+					if (!origin || !internalKey) {
+						throw new Error('Missing ORIGIN_URL or INTERNAL_API_KEY for account export completion')
+					}
+
+					const response = await fetch(`${origin.replace(/\/$/, '')}/api/internal/account-exports/complete`, {
+						method: 'POST',
+						headers: {
+							accept: 'application/json',
+							'content-type': 'application/json',
+							authorization: `Bearer ${internalKey}`,
+						},
+						body: JSON.stringify(body),
+					})
+
+					if (!response.ok) {
+						const errorText = await response.text().catch(() => '')
+						throw new Error(`account export completion failed (${response.status}): ${errorText}`)
+					}
+				} catch (error) {
+					console.error('[account-export] completion failed', error)
+					throw error
+				} finally {
+				}
+
+				continue
+			}
+
 			if (!isRunpodBatchMessage(body)) {
 				console.warn('[runpod-batch-queue] invalid queue message payload skipped')
+				continue
+			}
+
+			if (!isRunpodBatchQueueEnabled(env)) {
 				continue
 			}
 
@@ -161,17 +203,17 @@ const worker = {
 					},
 				})
 			} finally {
-				processedCount += 1
-				totalRuntimeSeconds += Math.max(0, (Date.now() - startedAt) / 1000)
+				processedRunpodCount += 1
+				runpodRuntimeSeconds += Math.max(0, (Date.now() - startedAt) / 1000)
 			}
 		}
 
-		if (processedCount > 0) {
+		if (processedRunpodCount > 0) {
 			await recordQueueMetricSnapshot({
 				c,
 				queueDepth: batch.messages.length,
-				batchSize: processedCount,
-				avgRuntime: totalRuntimeSeconds / processedCount,
+				batchSize: processedRunpodCount,
+				avgRuntime: runpodRuntimeSeconds / processedRunpodCount,
 				retentionHours: Number(env.RUNPOD_QUEUE_METRICS_RETENTION_HOURS) || 48,
 			})
 		}

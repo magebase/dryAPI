@@ -329,6 +329,28 @@ export async function listDashboardApiKeysForRequest(request: Request, userEmail
   return apiKeys.map((apiKey) => mapApiKeyRecord(apiKey, userEmail))
 }
 
+export async function listDashboardApiKeysForUser(userEmail: string): Promise<DashboardApiKeyRecord[]> {
+  const db = await resolveAuthDb()
+  if (!db) {
+    return []
+  }
+
+  const response = await db
+    .prepare(
+      `
+      SELECT a.*
+      FROM apikey a
+      INNER JOIN user u ON u.id = a.referenceId
+      WHERE lower(u.email) = ?
+      ORDER BY a.createdAt DESC
+      `,
+    )
+    .bind(userEmail.trim().toLowerCase())
+    .all<BetterAuthApiKey>()
+
+  return response.results.map((apiKey) => mapApiKeyRecord(apiKey, userEmail))
+}
+
 export async function createDashboardApiKey(
   request: Request,
   input: {

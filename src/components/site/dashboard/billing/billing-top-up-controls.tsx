@@ -3,9 +3,14 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  createAutoTopUpSettingsSchema,
+  createBillingTopUpAmountSchema,
+} from "@/lib/input-validation-schemas"
 import { toRoute } from "@/lib/route"
 
 type ActivePlanSummary = {
@@ -116,13 +121,26 @@ export function BillingTopUpControls({
       monthlyCapCredits: Number(settings.monthlyCapCredits.toFixed(2)),
     }
 
+    const parsedPayload = createAutoTopUpSettingsSchema(
+      safeguards.minimumTopUpCredits,
+    ).safeParse(payload)
+
+    if (!parsedPayload.success) {
+      setSaveState("error")
+      setStatusMessage(
+        parsedPayload.error.issues[0]?.message ||
+          "Unable to save auto top-up settings.",
+      )
+      return
+    }
+
     try {
       const response = await fetch("/api/dashboard/billing/auto-top-up", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(parsedPayload.data),
       })
 
       const result = (await response.json().catch(() => null)) as
@@ -199,11 +217,20 @@ export function BillingTopUpControls({
             type="button"
             size="sm"
             onClick={() => {
-              const normalizedAmount = Number.isFinite(customTopUpAmount)
-                ? Math.max(safeguards.minimumTopUpCredits, customTopUpAmount)
-                : safeguards.minimumTopUpCredits
+              const parsedAmount = createBillingTopUpAmountSchema(
+                safeguards.minimumTopUpCredits,
+              ).safeParse(customTopUpAmount)
 
-              router.push(toRoute(buildTopUpHref(normalizedAmount)))
+              if (!parsedAmount.success) {
+                toast.error("Invalid top-up amount", {
+                  description:
+                    parsedAmount.error.issues[0]?.message ||
+                    "Enter a valid top-up amount.",
+                })
+                return
+              }
+
+              router.push(toRoute(buildTopUpHref(parsedAmount.data)))
             }}
           >
             Top up custom amount

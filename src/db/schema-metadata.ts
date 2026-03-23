@@ -39,6 +39,29 @@ export const dashboardSettingsProfiles = sqliteTable("dashboard_settings_profile
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })
 
+export const dashboardWebhooks = sqliteTable("dashboard_webhooks", {
+  webhookId: text("webhook_id").primaryKey(),
+  userEmail: text("user_email").notNull(),
+  name: text("name").notNull().default(""),
+  endpointUrl: text("endpoint_url").notNull(),
+  signingSecret: text("signing_secret").notNull().default(""),
+  sendOnCompleted: integer("send_on_completed", { mode: "boolean" }).notNull().default(true),
+  sendOnFailed: integer("send_on_failed", { mode: "boolean" }).notNull().default(true),
+  sendOnQueued: integer("send_on_queued", { mode: "boolean" }).notNull().default(false),
+  includeFullPayload: integer("include_full_payload", { mode: "boolean" }).notNull().default(false),
+  validationStatus: text("validation_status").notNull().default("unknown"),
+  validationMessage: text("validation_message").notNull().default(""),
+  lastValidatedAt: integer("last_validated_at", { mode: "timestamp_ms" }),
+  lastStatusCode: integer("last_status_code"),
+  lastSuccessAt: integer("last_success_at", { mode: "timestamp_ms" }),
+  lastFailureAt: integer("last_failure_at", { mode: "timestamp_ms" }),
+  consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+  alertCount: integer("alert_count").notNull().default(0),
+  lastAlertAt: integer("last_alert_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+})
+
 export const dashboardApiKeys = sqliteTable("dashboard_api_keys", {
   keyId: text("key_id").primaryKey(),
   userEmail: text("user_email").notNull(),

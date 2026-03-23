@@ -3,37 +3,27 @@ import { z } from "zod"
 export const dashboardSettingsSectionSchema = z.enum(["general", "security", "webhooks"])
 
 export const dashboardWebhookHealthSchema = z.object({
-  validationStatus: z.enum(["unknown", "checking", "healthy", "unhealthy"]).default("unknown"),
-  validationMessage: z.string().trim().max(240).default(""),
-  lastValidatedAt: z.number().int().nullable().default(null),
-  lastStatusCode: z.number().int().nullable().default(null),
-  lastSuccessAt: z.number().int().nullable().default(null),
-  lastFailureAt: z.number().int().nullable().default(null),
-  consecutiveFailures: z.number().int().min(0).default(0),
-  alertCount: z.number().int().min(0).default(0),
-  lastAlertAt: z.number().int().nullable().default(null),
+  validationStatus: z.enum(["unknown", "checking", "healthy", "unhealthy"]),
+  validationMessage: z.string().trim().max(240),
+  lastValidatedAt: z.number().int().nullable(),
+  lastStatusCode: z.number().int().nullable(),
+  lastSuccessAt: z.number().int().nullable(),
+  lastFailureAt: z.number().int().nullable(),
+  consecutiveFailures: z.number().int().min(0),
+  alertCount: z.number().int().min(0),
+  lastAlertAt: z.number().int().nullable(),
 })
 
 export const dashboardWebhookEntrySchema = z.object({
   id: z.string().trim().min(1),
-  name: z.string().trim().max(120).default(""),
+  name: z.string().trim().max(120),
   endpointUrl: z.string().trim().url("Enter a valid webhook URL."),
   signingSecret: z.string().trim().min(1, "Signing secret is required.").max(512),
-  sendOnCompleted: z.boolean().default(true),
-  sendOnFailed: z.boolean().default(true),
-  sendOnQueued: z.boolean().default(false),
-  includeFullPayload: z.boolean().default(false),
-  health: dashboardWebhookHealthSchema.default({
-    validationStatus: "unknown",
-    validationMessage: "",
-    lastValidatedAt: null,
-    lastStatusCode: null,
-    lastSuccessAt: null,
-    lastFailureAt: null,
-    consecutiveFailures: 0,
-    alertCount: 0,
-    lastAlertAt: null,
-  }),
+  sendOnCompleted: z.boolean(),
+  sendOnFailed: z.boolean(),
+  sendOnQueued: z.boolean(),
+  includeFullPayload: z.boolean(),
+  health: dashboardWebhookHealthSchema,
 })
 
 export const dashboardGeneralSettingsSchema = z.object({

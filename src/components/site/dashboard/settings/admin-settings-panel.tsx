@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
+import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
+
+const adminSearchSchema = z.string().trim().max(120)
 
 type AdminSessionPayload = {
   user?: {
@@ -269,7 +272,10 @@ export function AdminSettingsPanel() {
         <Input
           id="settings-admin-search"
           value={searchValue}
-          onChange={(event) => setSearchValue(event.target.value)}
+          onChange={(event) => {
+            const parsedSearch = adminSearchSchema.safeParse(event.target.value)
+            setSearchValue(parsedSearch.success ? parsedSearch.data : event.target.value.trim().slice(0, 120))
+          }}
           placeholder="Search by name, email, role, or login method"
         />
       </div>

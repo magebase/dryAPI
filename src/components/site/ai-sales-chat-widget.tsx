@@ -4,6 +4,7 @@ import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 
+import { chatRequestSchema } from "@/lib/input-validation-schemas"
 import { submitChatContactCaptureAction } from "@/app/actions/submit-chat-contact-capture-action"
 import { openQuoteDialog } from "@/components/site/quote-dialog"
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
@@ -223,6 +224,29 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
       content: message.content,
     }))
 
+    const parsedRequest = chatRequestSchema.safeParse({
+      messages: nextConversation,
+      pagePath: pathname,
+      visitorId,
+      allowEscalation: !escalationSent,
+      turnstileToken,
+    })
+
+    if (!parsedRequest.success) {
+      const errorMessage = parsedRequest.error.issues[0]?.message || "I could not process your request right now."
+      setChatStatusMessage(errorMessage)
+      setMessages((current) => [
+        ...current,
+        createChatMessage({
+          role: "assistant",
+          content: errorMessage,
+          showQuoteButton: true,
+          isError: true,
+        }),
+      ])
+      return
+    }
+
     setMessages((current) => [...current, userMessage])
     setIsSending(true)
 
@@ -232,13 +256,7 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          messages: nextConversation,
-          pagePath: pathname,
-          visitorId,
-          allowEscalation: !escalationSent,
-          turnstileToken,
-        }),
+        body: JSON.stringify(parsedRequest.data),
       })
 
       let body: ChatApiResponse
@@ -329,53 +347,34 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
     const email = captureEmail.trim()
     const phone = capturePhone.trim()
 
-    if (!email && !phone) {
-      const message = "Add an email or mobile number so our team can follow up."
+    const parsedRequest = chatRequestSchema.safeParse({
+      messages: messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+      })),
+      pagePath: pathname,
+      visitorId,
+      allowEscalation: true,
+      contactCapture: {
+        email,
+        phone,
+      },
+    })
+
+    if (!parsedRequest.success) {
+      const message = parsedRequest.error.issues[0]?.message || "Please check the contact details and try again."
       setCaptureStatus(message)
-      toast.error("Contact details required", {
+      toast.error("Contact details invalid", {
         description: message,
       })
       return
-    }
-
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      const message = "Please enter a valid email address."
-      setCaptureStatus(message)
-      toast.error("Invalid email", {
-        description: message,
-      })
-      return
-    }
-
-    if (phone) {
-      const digitsOnly = phone.replace(/\D/g, "")
-      if (digitsOnly.length < 8 || digitsOnly.length > 15) {
-        const message = "Please enter a valid mobile number."
-        setCaptureStatus(message)
-        toast.error("Invalid mobile number", {
-          description: message,
-        })
-        return
-      }
     }
 
     setIsSubmittingCapture(true)
     setCaptureStatus("")
 
     try {
-      const result = await submitChatContactCaptureAction({
-        messages: messages.map((message) => ({
-          role: message.role,
-          content: message.content,
-        })),
-        pagePath: pathname,
-        visitorId,
-        allowEscalation: true,
-        contactCapture: {
-          email,
-          phone,
-        },
-      })
+      const result = await submitChatContactCaptureAction(parsedRequest.data)
 
       if (result?.validationErrors) {
         const message = "Please check the contact details and try again."

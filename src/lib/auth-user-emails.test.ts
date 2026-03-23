@@ -14,6 +14,10 @@ vi.mock("@/emails/password-reset-email", () => ({
   PasswordResetEmail: vi.fn((props: unknown) => ({ type: "PasswordResetEmail", props })),
 }))
 
+vi.mock("@/emails/delete-account-verification-email", () => ({
+  DeleteAccountVerificationEmail: vi.fn((props: unknown) => ({ type: "DeleteAccountVerificationEmail", props })),
+}))
+
 vi.mock("@/emails/verify-email", () => ({
   VerifyEmail: vi.fn((props: unknown) => ({ type: "VerifyEmail", props })),
 }))
@@ -40,7 +44,8 @@ vi.mock("@/emails/brand", async () => {
 })
 
 import { PasswordResetEmail } from "@/emails/password-reset-email"
-import { sendAuthPasswordResetEmail } from "@/lib/auth-user-emails"
+import { DeleteAccountVerificationEmail } from "@/emails/delete-account-verification-email"
+import { sendAuthDeleteAccountVerificationEmail, sendAuthPasswordResetEmail } from "@/lib/auth-user-emails"
 
 describe("auth user emails", () => {
   beforeEach(() => {
@@ -49,6 +54,7 @@ describe("auth user emails", () => {
     vi.stubEnv("BREVO_FROM_NAME", "EmbedAPI")
     sendBrevoReactEmailMock.mockClear()
     vi.mocked(PasswordResetEmail).mockClear()
+    vi.mocked(DeleteAccountVerificationEmail).mockClear()
   })
 
   afterEach(() => {
@@ -86,6 +92,36 @@ describe("auth user emails", () => {
     expect(templateProps.name).toBe("Ava")
     expect(sendCall.subject).toBe("Reset your EmbedAPI password")
     expect(sendCall.tags).toEqual(expect.arrayContaining(["auth", "password-reset"]))
+    expect(sendCall.react.props.branding.key).toBe("embedapi")
+  })
+
+  it("passes branded props into the delete verification email send path", async () => {
+    await sendAuthDeleteAccountVerificationEmail({
+      user: {
+        email: "ava@example.com",
+        name: "Ava",
+      },
+      url: "https://embedapi.dev/delete-user/delete-token",
+      token: "delete-token",
+    })
+
+    expect(DeleteAccountVerificationEmail).toHaveBeenCalledTimes(1)
+    expect(sendBrevoReactEmailMock).toHaveBeenCalledTimes(1)
+
+    const templateProps = vi.mocked(DeleteAccountVerificationEmail).mock.calls[0]?.[0] as {
+      branding: { key: string; mark: string }
+      verificationUrl: string
+    }
+    const sendCall = sendBrevoReactEmailMock.mock.calls[0]?.[0] as {
+      subject: string
+      tags: string[]
+      react: { props: { branding: { key: string; mark: string } } }
+    }
+
+    expect(templateProps.branding.key).toBe("embedapi")
+    expect(templateProps.verificationUrl).toContain("/delete-user/delete-token")
+    expect(sendCall.subject).toBe("Confirm your EmbedAPI account deletion")
+    expect(sendCall.tags).toEqual(expect.arrayContaining(["auth", "delete-account"]))
     expect(sendCall.react.props.branding.key).toBe("embedapi")
   })
 })

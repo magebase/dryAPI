@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const { signOutCurrentSessionMock, signOutOtherSessionsMock, toastError, toastInfo, toastSuccess } = vi.hoisted(() => ({
@@ -90,6 +91,15 @@ function createFetchMock() {
       })
     }
 
+    if (path === "/api/dashboard/settings/account/export") {
+      return jsonResponse({
+        ok: true,
+        status: "queued",
+        request_id: "req_123",
+        next: "Check your email for the secure export link and OTP.",
+      }, 202)
+    }
+
     return jsonResponse({ message: `Unhandled request: ${method} ${path}` }, 500)
   })
 }
@@ -122,5 +132,29 @@ describe("AccountSettingsPanel", () => {
     expect(
       screen.getByText("Upgrade from Billing to unlock higher limits."),
     ).toBeInTheDocument()
+  })
+
+  it("queues an account export when the export button is clicked", async () => {
+    const user = userEvent.setup()
+    const fetchMock = createFetchMock()
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    render(<AccountSettingsPanel />)
+
+    await user.click(await screen.findByRole("button", { name: "Export account data" }))
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/dashboard/settings/account/export",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+      }),
+    )
+    expect(toastSuccess).toHaveBeenCalledWith(
+      "Export queued",
+      expect.objectContaining({
+        description: expect.stringContaining("secure export link and OTP"),
+      }),
+    )
   })
 })

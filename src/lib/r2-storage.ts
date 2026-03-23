@@ -53,6 +53,34 @@ export async function uploadFileToR2(file: File): Promise<UploadedFile | null> {
   return uploadFileToR2WithOptions(file, { directory: "" })
 }
 
+type UploadObjectOptions = {
+  key: string
+  body: BodyInit
+  contentType?: string
+}
+
+export async function putObjectToR2(options: UploadObjectOptions): Promise<{ key: string; url: string } | null> {
+  const context = getClient()
+
+  if (!context) {
+    return null
+  }
+
+  await context.client.send(
+    new PutObjectCommand({
+      Bucket: context.config.bucket,
+      Key: options.key,
+      Body: options.body,
+      ...(options.contentType ? { ContentType: options.contentType } : {}),
+    })
+  )
+
+  return {
+    key: options.key,
+    url: `${context.config.publicUrl.replace(/\/$/, "")}/${options.key}`,
+  }
+}
+
 type UploadFileOptions = {
   directory?: string
 }

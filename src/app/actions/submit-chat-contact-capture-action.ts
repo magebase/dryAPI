@@ -1,25 +1,9 @@
 "use server"
 
 import { headers } from "next/headers"
-import { z } from "zod"
 
+import { chatRequestSchema } from "@/lib/input-validation-schemas"
 import { actionClient } from "@/lib/safe-action"
-
-const actionSchema = z.object({
-  messages: z.array(
-    z.object({
-      role: z.enum(["assistant", "user"]),
-      content: z.string().trim().min(1),
-    })
-  ),
-  pagePath: z.string().trim().default("/"),
-  visitorId: z.string().trim().default("anonymous"),
-  allowEscalation: z.boolean().default(true),
-  contactCapture: z.object({
-    email: z.string().trim().optional().default(""),
-    phone: z.string().trim().optional().default(""),
-  }),
-})
 
 type ChatApiResponse = {
   ok: boolean
@@ -29,7 +13,7 @@ type ChatApiResponse = {
 }
 
 export const submitChatContactCaptureAction = actionClient
-  .inputSchema(actionSchema)
+  .inputSchema(chatRequestSchema)
   .action(async ({ parsedInput }) => {
     const headerStore = await headers()
     const host = headerStore.get("x-forwarded-host") || headerStore.get("host")

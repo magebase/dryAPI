@@ -13,6 +13,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
+import {
+  twoFactorPasswordSchema,
+  twoFactorVerificationCodeSchema,
+} from "@/lib/input-validation-schemas"
 import { cn } from "@/lib/utils"
 
 type TwoFactorSessionPayload = {
@@ -121,8 +125,12 @@ export function TwoFactorSettingsCard() {
   }, [reloadToken])
 
   async function handleStartSetup() {
-    if (!password.trim()) {
-      toast.error("Enter your password to start two-factor setup")
+    const parsedPassword = twoFactorPasswordSchema.safeParse(password)
+    if (!parsedPassword.success) {
+      toast.error(
+        parsedPassword.error.issues[0]?.message ||
+          "Enter your password to start two-factor setup",
+      )
       return
     }
 
@@ -136,7 +144,7 @@ export function TwoFactorSettingsCard() {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          password,
+          password: parsedPassword.data,
           issuer: "dryAPI",
         }),
       })
@@ -160,8 +168,15 @@ export function TwoFactorSettingsCard() {
   }
 
   async function handleVerifySetup() {
-    if (!verificationCode.trim()) {
-      toast.error("Enter the 6-digit code from your authenticator app")
+    const parsedCode = twoFactorVerificationCodeSchema.safeParse(
+      verificationCode,
+    )
+
+    if (!parsedCode.success) {
+      toast.error(
+        parsedCode.error.issues[0]?.message ||
+          "Enter the 6-digit code from your authenticator app",
+      )
       return
     }
 
@@ -175,7 +190,7 @@ export function TwoFactorSettingsCard() {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          code: verificationCode.trim(),
+          code: parsedCode.data,
           trustDevice: true,
         }),
       })
@@ -201,8 +216,13 @@ export function TwoFactorSettingsCard() {
   }
 
   async function handleDisable() {
-    if (!password.trim()) {
-      toast.error("Enter your password to disable two-factor authentication")
+    const parsedPassword = twoFactorPasswordSchema.safeParse(password)
+
+    if (!parsedPassword.success) {
+      toast.error(
+        parsedPassword.error.issues[0]?.message ||
+          "Enter your password to disable two-factor authentication",
+      )
       return
     }
 
@@ -216,7 +236,7 @@ export function TwoFactorSettingsCard() {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          password,
+          password: parsedPassword.data,
         }),
       })
 

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 import { verifyCloudflareAccess } from "@/lib/cloudflare-access";
 import {
@@ -7,11 +6,7 @@ import {
   isCrmWorkflowAutomationsEnabled,
   isWorkflowKindEnabled,
 } from "@/lib/feature-flags";
-
-const workflowDispatchSchema = z.object({
-  kind: z.string().trim().min(1),
-  payload: z.record(z.string(), z.unknown()).optional().default({}),
-});
+import { crmWorkflowDispatchSchema } from "@/lib/input-validation-schemas";
 
 function resolveDispatchConfig() {
   const dispatchUrl =
@@ -50,7 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const parsed = workflowDispatchSchema.safeParse(
+  const parsed = crmWorkflowDispatchSchema.safeParse(
     await request.json().catch(() => ({})),
   );
 

@@ -42,6 +42,10 @@ import {
 } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  crmMailingListSchema,
+  crmWorkflowDispatchSchema,
+} from "@/lib/input-validation-schemas";
 import type {
   CrmDashboardData,
   CrmLead,
@@ -165,16 +169,28 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
       source: "crm-dashboard",
     };
 
+    const parsedWorkflow = crmWorkflowDispatchSchema.safeParse({
+      kind: workflowKind,
+      payload,
+    });
+
+    if (!parsedWorkflow.success) {
+      const message =
+        parsedWorkflow.error.issues[0]?.message || "Workflow dispatch failed.";
+      setWorkflowStatus(message);
+      toast.error("Workflow dispatch failed", {
+        description: message,
+      });
+      return;
+    }
+
     try {
       const response = await fetch("/api/crm/workflows/dispatch", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          kind: workflowKind,
-          payload,
-        }),
+        body: JSON.stringify(parsedWorkflow.data),
       });
 
       const body = (await response
@@ -215,16 +231,29 @@ export function CrmDashboard({ initialData }: CrmDashboardProps) {
 
     setMailingStatus("Syncing contact to mailing list...");
 
+    const parsedMailingContact = crmMailingListSchema.safeParse({
+      ...mailingForm,
+      tags: ["crm", "dryapi"],
+    });
+
+    if (!parsedMailingContact.success) {
+      const message =
+        parsedMailingContact.error.issues[0]?.message ||
+        "Unable to sync mailing list contact.";
+      setMailingStatus(message);
+      toast.error("Mailing list sync failed", {
+        description: message,
+      });
+      return;
+    }
+
     try {
       const response = await fetch("/api/crm/mailing-list", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          ...mailingForm,
-          tags: ["crm", "dryapi"],
-        }),
+        body: JSON.stringify(parsedMailingContact.data),
       });
 
       const body = (await response.json().catch(() => ({}))) as MailingResponse;

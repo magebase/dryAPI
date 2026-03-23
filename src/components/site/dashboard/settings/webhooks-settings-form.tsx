@@ -227,7 +227,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
       }
     },
     onSuccess: (result) => {
-      form.setFieldValue(`webhooks.${result.index}`, result.webhook)
+      form.setFieldValue(`webhooks[${result.index}]`, result.webhook)
       if (result.ok) {
         toast.success("Webhook validated", {
           description: result.message,
@@ -243,8 +243,10 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
     },
   })
 
+  const initialFormValues = webhooksSettingsQuery.data ?? DASHBOARD_SETTINGS_DEFAULTS.webhooks
+
   const form = useForm({
-    defaultValues: DASHBOARD_SETTINGS_DEFAULTS.webhooks,
+    defaultValues: initialFormValues,
     validators: {
       onSubmit: dashboardWebhooksSettingsFormSchema,
     },
@@ -259,7 +261,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
     }
   }, [form, webhooksSettingsQuery.data])
 
-  const webhooks = form.state.values.webhooks
+  const webhooks = form.useStore((state) => state.values.webhooks)
   const canSave = webhooks.length === 0 || webhooks.every((webhook) => {
     const state = normalizeValidationState(webhook.health)
     return state === "healthy" && webhook.health.lastStatusCode === 200
@@ -353,7 +355,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                   <TableRow key={webhook.id} className="align-top">
                     <TableCell className="align-top">
                       <form.Field
-                        name={`webhooks.${index}.name`}
+                        name={`webhooks[${index}].name`}
                         children={(field) => {
                           const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
                           const errorMessage = formatFieldError(field.state.meta.errors[0])
@@ -379,7 +381,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                       <div className="space-y-2">
                         <div className="flex items-start gap-2">
                           <form.Field
-                            name={`webhooks.${index}.endpointUrl`}
+                            name={`webhooks[${index}].endpointUrl`}
                             children={(field) => {
                               const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
                               const errorMessage = formatFieldError(field.state.meta.errors[0])
@@ -394,7 +396,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                                     onBlur={field.handleBlur}
                                     onChange={(event) => {
                                       field.handleChange(event.target.value)
-                                      form.setFieldValue(`webhooks.${index}.health`, {
+                                      form.setFieldValue(`webhooks[${index}].health`, {
                                         ...webhook.health,
                                         validationStatus: "unknown",
                                         validationMessage: "",
@@ -418,7 +420,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                             aria-label={`Validate ${webhook.name || `webhook ${index + 1}`}`}
                             disabled={isValidationPending || !webhook.endpointUrl.trim() || !webhook.signingSecret.trim()}
                             onClick={() => {
-                              form.setFieldValue(`webhooks.${index}.health`, {
+                              form.setFieldValue(`webhooks[${index}].health`, {
                                 ...webhook.health,
                                 validationStatus: "checking",
                                 validationMessage: "",
@@ -445,7 +447,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
 
                     <TableCell className="align-top">
                       <form.Field
-                        name={`webhooks.${index}.signingSecret`}
+                        name={`webhooks[${index}].signingSecret`}
                         children={(field) => {
                           const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
                           const errorMessage = formatFieldError(field.state.meta.errors[0])
@@ -461,7 +463,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                                   onBlur={field.handleBlur}
                                   onChange={(event) => {
                                     field.handleChange(event.target.value)
-                                    form.setFieldValue(`webhooks.${index}.health`, {
+                                    form.setFieldValue(`webhooks[${index}].health`, {
                                       ...webhook.health,
                                       validationStatus: "unknown",
                                       validationMessage: "",
@@ -476,7 +478,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                                   variant="outline"
                                   onClick={() => {
                                     field.handleChange(randomSecret())
-                                    form.setFieldValue(`webhooks.${index}.health`, {
+                                    form.setFieldValue(`webhooks[${index}].health`, {
                                       ...webhook.health,
                                       validationStatus: "unknown",
                                       validationMessage: "",

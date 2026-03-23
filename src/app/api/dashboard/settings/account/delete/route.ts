@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { resolveConfiguredBalance } from "@/lib/configured-balance";
 import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing";
+import { internalWorkerFetch } from "@/lib/internal-worker-fetch";
 
 export async function POST(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
@@ -31,12 +32,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json(
-    {
-      ok: true,
-      message: "Delete request accepted for manual review.",
-      next: "Contact support@dryapi.ai to complete account deletion.",
+  const response = await internalWorkerFetch({
+    path: "/api/auth/delete-user",
+    fallbackOrigin: request.nextUrl.origin,
+    init: {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        accept: "application/json",
+        cookie: request.headers.get("cookie") || "",
+      },
     },
-    { status: 202 },
-  );
+  })
+
+  return new Response(response.body, {
+    status: response.status,
+    headers: response.headers,
+  })
 }

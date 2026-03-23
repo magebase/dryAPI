@@ -71,7 +71,7 @@ describe("dashboard settings store integration", () => {
     expect(settings.general.email).toBe("")
     expect(settings.general.timezone).toBe("UTC")
     expect(settings.security.sessionTimeoutMinutes).toBe("120")
-    expect(settings.webhooks.sendOnCompleted).toBe(true)
+    expect(settings.webhooks.webhooks).toEqual([])
   })
 
   it("persists each section and loads merged values from database", async () => {

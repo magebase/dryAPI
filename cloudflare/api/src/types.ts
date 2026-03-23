@@ -28,6 +28,12 @@ export type CloudflareQueueBinding = {
   send: (message: unknown) => Promise<void>
 }
 
+export type AccountExportQueueMessage = {
+  requestId: string
+  userEmail: string
+  requestedAt: string
+}
+
 export type KvNamespaceBinding = {
   get: (key: string) => Promise<string | null>
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>
@@ -94,6 +100,7 @@ export type WorkerBindings = {
   RUNPOD_QUEUE_METRICS_HOT_TTL_SECONDS?: string
   RUNPOD_PRICING_ANALYTICS?: AnalyticsEngineDatasetBinding
   RUNPOD_BATCH_QUEUE?: CloudflareQueueBinding
+  ACCOUNT_EXPORT_QUEUE?: CloudflareQueueBinding
   QUEUE_METRICS_KV?: KvNamespaceBinding
   WEBHOOK_SIGNING_SECRET?: string
   WEBHOOK_TIMEOUT_MS?: string

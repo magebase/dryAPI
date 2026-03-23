@@ -2,6 +2,7 @@ import type { Hono } from 'hono'
 
 import type { WorkerEnv } from '../../types'
 import { registerAudioTranscriptionsRoute } from './audio-transcriptions'
+import { registerAccountExportsRoute } from './account-exports'
 import { registerChatCompletionsRoute } from './chat-completions'
 import { registerClientBalanceRoute } from './client-balance'
 import { registerEmbeddingsRoute } from './embeddings'
@@ -23,6 +24,7 @@ import { registerRunpodStreamRoute } from './runpod-stream'
 import { registerWebhookTestRoute } from './webhooks-test'
 
 export function registerV1Routes(app: Hono<WorkerEnv>) {
+  registerAccountExportsRoute(app)
   registerChatCompletionsRoute(app)
   registerClientBalanceRoute(app)
   registerImageGenerationsRoute(app)

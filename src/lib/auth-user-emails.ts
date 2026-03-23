@@ -1,4 +1,5 @@
 import { buildEmailBranding, resolveCurrentEmailBranding } from "@/emails/brand"
+import { DeleteAccountVerificationEmail } from "@/emails/delete-account-verification-email"
 import { PasswordResetEmail } from "@/emails/password-reset-email"
 import { VerifyEmail } from "@/emails/verify-email"
 import { WelcomeEmail } from "@/emails/welcome-email"
@@ -24,6 +25,12 @@ export type PasswordResetEmailPayload = {
 export type WelcomeEmailPayload = {
   user: AuthEmailUser
   request?: Request
+}
+
+export type DeleteAccountVerificationEmailPayload = {
+  user: AuthEmailUser
+  url: string
+  token: string
 }
 
 function resolveFallbackBranding(fromName: string, fromEmail: string) {
@@ -173,5 +180,39 @@ export async function sendWelcomeEmail({
       name: user.name || undefined,
     }),
     tags: ["auth", "welcome"],
+  })
+}
+
+export async function sendAuthDeleteAccountVerificationEmail({
+  user,
+  url,
+}: DeleteAccountVerificationEmailPayload): Promise<void> {
+  const { brevoApiKey, fromEmail, fromName } = resolveAuthSender()
+  if (!brevoApiKey) {
+    console.warn("[auth] BREVO_API_KEY is not set; delete account verification email not sent.", {
+      email: user.email,
+      verificationUrl: url,
+    })
+    return
+  }
+
+  const branding = await resolveAuthEmailBranding(fromName, fromEmail)
+
+  await sendBrevoReactEmail({
+    apiKey: brevoApiKey,
+    from: {
+      email: fromEmail,
+      name: fromName,
+    },
+    to: [{
+      email: user.email,
+      name: user.name || undefined,
+    }],
+    subject: `Confirm your ${branding.mark} account deletion`,
+    react: DeleteAccountVerificationEmail({
+      branding,
+      verificationUrl: url,
+    }),
+    tags: ["auth", "delete-account"],
   })
 }

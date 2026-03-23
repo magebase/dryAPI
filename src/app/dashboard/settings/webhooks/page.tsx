@@ -12,7 +12,7 @@ export default async function DashboardSettingsWebhooksPage() {
   return (
     <SettingsPageCard
       title="Webhooks"
-      description="Send job lifecycle events to your systems with signature verification and event-level controls."
+      description="Configure multiple signed webhook destinations, validate each one before saving, and track delivery health from one dashboard."
       icon={BellRing}
     >
       <WebhooksSettingsForm initialValues={initialValues} />

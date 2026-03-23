@@ -71,6 +71,7 @@ export function AccountSettingsPanel({
   const [reloadToken, setReloadToken] = useState(0);
   const [signOutPending, setSignOutPending] = useState(false);
   const [signOutOthersPending, setSignOutOthersPending] = useState(false);
+  const [exportRequestPending, setExportRequestPending] = useState(false);
   const [deleteRequestPending, setDeleteRequestPending] = useState(false);
   const [activeSessions, setActiveSessions] = useState<SessionRecord[]>(
     initialSessions ?? [],
@@ -213,6 +214,44 @@ export function AccountSettingsPanel({
     }
   }
 
+  async function handleExportRequest() {
+    if (exportRequestPending) {
+      return;
+    }
+
+    setExportRequestPending(true);
+
+    try {
+      const response = await fetch("/api/dashboard/settings/account/export", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+        next?: string;
+        request_id?: string;
+        error?: string;
+      } | null;
+
+      if (!response.ok) {
+        toast.error(payload?.message || "Unable to queue account export.");
+        return;
+      }
+
+      toast.success("Export queued", {
+        description:
+          payload?.next ||
+          "Check your email for the secure export link and OTP.",
+      });
+    } catch {
+      toast.error("Unable to queue account export.");
+    } finally {
+      setExportRequestPending(false);
+    }
+  }
+
   async function handleDeleteRequest() {
     if (deleteRequestPending) {
       return;
@@ -248,10 +287,10 @@ export function AccountSettingsPanel({
         return;
       }
 
-      toast.info("Delete account request", {
+      toast.success("Delete verification sent", {
         description:
           payload?.next ||
-          "Contact support@dryapi.ai to complete account deletion.",
+          "Check your email to confirm account deletion.",
       });
     } catch {
       toast.error("Unable to submit delete account request.");
@@ -366,14 +405,10 @@ export function AccountSettingsPanel({
           <Button
             type="button"
             variant="outline"
-            onClick={() =>
-              toast.info("Export request queued", {
-                description:
-                  "You will receive a download link by email when ready.",
-              })
-            }
+            onClick={handleExportRequest}
+            disabled={exportRequestPending}
           >
-            Export account data
+            {exportRequestPending ? "Queuing export..." : "Export account data"}
           </Button>
           <Button
             type="button"
@@ -414,8 +449,8 @@ export function AccountSettingsPanel({
           Danger zone
         </p>
         <p className="mt-1 text-xs text-red-600/90 dark:text-red-300/90">
-          Permanent account deletion requires manual review to prevent
-          accidental data loss.
+          Permanent account deletion requires email verification before the
+          request is finalized.
         </p>
         <Button
           type="button"

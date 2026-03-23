@@ -37,67 +37,11 @@ import {
   buildEscalationFollowupNote,
   extractVisitorContact,
 } from "@/lib/chat-followup";
+import { chatRequestSchema } from "@/lib/input-validation-schemas";
 import { persistModerationRejectionAttempt } from "@/lib/moderation-rejection-store";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { recordStripeMeterUsage } from "@/lib/stripe-metering";
 import { getRequestIp, verifyTurnstileToken } from "@/lib/turnstile";
-
-const chatMessageSchema = z.object({
-  role: z.enum(["user", "assistant"]),
-  content: z.string().trim().min(1),
-});
-
-const contactCaptureSchema = z
-  .object({
-    email: z.string().trim().optional().default(""),
-    phone: z.string().trim().optional().default(""),
-  })
-  .superRefine((value, ctx) => {
-    if (!value.email && !value.phone) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Provide an email or phone for chat contact capture.",
-      });
-    }
-
-    if (value.email && !z.string().email().safeParse(value.email).success) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Contact capture email must be valid.",
-        path: ["email"],
-      });
-    }
-
-    if (value.phone) {
-      const digitsOnly = value.phone.replace(/\D/g, "");
-      if (digitsOnly.length < 8 || digitsOnly.length > 15) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Contact capture phone must include 8-15 digits.",
-          path: ["phone"],
-        });
-      }
-    }
-  });
-
-const chatRequestSchema = z
-  .object({
-    messages: z.array(chatMessageSchema).optional().default([]),
-    pagePath: z.string().trim().default("/"),
-    visitorId: z.string().trim().default("anonymous"),
-    allowEscalation: z.boolean().optional().default(true),
-    turnstileToken: z.string().trim().optional().default(""),
-    contactCapture: contactCaptureSchema.optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (!value.contactCapture && value.messages.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "No user message provided.",
-        path: ["messages"],
-      });
-    }
-  });
 
 const CHAT_FREQUENCY_WINDOW_MS = 5 * 60 * 1000;
 const CHAT_FREQUENCY_THRESHOLD = 6;

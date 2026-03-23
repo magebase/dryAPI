@@ -28,9 +28,11 @@ import { CheckoutSuccessEmail } from "@/emails/checkout-success-email";
 import { SubscriptionCanceledEmail } from "@/emails/subscription-canceled-email";
 import {
   sendAuthPasswordResetEmail,
+  sendAuthDeleteAccountVerificationEmail,
   sendAuthVerificationEmail,
   sendWelcomeEmail,
   type PasswordResetEmailPayload,
+  type DeleteAccountVerificationEmailPayload,
   type VerificationEmailPayload,
 } from "@/lib/auth-user-emails";
 import {
@@ -1327,6 +1329,21 @@ function buildAuthOptions(): Parameters<typeof betterAuth>[0] {
     trustedOrigins: resolveTrustedOrigins(baseURL),
     secret: process.env.BETTER_AUTH_SECRET,
     ...(database ? { database } : {}),
+    user: {
+      deleteUser: {
+        enabled: true,
+        sendDeleteAccountVerification: async (data) => {
+          void sendAuthDeleteAccountVerificationEmail(
+            data as DeleteAccountVerificationEmailPayload,
+          ).catch((error) => {
+            console.error(
+              "[auth] Failed to send delete account verification email",
+              error,
+            )
+          })
+        },
+      },
+    },
     databaseHooks: {
       session: {
         create: {

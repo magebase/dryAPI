@@ -142,6 +142,15 @@ queue = "dryapi-runpod-batch"
 max_batch_size = 100
 max_batch_timeout = 20
 
+[[queues.producers]]
+binding = "ACCOUNT_EXPORT_QUEUE"
+queue = "dryapi-account-exports"
+
+[[queues.consumers]]
+queue = "dryapi-account-exports"
+max_batch_size = 10
+max_batch_timeout = 30
+
 [env.test]
 workers_dev = true
 
@@ -291,6 +300,15 @@ queue = "dryapi-runpod-batch-dev"
 max_batch_size = 100
 max_batch_timeout = 20
 
+[[env.dev.queues.producers]]
+binding = "ACCOUNT_EXPORT_QUEUE"
+queue = "dryapi-account-exports-dev"
+
+[[env.dev.queues.consumers]]
+queue = "dryapi-account-exports-dev"
+max_batch_size = 10
+max_batch_timeout = 30
+
 [[env.test.queues.producers]]
 binding = "RUNPOD_BATCH_QUEUE"
 queue = "dryapi-runpod-batch-test"
@@ -299,3 +317,12 @@ queue = "dryapi-runpod-batch-test"
 queue = "dryapi-runpod-batch-test"
 max_batch_size = 100
 max_batch_timeout = 20
+
+[[env.test.queues.producers]]
+binding = "ACCOUNT_EXPORT_QUEUE"
+queue = "dryapi-account-exports-test"
+
+[[env.test.queues.consumers]]
+queue = "dryapi-account-exports-test"
+max_batch_size = 10
+max_batch_timeout = 30

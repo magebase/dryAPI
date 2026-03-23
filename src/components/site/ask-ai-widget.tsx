@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { createAIShareURLs } from "citemet"
 import { BrainCircuit, ExternalLink } from "lucide-react"
+import { z } from "zod"
 
 import {
   ChatGptIcon,
@@ -29,11 +30,15 @@ const PROVIDERS = [
   { key: "mistral" as const, name: "Mistral", Icon: MistralIcon },
 ]
 
+const askAiQuestionSchema = z.string().trim().min(1).max(280)
+
 export function AskAiWidget({ pageUrl, brandName }: AskAiWidgetProps) {
   const [question, setQuestion] = useState("")
 
-  const effectiveQuestion = question.trim()
-    ? question.trim()
+  const parsedQuestion = askAiQuestionSchema.safeParse(question)
+
+  const effectiveQuestion = parsedQuestion.success
+    ? parsedQuestion.data
     : `Help me understand the models and capabilities available on the {brandName} AI playground`
 
   const urls = createAIShareURLs({

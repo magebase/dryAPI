@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 import { verifyCloudflareAccess } from "@/lib/cloudflare-access";
 import {
   isCrmDashboardEnabled,
   isCrmMailingListSyncEnabled,
 } from "@/lib/feature-flags";
-
-const mailingListSchema = z.object({
-  email: z.string().trim().email(),
-  firstName: z.string().trim().optional().default(""),
-  lastName: z.string().trim().optional().default(""),
-  company: z.string().trim().optional().default(""),
-  tags: z.array(z.string().trim()).optional().default([]),
-});
+import { crmMailingListSchema } from "@/lib/input-validation-schemas";
 
 const DEFAULT_BREVO_MARKETING_LIST_NAME = "GenFix CRM Leads";
 
@@ -217,7 +209,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const parsed = mailingListSchema.safeParse(
+  const parsed = crmMailingListSchema.safeParse(
     await request.json().catch(() => ({})),
   );
 

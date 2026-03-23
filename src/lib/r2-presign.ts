@@ -1,6 +1,6 @@
 import "server-only"
 
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 import type { UploadPresignRequest } from "@/lib/upload-presign-schema"
@@ -76,4 +76,21 @@ export async function createR2PresignedUpload(request: UploadPresignRequest) {
     publicUrl: `${context.config.publicUrl.replace(/\/$/, "")}/${key}`,
     expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
   }
+}
+
+export async function createR2SignedDownloadUrl(key: string): Promise<string | null> {
+  const context = getClient()
+
+  if (!context) {
+    return null
+  }
+
+  const command = new GetObjectCommand({
+    Bucket: context.config.bucket,
+    Key: key,
+  })
+
+  return getSignedUrl(context.client, command, {
+    expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
+  })
 }

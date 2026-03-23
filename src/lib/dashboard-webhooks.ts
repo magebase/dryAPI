@@ -1,5 +1,7 @@
 import "server-only"
 
+import { createHmac } from "node:crypto"
+
 import { dashboardWebhookEntrySchema, type DashboardWebhookEntry } from "@/lib/dashboard-settings-schema"
 import { getDashboardSettingsForUser, updateDashboardWebhookHealth } from "@/lib/dashboard-settings-store"
 import { sendWebhookFailureNotification } from "@/lib/dashboard-webhook-emails"
@@ -10,15 +12,8 @@ function nowMs(): number {
   return Date.now()
 }
 
-async function hmacHex(secret: string, payload: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-  )
-  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))
-  return [...new Uint8Array(signature)].map((chunk) => chunk.toString(16).padStart(2, "0")).join("")
+function hmacHex(secret: string, payload: string): string {
+  return createHmac("sha256", secret).update(payload).digest("hex")
 }
 
 function buildValidationPayload(webhook: DashboardWebhookEntry, checkedAtIso: string) {
@@ -48,7 +43,7 @@ export async function probeWebhookEndpoint(webhook: DashboardWebhookEntry): Prom
   const checkedAtIso = new Date(checkedAt).toISOString()
   const body = buildValidationPayload(webhook, checkedAtIso)
   const bodyText = JSON.stringify(body)
-  const signature = await hmacHex(webhook.signingSecret, `${Math.floor(checkedAt / 1000)}.${bodyText}`)
+  const signature = hmacHex(webhook.signingSecret, `${Math.floor(checkedAt / 1000)}.${bodyText}`)
 
   try {
     const response = await fetch(webhook.endpointUrl, {
@@ -152,7 +147,8 @@ export async function validateDashboardWebhook(args: {
   const existing = await getDashboardSettingsForUser(args.userEmail)
   const existingWebhook = existing.webhooks.webhooks.find((entry) => entry.id === args.webhook.id) ?? null
   const probeResult = await probeWebhookEndpoint(args.webhook)
-  const alerted = Boolean(existingWebhook && shouldSendFailureAlert({ existingWebhook, probeResult }))
+  const shouldPersistHealth = Boolean(args.persistHealth && existingWebhook)
+  const alerted = Boolean(shouldPersistHealth && existingWebhook && shouldSendFailureAlert({ existingWebhook, probeResult }))
 
   if (alerted && existingWebhook) {
     await sendWebhookFailureNotification({
@@ -177,7 +173,7 @@ export async function validateDashboardWebhook(args: {
     }),
   }
 
-  if (args.persistHealth && existingWebhook) {
+  if (shouldPersistHealth && existingWebhook) {
     await updateDashboardWebhookHealth(
       {
         userEmail: args.userEmail,

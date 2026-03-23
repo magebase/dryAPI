@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
+import { z } from "zod";
 import {
   ArrowRight,
   Clock3,
@@ -56,6 +57,8 @@ import type {
   DeapiPricingPermutation,
   DeapiPricingSnapshot,
 } from "@/types/deapi-pricing";
+
+const pricingSearchSchema = z.string().trim().max(120)
 
 const EMPTY_PERMUTATIONS: DeapiPricingPermutation[] = [];
 const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
@@ -614,7 +617,12 @@ export function PricingTable({
                   <Input
                     className="bg-slate-50/50 pl-9"
                     onChange={(event) => {
-                      setSearchInput(event.target.value);
+                      const parsedSearch = pricingSearchSchema.safeParse(event.target.value)
+                      setSearchInput(
+                        parsedSearch.success
+                          ? parsedSearch.data
+                          : event.target.value.trim().slice(0, 120),
+                      )
                       setCurrentPage(1);
                     }}
                     placeholder="Search model, category, params"

@@ -10,6 +10,7 @@ import { BillingPaymentFailedEmail } from "@/emails/billing-payment-failed-email
 import { NewsletterCampaignEmail } from "@/emails/newsletter-campaign-email"
 import { OrganizationInvitationEmail } from "@/emails/organization-invitation-email"
 import { PasswordResetEmail } from "@/emails/password-reset-email"
+import { WebhookFailureEmail } from "@/emails/webhook-failure-email"
 import { SubscriptionCanceledEmail } from "@/emails/subscription-canceled-email"
 import { TwoFactorOtpEmail } from "@/emails/two-factor-otp-email"
 
@@ -136,6 +137,35 @@ describe("email catalog", () => {
     expect(canceledHtml).toContain("agentAPI")
     expect(canceledHtml).toContain("Subscription canceled")
     expect(canceledHtml).toContain("Scale")
+  })
+
+  it("renders webhook failure alerts with validation guidance", async () => {
+    const branding = buildEmailBranding({
+      brandKey: "dryapi",
+      displayName: "dryAPI",
+      mark: "dryAPI",
+      homeUrl: "https://dryapi.dev",
+      supportEmail: "support@dryapi.dev",
+      salesEmail: "sales@dryapi.dev",
+    })
+
+    const html = await render(
+      WebhookFailureEmail({
+        branding,
+        webhookName: "Primary events",
+        webhookUrl: "https://hooks.example.com/dryapi",
+        dashboardUrl: "https://dryapi.dev/dashboard/settings/webhooks",
+        checkedAt: "Mar 17, 2026 17:30 UTC",
+        lastStatusCode: "500",
+        previousSuccessAt: "Mar 17, 2026 15:00 UTC",
+        failureCountLabel: "2",
+      }),
+    )
+
+    expect(html).toContain("Webhook stopped returning 200")
+    expect(html).toContain("Primary events")
+    expect(html).toContain("hooks.example.com")
+    expect(html).toContain("HTTP 200")
   })
 
   it("renders two-factor OTP template with code and security notices", async () => {
