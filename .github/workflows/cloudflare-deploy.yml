@@ -172,6 +172,9 @@ jobs:
           printf 'SITE_URL=%q\n' "${site_url}" >> "$GITHUB_ENV"
           printf 'SYNC_SECRET_CLOUDFLARE_AI_SEARCH_SOURCE=%q\n' "${site_url}" >> "$GITHUB_ENV"
 
+      - name: Ensure Cloudflare notification policies
+        run: pnpm cf:notifications:ensure
+
       - name: Ensure AI Search instance is bound to the production domain
         run: pnpm cf:chatbot:ai-search:ensure
 

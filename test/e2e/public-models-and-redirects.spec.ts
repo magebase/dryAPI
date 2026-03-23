@@ -1,24 +1,26 @@
 // @vitest-environment node
 
 import { expect as playwrightExpect } from "@playwright/test"
-import { afterAll, beforeAll, describe, it } from "vitest"
+import { afterAll, beforeAll, describe } from "vitest"
 import type { Page } from "playwright"
 
 import {
-  createLocalSiteBrowserHarness,
-  shouldRunLocalSiteE2E,
+  createDashboardBrowserHarness,
+  expectDashboardNavigation,
+  liveDashboardTest,
   siteUrl,
-  type LocalSiteBrowserHarness,
-} from "./helpers/local-site-browser"
+  type DashboardBrowserHarness,
+} from "./helpers/dashboard-browser"
+import { shouldRunLocalSiteE2E } from "./helpers/local-site-browser"
 
-let harness: LocalSiteBrowserHarness | null = null
+let harness: DashboardBrowserHarness | null = null
 
 beforeAll(async () => {
   if (!shouldRunLocalSiteE2E) {
     return
   }
 
-  harness = await createLocalSiteBrowserHarness("user")
+  harness = await createDashboardBrowserHarness("user")
 })
 
 afterAll(async () => {
@@ -52,16 +54,7 @@ async function readFirstModelRoutePair(page: Page) {
 }
 
 describe("public models and route redirects e2e", () => {
-  function liveTest(name: string, fn: () => Promise<void>) {
-    if (shouldRunLocalSiteE2E) {
-      it(name, { timeout: 60_000 }, fn)
-      return
-    }
-
-    it.skip(name, fn)
-  }
-
-  liveTest("renders the public model catalog and a model detail page", async () => {
+  liveDashboardTest("renders the public model catalog and a model detail page", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
     }
@@ -98,7 +91,7 @@ describe("public models and route redirects e2e", () => {
     }
   })
 
-  liveTest("redirects dashboard model routes back to the public model routes", async () => {
+  liveDashboardTest("renders the authenticated dashboard model catalog and copy action", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
     }
@@ -106,6 +99,45 @@ describe("public models and route redirects e2e", () => {
     const { context, page } = await harness.createPage()
 
     try {
+      await page.goto("/dashboard/models")
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/models`)
+      await expectDashboardNavigation(page)
+      await playwrightExpect(page.getByRole("heading", { name: "Available Inference Models" })).toBeVisible()
+      await playwrightExpect(page.getByText("Model Inventory")).toBeVisible()
+      await playwrightExpect(page.getByText("Total Models")).toBeVisible()
+      await playwrightExpect(page.getByText("Categories")).toBeVisible()
+
+      const firstCard = page.locator("article[data-gradient-name]").first()
+      const copyButton = firstCard.getByRole("button", { name: /Copy model slug/ })
+      const copyLabel = await copyButton.getAttribute("aria-label")
+
+      if (!copyLabel) {
+        throw new Error("Expected the model slug copy button to expose an aria-label")
+      }
+
+      const expectedSlug = copyLabel.replace(/^Copy model slug /, "")
+
+      await copyButton.click()
+
+      await playwrightExpect.poll(async () => page.evaluate(async () => navigator.clipboard.readText())).toBe(
+        expectedSlug,
+      )
+
+      const detailHref = await firstCard.getByRole("link", { name: "Details" }).getAttribute("href")
+      if (!detailHref) {
+        throw new Error("Expected the first dashboard model card to expose a detail link")
+      }
+
+      const publicDetailHref = detailHref.replace(/^\/dashboard/, "")
+
+      await firstCard.getByRole("link", { name: "Details" }).click()
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}${publicDetailHref}`)
+      await playwrightExpect(page.getByText("Model Profile")).toBeVisible()
+      await playwrightExpect(page.getByRole("link", { name: "Detailed Pricing" })).toBeVisible()
+      await playwrightExpect(page.getByRole("link", { name: "Category Pricing" })).toBeVisible()
+
       await page.goto("/models")
       const routePair = await readFirstModelRoutePair(page)
 
@@ -128,7 +160,31 @@ describe("public models and route redirects e2e", () => {
     }
   })
 
-  liveTest("returns 404-like not-found content for disabled or unknown routes", async () => {
+  liveDashboardTest("preserves sidebar anchor navigation on the dashboard model catalog", async () => {
+    if (!harness) {
+      throw new Error("Local site browser harness was not initialized")
+    }
+
+    const { context, page } = await harness.createPage()
+
+    try {
+      await page.goto("/dashboard/models")
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/models`)
+      await playwrightExpect(page.getByRole("link", { name: "Text To Image" })).toBeVisible()
+
+      await page.locator('a[href="/dashboard/models#models-task-text-to-image"]').click()
+
+      await playwrightExpect(page).toHaveURL(
+        `${siteUrl}/dashboard/models#models-task-text-to-image`,
+      )
+      await playwrightExpect(page.getByRole("heading", { name: "Text To Image" })).toBeVisible()
+    } finally {
+      await context.close()
+    }
+  })
+
+  liveDashboardTest("returns 404-like not-found content for disabled or unknown routes", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
     }

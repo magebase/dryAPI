@@ -34,6 +34,8 @@ export const shouldRunLocalSiteE2E = process.env["LOCAL_SITE_E2E"] === "1"
 export const siteUrl =
   process.env["LOCAL_SITE_E2E_BASE_URL"]?.trim() || "http://localhost:3000"
 
+const clipboardPermissions = ["clipboard-read", "clipboard-write"] as const
+
 function sqlQuote(value: string): string {
   return `'${value.replace(/'/g, "''")}'`
 }
@@ -144,6 +146,7 @@ export async function createLocalSiteBrowserHarness(
         width: 1440,
         height: 1200,
       },
+      permissions: [...clipboardPermissions],
     })
 
     try {
@@ -171,6 +174,7 @@ export async function createLocalSiteBrowserHarness(
           width: 1440,
           height: 1200,
         },
+        permissions: [...clipboardPermissions],
       }
 
       if (options?.authenticated !== false) {

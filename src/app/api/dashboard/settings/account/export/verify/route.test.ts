@@ -22,7 +22,7 @@ vi.mock("@/lib/account-export-tokens", async () => {
     signAccountExportDownloadToken: signAccountExportDownloadTokenMock,
     verifyAccountExportRequestToken: verifyAccountExportRequestTokenMock,
   }
-}))
+})
 
 import { POST } from "@/app/api/dashboard/settings/account/export/verify/route"
 

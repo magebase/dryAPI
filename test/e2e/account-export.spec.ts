@@ -1,23 +1,24 @@
 // @vitest-environment node
 
 import { expect as playwrightExpect } from "@playwright/test"
-import { afterAll, beforeAll, describe, expect, it } from "vitest"
+import { afterAll, beforeAll, describe, expect } from "vitest"
 
 import {
-  createLocalSiteBrowserHarness,
-  shouldRunLocalSiteE2E,
+  createDashboardBrowserHarness,
+  liveDashboardTest,
   siteUrl,
-  type LocalSiteBrowserHarness,
-} from "./helpers/local-site-browser"
+  type DashboardBrowserHarness,
+} from "./helpers/dashboard-browser"
+import { shouldRunLocalSiteE2E } from "./helpers/local-site-browser"
 
-let harness: LocalSiteBrowserHarness | null = null
+let harness: DashboardBrowserHarness | null = null
 
 beforeAll(async () => {
   if (!shouldRunLocalSiteE2E) {
     return
   }
 
-  harness = await createLocalSiteBrowserHarness("user")
+  harness = await createDashboardBrowserHarness("user")
 })
 
 afterAll(async () => {
@@ -27,16 +28,7 @@ afterAll(async () => {
 })
 
 describe("account export e2e", () => {
-  function liveTest(name: string, fn: () => Promise<void>) {
-    if (shouldRunLocalSiteE2E) {
-      it(name, { timeout: 60_000 }, fn)
-      return
-    }
-
-    it.skip(name, fn)
-  }
-
-  liveTest("unlocks the export with a verified OTP response", async () => {
+  liveDashboardTest("unlocks the export with a verified OTP response", async () => {
     if (!harness) {
       throw new Error("Local site browser harness was not initialized")
     }
