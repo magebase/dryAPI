@@ -72,7 +72,6 @@ type PolicyFilter = {
 }
 
 type NotificationAlertType =
-  | "http_alert_origin_error"
   | "incident_alert"
   | "maintenance_event_notification"
   | "traffic_anomalies_alert"
@@ -335,16 +334,6 @@ function buildDesiredPolicies(input: {
   const mechanisms = buildMechanisms(input.recipients)
 
   const policies: Array<DesiredPolicySpec> = [
-    {
-      name: `${policyPrefix} origin error alerts`,
-      alertType: "http_alert_origin_error",
-      enabled: true,
-      description: `Notify ${input.brandDisplayName} support when Cloudflare detects elevated origin 5xx responses for ${input.siteHost}.`,
-      mechanisms,
-      filters: {
-        zones: [input.zoneId],
-      },
-    },
     {
       name: `${policyPrefix} incident alerts`,
       alertType: "incident_alert",

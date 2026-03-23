@@ -56,19 +56,6 @@ describe("buildDesiredPolicies", () => {
 
     expect(policies).toEqual([
       {
-        name: "dryapi (dryapi.dev) origin error alerts",
-        alertType: "http_alert_origin_error",
-        enabled: true,
-        description:
-          "Notify dryAPI support when Cloudflare detects elevated origin 5xx responses for dryapi.dev.",
-        mechanisms: {
-          email: [{ id: "support@dryapi.dev" }],
-        },
-        filters: {
-          zones: ["zone-root"],
-        },
-      },
-      {
         name: "dryapi (dryapi.dev) incident alerts",
         alertType: "incident_alert",
         enabled: true,
@@ -104,8 +91,8 @@ describe("buildDesiredPolicies", () => {
       enableTrafficAnomalies: true,
     })
 
-    expect(policies).toHaveLength(4)
-    expect(policies[3]).toMatchObject({
+    expect(policies).toHaveLength(3)
+    expect(policies[2]).toMatchObject({
       name: "dryapi (dryapi.dev) traffic anomaly alerts",
       alertType: "traffic_anomalies_alert",
       filters: {
@@ -125,6 +112,16 @@ describe("planPolicyOperations", () => {
       recipients: ["support@dryapi.dev"],
       enableTrafficAnomalies: false,
     })
+
+    const extraDesiredPolicy = {
+      name: "dryapi (dryapi.dev) extra alerts",
+      alertType: "incident_alert" as const,
+      enabled: true as const,
+      description: "Notify dryAPI support about an additional Cloudflare condition.",
+      mechanisms: desiredPolicies[0]?.mechanisms ?? {
+        email: [{ id: "support@dryapi.dev" }],
+      },
+    }
 
     const plan = planPolicyOperations(
       [
@@ -147,7 +144,7 @@ describe("planPolicyOperations", () => {
           filters: desiredPolicies[1].filters,
         },
       ],
-      desiredPolicies,
+      [...desiredPolicies, extraDesiredPolicy],
     )
 
     expect(plan.map((entry) => entry.kind)).toEqual(["unchanged", "update", "create"])

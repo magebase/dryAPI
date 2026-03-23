@@ -128,7 +128,7 @@ describe("dashboard overview and billing e2e", () => {
       await playwrightExpect(page.getByRole("button", { name: "Open Stripe Customer Portal" })).toBeDisabled()
       await playwrightExpect(page.getByRole("link", { name: "View Plans" })).toBeVisible()
 
-      await page.getByLabelText("Amount (USD)").fill("42")
+      await page.getByLabel("Amount (USD)").fill("42")
       await page.getByRole("button", { name: "Top up custom amount" }).click()
 
       await playwrightExpect(page).toHaveURL(/\/api\/dashboard\/billing\/top-up\?amount=42/)
@@ -191,8 +191,8 @@ describe("dashboard overview and billing e2e", () => {
       await page.goto("/dashboard/billing")
 
       await page.getByRole("checkbox", { name: "Enabled" }).check()
-      await page.getByLabelText("Charge amount (USD)").fill("75")
-      await page.getByLabelText("Monthly auto-top-up cap (USD)").fill("500")
+      await page.getByLabel("Charge amount (USD)").fill("75")
+      await page.getByLabel("Monthly auto-top-up cap (USD)").fill("500")
       await page.getByRole("button", { name: "Save auto top-up settings" }).click()
 
       await playwrightExpect(page.getByText("Auto top-up settings saved.")).toBeVisible()

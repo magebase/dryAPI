@@ -43,11 +43,11 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/general`)
       await playwrightExpect(page.getByRole("main").getByRole("heading", { name: "Settings" })).toBeVisible()
       await playwrightExpect(page.getByRole("heading", { name: "General" })).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Username")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Name and surname")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Email")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Company")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Timezone")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Username")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Name and surname")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Email")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Company")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Timezone")).toBeVisible()
       await playwrightExpect(page.getByRole("button", { name: "Save" })).toBeVisible()
     } finally {
       await context.close()
@@ -66,15 +66,15 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page.getByRole("main").getByRole("heading", { name: "Settings" })).toBeVisible()
       await playwrightExpect(page.getByRole("heading", { name: "General" })).toBeVisible()
 
-      await page.getByLabelText("Username").fill("dryapi-ops")
-      await page.getByLabelText("Name and surname").fill("DryAPI Operations")
+      await page.getByLabel("Username").fill("dryapi-ops")
+      await page.getByLabel("Name and surname").fill("DryAPI Operations")
 
       const timezoneTrigger = page.getByRole("combobox", { name: "Timezone" })
       await timezoneTrigger.click()
       await page.getByRole("option", { name: "Europe/London" }).click()
 
-      await playwrightExpect(page.getByLabelText("Username")).toHaveValue("dryapi-ops")
-      await playwrightExpect(page.getByLabelText("Name and surname")).toHaveValue("DryAPI Operations")
+      await playwrightExpect(page.getByLabel("Username")).toHaveValue("dryapi-ops")
+      await playwrightExpect(page.getByLabel("Name and surname")).toHaveValue("DryAPI Operations")
       await playwrightExpect(timezoneTrigger).toContainText("Europe/London")
     } finally {
       await context.close()
@@ -89,8 +89,8 @@ describe("dashboard settings e2e", () => {
     const { context, page } = await openDashboardPage(harness, "/dashboard/settings/general")
 
     try {
-      await page.getByLabelText("Username").fill("dryapi-qa")
-      await page.getByLabelText("Name and surname").fill("DryAPI QA")
+      await page.getByLabel("Username").fill("dryapi-qa")
+      await page.getByLabel("Name and surname").fill("DryAPI QA")
 
       const timezoneTrigger = page.getByRole("combobox", { name: "Timezone" })
       await timezoneTrigger.click()
@@ -99,8 +99,8 @@ describe("dashboard settings e2e", () => {
       await page.getByRole("button", { name: "Save" }).click()
 
       await playwrightExpect(page.getByText("General settings saved")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Username")).toHaveValue("dryapi-qa")
-      await playwrightExpect(page.getByLabelText("Name and surname")).toHaveValue("DryAPI QA")
+      await playwrightExpect(page.getByLabel("Username")).toHaveValue("dryapi-qa")
+      await playwrightExpect(page.getByLabel("Name and surname")).toHaveValue("DryAPI QA")
       await playwrightExpect(timezoneTrigger).toContainText("Europe/London")
     } finally {
       await context.close()
@@ -112,7 +112,7 @@ describe("dashboard settings e2e", () => {
       throw new Error("Local site browser harness was not initialized")
     }
 
-    const { context, page } = await openDashboardPage(harness, "/dashboard/settings/security")
+    const { context, page } = await harness.createPage()
 
     try {
       await expectDashboardNavigation(page)
@@ -122,7 +122,7 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page.getByText("Workspace Guardrails")).toBeVisible()
       await playwrightExpect(page.getByText("Session & Access")).toBeVisible()
       await playwrightExpect(page.getByRole("switch", { name: "Require 2FA" })).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Session timeout (minutes)")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Session timeout (minutes)")).toBeVisible()
       await playwrightExpect(page.getByRole("button", { name: "Save Changes" })).toBeVisible()
 
       const require2FaToggle = page.getByRole("switch", { name: "Require 2FA" })
@@ -133,10 +133,10 @@ describe("dashboard settings e2e", () => {
 
       await ipRestrictionToggle.click()
       await playwrightExpect(ipRestrictionToggle).toBeChecked()
-      await playwrightExpect(page.getByLabelText("Trusted IP addresses")).toBeEnabled()
+      await playwrightExpect(page.getByLabel("Trusted IP addresses")).toBeEnabled()
 
-      await page.getByLabelText("Session timeout (minutes)").fill("90")
-      await playwrightExpect(page.getByLabelText("Session timeout (minutes)")).toHaveValue("90")
+      await page.getByLabel("Session timeout (minutes)").fill("90")
+      await playwrightExpect(page.getByLabel("Session timeout (minutes)")).toHaveValue("90")
     } finally {
       await context.close()
     }
@@ -198,8 +198,12 @@ describe("dashboard settings e2e", () => {
         })
       })
 
-      await playwrightExpect(page.getByLabelText("Verify Password")).toBeVisible()
-      await page.getByLabelText("Verify Password").fill(harness.seededUser.password)
+      await page.goto("/dashboard/settings/security")
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/security`)
+
+      await playwrightExpect(page.getByLabel("Verify Password")).toBeVisible()
+      await page.getByLabel("Verify Password").fill(harness.seededUser.password)
 
       await page.getByRole("button", { name: "Enable 2FA" }).click()
 
@@ -261,8 +265,8 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page.getByRole("heading", { name: "Workspace" })).toBeVisible()
       await playwrightExpect(page.getByText("Your workspaces")).toBeVisible()
       await playwrightExpect(page.getByText("Member access")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Workspace name")).toBeVisible()
-      await playwrightExpect(page.getByLabelText("Workspace slug")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Workspace name")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Workspace slug")).toBeVisible()
       await playwrightExpect(page.getByRole("button", { name: "Create workspace" })).toBeVisible()
     } finally {
       await context.close()
@@ -324,7 +328,7 @@ describe("dashboard settings e2e", () => {
 
       await page.getByRole("button", { name: "+ Create API Key" }).click()
       await playwrightExpect(page.getByRole("dialog", { name: "Create API key" })).toBeVisible()
-      await page.getByLabelText("Name").fill("Production Gateway")
+      await page.getByLabel("Name").fill("Production Gateway")
       await page.getByRole("button", { name: "Create" }).click()
 
       const secretDialog = page.getByRole("dialog", { name: "Save your secret key" })
@@ -394,7 +398,7 @@ describe("dashboard settings e2e", () => {
       throw new Error("Local site browser harness was not initialized")
     }
 
-    const { context, page } = await openDashboardPage(harness, "/dashboard/settings/account")
+    const { context, page } = await harness.createPage()
 
     try {
       await page.route("**/api/dashboard/settings/account/export", async (route) => {
@@ -436,6 +440,10 @@ describe("dashboard settings e2e", () => {
           body: JSON.stringify({ success: true }),
         })
       })
+
+      await page.goto("/dashboard/settings/account")
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/account`)
 
       await page.getByRole("button", { name: "Export account data" }).click()
       await playwrightExpect(page.getByText("Export queued")).toBeVisible()
