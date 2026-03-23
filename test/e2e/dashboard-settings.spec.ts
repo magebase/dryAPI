@@ -1,7 +1,8 @@
 // @vitest-environment node
 
 import { expect as playwrightExpect } from "@playwright/test"
-import { afterAll, beforeAll, describe } from "vitest"
+import { createServer } from "node:http"
+import { afterAll, beforeAll, describe, expect } from "vitest"
 
 import {
   createDashboardBrowserHarness,
@@ -285,6 +286,92 @@ describe("dashboard settings e2e", () => {
 
       await playwrightExpect(page.getByText("No webhooks configured yet. Add one to start routing job events.")).toBeVisible()
     } finally {
+      await context.close()
+    }
+  })
+
+  liveDashboardTest("validates and saves a webhook configuration", async () => {
+    if (!harness) {
+      throw new Error("Local site browser harness was not initialized")
+    }
+
+    const probeRequests: Array<{
+      headers: Record<string, string | string[] | undefined>
+      body: string
+    }> = []
+
+    const probeServer = createServer((request, response) => {
+      let body = ""
+
+      request.on("data", (chunk) => {
+        body += chunk
+      })
+
+      request.on("end", () => {
+        probeRequests.push({
+          headers: request.headers,
+          body,
+        })
+
+        response.writeHead(200, { "content-type": "application/json" })
+        response.end(JSON.stringify({ ok: true }))
+      })
+    })
+
+    await new Promise<void>((resolve) => {
+      probeServer.listen(0, "127.0.0.1", resolve)
+    })
+
+    const address = probeServer.address()
+    if (!address || typeof address === "string") {
+      probeServer.close()
+      throw new Error("Failed to start the webhook probe server")
+    }
+
+    const webhookUrl = `http://127.0.0.1:${address.port}/webhook`
+    const { context, page } = await harness.createPage()
+
+    try {
+      await page.goto("/dashboard/settings/webhooks")
+
+      await playwrightExpect(page).toHaveURL(`${siteUrl}/dashboard/settings/webhooks`)
+      await page.getByRole("button", { name: "Add webhook" }).click()
+
+      await playwrightExpect(page.getByLabel("Webhook name")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Webhook URL")).toBeVisible()
+      await playwrightExpect(page.getByLabel("Signing secret")).toBeVisible()
+
+      await page.getByLabel("Webhook name").fill("Production events")
+      await page.getByLabel("Webhook URL").fill(webhookUrl)
+
+      const secretField = page.getByLabel("Signing secret")
+      const secretValue = await secretField.inputValue()
+
+      await page.getByRole("button", { name: /Validate Production events/ }).click()
+
+      await playwrightExpect(page.getByText("Validated", { exact: true })).toBeVisible()
+      await playwrightExpect(page.getByRole("button", { name: "Save" })).toBeEnabled()
+      await playwrightExpect.poll(async () => probeRequests.length).toBe(1)
+      expect(probeRequests[0]?.headers["x-dryapi-event"]).toBe("webhook.validation")
+      expect(String(probeRequests[0]?.headers["x-dryapi-signature"] ?? "")).toMatch(/^sha256=/)
+      expect(probeRequests[0]?.body).toContain(`"webhook_name":"Production events"`)
+      expect(probeRequests[0]?.body).toContain(`"validation":true`)
+      expect(secretValue).toMatch(/^whsec_/)
+
+      await page.getByRole("button", { name: "Save" }).click()
+
+      await playwrightExpect(page.getByText("Webhook settings saved")).toBeVisible()
+      await playwrightExpect.poll(async () => probeRequests.length).toBe(2)
+
+      await page.getByRole("button", { name: /Remove Production events/ }).click()
+
+      await playwrightExpect(page.getByText("No webhooks configured yet. Add one to start routing job events.")).toBeVisible()
+
+      await page.getByRole("button", { name: "Save" }).click()
+
+      await playwrightExpect(page.getByText("Webhook settings saved")).toBeVisible()
+    } finally {
+      probeServer.close()
       await context.close()
     }
   })
