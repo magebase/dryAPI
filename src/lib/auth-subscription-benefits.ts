@@ -80,10 +80,10 @@ async function getLatestActiveSubscriptionForReferenceId(
   const response = await db
     .prepare(
       `
-      SELECT id, plan, status, referenceId
+      SELECT id, plan, status, referenceid AS "referenceId"
       FROM subscription
-      WHERE referenceId = ?
-      ORDER BY updatedAt DESC, createdAt DESC
+      WHERE referenceid = ?
+      ORDER BY updatedat DESC, createdat DESC
       LIMIT 1
       `,
     )
@@ -110,11 +110,11 @@ async function getLatestActiveSubscriptionForEmail(
   const response = await db
     .prepare(
       `
-      SELECT s.id, s.plan, s.status, s.referenceId
+      SELECT s.id, s.plan, s.status, s.referenceid AS "referenceId"
       FROM subscription s
-      INNER JOIN user u ON u.id = s.referenceId
+      INNER JOIN "user" u ON u.id = s.referenceid
       WHERE lower(u.email) = ?
-      ORDER BY s.updatedAt DESC, s.createdAt DESC
+      ORDER BY s.updatedat DESC, s.createdat DESC
       `,
     )
     .bind(normalizedEmail)

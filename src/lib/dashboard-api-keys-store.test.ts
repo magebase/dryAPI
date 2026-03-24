@@ -44,7 +44,7 @@ describe("dashboard api keys store", () => {
           bind() {
             return {
               async all() {
-                if (query.includes("SELECT id") && query.includes("FROM user")) {
+                if (query.includes("SELECT id") && query.includes('FROM "user"')) {
                   return {
                     results: [{ id: "user_123" }],
                   }

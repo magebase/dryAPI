@@ -88,7 +88,12 @@ function toIsoString(value: string | Date | null | undefined): string | null {
     return null
   }
 
-  const date = value instanceof Date ? value : new Date(value)
+  const date =
+    value instanceof Date
+      ? value
+      : typeof value === "string" && /^-?\d+$/.test(value.trim())
+        ? new Date(Number(value))
+        : new Date(value)
   if (Number.isNaN(date.getTime())) {
     return null
   }
@@ -121,11 +126,22 @@ export function encodePermissions(permissions: string[] | undefined): Record<str
 }
 
 export function decodePermissions(value: unknown): string[] {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  const normalizedValue =
+    typeof value === "string"
+      ? (() => {
+          try {
+            return JSON.parse(value) as unknown
+          } catch {
+            return null
+          }
+        })()
+      : value
+
+  if (!normalizedValue || typeof normalizedValue !== "object" || Array.isArray(normalizedValue)) {
     return []
   }
 
-  return sanitizeStringArray((value as Record<string, unknown>).legacy)
+  return sanitizeStringArray((normalizedValue as Record<string, unknown>).legacy)
 }
 
 function encodeMetadata(input: {
@@ -146,11 +162,22 @@ function encodeMetadata(input: {
 }
 
 function decodeMetadata(value: unknown): { roles: string[]; meta: Record<string, unknown> } {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  const normalizedValue =
+    typeof value === "string"
+      ? (() => {
+          try {
+            return JSON.parse(value) as unknown
+          } catch {
+            return null
+          }
+        })()
+      : value
+
+  if (!normalizedValue || typeof normalizedValue !== "object" || Array.isArray(normalizedValue)) {
     return { roles: [], meta: {} }
   }
 
-  const record = value as Record<string, unknown>
+  const record = normalizedValue as Record<string, unknown>
   return {
     roles: sanitizeStringArray(record.roles),
     meta: sanitizeMeta(record.meta),
@@ -188,7 +215,7 @@ async function getUserEmailByReferenceId(referenceId: string): Promise<string | 
     .prepare(
       `
       SELECT email
-      FROM user
+      FROM "user"
       WHERE id = ?
       LIMIT 1
       `,
@@ -209,7 +236,7 @@ async function getUserIdByEmail(email: string): Promise<string | null> {
     .prepare(
       `
       SELECT id
-      FROM user
+      FROM "user"
       WHERE lower(email) = ?
       LIMIT 1
       `,
@@ -231,7 +258,7 @@ async function isApiKeyOwnedByUser(keyId: string, userEmail: string): Promise<bo
       `
       SELECT a.id
       FROM apikey a
-      INNER JOIN user u ON u.id = a.referenceId
+      INNER JOIN "user" u ON u.id = a.referenceid
       WHERE a.id = ? AND lower(u.email) = ?
       LIMIT 1
       `,
@@ -336,11 +363,23 @@ export async function listDashboardApiKeysForUser(userEmail: string): Promise<Da
   const response = await db
     .prepare(
       `
-      SELECT a.*
+      SELECT
+        a.id,
+        a.name,
+        a.start,
+        a.prefix,
+        a.referenceid AS "referenceId",
+        a.enabled,
+        a.expiresat AS "expiresAt",
+        a.createdat AS "createdAt",
+        a.updatedat AS "updatedAt",
+        a.permissions,
+        a.metadata,
+        a.key
       FROM apikey a
-      INNER JOIN user u ON u.id = a.referenceId
+      INNER JOIN "user" u ON u.id = a.referenceid
       WHERE lower(u.email) = ?
-      ORDER BY a.createdAt DESC
+      ORDER BY a.createdat DESC
       `,
     )
     .bind(userEmail.trim().toLowerCase())
@@ -580,7 +619,7 @@ export async function countActiveDashboardApiKeys(): Promise<number | null> {
       `
       SELECT COUNT(*) AS total
       FROM apikey
-      WHERE enabled = 1 AND (expiresAt IS NULL OR expiresAt > ?)
+      WHERE enabled = TRUE AND (expiresat IS NULL OR expiresat > ?)
       `,
     )
     .bind(now)
@@ -597,61 +636,45 @@ export async function getPlatformDailyRequestSeries(days: number): Promise<Array
 
   const safeDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : 14
 
-  try {
-    const response = await db
-      .prepare(
-        `
-      SELECT substr(created_at, 1, 10) AS day, COUNT(*) AS requests
+  const response = await db
+    .prepare(
+      `
+      SELECT TO_CHAR(TO_TIMESTAMP(created_at / 1000.0), 'YYYY-MM-DD') AS day, COUNT(*) AS requests
       FROM runpod_request_analytics
-      WHERE created_at >= datetime("now", ?)
-      GROUP BY day
-      ORDER BY day ASC
+      WHERE created_at >= (EXTRACT(EPOCH FROM (NOW() - (? * INTERVAL '1 day'))) * 1000)::bigint
+      GROUP BY 1
+      ORDER BY 1 ASC
       `,
-      )
-      .bind(`-${safeDays} day`)
-      .all<{ day: string; requests: number | string }>()
+    )
+    .bind(safeDays)
+    .all<{ day: string; requests: number | string }>()
 
-    return response.results.map((row) => {
-      const requests = typeof row.requests === "number" ? row.requests : Number(row.requests)
-      return {
-        day: row.day,
-        requests: Number.isFinite(requests) ? Math.max(0, Math.round(requests)) : 0,
-      }
-    })
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes("no such table") || msg.includes("no such column")) {
-      return []
+  return response.results.map((row) => {
+    const requests = typeof row.requests === "number" ? row.requests : Number(row.requests)
+    return {
+      day: row.day,
+      requests: Number.isFinite(requests) ? Math.max(0, Math.round(requests)) : 0,
     }
-    throw err
-  }
+  })
 }
 
 export async function getPlatformRequests24h(): Promise<number | null> {
   const db = await resolveAnalyticsDb()
   if (!db) return null
 
-  try {
-    const response = await db
-      .prepare(
-        `
+  const response = await db
+    .prepare(
+      `
       SELECT COUNT(*) AS total
       FROM runpod_request_analytics
-      WHERE created_at >= datetime("now", "-24 hour")
+      WHERE created_at >= (EXTRACT(EPOCH FROM (NOW() - INTERVAL '24 hours')) * 1000)::bigint
       `,
-      )
-      .all<{ total: number | string }>()
+    )
+    .all<{ total: number | string }>()
 
-    const value = response.results[0]?.total
-    const parsed = typeof value === "number" ? value : Number(value)
-    return Number.isFinite(parsed) ? parsed : null
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes("no such table") || msg.includes("no such column")) {
-      return 0
-    }
-    throw err
-  }
+  const value = response.results[0]?.total
+  const parsed = typeof value === "number" ? value : Number(value)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 export async function getDashboardApiKeyUsageSummary(params: {

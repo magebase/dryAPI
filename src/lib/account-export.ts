@@ -123,7 +123,10 @@ export function toIsoString(value: string | number | null | undefined): string |
     return null
   }
 
-  const date = new Date(value)
+  const date =
+    typeof value === "string" && /^-?\d+$/.test(value.trim())
+      ? new Date(Number(value))
+      : new Date(value)
   if (Number.isNaN(date.getTime())) {
     return null
   }
@@ -137,8 +140,8 @@ async function loadAuthUserExportData(userEmail: string): Promise<AccountExportD
   const response = await db
     .prepare(
       `
-      SELECT id, email, name, role, emailVerified, createdAt, updatedAt
-      FROM user
+      SELECT id, email, name, role, emailverified AS "emailVerified", createdat AS "createdAt", updatedat AS "updatedAt"
+      FROM "user"
       WHERE lower(email) = ?
       LIMIT 1
       `,
@@ -168,10 +171,10 @@ async function loadAuthSessions(userId: string): Promise<AccountExportData["sess
   const response = await db
     .prepare(
       `
-      SELECT id, token, expiresAt, createdAt, updatedAt, ipAddress, userAgent, activeOrganizationId
+      SELECT id, token, expiresat AS "expiresAt", createdat AS "createdAt", updatedat AS "updatedAt", ipaddress AS "ipAddress", useragent AS "userAgent", activeorganizationid AS "activeOrganizationId"
       FROM session
-      WHERE userId = ?
-      ORDER BY createdAt DESC
+      WHERE userid = ?
+      ORDER BY createdat DESC
       `,
     )
     .bind(userId)

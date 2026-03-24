@@ -159,14 +159,14 @@ export async function resolveDashboardSessionSnapshotFromToken(
     .prepare(
       `
       SELECT
-        s.userId AS userId,
-        s.activeOrganizationId AS activeOrganizationId,
-        s.expiresAt AS expiresAt,
+        s.userid AS "userId",
+        s.activeorganizationid AS "activeOrganizationId",
+        s.expiresat AS "expiresAt",
         u.email AS email,
         u.role AS role
       FROM session s
-      INNER JOIN user u ON u.id = s.userId
-      WHERE s.token = ? AND s.expiresAt > ?
+      INNER JOIN "user" u ON u.id = s.userid
+      WHERE s.token = ? AND s.expiresat > ?
       LIMIT 1
       `,
     )
