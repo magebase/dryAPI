@@ -42,38 +42,23 @@ function formatDateTime(iso: string): string {
     hour: "numeric",
     minute: "2-digit",
     timeZoneName: "short",
+    timeZone: "UTC",
   }).format(parsed)
-}
-
-function formatRelativeTime(iso: string): string {
-  const parsed = new Date(iso)
-  if (Number.isNaN(parsed.getTime())) return "at the end of the month"
-
-  const diffMs = parsed.getTime() - Date.now()
-  const absMs = Math.abs(diffMs)
-  const minuteMs = 60_000
-  const hourMs = 60 * minuteMs
-  const dayMs = 24 * hourMs
-  const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" })
-
-  if (absMs < hourMs) {
-    return rtf.format(Math.round(diffMs / minuteMs), "minute")
-  }
-
-  if (absMs < dayMs * 2) {
-    return rtf.format(Math.round(diffMs / hourMs), "hour")
-  }
-
-  return rtf.format(Math.round(diffMs / dayMs), "day")
 }
 
 type SaasPlanCardsProps = {
   plans: readonly SaasPlanDefinition[]
   monthlyTokenExpiryIso: string
+  monthlyTokenExpiryLabel: string
   checkoutDisclosure: string
 }
 
-export function SaasPlanCards({ plans, monthlyTokenExpiryIso, checkoutDisclosure }: SaasPlanCardsProps) {
+export function SaasPlanCards({
+  plans,
+  monthlyTokenExpiryIso,
+  monthlyTokenExpiryLabel,
+  checkoutDisclosure,
+}: SaasPlanCardsProps) {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly")
   const isAnnual = billingPeriod === "annual"
   const maxAnnualDiscount = Math.max(...plans.map((plan) => plan.annualDiscountPercent))
@@ -128,7 +113,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso, checkoutDisclosure
           <RefreshCw className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           <span>
             <strong>Monthly subscription credits reset on the first of each month (UTC)</strong> — unused
-            subscription credits do not carry over. Current cycle expires {formatDateTime(monthlyTokenExpiryIso)} ({formatRelativeTime(monthlyTokenExpiryIso)}).
+            subscription credits do not carry over. Current cycle expires {formatDateTime(monthlyTokenExpiryIso)} ({monthlyTokenExpiryLabel}).
           </span>
         </div>
 
@@ -186,7 +171,7 @@ export function SaasPlanCards({ plans, monthlyTokenExpiryIso, checkoutDisclosure
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                       {plan.monthlyPriceUsd.toLocaleString("en-US")}
                     </span>{" "}
-                    — {formatCredits(plan.monthlyCredits)} subscription credits expire {formatRelativeTime(monthlyTokenExpiryIso)}
+                    — {formatCredits(plan.monthlyCredits)} subscription credits expire {monthlyTokenExpiryLabel}
                   </span>
                 </p>
                 <p>

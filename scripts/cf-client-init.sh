@@ -58,10 +58,7 @@ mkdir -p "$client_dir"
 
 site_worker="dryapi-${client_slug}-site"
 calcom_worker="dryapi-${client_slug}-calcom"
-d1_auth_name="dryapi-${client_slug}-auth-d1"
-d1_billing_name="dryapi-${client_slug}-billing-d1"
-d1_analytics_name="dryapi-${client_slug}-analytics-d1"
-d1_metadata_name="dryapi-${client_slug}-metadata-d1"
+d1_name="dryapi-${client_slug}-app-d1"
 kv_name="dryapi-${client_slug}-kv"
 r2_cache_bucket="dryapi-${client_slug}-next-cache"
 r2_media_bucket="dryapi-${client_slug}-media"
@@ -110,34 +107,10 @@ cat > "${client_dir}/wrangler.site.jsonc" <<EOF
   ],
   "d1_databases": [
     {
-      "binding": "AUTH_DB",
-      "database_name": "${d1_auth_name}",
-      "database_id": "<replace-with-auth-d1-database-id>",
-      "migrations_dir": "../../drizzle/migrations/auth"
-    },
-    {
-      "binding": "BILLING_DB",
-      "database_name": "${d1_billing_name}",
-      "database_id": "<replace-with-billing-d1-database-id>",
-      "migrations_dir": "../../drizzle/migrations/billing"
-    },
-    {
-      "binding": "ANALYTICS_DB",
-      "database_name": "${d1_analytics_name}",
-      "database_id": "<replace-with-analytics-d1-database-id>",
-      "migrations_dir": "../../drizzle/migrations/analytics"
-    },
-    {
-      "binding": "METADATA_DB",
-      "database_name": "${d1_metadata_name}",
-      "database_id": "<replace-with-metadata-d1-database-id>",
-      "migrations_dir": "../../drizzle/migrations/metadata"
-    },
-    {
       "binding": "APP_DB",
-      "database_name": "${d1_analytics_name}",
-      "database_id": "<replace-with-analytics-d1-database-id>",
-      "migrations_dir": "../../drizzle/migrations/analytics"
+      "database_name": "${d1_name}",
+      "database_id": "<replace-with-app-d1-database-id>",
+      "migrations_dir": "../../drizzle/migrations"
     }
   ],
   "vars": {
@@ -202,10 +175,7 @@ INTERNAL_ZONE="${internal_zone}"
 
 SITE_WORKER="${site_worker}"
 CALCOM_WORKER="${calcom_worker}"
-D1_AUTH_NAME="${d1_auth_name}"
-D1_BILLING_NAME="${d1_billing_name}"
-D1_ANALYTICS_NAME="${d1_analytics_name}"
-D1_METADATA_NAME="${d1_metadata_name}"
+D1_NAME="${d1_name}"
 KV_NAME="${kv_name}"
 R2_CACHE_BUCKET="${r2_cache_bucket}"
 R2_MEDIA_BUCKET="${r2_media_bucket}"
@@ -216,10 +186,7 @@ CALCOM_INTERNAL_HOST="${calcom_internal_host}"
 ADMIN_HOST="${admin_host}"
 
 # 1) Per-client data plane resources.
-wrangler d1 create "\${D1_AUTH_NAME}"
-wrangler d1 create "\${D1_BILLING_NAME}"
-wrangler d1 create "\${D1_ANALYTICS_NAME}"
-wrangler d1 create "\${D1_METADATA_NAME}"
+wrangler d1 create "${D1_NAME}"
 wrangler kv namespace create "\${KV_NAME}"
 wrangler r2 bucket create "\${R2_CACHE_BUCKET}"
 wrangler r2 bucket create "\${R2_MEDIA_BUCKET}"
@@ -294,7 +261,7 @@ cat <<GUIDE
 
 Next manual steps:
 1. Update cloudflare/clients/${client_slug}/wrangler.site.jsonc with real D1/KV IDs from command output.
-  - AUTH_DB, BILLING_DB, ANALYTICS_DB, and METADATA_DB each need their own database_id.
+  - APP_DB needs one database_id.
 2. Create DNS records:
    - ${public_host} -> ${site_worker}
    - schedule.${public_host} -> ${calcom_worker} (if public scheduler is required)
@@ -330,10 +297,7 @@ Private endpoints:
 - https://${admin_host}
 
 Internal resource names:
-- D1 auth: ${d1_auth_name}
-- D1 billing: ${d1_billing_name}
-- D1 analytics: ${d1_analytics_name}
-- D1 metadata: ${d1_metadata_name}
+- D1 app: ${d1_name}
 - KV: ${kv_name}
 - R2 cache: ${r2_cache_bucket}
 - R2 media: ${r2_media_bucket}
@@ -343,7 +307,7 @@ Traffic policy defaults:
 - Default deny private hostnames with Cloudflare Access.
 - Allow only specific public Cal.com routes in CALCOM_PUBLIC_ROUTE_RULES.
 - Require CALCOM_INTERNAL_API_TOKEN for private Cal.com routes.
-- Keep D1, KV, and R2 reachable only through worker bindings.
+- Keep APP_DB, KV, and R2 reachable only through worker bindings.
 
 Automation:
 - API-driven bundle: scripts/cf-client-security-provision.sh

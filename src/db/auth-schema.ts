@@ -1,24 +1,31 @@
-import { sql } from "drizzle-orm"
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
+import {
+  bigint,
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/pg-core"
 
-export const user = sqliteTable(
+export const user = pgTable(
   "user",
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull(),
     normalizedEmail: text("normalizedEmail"),
-    emailVerified: integer("emailVerified", { mode: "boolean" }).notNull().default(false),
+    emailVerified: boolean("emailVerified").notNull().default(false),
     image: text("image"),
     role: text("role").default("user"),
-    banned: integer("banned", { mode: "boolean" }).notNull().default(false),
+    banned: boolean("banned").notNull().default(false),
     banReason: text("banReason"),
-    banExpires: integer("banExpires", { mode: "timestamp_ms" }),
-    twoFactorEnabled: integer("twoFactorEnabled", { mode: "boolean" }).notNull().default(false),
+    banExpires: bigint("banExpires", { mode: "number" }),
+    twoFactorEnabled: boolean("twoFactorEnabled").notNull().default(false),
     stripeCustomerId: text("stripeCustomerId"),
     lastLoginMethod: text("lastLoginMethod"),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     emailUnique: uniqueIndex("idx_better_auth_user_email").on(table.email),
@@ -27,14 +34,14 @@ export const user = sqliteTable(
   }),
 )
 
-export const session = sqliteTable(
+export const session = pgTable(
   "session",
   {
     id: text("id").primaryKey(),
-    expiresAt: integer("expiresAt", { mode: "timestamp_ms" }).notNull(),
+    expiresAt: bigint("expiresAt", { mode: "number" }).notNull(),
     token: text("token").notNull(),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
     ipAddress: text("ipAddress"),
     userAgent: text("userAgent"),
     impersonatedBy: text("impersonatedBy"),
@@ -51,7 +58,7 @@ export const session = sqliteTable(
   }),
 )
 
-export const account = sqliteTable(
+export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
@@ -63,38 +70,38 @@ export const account = sqliteTable(
     accessToken: text("accessToken"),
     refreshToken: text("refreshToken"),
     idToken: text("idToken"),
-    accessTokenExpiresAt: integer("accessTokenExpiresAt", { mode: "timestamp_ms" }),
-    refreshTokenExpiresAt: integer("refreshTokenExpiresAt", { mode: "timestamp_ms" }),
+    accessTokenExpiresAt: bigint("accessTokenExpiresAt", { mode: "number" }),
+    refreshTokenExpiresAt: bigint("refreshTokenExpiresAt", { mode: "number" }),
     scope: text("scope"),
     password: text("password"),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     userIdIndex: index("idx_better_auth_account_user_id").on(table.userId),
     providerAccountUnique: uniqueIndex("idx_better_auth_account_provider_account").on(
       table.providerId,
-      table.accountId
+      table.accountId,
     ),
   }),
 )
 
-export const verification = sqliteTable(
+export const verification = pgTable(
   "verification",
   {
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
-    expiresAt: integer("expiresAt", { mode: "timestamp_ms" }).notNull(),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    expiresAt: bigint("expiresAt", { mode: "number" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     identifierIndex: index("idx_better_auth_verification_identifier").on(table.identifier),
   }),
 )
 
-export const twoFactor = sqliteTable(
+export const twoFactor = pgTable(
   "twoFactor",
   {
     id: text("id").primaryKey(),
@@ -110,7 +117,7 @@ export const twoFactor = sqliteTable(
   }),
 )
 
-export const organization = sqliteTable(
+export const organization = pgTable(
   "organization",
   {
     id: text("id").primaryKey(),
@@ -119,7 +126,7 @@ export const organization = sqliteTable(
     logo: text("logo"),
     metadata: text("metadata"),
     stripeCustomerId: text("stripeCustomerId"),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     slugUnique: uniqueIndex("idx_better_auth_organization_slug").on(table.slug),
@@ -128,7 +135,7 @@ export const organization = sqliteTable(
   }),
 )
 
-export const member = sqliteTable(
+export const member = pgTable(
   "member",
   {
     id: text("id").primaryKey(),
@@ -139,7 +146,7 @@ export const member = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text("role").notNull().default("member"),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     organizationIdIndex: index("idx_better_auth_member_organization_id").on(table.organizationId),
@@ -148,7 +155,7 @@ export const member = sqliteTable(
   }),
 )
 
-export const invitation = sqliteTable(
+export const invitation = pgTable(
   "invitation",
   {
     id: text("id").primaryKey(),
@@ -158,11 +165,11 @@ export const invitation = sqliteTable(
     email: text("email").notNull(),
     role: text("role"),
     status: text("status").notNull().default("pending"),
-    expiresAt: integer("expiresAt", { mode: "timestamp_ms" }).notNull(),
+    expiresAt: bigint("expiresAt", { mode: "number" }).notNull(),
     inviterId: text("inviterId")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     organizationIdIndex: index("idx_better_auth_invitation_organization_id").on(table.organizationId),
@@ -170,7 +177,7 @@ export const invitation = sqliteTable(
   }),
 )
 
-export const apikey = sqliteTable(
+export const apikey = pgTable(
   "apikey",
   {
     id: text("id").primaryKey(),
@@ -182,17 +189,17 @@ export const apikey = sqliteTable(
     organizationId: text("organizationId"),
     refillInterval: integer("refillInterval"),
     refillAmount: integer("refillAmount"),
-    lastRefillAt: integer("lastRefillAt", { mode: "timestamp_ms" }),
-    enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
-    rateLimitEnabled: integer("rateLimitEnabled", { mode: "boolean" }).notNull().default(true),
+    lastRefillAt: bigint("lastRefillAt", { mode: "number" }),
+    enabled: boolean("enabled").notNull().default(true),
+    rateLimitEnabled: boolean("rateLimitEnabled").notNull().default(true),
     rateLimitTimeWindow: integer("rateLimitTimeWindow").notNull().default(86_400),
     rateLimitMax: integer("rateLimitMax").notNull().default(10),
     requestCount: integer("requestCount").notNull().default(0),
     remaining: integer("remaining"),
-    lastRequest: integer("lastRequest", { mode: "timestamp_ms" }),
-    expiresAt: integer("expiresAt", { mode: "timestamp_ms" }),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    lastRequest: bigint("lastRequest", { mode: "number" }),
+    expiresAt: bigint("expiresAt", { mode: "number" }),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
     permissions: text("permissions"),
     metadata: text("metadata"),
     configId: text("configId").notNull().default("default"),
@@ -206,7 +213,7 @@ export const apikey = sqliteTable(
   }),
 )
 
-export const ssoProvider = sqliteTable(
+export const ssoProvider = pgTable(
   "ssoProvider",
   {
     id: text("id").primaryKey(),
@@ -217,9 +224,9 @@ export const ssoProvider = sqliteTable(
     providerId: text("providerId").notNull(),
     organizationId: text("organizationId").references(() => organization.id, { onDelete: "set null" }),
     domain: text("domain").notNull(),
-    domainVerified: integer("domainVerified", { mode: "boolean" }).notNull().default(false),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    domainVerified: boolean("domainVerified").notNull().default(false),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     providerIdUnique: uniqueIndex("idx_better_auth_sso_provider_id").on(table.providerId),
@@ -228,7 +235,7 @@ export const ssoProvider = sqliteTable(
   }),
 )
 
-export const subscription = sqliteTable(
+export const subscription = pgTable(
   "subscription",
   {
     id: text("id").primaryKey(),
@@ -237,24 +244,20 @@ export const subscription = sqliteTable(
     stripeCustomerId: text("stripeCustomerId"),
     stripeSubscriptionId: text("stripeSubscriptionId"),
     status: text("status").notNull().default("incomplete"),
-    periodStart: integer("periodStart", { mode: "timestamp_ms" }),
-    periodEnd: integer("periodEnd", { mode: "timestamp_ms" }),
-    trialStart: integer("trialStart", { mode: "timestamp_ms" }),
-    trialEnd: integer("trialEnd", { mode: "timestamp_ms" }),
-    cancelAtPeriodEnd: integer("cancelAtPeriodEnd", { mode: "boolean" }).notNull().default(false),
-    cancelAt: integer("cancelAt", { mode: "timestamp_ms" }),
-    canceledAt: integer("canceledAt", { mode: "timestamp_ms" }),
-    endedAt: integer("endedAt", { mode: "timestamp_ms" }),
+    periodStart: bigint("periodStart", { mode: "number" }),
+    periodEnd: bigint("periodEnd", { mode: "number" }),
+    trialStart: bigint("trialStart", { mode: "number" }),
+    trialEnd: bigint("trialEnd", { mode: "number" }),
+    cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").notNull().default(false),
+    cancelAt: bigint("cancelAt", { mode: "number" }),
+    canceledAt: bigint("canceledAt", { mode: "number" }),
+    endedAt: bigint("endedAt", { mode: "number" }),
     seats: integer("seats"),
     billingInterval: text("billingInterval"),
     stripeScheduleId: text("stripeScheduleId"),
     limits: text("limits"),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" })
-      .notNull()
-      .default(sql`(CAST(strftime('%s', 'now') AS INTEGER) * 1000)`),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" })
-      .notNull()
-      .default(sql`(CAST(strftime('%s', 'now') AS INTEGER) * 1000)`),
+    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
   },
   (table) => ({
     referenceIdIndex: index("idx_better_auth_subscription_reference_id").on(table.referenceId),

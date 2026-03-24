@@ -1,9 +1,10 @@
 import "server-only"
 
-import { getCloudflareContext } from "@opennextjs/cloudflare"
-
 import { resolveConfiguredBalance } from "@/lib/configured-balance"
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
+import {
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db"
 
 type D1PreparedResult<T> = {
   results: T[]
@@ -25,6 +26,11 @@ type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
   batch: (statements: D1PreparedStatement[]) => Promise<unknown>
 }
+
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
 
 type CreditBalanceRow = {
   balance_credits: number
@@ -193,12 +199,7 @@ function toIsoFromMs(value: number | null | undefined): string | null {
 }
 
 async function resolveBillingDb(): Promise<D1DatabaseLike | null> {
-  try {
-    const { env } = await getCloudflareContext({ async: true })
-    return resolveD1Binding<D1DatabaseLike>(env as Record<string, unknown>, D1_BINDING_PRIORITY.billing)
-  } catch {
-    return null
-  }
+  return getSqlDbAsync()
 }
 
 async function ensureBillingTables(db: D1DatabaseLike): Promise<void> {
@@ -212,7 +213,8 @@ async function ensureBillingTables(db: D1DatabaseLike): Promise<void> {
 
 async function listTableColumnNames(db: D1DatabaseLike, tableName: string): Promise<Set<string>> {
   const response = await db
-    .prepare(`PRAGMA table_info(${tableName})`)
+    .prepare(`SELECT column_name AS name FROM information_schema.columns WHERE table_name = ? AND table_schema = current_schema()`)
+    .bind(tableName)
     .all<D1TableInfoRow>()
 
   return new Set(response.results.map((row) => row.name))

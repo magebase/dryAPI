@@ -27,7 +27,7 @@ function renderBillingTopUpControls(customerId: string | null) {
       topUpAmounts={[10, 25]}
       activePlan={null}
       customerId={customerId}
-      monthlyTokenExpiryIso="2026-03-31T00:00:00.000Z"
+      monthlyTokenExpiryLabel="in 1 day"
       initialAutoTopUpSettings={{
         enabled: false,
         thresholdCredits: 10,
@@ -65,6 +65,9 @@ describe("BillingTopUpControls", () => {
         "Complete checkout or subscribe first so Stripe can create a customer before auto top-up can be authorized.",
       ),
     ).toBeInTheDocument()
+    expect(
+      screen.getAllByText((_, element) => element?.textContent?.includes("in 1 day") ?? false),
+    ).not.toHaveLength(0)
   })
 
   it("links to the authorization flow when a Stripe customer exists", () => {

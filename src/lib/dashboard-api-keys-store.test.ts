@@ -2,35 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext: vi.fn().mockResolvedValue({ env: {} }),
+const { getSqlDbAsyncMock } = vi.hoisted(() => ({
+  getSqlDbAsyncMock: vi.fn(),
 }))
 
-vi.mock("@/lib/d1-bindings", () => {
-  const authDb = {
-    prepare: (query: string) => ({
-      bind: (...values: unknown[]) => ({
-        all: async () => {
-          if (query.includes("SELECT id") && query.includes("FROM user")) {
-            return {
-              results: [{ id: "user_123" }],
-            }
-          }
-
-          return { results: [] }
-        },
-      }),
-    }),
-  }
-
-  return {
-    D1_BINDING_PRIORITY: {
-      auth: "auth",
-      analytics: "analytics",
-    },
-    resolveD1Binding: vi.fn(() => authDb),
-  }
-})
+vi.mock("@/lib/cloudflare-db", () => ({
+  HYPERDRIVE_BINDING_PRIORITY: ["HYPERDRIVE"],
+  createCloudflareDbAccessors: () => ({
+    getSqlDbAsync: (...args: unknown[]) => getSqlDbAsyncMock(...args),
+  }),
+}))
 
 const { createAuthApiKeyMock, sendApiKeyCreatedNotificationMock } = vi.hoisted(() => ({
   createAuthApiKeyMock: vi.fn(),
@@ -56,6 +37,26 @@ describe("dashboard api keys store", () => {
   beforeEach(() => {
     createAuthApiKeyMock.mockReset()
     sendApiKeyCreatedNotificationMock.mockClear()
+
+    getSqlDbAsyncMock.mockResolvedValue({
+      prepare(query: string) {
+        return {
+          bind() {
+            return {
+              async all() {
+                if (query.includes("SELECT id") && query.includes("FROM user")) {
+                  return {
+                    results: [{ id: "user_123" }],
+                  }
+                }
+
+                return { results: [] }
+              },
+            }
+          },
+        }
+      },
+    })
   })
 
   afterEach(() => {

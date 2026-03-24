@@ -1,46 +1,45 @@
 import { NextRequest } from "next/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+const { resolveDashboardSessionSnapshotFromTokenMock } = vi.hoisted(() => ({
+  resolveDashboardSessionSnapshotFromTokenMock: vi.fn(),
+}))
+
+vi.mock("@/lib/dashboard-session", () => ({
+  applyDashboardSessionSnapshotHeaders: vi.fn(),
+  resolveDashboardSessionSnapshotFromToken:
+    resolveDashboardSessionSnapshotFromTokenMock,
+}))
+
 import { middleware } from "@/middleware"
 
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "content-type": "application/json",
-    },
-  })
-}
-
-function getRequestPath(input: RequestInfo | URL): string {
-  if (typeof input === "string") {
-    return new URL(input, "https://dryapi.dev").pathname
+function makeAuthenticatedSnapshot() {
+  return {
+    authenticated: true as const,
+    email: "owner@dryapi.dev",
+    userId: "user_1",
+    userRole: "admin",
+    activeOrganizationId: null,
+    expiresAtMs: Date.now() + 60_000,
   }
-
-  if (input instanceof URL) {
-    return input.pathname
-  }
-
-  return new URL(input.url).pathname
 }
 
 describe("dashboard middleware auth checks", () => {
-  const originalFetch = global.fetch
-
   afterEach(() => {
-    global.fetch = originalFetch
     vi.restoreAllMocks()
+    resolveDashboardSessionSnapshotFromTokenMock.mockReset()
   })
 
-  it("skips auth session origin checks for dashboard RSC requests", async () => {
-    const fetchMock = vi.fn()
-    global.fetch = fetchMock as unknown as typeof fetch
+  it("authenticates dashboard RSC requests with the session snapshot helper", async () => {
+    resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(
+      makeAuthenticatedSnapshot(),
+    )
 
     const request = new NextRequest(
       "https://dryapi.dev/dashboard/settings/api-keys?_rsc=ua385",
       {
         headers: new Headers({
-          cookie: "better-auth.session_token=session_1",
+            cookie: "better-auth.session_token=session_rsc",
           rsc: "1",
         }),
       },
@@ -49,37 +48,40 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledTimes(1)
   })
 
   it("checks auth session for dashboard document requests", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const path = getRequestPath(input)
-      if (path === "/api/auth/get-session") {
-        return jsonResponse({
-          user: { id: "user_1" },
-          session: { id: "session_1" },
-        })
-      }
-
-      throw new Error(`Unexpected middleware fetch path: ${path}`)
-    })
-
-    global.fetch = fetchMock as unknown as typeof fetch
+    resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(
+      makeAuthenticatedSnapshot(),
+    )
 
     const request = new NextRequest("https://dryapi.dev/dashboard/settings", {
       headers: new Headers({
         accept: "text/html",
-        cookie: "better-auth.session_token=session_1",
+        cookie: "better-auth.session_token=session_doc",
       }),
     })
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(getRequestPath(fetchMock.mock.calls[0]?.[0] as RequestInfo | URL)).toBe(
-      "/api/auth/get-session",
+    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledTimes(1)
+    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledWith(
+      "session_doc",
     )
+  })
+
+  it("redirects dashboard requests without a session cookie to login", async () => {
+    const request = new NextRequest("https://dryapi.dev/dashboard/settings", {
+      headers: new Headers({
+        accept: "text/html",
+      }),
+    })
+
+    const response = await middleware(request)
+
+    expect(response.status).toBe(307)
+    expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
   })
 
   it("returns 404 for deprecated crm paths", async () => {

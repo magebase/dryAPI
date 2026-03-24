@@ -1126,97 +1126,20 @@ Additional gateway and docs guidance:
 - Ensure balance updates are idempotent.
 - Enforce auth on private endpoints; keep public marketing routes accessible.
 
-## D1 Storage Rules and Best Practices
+## Shared Database Rules and Best Practices
 
-- Use segmented D1 databases by write workload. Current target bindings:
-  - `AUTH_DB`: Better Auth tables (`user`, `session`, `account`, `verification`)
-  - `BILLING_DB`: balances/transactions/usage aggregates
-  - `ANALYTICS_DB`: quote/moderation and aggregate analytics reads
-  - `METADATA_DB`: pricing snapshots, Tina level state, metadata/config tables
-- Keep one Drizzle config per D1 database:
-  - `drizzle.config.auth.ts`
-  - `drizzle.config.billing.ts`
-  - `drizzle.config.analytics.ts`
-  - `drizzle.config.metadata.ts`
-- Keep migration directories split per database under `drizzle/migrations/{auth,billing,analytics,metadata}`.
-- `APP_DB` may exist only as a temporary compatibility alias; new code should prefer dedicated bindings above.
-- Treat Cloudflare D1 as relational operational storage, not a long-term archive for high-growth cold records.
-- Keep strict size guardrails per D1 database and plan ahead for the 10GB limit.
-- Any record class that is rarely read and expected to grow fast enough to threaten the D1 10GB limit should be moved out of primary D1 tables.
-- For these high-growth cold datasets, choose one of these patterns early:
-  - Store them outside D1 (for example in R2/object storage plus indexed metadata pointers).
-  - Move them into a separate dedicated D1 database so core transactional tables remain healthy.
-- Separate hot-path and cold-path data models:
-  - Hot path in primary D1: auth, balances, API keys, routing config, active quotas, recent usage windows.
-  - Cold path outside primary D1: raw logs, verbose traces, old usage rows, historical analytics snapshots.
-- Prefer retention and compaction over unlimited growth:
-  - Add explicit retention windows for event-like tables.
-  - Summarize old granular rows into periodic aggregates before archiving.
-  - Delete or offload raw historical detail after aggregation is complete and validated.
-- Design for predictable query performance under growth:
-  - Index only columns used by real filters/sorts; remove speculative indexes.
-  - Avoid wide rows when a normalized child table or object-store blob pointer is cleaner.
-  - Use pagination and bounded range scans for list endpoints.
-- Keep schema migrations safe and observable:
-  - Use additive, backwards-compatible migrations first; backfill in controlled steps.
-  - Avoid large blocking rewrites during peak traffic windows.
-  - Validate row counts and integrity after each migration stage.
-- Keep billing and usage correctness resilient to storage tiering:
-  - Preserve immutable billing-critical facts before archival.
-  - Ensure aggregates used for invoicing/reconciliation are reproducible and auditable.
-  - Never let archival jobs mutate already finalized billing periods without explicit reconciliation flow.
-- Add operational thresholds and alerts:
-  - Track DB size growth, table-level row growth, and query latency over time.
-  - Trigger alerts before capacity risk, not after failures.
-  - Define runbooks for "split database" and "offload to R2" actions.
-- Keep data movement idempotent:
-  - Archival/offload jobs must be restart-safe and duplicate-safe.
-  - Use checkpoints or high-water marks for batch migration jobs.
-  - Verify checksums/count parity between source and destination before deletion.
-
-## Cloudflare D1 Architecture and Separation of Concerns
-
-This document defines how this repository uses Cloudflare D1 for scale, performance, and reliability.
-
-D1 uses SQLite semantics with serialized writes per database. The platform must optimize for read-heavy behavior and constrained write pipelines.
-
-## Core Principles
-
-1. Prefer reads over writes.
-2. Minimize per-request writes.
-3. Batch and aggregate where possible.
-4. Separate D1 databases by write workload.
-5. Keep rows and indexes small.
-6. Use retention and cleanup for all growth-prone tables.
-
-## Database Segmentation in This Repo
-
-Use dedicated D1 databases with dedicated Drizzle configs and migration directories:
-
-- `AUTH_DB`
-  - Drizzle config: `drizzle.config.auth.ts`
-  - Migrations: `drizzle/migrations/auth`
-  - Tables: `user`, `session`, `account`, `verification`
-- `BILLING_DB`
-  - Drizzle config: `drizzle.config.billing.ts`
-  - Migrations: `drizzle/migrations/billing`
-  - Tables: `credit_balance_profiles` and billing state tables
-- `ANALYTICS_DB`
-  - Drizzle config: `drizzle.config.analytics.ts`
-  - Migrations: `drizzle/migrations/analytics`
-  - Tables: `quote_requests`, `moderation_rejections`, aggregate usage/reporting tables
-- `METADATA_DB`
-  - Drizzle config: `drizzle.config.metadata.ts`
-  - Migrations: `drizzle/migrations/metadata`
-  - Tables: `deapi_pricing_snapshots`, `deapi_pricing_permutations`, `tina_level_entries`, `hot_cold_*`
-
-Compatibility fallback bindings (`APP_DB`, `TINA_DB`) may exist during migration but must not be the long-term primary architecture.
+- Use a single shared relational database per app boundary.
+- Keep one Drizzle config and one migration path per app.
+- Group tables by domain; do not split auth, billing, analytics, metadata, or settings into separate primary databases.
+- The main dryAPI app resolves its shared Postgres database through Hyperdrive or `DATABASE_URL`.
+- The hub app uses a single D1 `APP_DB` binding when it needs D1.
+- Keep hot-path data, cold-path archives, and large event data separated by table design or object storage, not by multiplying operational databases.
 
 ## Table Design Rules
 
 - Keep rows small and bounded.
 - Avoid unbounded JSON blobs and log-style append-only tables.
-- Index only fields used by real query filters/sorts.
+- Index only fields used by real query filters or sorts.
 - Prefer aggregate tables over high-cardinality event streams.
 
 ## Write Optimization Rules
@@ -1224,33 +1147,22 @@ Compatibility fallback bindings (`APP_DB`, `TINA_DB`) may exist during migration
 - Avoid immediate per-request writes for telemetry and counters.
 - Prefer buffered batching and periodic flush.
 - Use idempotent `UPSERT` patterns for aggregate counters.
-- Use D1 `batch` where multiple writes are required in one operation.
+- Use database batch operations where multiple writes are required.
 
 ## Read Scaling Rules
 
 - Design for SELECT-heavy traffic.
-- Cache read-heavy static data in KV/edge cache when possible.
+- Cache read-heavy static data in KV or edge cache when possible.
 - Good cache candidates:
   - pricing snapshots
   - model metadata
   - public configuration
 
-## Auth DB Rules
+## Table Rules
 
-- Keep auth DB low-write and highly indexed.
-- Session records must expire and be periodically cleaned.
-- Do not store large profile payloads in auth tables.
-
-## Billing DB Rules
-
-- Keep billing writes consistent and minimal.
-- Avoid per-request balance mutation when an aggregate window is possible.
-- Preserve immutable billing-critical facts before archival.
-
-## Snapshot and Metadata Rules
-
-- Snapshot tables are preferred for read-heavy immutable datasets.
-- Keep recent snapshots hot in D1 and archive older slices as needed.
+- Auth tables: keep them low-write and highly indexed. Session records must expire and be periodically cleaned.
+- Billing tables: keep billing writes consistent and minimal. Avoid per-request balance mutation when an aggregate window is possible.
+- Snapshot and metadata tables: prefer read-heavy immutable datasets. Keep recent snapshots hot and archive older slices as needed.
 
 ## Retention and Cleanup
 
@@ -1279,23 +1191,24 @@ Avoid:
 
 Follow additive-first rollouts:
 
-1. add new columns/tables
+1. add new columns or tables
 2. deploy app using new structures
 3. backfill data in controlled jobs
 4. remove old structures only after validation
 
 ## Anti-Patterns to Avoid
 
-- every request writes to D1
-- D1 as a queue
-- D1 as raw high-frequency telemetry store
-- large append-only log tables in primary operational DBs
+- splitting one app into separate databases by domain when a shared database works
+- every request writes to the database
+- the database as a queue
+- the database as a raw high-frequency telemetry store
+- large append-only log tables in the primary operational database
 
-Use batching, aggregation, database segmentation, and edge caching instead.
+Use batching, aggregation, and edge caching instead.
 
 ## Target Envelope
 
-Design around conservative write throughput per database and keep sustained writes below saturation levels. Use additional databases and workload partitioning before approaching write ceilings.
+Design around conservative write throughput for the shared database and keep sustained writes below saturation levels. Introduce additional partitioning only when a measured bottleneck justifies it.
 
 ## Testing and Verification Standards
 

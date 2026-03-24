@@ -1,11 +1,12 @@
 import "server-only"
 
-import { getCloudflareContext } from "@opennextjs/cloudflare"
-
+import {
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db"
 import {
   ensureSaasSubscriptionCycleBenefits,
 } from "@/lib/dashboard-billing-credits"
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
 import {
   resolveCurrentMonthlyTokenCycleStartIso,
   resolveMonthlyTokenExpiryIso,
@@ -24,6 +25,11 @@ type D1PreparedStatement = {
 type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
 }
+
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
 
 type AuthUserRow = {
   id: string
@@ -49,8 +55,7 @@ const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"])
 
 async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
   try {
-    const { env } = await getCloudflareContext({ async: true })
-    return resolveD1Binding<D1DatabaseLike>(env as Record<string, unknown>, D1_BINDING_PRIORITY.auth)
+    return await getSqlDbAsync()
   } catch {
     return null
   }

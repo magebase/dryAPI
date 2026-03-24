@@ -2,11 +2,11 @@ import { and, asc, eq } from "drizzle-orm"
 
 import { member } from "@/db/auth-schema"
 import { createCloudflareDbAccessors } from "@/lib/cloudflare-db"
-import { D1_BINDING_PRIORITY } from "@/lib/d1-bindings"
+import { HYPERDRIVE_BINDING_PRIORITY } from "@/lib/cloudflare-db"
 
 const MEMBERSHIP_CACHE_CONFIG = { ex: 15 }
 
-const { getDbAsync } = createCloudflareDbAccessors(D1_BINDING_PRIORITY.auth, {
+const { getDbAsync } = createCloudflareDbAccessors(HYPERDRIVE_BINDING_PRIORITY, {
   member,
 })
 

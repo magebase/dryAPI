@@ -131,6 +131,46 @@ export function resolveMonthlyTokenExpiryIso(
   return expiryAt.toISOString();
 }
 
+export function formatMonthlyTokenExpiryRelativeLabel(
+  monthlyTokenExpiryIso: string,
+  referenceDate: Date = new Date(),
+): string {
+  const target = new Date(monthlyTokenExpiryIso);
+  if (Number.isNaN(target.getTime())) {
+    return "at the end of this month";
+  }
+
+  const diffMs = target.getTime() - referenceDate.getTime();
+  if (diffMs <= 0) {
+    return "now";
+  }
+
+  const minuteMs = 60_000;
+  const hourMs = 60 * minuteMs;
+  const dayMs = 24 * hourMs;
+
+  const days = Math.floor(diffMs / dayMs);
+  const hours = Math.floor((diffMs % dayMs) / hourMs);
+  const minutes = Math.floor((diffMs % hourMs) / minuteMs);
+
+  const parts: string[] = [];
+  if (days > 0) {
+    parts.push(`${days} day${days === 1 ? "" : "s"}`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+  }
+  if (days === 0 && hours === 0 && minutes > 0) {
+    parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+  }
+
+  if (parts.length === 0) {
+    return "less than a minute";
+  }
+
+  return parts.join(", ");
+}
+
 export function resolveCurrentMonthlyTokenCycleStartIso(
   referenceDate: Date = new Date(),
 ): string {

@@ -3,13 +3,14 @@ import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-
 import type {
   DeapiPricingPermutation,
   DeapiPricingSnapshot,
 } from "@/types/deapi-pricing";
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings";
+import {
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db";
 
 type D1PreparedResult<T> = {
   results: T[];
@@ -25,6 +26,11 @@ type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement;
   batch?: (statements: D1PreparedStatement[]) => Promise<unknown>;
 };
+
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
 
 type SnapshotRow = {
   id: string;
@@ -127,11 +133,7 @@ function normalizePermutations(
 
 async function resolveMetadataDb(): Promise<D1DatabaseLike | null> {
   try {
-    const { env } = await getCloudflareContext({ async: true });
-    return resolveD1Binding<D1DatabaseLike>(
-      env as Record<string, unknown>,
-      D1_BINDING_PRIORITY.metadata,
-    );
+    return await getSqlDbAsync();
   } catch {
     if (process.env.NODE_ENV === "production" && !isNextProductionBuildPhase()) {
       throw new Error("Cloudflare context is unavailable.");

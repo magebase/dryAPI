@@ -8,10 +8,11 @@ import {
   type NodeCallback,
 } from "abstract-level"
 import type { NextCallback } from "abstract-level/types/abstract-iterator"
-import { drizzle } from "drizzle-orm/d1"
 import ModuleError from "module-error"
 
-type D1Binding = Parameters<typeof drizzle>[0]
+import type { PgDatabaseLike } from "@/lib/cloudflare-db"
+
+type D1Binding = PgDatabaseLike
 
 type ResolveBinding = () => Promise<D1Binding | null> | D1Binding | null
 

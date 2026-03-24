@@ -4,23 +4,18 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-const getCloudflareContextMock = vi.fn()
 const resolveConfiguredBalanceMock = vi.fn()
-const resolveD1BindingMock = vi.fn()
-
-vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext: (...args: unknown[]) => getCloudflareContextMock(...args),
-}))
+const getSqlDbAsyncMock = vi.fn()
 
 vi.mock("@/lib/configured-balance", () => ({
   resolveConfiguredBalance: (...args: unknown[]) => resolveConfiguredBalanceMock(...args),
 }))
 
-vi.mock("@/lib/d1-bindings", () => ({
-  D1_BINDING_PRIORITY: {
-    billing: ["BILLING_DB"],
-  },
-  resolveD1Binding: (...args: unknown[]) => resolveD1BindingMock(...args),
+vi.mock("@/lib/cloudflare-db", () => ({
+  HYPERDRIVE_BINDING_PRIORITY: ["HYPERDRIVE"],
+  createCloudflareDbAccessors: () => ({
+    getSqlDbAsync: (...args: unknown[]) => getSqlDbAsyncMock(...args),
+  }),
 }))
 
 import {
@@ -318,7 +313,7 @@ class FakePreparedStatement {
   async all<T>(): Promise<TestPreparedResult<T>> {
     const query = this.query.toLowerCase().replace(/\s+/g, " ").trim()
 
-    if (query.startsWith("pragma table_info(")) {
+    if (query.startsWith("select column_name as name from information_schema.columns")) {
       return {
         results: Array.from(this.state.profileColumns).map((name) => ({ name })) as T[],
       }
@@ -403,20 +398,17 @@ function createDb() {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
-  getCloudflareContextMock.mockReset()
   resolveConfiguredBalanceMock.mockReset()
-  resolveD1BindingMock.mockReset()
+  getSqlDbAsyncMock.mockReset()
   resolveConfiguredBalanceMock.mockReturnValue(15)
   vi.useRealTimers()
 })
 
 describe("dashboard-billing-credits", () => {
   it("returns null when billing db resolution fails and rejects invalid customer refs", async () => {
-    getCloudflareContextMock.mockRejectedValue(new Error("no context"))
-
-    await expect(getStoredCreditBalance("owner@dryapi.dev")).resolves.toBeNull()
-
     const { db } = createDb()
+    await expect(getStoredCreditBalance("owner@dryapi.dev", { db })).resolves.toBeNull()
+
     await expect(getStoredCreditBalance("", { db })).rejects.toThrow(
       "A valid customer ref is required",
     )
@@ -468,10 +460,9 @@ describe("dashboard-billing-credits", () => {
       updated_at: "1710835200000",
     })
 
-    getCloudflareContextMock.mockResolvedValue({ env: { BILLING_DB: db } })
-    resolveD1BindingMock.mockReturnValue(db)
+    getSqlDbAsyncMock.mockResolvedValue(db)
 
-    await expect(getStoredCreditBalance("owner@dryapi.dev")).resolves.toEqual({
+    await expect(getStoredCreditBalance("owner@dryapi.dev", { db })).resolves.toEqual({
       balanceCredits: 12.346,
       updatedAt: new Date(1710835200000).toISOString(),
     })
@@ -479,8 +470,7 @@ describe("dashboard-billing-credits", () => {
 
   it("applies billing credit grants through the resolved billing binding", async () => {
     const { db } = createDb()
-    getCloudflareContextMock.mockResolvedValue({ env: { BILLING_DB: db } })
-    resolveD1BindingMock.mockReturnValue(db)
+    getSqlDbAsyncMock.mockResolvedValue(db)
 
     const first = await applyBillingCreditGrant({
       customerRef: "owner@dryapi.dev",
@@ -516,11 +506,10 @@ describe("dashboard-billing-credits", () => {
       auto_top_up_monthly_spent_credits: 1,
       auto_top_up_monthly_window_start_at: windowStart,
     })
-    getCloudflareContextMock.mockResolvedValue({ env: { BILLING_DB: db } })
-    resolveD1BindingMock.mockReturnValue(db)
+    getSqlDbAsyncMock.mockResolvedValue(db)
     stubNow("2026-03-21T12:00:00.000Z")
 
-    await expect(getStoredAutoTopUpSettings("owner@dryapi.dev")).resolves.toMatchObject({
+    await expect(getStoredAutoTopUpSettings("owner@dryapi.dev", { db })).resolves.toMatchObject({
       thresholdCredits: 5,
     })
 
@@ -770,7 +759,7 @@ describe("dashboard-billing-credits", () => {
               return { meta: { changes: 1 } }
             },
             async all<T>() {
-              if (normalized.startsWith("pragma table_info(")) {
+              if (normalized.startsWith("select column_name as name from information_schema.columns")) {
                 return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
               }
 
@@ -1056,7 +1045,7 @@ describe("dashboard-billing-credits", () => {
             return { meta: { changes: 0 } }
           },
           async all<T>() {
-            if (normalized.startsWith("pragma table_info(")) {
+            if (normalized.startsWith("select column_name as name from information_schema.columns")) {
               return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
@@ -1146,7 +1135,7 @@ describe("dashboard-billing-credits", () => {
             return { meta: { changes: 0 } }
           },
           async all<T>() {
-            if (normalized.startsWith("pragma table_info(")) {
+            if (normalized.startsWith("select column_name as name from information_schema.columns")) {
               return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
@@ -1281,7 +1270,7 @@ describe("dashboard-billing-credits", () => {
             return { meta: { changes: 1 } }
           },
           async all<T>() {
-            if (normalized.startsWith("pragma table_info(")) {
+            if (normalized.startsWith("select column_name as name from information_schema.columns")) {
               return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 

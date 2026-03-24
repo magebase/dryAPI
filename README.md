@@ -237,56 +237,20 @@ pnpm db:migrate:local:analytics
 pnpm db:migrate:local:metadata
 ```
 
-`db:migrate:*` can use these env vars when you need custom DB names:
+`db:migrate` and `db:generate` use the single shared database config in `drizzle.config.ts`.
 
-- `CF_D1_DATABASE_NAME_AUTH`
-- `CF_D1_DATABASE_NAME_BILLING`
-- `CF_D1_DATABASE_NAME_ANALYTICS`
-- `CF_D1_DATABASE_NAME_METADATA`
+### Shared Database
 
-### D1 Binding
+The main app uses one Postgres database via Hyperdrive.
 
-`wrangler.jsonc` is segmented by write workload:
+- Drizzle config: `drizzle.config.ts`
+- Schema barrel: `src/db/schema.ts`
+- Migrations: `drizzle/migrations`
+- Connection source: `DATABASE_URL` or `HYPERDRIVE`
 
-- `AUTH_DB` for Better Auth tables (`user`, `session`, `account`, `verification`)
-- `BILLING_DB` for billing state tables (`credit_balance_profiles` and future billing rows)
-- `ANALYTICS_DB` for operational analytics/contact ingestion (`quote_requests`, `moderation_rejections`)
-- `METADATA_DB` for snapshots/config/Tina state (`deapi_pricing_*`, `tina_level_entries`, `hot_cold_*`)
+The previous auth/billing/analytics/metadata split has been removed.
 
-`APP_DB` remains as a compatibility alias during migration but should not be the long-term primary binding.
-
-Set real D1 database IDs before deploy:
-
-```json
-"d1_databases": [
-  {
-    "binding": "AUTH_DB",
-    "database_name": "dryapi-auth-db",
-    "database_id": "<auth-db-id>",
-    "migrations_dir": "drizzle/migrations/auth"
-  },
-  {
-    "binding": "BILLING_DB",
-    "database_name": "dryapi-billing-db",
-    "database_id": "<billing-db-id>",
-    "migrations_dir": "drizzle/migrations/billing"
-  },
-  {
-    "binding": "ANALYTICS_DB",
-    "database_name": "dryapi-analytics-db",
-    "database_id": "<analytics-db-id>",
-    "migrations_dir": "drizzle/migrations/analytics"
-  },
-  {
-    "binding": "METADATA_DB",
-    "database_name": "dryapi-metadata-db",
-    "database_id": "<metadata-db-id>",
-    "migrations_dir": "drizzle/migrations/metadata"
-  }
-]
-```
-
-See `docs/cloudflare-d1-architecture-guidelines.md` for the full D1 architecture policy.
+See `docs/cloudflare-d1-architecture-guidelines.md` for the shared-database policy.
 
 Local production preview:
 

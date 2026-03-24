@@ -6,6 +6,7 @@ import {
   resolveAnnualPriceUsd,
   resolveAnnualSavingsUsd,
   resolveCurrentMonthlyTokenCycleStartIso,
+  formatMonthlyTokenExpiryRelativeLabel,
   resolveMonthlyTokenExpiryIso,
   resolvePlanMonthlyCredits,
   resolveSaasPlan,
@@ -236,6 +237,21 @@ describe("resolveMonthlyTokenExpiryIso", () => {
     const result = resolveMonthlyTokenExpiryIso()
     expect(typeof result).toBe("string")
     expect(Number.isNaN(new Date(result).getTime())).toBe(false)
+  })
+})
+
+describe("formatMonthlyTokenExpiryRelativeLabel", () => {
+  it("returns a stable relative label from a reference date", () => {
+    const referenceDate = new Date("2026-03-31T00:00:00.000Z")
+    expect(
+      formatMonthlyTokenExpiryRelativeLabel("2026-04-01T00:00:00.000Z", referenceDate),
+    ).toBe("1 day")
+  })
+
+  it("falls back to the current-month message for invalid dates", () => {
+    expect(formatMonthlyTokenExpiryRelativeLabel("not-a-date", new Date("2026-03-31T00:00:00.000Z"))).toBe(
+      "at the end of this month",
+    )
   })
 })
 

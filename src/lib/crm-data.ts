@@ -1,14 +1,15 @@
 import "server-only";
 
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-
 import { scoreCrmLead } from "@/lib/crm-lead-score";
 import {
   isCrmMailingListSyncEnabled,
   isCrmWorkflowAutomationsEnabled,
   resolveEnabledWorkflowKinds,
 } from "@/lib/feature-flags";
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings";
+import {
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db";
 import type {
   CrmDashboardData,
   CrmHistoryEvent,
@@ -29,6 +30,11 @@ type D1PreparedStatement = {
 type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement;
 };
+
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
 
 type QuoteLeadRow = {
   id: string;
@@ -55,8 +61,8 @@ type ModerationRow = {
   created_at: number | string;
 };
 
-function toDbBinding(env: Record<string, unknown>): D1DatabaseLike | null {
-  return resolveD1Binding<D1DatabaseLike>(env, D1_BINDING_PRIORITY.analytics);
+function toDbBinding(_env: Record<string, unknown>): D1DatabaseLike {
+  throw new Error("toDbBinding is no longer used; use getSqlDbAsync instead")
 }
 
 function toTimestampMs(input: number | string): number {
@@ -285,21 +291,9 @@ function buildMarketingSnapshot(leads: CrmLead[]) {
 }
 
 export async function getCrmDashboardData(): Promise<CrmDashboardData> {
-  let db: D1DatabaseLike | null = null;
-
-  try {
-    const { env } = await getCloudflareContext({ async: true });
-    db = toDbBinding(env as Record<string, unknown>);
-  } catch {
-    db = null;
-  }
-
-  const sourceRows = db
-    ? await readSourceRows(db)
-    : {
-        leads: [],
-        moderation: [],
-      };
+  void toDbBinding;
+  const db = await getSqlDbAsync();
+  const sourceRows = await readSourceRows(db);
 
   const leads: CrmLead[] = sourceRows.leads.map((lead) => {
     const createdAtMs = toTimestampMs(lead.created_at);

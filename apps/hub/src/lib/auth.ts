@@ -60,18 +60,18 @@ async function resolveAuthDatabase() {
 
   if (!cloudflareEnv) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("[hub/auth] Cloudflare context unavailable — AUTH_DB unreachable in production.")
+      throw new Error("[hub/auth] Cloudflare context unavailable — APP_DB unreachable in production.")
     }
     console.warn("[hub/auth] No Cloudflare context; Better Auth uses in-memory storage for local dev.")
     return undefined
   }
 
-  const binding = resolveD1Binding(cloudflareEnv, ["AUTH_DB"])
+  const binding = resolveD1Binding(cloudflareEnv, ["APP_DB"])
   if (!binding) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("[hub/auth] AUTH_DB binding not found.")
+      throw new Error("[hub/auth] APP_DB binding not found.")
     }
-    console.warn("[hub/auth] AUTH_DB unavailable; Better Auth uses in-memory storage for local dev.")
+    console.warn("[hub/auth] APP_DB unavailable; Better Auth uses in-memory storage for local dev.")
     return undefined
   }
 

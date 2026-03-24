@@ -22,18 +22,21 @@ import {
   resolvePerfSlowThresholdMs,
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
-import { buildSessionCheckCookieHeader } from "@/lib/session-check-cookies"
+import {
+  applyDashboardSessionSnapshotHeaders,
+  resolveDashboardSessionSnapshotFromToken,
+  type DashboardSessionSnapshot,
+} from "@/lib/dashboard-session"
 
 const SUCCESS_PATH = "/success"
 const DASHBOARD_PREFIX = "/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
 const SESSION_CHECK_CACHE_TTL_MS = 60_000
-const SESSION_CHECK_TIMEOUT_MS = 2_500
 const SESSION_CHECK_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_SESSION_CHECK_SLOW_MS", 150)
 
 type SessionAuthCacheEntry = {
-  authenticated: boolean
+  snapshot: DashboardSessionSnapshot | null
   expiresAt: number
 }
 
@@ -119,7 +122,7 @@ function readSessionToken(request: NextRequest): string | null {
   return null
 }
 
-function readCachedSessionAuth(sessionToken: string): boolean | null {
+function readCachedSessionEntry(sessionToken: string): SessionAuthCacheEntry | null {
   const cacheEntry = sessionAuthCache.get(sessionToken)
   if (!cacheEntry) {
     return null
@@ -130,10 +133,13 @@ function readCachedSessionAuth(sessionToken: string): boolean | null {
     return null
   }
 
-  return cacheEntry.authenticated
+  return cacheEntry
 }
 
-function writeCachedSessionAuth(sessionToken: string, authenticated: boolean): void {
+function writeCachedSessionAuth(
+  sessionToken: string,
+  snapshot: DashboardSessionSnapshot | null,
+): void {
   // Keep this bounded so dev hot paths cannot grow memory unbounded.
   if (sessionAuthCache.size >= 1_024 && !sessionAuthCache.has(sessionToken)) {
     const firstKey = sessionAuthCache.keys().next().value
@@ -142,137 +148,60 @@ function writeCachedSessionAuth(sessionToken: string, authenticated: boolean): v
     }
   }
 
+  const now = Date.now()
+  const expiresAt = snapshot?.expiresAtMs
+    ? Math.min(now + SESSION_CHECK_CACHE_TTL_MS, snapshot.expiresAtMs)
+    : now + SESSION_CHECK_CACHE_TTL_MS
+
   sessionAuthCache.set(sessionToken, {
-    authenticated,
-    expiresAt: Date.now() + SESSION_CHECK_CACHE_TTL_MS,
+    snapshot,
+    expiresAt,
   })
 }
 
-function hasBetterAuthSession(payload: unknown): boolean {
-  if (!payload || typeof payload !== "object") {
-    return false
-  }
-
-  const record = payload as Record<string, unknown>
-  return Boolean(record.user || record.session)
+function createDashboardSessionRequestHeaders(
+  request: NextRequest,
+  snapshot: DashboardSessionSnapshot,
+): Headers {
+  const headers = new Headers(request.headers)
+  applyDashboardSessionSnapshotHeaders(headers, snapshot)
+  return headers
 }
 
-async function parseJsonResponseSafely(response: Response): Promise<unknown | null> {
-  const bodyText = await response.text().catch(() => "")
-  if (!bodyText) {
-    return null
-  }
-
-  try {
-    return JSON.parse(bodyText) as unknown
-  } catch {
-    return null
-  }
-}
-
-async function isDashboardUserAuthenticated(
+async function resolveDashboardSessionSnapshot(
   request: NextRequest,
   traceId: string,
   sessionToken: string,
-): Promise<boolean> {
+): Promise<DashboardSessionSnapshot | null> {
   const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now()
-  const cachedAuthenticated = readCachedSessionAuth(sessionToken)
-  if (cachedAuthenticated !== null) {
+  const cachedEntry = readCachedSessionEntry(sessionToken)
+  if (cachedEntry) {
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
     if (shouldEmitServerPerf("log")) {
       logServerPerfEvent("log", "middleware.dashboard.session-check.cache-hit", {
         traceId,
         pathname: request.nextUrl.pathname,
-        authenticated: cachedAuthenticated,
+        authenticated: cachedEntry.snapshot !== null,
         durationMs,
       })
     }
-    return cachedAuthenticated
+    return cachedEntry.snapshot
   }
 
   try {
-    const sessionUrl = request.nextUrl.clone()
-    sessionUrl.pathname = "/api/auth/get-session"
-    sessionUrl.search = ""
-    const sessionCookieHeader = buildSessionCheckCookieHeader((cookieName) =>
-      request.cookies.get(cookieName)?.value,
-    )
-
-    if (!sessionCookieHeader) {
-      logServerAuthEvent("error", "middleware.dashboard.session-check.cookies-missing", {
-        traceId,
-        pathname: request.nextUrl.pathname,
-      })
-      writeCachedSessionAuth(sessionToken, false)
-      return false
-    }
-
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS)
-    const sessionHeaders = new Headers({
-      accept: "application/json",
-      cookie: sessionCookieHeader,
-    })
-    const forwardedFor = request.headers.get("x-forwarded-for")?.trim()
-    const connectingIp = request.headers.get("cf-connecting-ip")?.trim()
-    const realIp = request.headers.get("x-real-ip")?.trim()
-
-    if (forwardedFor) {
-      sessionHeaders.set("x-forwarded-for", forwardedFor)
-    }
-
-    if (connectingIp) {
-      sessionHeaders.set("cf-connecting-ip", connectingIp)
-    }
-
-    if (realIp) {
-      sessionHeaders.set("x-real-ip", realIp)
-    }
-
     logServerAuthEvent("log", "middleware.dashboard.session-check.start", {
       traceId,
       fromPath: request.nextUrl.pathname,
       cookie: summarizeCookieHeader(request.headers.get("cookie")),
-      sessionUrl: sessionUrl.pathname,
     })
 
-    const response = await fetch(sessionUrl.toString(), {
-      method: "GET",
-      headers: sessionHeaders,
-      cache: "no-store",
-      signal: controller.signal,
-    }).finally(() => {
-      clearTimeout(timeout)
-    })
+    const snapshot = await resolveDashboardSessionSnapshotFromToken(sessionToken)
 
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
 
-    if (!response.ok) {
-      logServerAuthEvent("warn", "middleware.dashboard.session-check.non-ok", {
-        traceId,
-        status: response.status,
-        durationMs,
-      })
-
-      if (durationMs >= SESSION_CHECK_SLOW_MS) {
-        logServerPerfEvent("warn", "middleware.dashboard.session-check.slow", {
-          traceId,
-          pathname: request.nextUrl.pathname,
-          status: response.status,
-          durationMs,
-          slowThresholdMs: SESSION_CHECK_SLOW_MS,
-        })
-      }
-      writeCachedSessionAuth(sessionToken, false)
-      return false
-    }
-
-    const payload = await parseJsonResponseSafely(response)
-    const authenticated = hasBetterAuthSession(payload)
-
     logServerAuthEvent("log", "middleware.dashboard.session-check.result", {
       traceId,
-      authenticated,
+      authenticated: snapshot !== null,
       durationMs,
     })
 
@@ -280,7 +209,7 @@ async function isDashboardUserAuthenticated(
       logServerPerfEvent("warn", "middleware.dashboard.session-check.slow", {
         traceId,
         pathname: request.nextUrl.pathname,
-        authenticated,
+        authenticated: snapshot !== null,
         durationMs,
         slowThresholdMs: SESSION_CHECK_SLOW_MS,
       })
@@ -288,13 +217,13 @@ async function isDashboardUserAuthenticated(
       logServerPerfEvent("log", "middleware.dashboard.session-check", {
         traceId,
         pathname: request.nextUrl.pathname,
-        authenticated,
+        authenticated: snapshot !== null,
         durationMs,
       })
     }
 
-    writeCachedSessionAuth(sessionToken, authenticated)
-    return authenticated
+    writeCachedSessionAuth(sessionToken, snapshot)
+    return snapshot
   } catch (error) {
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
     logServerAuthEvent("error", "middleware.dashboard.session-check.error", {
@@ -310,8 +239,8 @@ async function isDashboardUserAuthenticated(
       slowThresholdMs: SESSION_CHECK_SLOW_MS,
       error: error instanceof Error ? error.message : String(error),
     })
-    writeCachedSessionAuth(sessionToken, false)
-    return false
+    writeCachedSessionAuth(sessionToken, null)
+    return null
   }
 }
 
@@ -472,24 +401,32 @@ export async function middleware(request: NextRequest) {
       return createDashboardLoginRedirect(request, traceId)
     }
 
-    if (isPrefetchRequest(request) || isRscRequest(request)) {
-      logServerAuthEvent("log", "middleware.dashboard.session-check.skip-internal", {
-        traceId,
-        pathname: request.nextUrl.pathname,
-      })
-    } else {
-      const authenticated = await isDashboardUserAuthenticated(request, traceId, sessionToken)
+    const sessionSnapshot = await resolveDashboardSessionSnapshot(
+      request,
+      traceId,
+      sessionToken,
+    )
 
-      logServerAuthEvent("log", "middleware.dashboard.decision", {
-        traceId,
-        pathname: request.nextUrl.pathname,
-        authenticated,
-      })
+    logServerAuthEvent("log", "middleware.dashboard.decision", {
+      traceId,
+      pathname: request.nextUrl.pathname,
+      authenticated: sessionSnapshot !== null,
+    })
 
-      if (!authenticated) {
-        return createDashboardLoginRedirect(request, traceId)
-      }
+    if (!sessionSnapshot) {
+      return createDashboardLoginRedirect(request, traceId)
     }
+
+    const forwardedHeaders = createDashboardSessionRequestHeaders(
+      request,
+      sessionSnapshot,
+    )
+
+    return NextResponse.next({
+      request: {
+        headers: forwardedHeaders,
+      },
+    })
   }
 
   if (isAuthPagePath(request.nextUrl.pathname)) {
@@ -499,7 +436,7 @@ export async function middleware(request: NextRequest) {
 
     const sessionToken = readSessionToken(request)
     const authenticated = sessionToken
-      ? await isDashboardUserAuthenticated(request, traceId, sessionToken)
+      ? (await resolveDashboardSessionSnapshot(request, traceId, sessionToken)) !== null
       : false
 
     logServerAuthEvent("log", "middleware.auth-page.decision", {

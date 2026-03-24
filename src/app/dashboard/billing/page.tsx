@@ -47,6 +47,7 @@ import {
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch";
 import { resolveStripeCheckoutMessaging } from "@/lib/stripe-branding";
 import {
+  formatMonthlyTokenExpiryRelativeLabel,
   listSaasPlans,
   resolveMonthlyTokenExpiryIso,
 } from "@/lib/stripe-saas-plans";
@@ -312,6 +313,7 @@ function formatDateTime(value: string | null): string {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "UTC",
   }).format(parsed);
 }
 
@@ -855,6 +857,7 @@ export default async function DashboardBillingPage({
   const topUpAmounts = [10, 25, 50, 100];
   const saasPlans = listSaasPlans();
   const monthlyTokenExpiryIso = resolveMonthlyTokenExpiryIso();
+  const monthlyTokenExpiryLabel = formatMonthlyTokenExpiryRelativeLabel(monthlyTokenExpiryIso);
   const activePlan = resolveActivePlanSummary({
     productLabel: stripeSummary.subscription?.productLabel || null,
     plans: saasPlans,
@@ -937,6 +940,7 @@ export default async function DashboardBillingPage({
               activePlan={activePlan}
               customerId={stripeSummary.customerId}
               monthlyTokenExpiryIso={monthlyTokenExpiryIso}
+              monthlyTokenExpiryLabel={monthlyTokenExpiryLabel}
               initialAutoTopUpSettings={initialAutoTopUpSettings}
               safeguards={BILLING_SAFEGUARDS}
               checkoutDisclosure={checkoutMessaging.checkoutDisclosure}
@@ -991,6 +995,7 @@ export default async function DashboardBillingPage({
         <SaasPlanCards
           plans={saasPlans}
           monthlyTokenExpiryIso={monthlyTokenExpiryIso}
+          monthlyTokenExpiryLabel={monthlyTokenExpiryLabel}
           checkoutDisclosure={checkoutMessaging.checkoutDisclosure}
         />
 

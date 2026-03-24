@@ -28,7 +28,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { resolveAccountRpmLimit } from "@/lib/account-rate-limits";
-import { internalWorkerFetch } from "@/lib/internal-worker-fetch";
+import { buildDashboardOverviewData } from "@/lib/dashboard-overview-data";
+import { readDashboardSessionSnapshotFromHeaders } from "@/lib/dashboard-session";
 import { toRoute } from "@/lib/route";
 import { listActiveRunpodModels } from "@/lib/runpod-active-models";
 import {
@@ -80,10 +81,6 @@ type DashboardAnnouncementItem = {
   href: string;
   ctaLabel: string;
   icon: LucideIcon;
-};
-
-type HeaderStore = {
-  get(name: string): string | null;
 };
 
 function toFiniteNumber(value: unknown): number | null {
@@ -270,123 +267,15 @@ function resolveUsageDailyHistory(
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function resolveDashboardApiToken(): string | null {
-  const token =
-    process.env.DASHBOARD_API_KEY?.trim() ||
-    process.env.DEAPI_API_KEY?.trim() ||
-    process.env.API_KEY?.trim() ||
-    process.env.INTERNAL_API_KEY?.trim() ||
-    "";
-
-  return token.length > 0 ? token : null;
-}
-
-function resolveRequestOrigin(requestHeaders: HeaderStore): string {
-  const forwardedHost = requestHeaders.get("x-forwarded-host")?.trim();
-  const host = forwardedHost || requestHeaders.get("host")?.trim() || "";
-  const forwardedProtocol = requestHeaders.get("x-forwarded-proto")?.trim();
-
-  if (host.length > 0) {
-    const protocol =
-      forwardedProtocol ||
-      (host.includes("localhost") || host.includes("127.0.0.1")
-        ? "http"
-        : "https");
-    return `${protocol}://${host}`;
-  }
-
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured && /^https?:\/\//i.test(configured)) {
-    return configured.replace(/\/$/, "");
-  }
-
-  return "http://localhost:3000";
-}
-
-async function fetchFirstEndpointJson(
-  origin: string,
-  endpoints: string[],
-  requestHeaders: Headers,
-): Promise<EndpointResult> {
-  let lastStatus: number | null = null;
-  let lastData: unknown = null;
-
-  for (const endpoint of endpoints) {
-    try {
-      const response = await internalWorkerFetch({
-        path: endpoint,
-        fallbackOrigin: origin,
-        init: {
-          method: "GET",
-          headers: requestHeaders,
-          cache: "no-store",
-        },
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (response.ok) {
-        return {
-          status: response.status,
-          data,
-        };
-      }
-
-      lastStatus = response.status;
-      lastData = data;
-    } catch {
-      // Continue to fallback endpoint.
-    }
-  }
-
-  return {
-    status: lastStatus,
-    data: lastData,
-  };
-}
-
 async function getDashboardOverviewData(): Promise<DashboardOverviewData> {
   const requestHeaderStore = await headers();
-  const origin = resolveRequestOrigin(requestHeaderStore);
+  const sessionSnapshot = readDashboardSessionSnapshotFromHeaders(requestHeaderStore);
 
-  const requestHeaders = new Headers({
-    accept: "application/json",
-  });
-
-  const cookieHeader = requestHeaderStore.get("cookie");
-  if (cookieHeader) {
-    requestHeaders.set("cookie", cookieHeader);
+  if (!sessionSnapshot) {
+    throw new Error("Missing trusted dashboard session snapshot.");
   }
 
-  const authorizationHeader = requestHeaderStore.get("authorization");
-  if (authorizationHeader) {
-    requestHeaders.set("authorization", authorizationHeader);
-  } else {
-    const token = resolveDashboardApiToken();
-    if (token) {
-      requestHeaders.set("authorization", `Bearer ${token}`);
-    }
-  }
-
-  const [balance, usage, models] = await Promise.all([
-    fetchFirstEndpointJson(
-      origin,
-      ["/api/v1/client/balance", "/api/v1/balance"],
-      requestHeaders,
-    ),
-    fetchFirstEndpointJson(
-      origin,
-      ["/api/v1/usage", "/api/v1/client/usage"],
-      requestHeaders,
-    ),
-    fetchFirstEndpointJson(
-      origin,
-      ["/api/v1/models", "/api/v1/client/models"],
-      requestHeaders,
-    ),
-  ]);
-
-  return { balance, usage, models };
+  return buildDashboardOverviewData(sessionSnapshot);
 }
 
 function resolveBalance(payload: unknown) {

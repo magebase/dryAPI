@@ -1,138 +1,152 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("server-only", () => ({}));
+vi.mock("server-only", () => ({}))
 
-const drizzleMock = vi.hoisted(() => vi.fn());
-const withReplicasMock = vi.hoisted(() =>
-  vi.fn((primary, replicas) => ({
-    primary,
-    replicas,
-    $primary: primary,
-  })),
-);
+const getCloudflareContextMock = vi.hoisted(() => vi.fn())
+const drizzleMock = vi.hoisted(() => vi.fn())
+const poolCtorMock = vi.hoisted(() => vi.fn())
+const queryMock = vi.hoisted(() =>
+  vi.fn(async ({ text, values }: { text: string; values: unknown[] }) => {
+    if (text === "SELECT $1::text AS value") {
+      return {
+        rows: [{ value: values[0] }],
+        rowCount: 1,
+      }
+    }
 
-vi.mock("drizzle-orm/d1", () => ({
-  drizzle: drizzleMock,
-}));
+    return {
+      rows: [],
+      rowCount: 1,
+    }
+  }),
+)
+const PoolMock = vi.hoisted(
+  () =>
+    class FakePool {
+      options: { connectionString: string; max: number }
 
-vi.mock("drizzle-orm/sqlite-core", () => ({
-  withReplicas: withReplicasMock,
-}));
+      query: typeof queryMock
 
-const getCloudflareContextMock = vi.hoisted(() => vi.fn());
+      constructor(options: { connectionString: string; max: number }) {
+        poolCtorMock(options)
+        this.options = options
+        this.query = queryMock
+      }
+    },
+)
 
 vi.mock("@opennextjs/cloudflare", () => ({
-  getCloudflareContext: getCloudflareContextMock,
-}));
+  getCloudflareContext: (...args: unknown[]) => getCloudflareContextMock(...args),
+}))
 
-import { createCloudflareDbAccessors } from "@/lib/cloudflare-db";
+vi.mock("drizzle-orm/node-postgres", () => ({
+  drizzle: (...args: unknown[]) => drizzleMock(...args),
+}))
 
-function createBinding() {
-  const primarySession = { prepare: vi.fn() };
-  const readSession = { prepare: vi.fn() };
-  const withSession = vi.fn((constraint?: string) =>
-    constraint === "first-primary" ? primarySession : readSession,
-  );
+vi.mock("pg", () => ({
+  Pool: PoolMock,
+}))
 
-  return {
-    binding: {
-      prepare: vi.fn(),
-      withSession,
-    },
-    withSession,
-    sessions: {
-      primarySession,
-      readSession,
-    },
-  };
-}
+import { createCloudflareDbAccessors } from "@/lib/cloudflare-db"
 
 describe("createCloudflareDbAccessors", () => {
+  const schema = { tables: [] }
+
   beforeEach(() => {
-    drizzleMock.mockReset();
-    withReplicasMock.mockClear();
-    getCloudflareContextMock.mockReset();
-  });
+    getCloudflareContextMock.mockReset()
+    drizzleMock.mockReset()
+    poolCtorMock.mockReset()
+    queryMock.mockReset()
 
-  it("creates a replica-routed synchronous Drizzle database", () => {
-    const { binding, sessions, withSession } = createBinding();
-    const schema = { tables: [] };
-
-    getCloudflareContextMock.mockReturnValue({
+    const cloudflareContext = {
       env: {
-        ANALYTICS_DB: binding,
+        HYPERDRIVE: {
+          connectionString: "postgres://hyperdrive.example/dryapi",
+        },
       },
-    });
-    drizzleMock.mockImplementation((resolvedBinding, options) => ({
-      binding: resolvedBinding,
+    }
+
+    getCloudflareContextMock.mockImplementation((options?: { async?: boolean }) =>
+      options?.async ? Promise.resolve(cloudflareContext) : cloudflareContext,
+    )
+
+    drizzleMock.mockImplementation((pool: unknown, options: { schema: unknown }) => ({
+      pool,
       schema: options.schema,
-    }));
+    }))
+  })
 
-    const { getDb } = createCloudflareDbAccessors("ANALYTICS_DB", schema);
+  it("creates cached postgres accessors from Hyperdrive", async () => {
+    const accessors = createCloudflareDbAccessors("HYPERDRIVE", schema)
 
-    expect(getDb()).toEqual({
-      primary: { binding: expect.any(Object), schema },
-      replicas: [{ binding: expect.any(Object), schema }],
-      $primary: { binding: expect.any(Object), schema },
-    });
-    expect(withSession).toHaveBeenNthCalledWith(1, "first-primary");
-    expect(withSession).toHaveBeenNthCalledWith(2, "first-unconstrained");
-    expect(drizzleMock).toHaveBeenCalledTimes(2);
-    expect(withReplicasMock).toHaveBeenCalledTimes(1);
-    const [primaryBinding, primaryOptions] = drizzleMock.mock.calls[0] as [
-      { prepare?: unknown },
-      { schema: unknown },
-    ];
-    const [replicaBinding, replicaOptions] = drizzleMock.mock.calls[1] as [
-      { prepare?: unknown },
-      { schema: unknown },
-    ];
-    expect(primaryBinding).not.toBe(sessions.primarySession);
-    expect(replicaBinding).not.toBe(sessions.readSession);
-    expect(typeof primaryBinding.prepare).toBe("function");
-    expect(typeof replicaBinding.prepare).toBe("function");
-    expect(primaryOptions).toEqual({ schema });
-    expect(replicaOptions).toEqual({ schema });
-  });
+    const binding = accessors.getBinding()
+    expect(binding).toEqual(accessors.getPrimaryBinding())
+    expect(binding).toEqual(
+      expect.objectContaining({
+        options: {
+          connectionString: "postgres://hyperdrive.example/dryapi",
+          max: 1,
+        },
+      }),
+    )
 
-  it("creates a replica-routed async Drizzle database", async () => {
-    const { binding, withSession } = createBinding();
-    const schema = { tables: [] };
+    const db = accessors.getDb()
+    expect(db).toEqual({ pool: binding, schema })
+    expect(drizzleMock).toHaveBeenCalledTimes(1)
 
-    getCloudflareContextMock.mockReturnValue({
-      env: {
-        ANALYTICS_DB: binding,
+    const sqlDb = accessors.getSqlDb()
+
+    await expect(sqlDb.prepare("SELECT ?::text AS value").bind("hello").all<{ value: string }>()).resolves.toEqual(
+      {
+        results: [{ value: "hello" }],
       },
-    });
-    drizzleMock.mockImplementation((resolvedBinding, options) => ({
-      binding: resolvedBinding,
-      schema: options.schema,
-    }));
+    )
 
-    const { getDbAsync } = createCloudflareDbAccessors("ANALYTICS_DB", schema);
+    await expect(
+      sqlDb.prepare("UPDATE example SET value = ? WHERE id = ?").bind("new", "row_1").run(),
+    ).resolves.toEqual({ rowCount: 1 })
 
-    await expect(getDbAsync()).resolves.toEqual({
-      primary: { binding: expect.any(Object), schema },
-      replicas: [{ binding: expect.any(Object), schema }],
-      $primary: { binding: expect.any(Object), schema },
-    });
-    expect(withSession).toHaveBeenNthCalledWith(1, "first-primary");
-    expect(withSession).toHaveBeenNthCalledWith(2, "first-unconstrained");
-    expect(drizzleMock).toHaveBeenCalledTimes(2);
-    expect(withReplicasMock).toHaveBeenCalledTimes(1);
-  });
+    expect(queryMock).toHaveBeenCalledWith({
+      text: "SELECT $1::text AS value",
+      values: ["hello"],
+    })
+    expect(queryMock).toHaveBeenCalledWith({
+      text: "UPDATE example SET value = $1 WHERE id = $2",
+      values: ["new", "row_1"],
+    })
+  })
 
-  it("fails fast when the binding is missing", () => {
-    const schema = { tables: [] };
+  it("creates async accessors from the same connection source", async () => {
+    const accessors = createCloudflareDbAccessors("HYPERDRIVE", schema)
 
-    getCloudflareContextMock.mockReturnValue({
-      env: {},
-    });
+    await expect(accessors.getDbAsync()).resolves.toEqual({
+      pool: expect.objectContaining({
+        options: {
+          connectionString: "postgres://hyperdrive.example/dryapi",
+          max: 1,
+        },
+      }),
+      schema,
+    })
 
-    const { getDb } = createCloudflareDbAccessors("ANALYTICS_DB", schema);
+    await expect(accessors.getSqlDbAsync()).resolves.toEqual(
+      expect.objectContaining({
+        prepare: expect.any(Function),
+        batch: expect.any(Function),
+        exec: expect.any(Function),
+      }),
+    )
+  })
 
-    expect(() => getDb()).toThrow(
-      "Cloudflare D1 binding ANALYTICS_DB is unavailable.",
-    );
-  });
-});
+  it("throws when the connection string is missing", () => {
+    getCloudflareContextMock.mockImplementation((options?: { async?: boolean }) =>
+      options?.async ? Promise.resolve({ env: {} }) : { env: {} },
+    )
+
+    const accessors = createCloudflareDbAccessors("HYPERDRIVE", schema)
+
+    expect(() => accessors.getBinding()).toThrow(
+      "Cloudflare Hyperdrive connection HYPERDRIVE is unavailable.",
+    )
+  })
+})

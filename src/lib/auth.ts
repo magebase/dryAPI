@@ -16,8 +16,6 @@ import {
   testUtils,
   twoFactor,
 } from "better-auth/plugins";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { drizzle } from "drizzle-orm/d1";
 import emailHarmony from "better-auth-harmony/email";
 
 import { authSchema } from "@/db/auth-schema";
@@ -58,12 +56,9 @@ import { sendBrevoReactEmail } from "@/lib/brevo-email";
 import { resolveActiveBrand } from "@/lib/brand-catalog";
 import { syncDashboardTopUpFromStripeCheckout } from "@/lib/dashboard-billing-credits";
 import {
-  D1_BINDING_PRIORITY,
-  formatExpectedBindings,
-  resolveD1Binding,
-} from "@/lib/d1-bindings";
-import { instrumentD1Binding } from "@/lib/d1-observability";
-import { resolveDrizzleCache } from "@/lib/drizzle-cache";
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db";
 import { resolveBrandForCheckoutSession } from "@/lib/stripe-branding";
 import {
   listSaasPlans,
@@ -80,9 +75,11 @@ type SocialProviderConfig = {
 };
 
 type SupportedSocialProvider = "google" | "github";
-type D1SessionCapableBinding = D1Binding & {
-  withSession?: (constraint?: string) => D1Binding;
-};
+
+const { getDb, getSqlDb } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  authSchema,
+);
 
 function normalizeBaseUrl(value: string | undefined): string | undefined {
   const raw = value?.trim();
@@ -1207,31 +1204,11 @@ function buildAuthPlugins(): NonNullable<BetterAuthOptions["plugins"]> {
 const baseURL = resolveBetterAuthBaseUrl();
 const socialProviders = readSocialProviders();
 
-type D1Binding = Parameters<typeof drizzle>[0];
-
-type D1CleanupStatement = {
-  bind: (...values: unknown[]) => D1CleanupStatement;
-  run: () => Promise<unknown>;
-};
-
-type D1CleanupBinding = {
-  prepare: (query: string) => D1CleanupStatement;
-};
-
 const SESSION_CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 let lastSessionCleanupAt = 0;
 let sessionCleanupPromise: Promise<void> | null = null;
 
-function isCleanupBinding(value: D1Binding): value is D1CleanupBinding {
-  const typed = value as { prepare?: unknown };
-  return typeof typed.prepare === "function";
-}
-
-function maybeCleanupExpiredSessions(binding: D1Binding): void {
-  if (!isCleanupBinding(binding)) {
-    return;
-  }
-
+function maybeCleanupExpiredSessions(): void {
   const now = Date.now();
 
   if (sessionCleanupPromise) {
@@ -1245,12 +1222,12 @@ function maybeCleanupExpiredSessions(binding: D1Binding): void {
   lastSessionCleanupAt = now;
   sessionCleanupPromise = (async () => {
     try {
-      await binding
+      await getSqlDb()
         .prepare("DELETE FROM session WHERE expiresAt < ?")
         .bind(now)
         .run();
     } catch (error) {
-      console.warn("[auth] Session cleanup skipped after D1 error", {
+      console.warn("[auth] Session cleanup skipped after Postgres error", {
         message: error instanceof Error ? error.message : String(error),
       });
     } finally {
@@ -1259,52 +1236,14 @@ function maybeCleanupExpiredSessions(binding: D1Binding): void {
   })();
 }
 
-function resolveAuthD1Binding(): D1Binding | null {
-  try {
-    const { env } = getCloudflareContext();
-    return resolveD1Binding<D1Binding>(
-      env as Record<string, unknown>,
-      D1_BINDING_PRIORITY.auth,
-    );
-  } catch {
-    return null;
-  }
-}
-
 function resolveBetterAuthDatabase() {
-  const d1Binding = resolveAuthD1Binding();
+  maybeCleanupExpiredSessions();
+  const db = getDb();
 
-  if (d1Binding) {
-    const instrumentedBinding = instrumentD1Binding(d1Binding, {
-      bindingName: D1_BINDING_PRIORITY.auth[0],
-      component: "better-auth",
-    });
-    maybeCleanupExpiredSessions(instrumentedBinding);
-    const primaryBinding =
-      typeof (instrumentedBinding as D1SessionCapableBinding).withSession === "function"
-        ? (instrumentedBinding as D1SessionCapableBinding).withSession!("first-primary")
-        : instrumentedBinding;
-    const drizzleCache = resolveDrizzleCache();
-    const db = drizzle(primaryBinding, {
-      schema: authSchema,
-      ...(drizzleCache ? { cache: drizzleCache } : {}),
-    });
-    return drizzleAdapter(db, {
-      provider: "sqlite",
-      schema: authSchema,
-    });
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      `[auth] D1 binding unavailable. Expected ${formatExpectedBindings(D1_BINDING_PRIORITY.auth)} for Better Auth database.`,
-    );
-  }
-
-  console.warn(
-    "[auth] D1 binding unavailable; Better Auth is falling back to temporary in-memory storage in dev.",
-  );
-  return undefined;
+  return drizzleAdapter(db, {
+    provider: "pg",
+    schema: authSchema,
+  });
 }
 
 type BetterAuthInstance = ReturnType<typeof betterAuth>;

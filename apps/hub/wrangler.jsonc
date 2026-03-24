@@ -1,5 +1,5 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "apiscore-hub",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-03-10",
@@ -50,14 +50,9 @@
   ],
   "d1_databases": [
     {
-      "binding": "AUTH_DB",
-      "database_name": "apiscore-auth-db",
-      "migrations_dir": "drizzle/migrations/auth",
-    },
-    {
-      "binding": "ANALYTICS_DB",
-      "database_name": "apiscore-analytics-db",
-      "migrations_dir": "drizzle/migrations/analytics",
+      "binding": "APP_DB",
+      "database_name": "apiscore-hub-db",
+      "migrations_dir": "drizzle/migrations",
     },
   ],
   "ai": {

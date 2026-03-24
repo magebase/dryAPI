@@ -1,16 +1,14 @@
 import { createDatabase, FilesystemBridge } from "@tinacms/datalayer";
 import { resolve as resolveTinaQuery } from "@tinacms/graphql";
 import type { Level } from "@tinacms/graphql";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { Schema } from "@tinacms/schema-tools";
-import { drizzle } from "drizzle-orm/d1";
 
-import { DrizzleD1Level } from "@/lib/tina/drizzle-d1-level";
 import {
-  D1_BINDING_PRIORITY,
-  formatExpectedBindings,
-  resolveD1Binding,
-} from "@/lib/d1-bindings";
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+  type PgDatabaseLike,
+} from "@/lib/cloudflare-db";
+import { DrizzleD1Level } from "@/lib/tina/drizzle-d1-level";
 import homeContentArtifact from "../../content/site/home.json";
 import siteConfigContentArtifact from "../../content/site/site-config.json";
 import graphQLSchemaArtifact from "../../tina/__generated__/_graphql.json";
@@ -23,7 +21,12 @@ const branch =
   process.env.CF_PAGES_BRANCH ||
   "main";
 
-type D1Binding = Parameters<typeof drizzle>[0];
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
+
+type D1Binding = PgDatabaseLike;
 type TinaRequestArgs = {
   query: string;
   variables?: Record<string, unknown>;
@@ -85,24 +88,7 @@ function toTinaCtxUser(user: unknown): { sub: string } | undefined {
 }
 
 async function resolveTinaD1Binding(): Promise<D1Binding | null> {
-  try {
-    const { env } = await getCloudflareContext({ async: true });
-    const typedEnv = env as Record<string, unknown>;
-    const binding = resolveD1Binding<D1Binding>(typedEnv, [
-      "TINA_DB",
-      ...D1_BINDING_PRIORITY.metadata,
-    ]);
-
-    if (!binding) {
-      throw new Error(
-        `Tina D1 binding is missing. Expected TINA_DB or ${formatExpectedBindings(D1_BINDING_PRIORITY.metadata)} in Cloudflare env.`,
-      );
-    }
-
-    return binding;
-  } catch {
-    return null;
-  }
+  return getSqlDbAsync();
 }
 
 function createFilesystemGitProvider(bridge: FilesystemBridge) {

@@ -1,7 +1,6 @@
 import "server-only"
 
 import JSZip from "jszip"
-import { getCloudflareContext } from "@opennextjs/cloudflare"
 
 import {
   deriveAccountExportOtp,
@@ -13,7 +12,10 @@ import { getDashboardSettingsForUser } from "@/lib/dashboard-settings-store"
 import { resolveCurrentUserSubscriptionPlanSummary } from "@/lib/auth-subscription-benefits"
 import { putPrivateObjectToR2 } from "@/lib/r2-storage"
 import { sendAccountExportEmail } from "@/lib/account-export-email"
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
+import {
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db"
 
 type D1PreparedResult<T> = {
   results: T[]
@@ -27,6 +29,11 @@ type D1PreparedStatement = {
 type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
 }
+
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
 
 type AccountExportUserRow = {
   id: string
@@ -106,14 +113,7 @@ function resolveSiteUrl(): string {
 }
 
 async function resolveAuthD1Binding(): Promise<D1DatabaseLike> {
-  const { env } = await getCloudflareContext({ async: true })
-  const binding = resolveD1Binding<D1DatabaseLike>(env as Record<string, unknown>, D1_BINDING_PRIORITY.auth)
-
-  if (!binding) {
-    throw new Error("AUTH_DB binding is required for account exports.")
-  }
-
-  return binding
+  return getSqlDbAsync()
 }
 
 export function toIsoString(value: string | number | null | undefined): string | null {

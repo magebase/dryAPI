@@ -1,0 +1,1217 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "8U0FS",
+      "x": 0,
+      "y": 0,
+      "name": "Editorial Variant",
+      "width": 1440,
+      "height": 2600,
+      "fill": "#F4F2EF",
+      "layout": "vertical",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "QjizK",
+          "name": "shell",
+          "width": 1280,
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "oQoJq",
+              "name": "header",
+              "width": "fill_container",
+              "height": 80,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "WszfH",
+                  "name": "brand",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "d5TMD",
+                      "name": "brandMark",
+                      "fill": "#384F84",
+                      "width": 12,
+                      "height": 12
+                    },
+                    {
+                      "type": "text",
+                      "id": "6a1HN",
+                      "name": "brandName",
+                      "fill": "#1A1A1A",
+                      "content": "dryAPI",
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qeUqo",
+                  "name": "nav",
+                  "gap": 32,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "8qRHB",
+                      "name": "n1",
+                      "fill": "#4A4A4A",
+                      "content": "MODELS",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "Q0pFl",
+                      "name": "n2",
+                      "fill": "#4A4A4A",
+                      "content": "PRICING",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "71jBV",
+                      "name": "n3",
+                      "fill": "#4A4A4A",
+                      "content": "DOCS",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal",
+                      "letterSpacing": 1.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "i8o6J",
+                  "name": "headerBtn",
+                  "fill": "#1E1E1E",
+                  "padding": [
+                    12,
+                    22
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nojjG",
+                      "name": "headerBtnText",
+                      "fill": "#FFFFFF",
+                      "content": "OPEN DASHBOARD",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0MoUU",
+              "name": "hero",
+              "width": "fill_container",
+              "height": 620,
+              "fill": "#FFF9F1",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UXoYF",
+                  "name": "heroLeft",
+                  "width": "fill_container",
+                  "height": 620,
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": [
+                    72,
+                    60
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "MWtyn",
+                      "name": "heroLabel",
+                      "fill": "#384F84",
+                      "content": "AI API MODEL LANDING PAGE",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "KzQ8I",
+                      "name": "heroHeadline",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ship the models people click on.",
+                      "lineHeight": 1.02,
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 86,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "6WD4R",
+                      "name": "heroBody",
+                      "fill": "#4A4A4A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Keep one integration while you showcase image, video, speech, OCR, and cleanup routes. The live model list stays current, the request shape stays familiar, and the spend stays a little lower.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Geist",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QzpcV",
+                      "name": "heroActions",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Ps75P",
+                          "name": "heroPrimary",
+                          "fill": "#384F84",
+                          "padding": [
+                            14,
+                            22
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "K6why",
+                              "name": "heroPrimaryText",
+                              "fill": "#FFFFFF",
+                              "content": "BROWSE LIVE MODELS",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal",
+                              "letterSpacing": 2
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "glBJF",
+                          "name": "heroSecondary",
+                          "fill": "#C8B496",
+                          "padding": [
+                            14,
+                            22
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "KQpt1",
+                              "name": "heroSecondaryText",
+                              "fill": "#1A1A1A",
+                              "content": "SEE PRICING",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal",
+                              "letterSpacing": 2
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wqTEK",
+                      "name": "heroChips",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "y0u78",
+                          "name": "chip1",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ijaQo",
+                              "name": "chip1Text",
+                              "fill": "#1A1A1A",
+                              "content": "9 active models",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal",
+                              "letterSpacing": 1.2
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "6QRXk",
+                          "name": "chip2",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "y6Mze",
+                              "name": "chip2Text",
+                              "fill": "#1A1A1A",
+                              "content": "7 route families",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal",
+                              "letterSpacing": 1.2
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "0Fzza",
+                          "name": "chip3",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "AbukX",
+                              "name": "chip3Text",
+                              "fill": "#1A1A1A",
+                              "content": "1 API key",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal",
+                              "letterSpacing": 1.2
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "4Bayu",
+                  "name": "heroVisual",
+                  "width": 520,
+                  "height": 620,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "./images/generated-1774315729820.png",
+                    "mode": "fill"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "h2o0E",
+              "name": "div1",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#E5E0D8"
+            },
+            {
+              "type": "frame",
+              "id": "Jy3bC",
+              "name": "proof",
+              "width": "fill_container",
+              "height": 170,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "aC0p9",
+                  "name": "p1",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 30,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aMlMR",
+                      "name": "p1n",
+                      "fill": "#C8B496",
+                      "content": "9",
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 62,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "7ANoQ",
+                      "name": "p1l",
+                      "fill": "#4A4A4A",
+                      "content": "ACTIVE MODELS",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qmthU",
+                  "name": "p2",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 30,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oETSO",
+                      "name": "p2n",
+                      "fill": "#C8B496",
+                      "content": "9/10",
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 62,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "G8M6s",
+                      "name": "p2l",
+                      "fill": "#4A4A4A",
+                      "content": "FEATURES YOU CAN SHOW",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dwB5A",
+                  "name": "p3",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 30,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "8CdYF",
+                      "name": "p3n",
+                      "fill": "#C8B496",
+                      "content": "LOWER",
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 62,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xrc0e",
+                      "name": "p3l",
+                      "fill": "#4A4A4A",
+                      "content": "SPEND VS. COMPLEXITY",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "UkP9P",
+                  "name": "p4",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 30,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NL1uv",
+                      "name": "p4n",
+                      "fill": "#C8B496",
+                      "content": "24/7",
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 62,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "f4C0q",
+                      "name": "p4l",
+                      "fill": "#4A4A4A",
+                      "content": "REQUEST STATUS",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "M73JA",
+              "name": "div2",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#E5E0D8"
+            },
+            {
+              "type": "frame",
+              "id": "7tkt0",
+              "name": "gallery",
+              "width": "fill_container",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "9RB2v",
+                  "name": "g1",
+                  "width": "fill_container",
+                  "fill": "#FFF9F1",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "65bXW",
+                      "name": "g1t",
+                      "fill": "#384F84",
+                      "content": "IMAGE MODELS",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "3XAK1",
+                      "name": "g1h",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Launch visuals that feel current.",
+                      "lineHeight": 1.02,
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 38,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "7Q1sA",
+                      "name": "g1b",
+                      "fill": "#4A4A4A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "FLUX.2 Klein 4B BF16 and Z-Image-Turbo INT8 give you the fast image routes customers expect.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Geist",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s60mF",
+                      "name": "g1chips",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "NbZl7",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "owHT0",
+                              "fill": "#1A1A1A",
+                              "content": "FLUX.2 Klein 4B BF16",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "x7ycQ",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "CUTZ7",
+                              "fill": "#1A1A1A",
+                              "content": "Z-Image-Turbo INT8",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M7lD3",
+                  "name": "g2",
+                  "width": "fill_container",
+                  "fill": "#F2ECE4",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UvO47",
+                      "name": "g2t",
+                      "fill": "#384F84",
+                      "content": "VIDEO + MOTION",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "Q8JqB",
+                      "name": "g2h",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Short clips without a new stack.",
+                      "lineHeight": 1.02,
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 38,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "seCJ9",
+                      "name": "g2b",
+                      "fill": "#4A4A4A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "LTX-2.3 22B Distilled INT8 keeps the workflow familiar when you need motion instead of stills.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Geist",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tL3dp",
+                      "name": "g2chips",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pxxJg",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fdr5m",
+                              "fill": "#1A1A1A",
+                              "content": "LTX-2.3 22B Distilled INT8",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fRldo",
+                  "name": "g3",
+                  "width": "fill_container",
+                  "fill": "#F7F3EB",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oIGq5",
+                      "name": "g3t",
+                      "fill": "#384F84",
+                      "content": "VOICE + CLEANUP",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "nHXNz",
+                      "name": "g3h",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Speech, OCR, removal, upscale.",
+                      "lineHeight": 1.02,
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 38,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "afzLP",
+                      "name": "g3b",
+                      "fill": "#4A4A4A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Whisper Large v3, Qwen3 TTS CustomVoice, Nanonets OCR S, BEN2, and RealESRGAN x4plus cover the utility work buyers remember.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Geist",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kBcC4",
+                      "name": "g3chips",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "la6lG",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "yTD4h",
+                              "fill": "#1A1A1A",
+                              "content": "Whisper Large v3",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "XL9d6",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "y9EQ0",
+                              "fill": "#1A1A1A",
+                              "content": "Qwen3 TTS CustomVoice",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gdBtI",
+              "name": "div3",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#E5E0D8"
+            },
+            {
+              "type": "frame",
+              "id": "PiRFL",
+              "name": "workflow",
+              "width": "fill_container",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GCfGM",
+                  "name": "wfLeft",
+                  "width": "fill_container",
+                  "fill": "#FFF9F1",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "AG1zd",
+                      "name": "wfLabel",
+                      "fill": "#384F84",
+                      "content": "HOW BUYERS USE IT",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "rLZqz",
+                      "name": "wfHeadline",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The flow feels familiar from day one.",
+                      "lineHeight": 1.02,
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 42,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S2Bdq",
+                      "name": "wfBody",
+                      "fill": "#4A4A4A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Discover live slugs, call the matching task route, and check request status when you need a result. That simple loop is easier to sell and easier to keep using.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Geist",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "p9ft1",
+                      "name": "wfSteps",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fNFrG",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            14,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QMzJA",
+                              "fill": "#1A1A1A",
+                              "content": "1. Discover",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Svy13",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            14,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PSA1a",
+                              "fill": "#1A1A1A",
+                              "content": "2. Dispatch",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pR00g",
+                          "fill": "#E5E0D8",
+                          "padding": [
+                            14,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "4q80L",
+                              "fill": "#1A1A1A",
+                              "content": "3. Settle",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sbQeg",
+                  "name": "wfVisual",
+                  "width": 480,
+                  "height": "fill_container",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "./images/generated-1774315774723.png",
+                    "mode": "fill"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "MjXTW",
+              "name": "div4",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#E5E0D8"
+            },
+            {
+              "type": "frame",
+              "id": "lYILS",
+              "name": "ctaBand",
+              "width": "fill_container",
+              "fill": "#1E1E1E",
+              "padding": [
+                40,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "RPc6i",
+                  "name": "ctaLeft",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EcXXV",
+                      "name": "ctaL",
+                      "fill": "#C8B496",
+                      "content": "READY TO SHOW THE MODEL MIX?",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "JyJ1z",
+                      "name": "ctaH",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Make the catalog feel faster than the competition.",
+                      "lineHeight": 1.04,
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 44,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "R35Ow",
+                      "name": "ctaB",
+                      "fill": "#D0C4B7",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A clean model page gives buyers confidence before they ever click deploy.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Geist",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "x91ay",
+                      "name": "ctaBtns",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Bg0xy",
+                          "fill": "#C8B496",
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "u0gTg",
+                              "fill": "#1A1A1A",
+                              "content": "START BUILDING",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal",
+                              "letterSpacing": 2
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oVHaH",
+                          "fill": "#FFF9F1",
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "1CPh0",
+                              "fill": "#1A1A1A",
+                              "content": "VIEW MODELS",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 13,
+                              "fontWeight": "normal",
+                              "letterSpacing": 2
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IQoiy",
+                  "name": "ctaRight",
+                  "width": 360,
+                  "fill": "#384F84",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V9rUa",
+                      "name": "ctaQuote",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "dryAPI gives teams one place to discover models, price them, and keep the request flow under control.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Geist",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XH6Vs",
+                      "name": "ctaName",
+                      "fill": "#C8B496",
+                      "content": "Built for buyers, operators, and the people who sign off on spend.",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal",
+                      "letterSpacing": 1.6
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "4rw6Z",
+              "name": "footer",
+              "width": "fill_container",
+              "fill": "#F4F2EF",
+              "padding": [
+                28,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "3FRnO",
+                  "name": "fBrand",
+                  "width": 420,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jgmra",
+                      "name": "fLogo",
+                      "fill": "#1A1A1A",
+                      "content": "dryAPI",
+                      "fontFamily": "Playfair Display",
+                      "fontSize": 22,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lTLEP",
+                      "name": "fTag",
+                      "fill": "#4A4A4A",
+                      "content": "One API for model catalogs that need to convert.",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BLxS5",
+                  "name": "fCols",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "fwIHT",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wbKFZ",
+                          "fill": "#384F84",
+                          "content": "PRODUCT",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal",
+                          "letterSpacing": 2
+                        },
+                        {
+                          "type": "text",
+                          "id": "UhUmJ",
+                          "fill": "#1A1A1A",
+                          "content": "Models",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "X9VIz",
+                          "fill": "#1A1A1A",
+                          "content": "Pricing",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "HHdKd",
+                          "fill": "#1A1A1A",
+                          "content": "Docs",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HDQaO",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3VHif",
+                          "fill": "#384F84",
+                          "content": "COMPANY",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal",
+                          "letterSpacing": 2
+                        },
+                        {
+                          "type": "text",
+                          "id": "ElNQs",
+                          "fill": "#1A1A1A",
+                          "content": "Security",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mw6lD",
+                          "fill": "#1A1A1A",
+                          "content": "Status",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "GkEEs",
+                          "fill": "#1A1A1A",
+                          "content": "Contact",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

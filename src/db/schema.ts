@@ -1,5 +1,4 @@
-// Compatibility barrel while the repo transitions from one APP_DB to
-// segmented D1 databases by workload.
+// Shared schema barrel for the single Postgres-backed database.
 export * from "@/db/schema-analytics"
 export * from "@/db/schema-auth"
 export * from "@/db/schema-billing"

@@ -73,7 +73,7 @@ function runLocalD1Sql(sql: string): void {
       "wrangler",
       "d1",
       "execute",
-      "AUTH_DB",
+      "APP_DB",
       "--local",
       "--config",
       "wrangler.local.jsonc",

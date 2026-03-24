@@ -1,10 +1,11 @@
 import "server-only"
 
-import { getCloudflareContext } from "@opennextjs/cloudflare"
-
+import {
+  createCloudflareDbAccessors,
+  HYPERDRIVE_BINDING_PRIORITY,
+} from "@/lib/cloudflare-db"
 import { createAuthApiKey, invokeAuthHandler } from "@/lib/auth-handler-proxy"
 import { sendApiKeyCreatedNotification } from "@/lib/dashboard-api-key-emails"
-import { D1_BINDING_PRIORITY, resolveD1Binding } from "@/lib/d1-bindings"
 
 type D1PreparedResult<T> = {
   results: T[]
@@ -18,6 +19,11 @@ type D1PreparedStatement = {
 type D1DatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
 }
+
+const { getSqlDbAsync } = createCloudflareDbAccessors(
+  HYPERDRIVE_BINDING_PRIORITY,
+  {},
+)
 
 type BetterAuthApiKey = {
   id: string
@@ -163,21 +169,11 @@ function resolveAbsoluteExpiryToSeconds(expiresAtMs: number | undefined): number
 }
 
 async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
-  try {
-    const { env } = await getCloudflareContext({ async: true })
-    return resolveD1Binding<D1DatabaseLike>(env as Record<string, unknown>, D1_BINDING_PRIORITY.auth)
-  } catch {
-    return null
-  }
+  return getSqlDbAsync()
 }
 
 async function resolveAnalyticsDb(): Promise<D1DatabaseLike | null> {
-  try {
-    const { env } = await getCloudflareContext({ async: true })
-    return resolveD1Binding<D1DatabaseLike>(env as Record<string, unknown>, D1_BINDING_PRIORITY.analytics)
-  } catch {
-    return null
-  }
+  return getSqlDbAsync()
 }
 
 async function getUserEmailByReferenceId(referenceId: string): Promise<string | null> {

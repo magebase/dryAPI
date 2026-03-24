@@ -7,7 +7,7 @@ AI API discovery hub — compare, benchmark, and choose the right AI API for any
 - **Next.js 16** + App Router + TypeScript
 - **Tailwind CSS v4** + ShadCN-compatible primitives
 - **Better Auth** (email/password, Google, GitHub, API keys)
-- **Cloudflare D1** (auth + analytics databases via Drizzle ORM)
+- **Cloudflare D1** (single shared app database via Drizzle ORM)
 - **OpenNext on Cloudflare Workers** (server-side rendering at the edge)
 
 ## Local development
@@ -31,7 +31,7 @@ pnpm cf:deploy          # Build + deploy to Cloudflare Workers
 ```bash
 pnpm db:generate        # Regenerate Drizzle migration files
 pnpm db:migrate:local   # Apply locally (Wrangler D1 local)
-pnpm db:migrate:remote  # Apply to production D1 databases
+pnpm db:migrate:remote  # Apply to the shared production D1 database
 ```
 
 ## Tests
@@ -49,8 +49,7 @@ BETTER_AUTH_URL=           # Required: public base URL (e.g. https://apiscore.de
 NEXT_PUBLIC_SITE_URL=      # Public site URL for metadata/canonical/OG
 CLOUDFLARE_API_TOKEN=      # For remote D1 migrations + Wrangler deploy
 CLOUDFLARE_ACCOUNT_ID=     # Cloudflare account
-CF_D1_DATABASE_ID_HUB_AUTH=      # Remote D1 auth DB id
-CF_D1_DATABASE_ID_HUB_ANALYTICS= # Remote D1 analytics DB id
+CF_D1_DATABASE_ID_HUB=     # Remote shared D1 database id
 GOOGLE_CLIENT_ID=          # Optional: OAuth sign-in
 GOOGLE_CLIENT_SECRET=
 GITHUB_CLIENT_ID=          # Optional: OAuth sign-in
@@ -60,7 +59,7 @@ GITHUB_CLIENT_SECRET=
 ## Key routes
 
 | Route | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `/` | Homepage — featured APIs + use cases |
 | `/apis` | Full API directory |
 | `/apis/[slug]` | API profile: benchmarks, pricing, alternatives |

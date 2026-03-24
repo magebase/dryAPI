@@ -26,6 +26,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        monthlyTokenExpiryLabel="in 1 day"
         checkoutDisclosure={checkoutDisclosure}
       />,
     )
@@ -43,6 +44,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        monthlyTokenExpiryLabel="in 1 day"
         checkoutDisclosure={checkoutDisclosure}
       />,
     )
@@ -62,12 +64,14 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        monthlyTokenExpiryLabel="in 1 day"
         checkoutDisclosure={checkoutDisclosure}
       />,
     )
 
     expect(screen.getByText(/Monthly subscription credits reset on the first of each month/i)).toBeInTheDocument()
     expect(screen.getByText(/unused subscription credits do not carry over/i)).toBeInTheDocument()
+    expect(screen.getByText(/Current cycle expires/i)).toHaveTextContent("in 1 day")
   })
 
   it("shows relative expiry messaging and a credit-formatted top-up CTA for Growth", () => {
@@ -75,6 +79,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        monthlyTokenExpiryLabel="in 1 day"
         checkoutDisclosure={checkoutDisclosure}
       />,
     )
@@ -92,6 +97,7 @@ describe("SaasPlanCards", () => {
       <SaasPlanCards
         plans={plans}
         monthlyTokenExpiryIso="2026-04-01T00:00:00.000Z"
+        monthlyTokenExpiryLabel="in 1 day"
         checkoutDisclosure={checkoutDisclosure}
       />,
     )

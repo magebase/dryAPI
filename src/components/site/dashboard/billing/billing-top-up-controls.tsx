@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -39,38 +39,10 @@ type BillingTopUpControlsProps = {
   topUpAmounts: readonly number[]
   activePlan: ActivePlanSummary | null
   customerId: string | null
-  monthlyTokenExpiryIso: string
+  monthlyTokenExpiryLabel: string
   initialAutoTopUpSettings: AutoTopUpSettings
   safeguards: BillingSafeguards
   checkoutDisclosure: string
-}
-
-function toRelativeTime(value: string): string {
-  const target = new Date(value)
-  if (Number.isNaN(target.getTime())) {
-    return "at the end of this month"
-  }
-
-  const diffMs = target.getTime() - Date.now()
-  if (diffMs <= 0) {
-    return "now"
-  }
-
-  const minuteMs = 60_000
-  const hourMs = 60 * minuteMs
-  const dayMs = 24 * hourMs
-
-  const days = Math.floor(diffMs / dayMs)
-  const hours = Math.floor((diffMs % dayMs) / hourMs)
-  const minutes = Math.floor((diffMs % hourMs) / minuteMs)
-
-  const parts: string[] = []
-  if (days > 0) parts.push(`${days} day${days === 1 ? "" : "s"}`)
-  if (hours > 0) parts.push(`${hours} hour${hours === 1 ? "" : "s"}`)
-  if (days === 0 && hours === 0 && minutes > 0) parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`)
-
-  if (parts.length === 0) return "less than a minute"
-  return parts.join(", ")
 }
 
 function toUsdLabel(value: number): string {
@@ -86,7 +58,7 @@ export function BillingTopUpControls({
   topUpAmounts,
   activePlan,
   customerId,
-  monthlyTokenExpiryIso,
+  monthlyTokenExpiryLabel,
   initialAutoTopUpSettings,
   safeguards,
   checkoutDisclosure,
@@ -100,8 +72,6 @@ export function BillingTopUpControls({
   const [settings, setSettings] = useState(initialAutoTopUpSettings)
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [statusMessage, setStatusMessage] = useState<string>("")
-
-  const expiresInLabel = useMemo(() => toRelativeTime(monthlyTokenExpiryIso), [monthlyTokenExpiryIso])
 
   const purchaseQuery = activePlan ? `&plan=${encodeURIComponent(activePlan.slug)}` : ""
 
@@ -177,12 +147,12 @@ export function BillingTopUpControls({
             You are on {activePlan.label}: +{activePlan.discountPercent}% bonus credits apply on top-up purchases.
           </p>
           <p className="mt-1">
-            {activePlan.monthlyCredits.toFixed(2)} monthly credits expire in {expiresInLabel}.
+            {activePlan.monthlyCredits.toFixed(2)} monthly credits expire in {monthlyTokenExpiryLabel}.
           </p>
         </div>
       ) : (
         <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-300">
-          Monthly credits used from your plan expire in {expiresInLabel}. Subscription credits are always consumed before non-expiring top-ups.
+          Monthly credits used from your plan expire in {monthlyTokenExpiryLabel}. Subscription credits are always consumed before non-expiring top-ups.
         </div>
       )}
 

@@ -4,7 +4,7 @@ import * as analyticsSchema from "@/db/schema-analytics";
 import { createCloudflareDbAccessors } from "@/lib/cloudflare-db";
 
 const { getDbAsync } = createCloudflareDbAccessors(
-  "ANALYTICS_DB",
+  "APP_DB",
   analyticsSchema,
 );
 
@@ -31,7 +31,7 @@ export async function persistModerationRejectionAttempt(
 
   if (!quoteDb) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("Cloudflare D1 binding ANALYTICS_DB is unavailable.");
+      throw new Error("Cloudflare database APP_DB is unavailable.");
     }
 
     return;

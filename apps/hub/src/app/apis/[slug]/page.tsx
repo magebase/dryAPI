@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-// In production this data would come from the ANALYTICS_DB D1 binding.
+// In production this data would come from the shared APP_DB D1 binding.
 // For now, static stubs are used to establish the route structure.
 
 const MOCK_APIS = [

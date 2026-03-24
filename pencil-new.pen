@@ -1,0 +1,1917 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 1440,
+      "fill": "#0A0A0B",
+      "layout": "vertical",
+      "gap": 6,
+      "padding": 6,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "tCDdf",
+          "name": "shell",
+          "width": 1280,
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "RMYAd",
+              "name": "header",
+              "width": "fill_container",
+              "fill": "#141417",
+              "cornerRadius": 24,
+              "padding": [
+                18,
+                24
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IDMWP",
+                  "name": "brand",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "9e9zc",
+                      "name": "brandMark",
+                      "fill": "#D4916E",
+                      "width": 14,
+                      "height": 14
+                    },
+                    {
+                      "type": "text",
+                      "id": "qBELo",
+                      "name": "brandName",
+                      "fill": "#FFFFFF",
+                      "content": "dryAPI",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 18,
+                      "fontWeight": "600",
+                      "letterSpacing": 3.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xHCK1",
+                  "name": "nav",
+                  "gap": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "adTgX",
+                      "name": "nav1",
+                      "fill": "#8B8B90",
+                      "content": "Platform",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "4pzo8",
+                      "name": "nav2",
+                      "fill": "#8B8B90",
+                      "content": "Models",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZFr6U",
+                      "name": "nav3",
+                      "fill": "#8B8B90",
+                      "content": "Pricing",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oiGVx",
+                      "name": "nav4",
+                      "fill": "#8B8B90",
+                      "content": "Security",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mmmb1",
+                  "name": "cta",
+                  "fill": "#FF5C00",
+                  "cornerRadius": 999,
+                  "gap": 8,
+                  "padding": [
+                    12,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "vLXX0",
+                      "name": "ctaText",
+                      "fill": "#FFFFFF",
+                      "content": "Start building",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "neXDT",
+              "name": "hero",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 30,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#141417",
+                    "position": 0
+                  },
+                  {
+                    "color": "#0F0F12",
+                    "position": 0.55
+                  },
+                  {
+                    "color": "#1A1A1D",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 24,
+              "gap": 40,
+              "padding": 56,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "poLJW",
+                  "name": "heroLeft",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "8swOk",
+                      "name": "heroLabel",
+                      "fill": "#8B8B90",
+                      "content": "OPENAI / OPENROUTER-COMPATIBLE INFERENCE",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.6
+                    },
+                    {
+                      "type": "text",
+                      "id": "BXYUs",
+                      "name": "heroHeadline",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "dryAPI turns model sprawl\ninto one fast, billable edge.",
+                      "lineHeight": 0.96,
+                      "fontFamily": "Instrument Serif",
+                      "fontSize": 72
+                    },
+                    {
+                      "type": "text",
+                      "id": "QUUMd",
+                      "name": "heroBody",
+                      "fill": "#ADADB0",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ship one AI API for routing, keys, credits, and usage instead of stitching provider consoles together as you scale.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 18
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YUluw",
+                      "name": "actions",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "qsvY0",
+                          "name": "primaryBtn",
+                          "fill": "#FF5C00",
+                          "cornerRadius": 999,
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BObdQ",
+                              "name": "primaryText",
+                              "fill": "#FFFFFF",
+                              "content": "Launch with dryAPI",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "v3rnq",
+                          "name": "secondaryBtn",
+                          "fill": "#1A1A1D",
+                          "cornerRadius": 999,
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "5KVwL",
+                              "name": "secondaryText",
+                              "fill": "#FFFFFF",
+                              "content": "See compatible endpoints",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BcBMt",
+                      "name": "trust",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "DSUyM",
+                          "name": "chip1",
+                          "fill": "#FF5C0018",
+                          "cornerRadius": 999,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "R8b4p",
+                              "name": "chip1Text",
+                              "fill": "#FFFFFF",
+                              "content": "Cloudflare edge auth",
+                              "fontFamily": "DM Mono",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FfVQM",
+                          "name": "chip2",
+                          "fill": "#1A1A1D",
+                          "cornerRadius": 999,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "i93WT",
+                              "name": "chip2Text",
+                              "fill": "#FFFFFF",
+                              "content": "Usage-based credits",
+                              "fontFamily": "DM Mono",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "khp30",
+                          "name": "chip3",
+                          "fill": "#1A1A1D",
+                          "cornerRadius": 999,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cIhBG",
+                              "name": "chip3Text",
+                              "fill": "#FFFFFF",
+                              "content": "Provider routing",
+                              "fontFamily": "DM Mono",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "zOBox",
+                  "name": "heroVisual",
+                  "clip": true,
+                  "width": 420,
+                  "height": 360,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "radial",
+                    "enabled": true,
+                    "rotation": 0,
+                    "size": {
+                      "width": 1,
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#2A2A2E",
+                        "position": 0
+                      },
+                      {
+                        "color": "#141417",
+                        "position": 0.6
+                      },
+                      {
+                        "color": "#0A0A0B",
+                        "position": 1
+                      }
+                    ],
+                    "center": {
+                      "x": 0.45,
+                      "y": 0.35
+                    }
+                  },
+                  "cornerRadius": 200,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "6fPNV",
+                      "x": 34,
+                      "y": 24,
+                      "name": "orb1",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "radial",
+                        "enabled": true,
+                        "rotation": 0,
+                        "size": {
+                          "width": 1,
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#FFF0E5",
+                            "position": 0
+                          },
+                          {
+                            "color": "#FF8A4C",
+                            "position": 0.55
+                          },
+                          {
+                            "color": "#1A1A1D",
+                            "position": 1
+                          }
+                        ],
+                        "center": {
+                          "x": 0.45,
+                          "y": 0.35
+                        }
+                      },
+                      "width": 240,
+                      "height": 240
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "JUKlk",
+                      "x": 182,
+                      "y": 112,
+                      "name": "orb2",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "radial",
+                        "enabled": true,
+                        "rotation": 0,
+                        "size": {
+                          "width": 1,
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#FFF7F1",
+                            "position": 0
+                          },
+                          {
+                            "color": "#FF5C00",
+                            "position": 0.62
+                          },
+                          {
+                            "color": "#2A2A2E",
+                            "position": 1
+                          }
+                        ],
+                        "center": {
+                          "x": 0.45,
+                          "y": 0.35
+                        }
+                      },
+                      "width": 168,
+                      "height": 168
+                    },
+                    {
+                      "type": "frame",
+                      "id": "p3325",
+                      "x": 88,
+                      "y": 88,
+                      "name": "panel",
+                      "width": 244,
+                      "height": 184,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 24,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mNFdn",
+                          "name": "panelLabel",
+                          "fill": "#6B6B70",
+                          "content": "CONTROL PLANE",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.4
+                        },
+                        {
+                          "type": "text",
+                          "id": "AZNj4",
+                          "name": "panelValue",
+                          "fill": "#0A0A0B",
+                          "content": "1 API",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 44,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "maXs8",
+                          "name": "panelBody",
+                          "fill": "#3D3D3D",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "OpenAI-compatible requests in. Routed, metered, normalized responses out.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "Inter",
+                          "fontSize": 14
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "1kObd",
+              "name": "proof",
+              "width": "fill_container",
+              "fill": "#141417",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "1cHm9",
+                  "name": "proofIntro",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "8uLNH",
+                      "name": "proofLabel",
+                      "fill": "#8B8B90",
+                      "content": "WHY BUYERS LEAN IN",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.6
+                    },
+                    {
+                      "type": "text",
+                      "id": "lRVkG",
+                      "name": "proofHeadline",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The parts that usually break first are already built in.",
+                      "lineHeight": 0.98,
+                      "fontFamily": "Instrument Serif",
+                      "fontSize": 48
+                    },
+                    {
+                      "type": "text",
+                      "id": "L1SF0",
+                      "name": "proofBody",
+                      "fill": "#ADADB0",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "dryAPI bundles the operational surface around inference so product, infra, and finance can move on the same contract.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 16
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "EjZcj",
+                  "name": "cards",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vTUgj",
+                      "name": "card1",
+                      "width": "fill_container",
+                      "fill": "#1A1A1D",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XGIIc",
+                          "name": "card1Title",
+                          "fill": "#FFFFFF",
+                          "content": "OpenAI-compatible API",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "16D9T",
+                          "name": "card1Body",
+                          "fill": "#ADADB0",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "OpenAI-compatible API\nUsage credits\nSingle API key",
+                          "lineHeight": 1.35,
+                          "fontFamily": "DM Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mObnO",
+                      "name": "card2",
+                      "width": "fill_container",
+                      "fill": "#FF5C0018",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ltthL",
+                          "name": "card2Title",
+                          "fill": "#FFFFFF",
+                          "content": "Edge auth + limits",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gBQZw",
+                          "name": "card2Body",
+                          "fill": "#FFF1E8",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Shared credits\nTeam limits\nRole-based access",
+                          "lineHeight": 1.35,
+                          "fontFamily": "DM Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IDHQE",
+                      "name": "card3",
+                      "width": "fill_container",
+                      "fill": "#D5DCBA",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Siwfv",
+                          "name": "card3Title",
+                          "fill": "#FFFFFF",
+                          "content": "Credits + billing",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pMvTv",
+                          "name": "card3Body",
+                          "fill": "#ADADB0",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Custom routing\nInvoice billing\nDedicated support",
+                          "lineHeight": 1.35,
+                          "fontFamily": "DM Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eSXA2",
+              "name": "workflow",
+              "width": "fill_container",
+              "fill": "#111113",
+              "cornerRadius": 20,
+              "gap": 32,
+              "padding": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NAxvS",
+                  "name": "workflowLeft",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ux30X",
+                      "name": "workflowLabel",
+                      "fill": "#8B8B90",
+                      "content": "HOW DRYAPI WORKS",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.6
+                    },
+                    {
+                      "type": "text",
+                      "id": "buWMg",
+                      "name": "workflowHeadline",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A request enters once. dryAPI handles the routing, response shape, and ledger.",
+                      "lineHeight": 0.98,
+                      "fontFamily": "Instrument Serif",
+                      "fontSize": 46
+                    },
+                    {
+                      "type": "text",
+                      "id": "6YNZ6",
+                      "name": "workflowBody",
+                      "fill": "#ADADB0",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Authenticate at the edge, dispatch to the right provider, normalize the output, and settle usage without branching your client integration.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 16
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ce01d",
+                      "name": "steps",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "wZUHA",
+                          "name": "step1",
+                          "width": "fill_container",
+                          "fill": "#1A1A1D",
+                          "cornerRadius": 16,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IynHF",
+                              "name": "step1Title",
+                              "fill": "#FFFFFF",
+                              "content": "1. Authenticate at the edge",
+                              "fontFamily": "Inter",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "tNgsy",
+                              "name": "step1Body",
+                              "fill": "#ADADB0",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Bearer auth and key-level limits are applied before the request leaves your boundary.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FjyjD",
+                          "name": "step2",
+                          "width": "fill_container",
+                          "fill": "#1F1F23",
+                          "cornerRadius": 16,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RaEca",
+                              "name": "step2Title",
+                              "fill": "#FFFFFF",
+                              "content": "2. Dispatch the best route",
+                              "fontFamily": "Inter",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "X1H9Z",
+                              "name": "step2Body",
+                              "fill": "#ADADB0",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Provider choice can adapt to latency, cost, and model availability without changing the request shape.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vZg7A",
+                          "name": "step3",
+                          "width": "fill_container",
+                          "fill": "#FF5C0018",
+                          "cornerRadius": 16,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OnVn1",
+                              "name": "step3Title",
+                              "fill": "#FFFFFF",
+                              "content": "3. Meter credits + usage",
+                              "fontFamily": "Inter",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "71gAA",
+                              "name": "step3Body",
+                              "fill": "#ADADB0",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Usage, credits, and billing records land in the same system your team reviews every day.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KlFeS",
+                  "name": "workflowVisual",
+                  "clip": true,
+                  "width": 420,
+                  "height": 330,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "radial",
+                    "enabled": true,
+                    "rotation": 0,
+                    "size": {
+                      "width": 1,
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#FFFFFF",
+                        "position": 0
+                      },
+                      {
+                        "color": "#C3DED8",
+                        "position": 0.65
+                      },
+                      {
+                        "color": "#C4CFDE",
+                        "position": 1
+                      }
+                    ],
+                    "center": {
+                      "x": 0.45,
+                      "y": 0.35
+                    }
+                  },
+                  "cornerRadius": 28,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "fcGoj",
+                      "x": 42,
+                      "y": 34,
+                      "name": "visualOrb",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "radial",
+                        "enabled": true,
+                        "rotation": 0,
+                        "size": {
+                          "width": 1,
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#F3EBE2",
+                            "position": 0
+                          },
+                          {
+                            "color": "#D5DCBA",
+                            "position": 0.65
+                          },
+                          {
+                            "color": "#C3DED8",
+                            "position": 1
+                          }
+                        ],
+                        "center": {
+                          "x": 0.45,
+                          "y": 0.35
+                        }
+                      },
+                      "width": 200,
+                      "height": 200
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gVaGU",
+                      "x": 38,
+                      "y": 36,
+                      "name": "requestCard",
+                      "width": 232,
+                      "height": 118,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 20,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ExNgH",
+                          "name": "requestLabel",
+                          "fill": "#6B6B6B",
+                          "content": "REQUEST",
+                          "fontFamily": "Funnel Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.3
+                        },
+                        {
+                          "type": "text",
+                          "id": "q8hGw",
+                          "name": "requestBody",
+                          "fill": "#1A1A1A",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "POST /v1/chat/completions\nmodel: gpt-4.1",
+                          "lineHeight": 1.25,
+                          "fontFamily": "Funnel Sans",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gcKW2",
+                      "x": 122,
+                      "y": 146,
+                      "name": "responseCard",
+                      "width": 232,
+                      "height": 138,
+                      "fill": "#1A1A1A",
+                      "cornerRadius": 20,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LSZDd",
+                          "name": "responseLabel",
+                          "fill": "#F3EBE2",
+                          "content": "RESPONSE",
+                          "fontFamily": "Funnel Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.3
+                        },
+                        {
+                          "type": "text",
+                          "id": "7G6Pf",
+                          "name": "responseBody",
+                          "fill": "#FFFFFF",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "200 OK\n18 ms routed\n0.032 credits",
+                          "lineHeight": 1.15,
+                          "fontFamily": "Funnel Sans",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "nNWpR",
+              "name": "pricing",
+              "width": "fill_container",
+              "fill": "#141417",
+              "cornerRadius": 24,
+              "layout": "vertical",
+              "gap": 28,
+              "padding": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Flz0n",
+                  "name": "pricingIntro",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ilgdn",
+                      "name": "pricingLabel",
+                      "fill": "#8B8B90",
+                      "content": "PRICING THAT CONVERTS",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.6
+                    },
+                    {
+                      "type": "text",
+                      "id": "NSGZz",
+                      "name": "pricingHeadline",
+                      "fill": "#FFFFFF",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Pricing built for builders, teams, and procurement.",
+                      "lineHeight": 0.98,
+                      "fontFamily": "Instrument Serif",
+                      "fontSize": 50
+                    },
+                    {
+                      "type": "text",
+                      "id": "xyS5t",
+                      "name": "pricingBody",
+                      "fill": "#ADADB0",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Start with prepaid credits, move to shared controls as usage climbs, and keep the same integration when procurement steps in.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 16
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jF9x5",
+                  "name": "plans",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DyBuI",
+                      "name": "plan1",
+                      "width": "fill_container",
+                      "fill": "#1A1A1D",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "9lJWG",
+                          "name": "plan1Title",
+                          "fill": "#FFFFFF",
+                          "content": "Builder credits",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "5QIjR",
+                          "name": "plan1Body",
+                          "fill": "#ADADB0",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "For fast-moving teams that want a clean start, a single key, and immediate usage visibility.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 14
+                        },
+                        {
+                          "type": "text",
+                          "id": "HjJSR",
+                          "name": "plan1Cta",
+                          "fill": "#FFFFFF",
+                          "content": "Start with credits",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "b9bzl",
+                      "name": "plan2",
+                      "width": "fill_container",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 20,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#FF5C00",
+                            "position": 0
+                          },
+                          {
+                            "color": "#FF8A4C",
+                            "position": 0.65
+                          },
+                          {
+                            "color": "#C86D35",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Irc5o",
+                          "name": "plan2Title",
+                          "fill": "#FFFFFF",
+                          "content": "Team controls",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YHx9A",
+                          "name": "plan2Body",
+                          "fill": "#FFF1E8",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Shared credit pools, request caps, and per-key visibility for product and platform teams.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 14
+                        },
+                        {
+                          "type": "text",
+                          "id": "BVLlJ",
+                          "name": "plan2Cta",
+                          "fill": "#FFFFFF",
+                          "content": "Best for shipping",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GjfTV",
+                      "name": "plan3",
+                      "width": "fill_container",
+                      "fill": "#1A1A1D",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "y9vtj",
+                          "name": "plan3Title",
+                          "fill": "#FFFFFF",
+                          "content": "Enterprise procurement",
+                          "fontFamily": "Inter",
+                          "fontSize": 22,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kE6Ek",
+                          "name": "plan3Body",
+                          "fill": "#ADADB0",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Invoice-friendly billing, custom routing policies, and support for larger deployments.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 14
+                        },
+                        {
+                          "type": "text",
+                          "id": "109PX",
+                          "name": "plan3Cta",
+                          "fill": "#FFFFFF",
+                          "content": "Talk to sales",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M2e2U",
+                  "name": "faqRow",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PLq4D",
+                      "name": "faq1",
+                      "width": "fill_container",
+                      "fill": "#1A1A1D",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GxQ4S",
+                          "name": "faq1Q",
+                          "fill": "#FF5C00",
+                          "content": "Keep our current SDK?",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "B1B6l",
+                          "name": "faq1A",
+                          "fill": "#ADADB0",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Yes. dryAPI preserves the request shape so you can swap routing behind the same endpoint.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KBcxY",
+                      "name": "faq2",
+                      "width": "fill_container",
+                      "fill": "#1A1A1D",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LDfTd",
+                          "name": "faq2Q",
+                          "fill": "#FF5C00",
+                          "content": "How are credits billed?",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "y35Wv",
+                          "name": "faq2A",
+                          "fill": "#ADADB0",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Usage is metered as requests complete, so spend, limits, and history stay aligned.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SM7ib",
+                      "name": "faq3",
+                      "width": "fill_container",
+                      "fill": "#FF5C0018",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "9E3SR",
+                          "name": "faq3Q",
+                          "fill": "#FFFFFF",
+                          "content": "Roll out by team?",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "psdBI",
+                          "name": "faq3A",
+                          "fill": "#FFF1E8",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Yes. Use shared credits and per-key limits to migrate traffic in stages.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AEZRy",
+                  "name": "pricingCallout",
+                  "width": "fill_container",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 25,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#FF5C00",
+                        "position": 0
+                      },
+                      {
+                        "color": "#FF8A4C",
+                        "position": 0.5
+                      },
+                      {
+                        "color": "#C86D35",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 18,
+                  "gap": 20,
+                  "padding": [
+                    20,
+                    22
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TAutU",
+                      "name": "calloutLeft",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pT37d",
+                          "name": "calloutLabel",
+                          "fill": "#3B1800",
+                          "content": "NEED A ROLLOUT PLAN?",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.4
+                        },
+                        {
+                          "type": "text",
+                          "id": "AVQSs",
+                          "name": "calloutBody",
+                          "fill": "#0A0A0B",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "We can map models, limits, and billing before you move traffic.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ETEgB",
+                      "name": "calloutBtn",
+                      "fill": "#0A0A0B",
+                      "cornerRadius": 999,
+                      "padding": [
+                        12,
+                        18
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WuTB4",
+                          "name": "calloutBtnText",
+                          "fill": "#FFFFFF",
+                          "content": "Talk to sales",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "q4hed",
+              "name": "ctaBand",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 25,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#FF5C00",
+                    "position": 0
+                  },
+                  {
+                    "color": "#FF8A4C",
+                    "position": 0.52
+                  },
+                  {
+                    "color": "#F3EBE2",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 20,
+              "gap": 32,
+              "padding": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "imu2Y",
+                  "name": "ctaLeft",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "139Ie",
+                      "name": "ctaLabel",
+                      "fill": "#3B1800",
+                      "content": "SHIP WITH ONE INTEGRATION",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.6
+                    },
+                    {
+                      "type": "text",
+                      "id": "mFAq6",
+                      "name": "ctaHeadline",
+                      "fill": "#0A0A0B",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Build on the stack that keeps cost, routing, and control in the same place.",
+                      "lineHeight": 0.98,
+                      "fontFamily": "Instrument Serif",
+                      "fontSize": 52
+                    },
+                    {
+                      "type": "text",
+                      "id": "NBDtG",
+                      "name": "ctaBody",
+                      "fill": "#2A2A2E",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "dryAPI lets you keep one integration while the backend matures from experimentation to procurement-grade operations.",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 16
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U3JS1",
+                      "name": "ctaActions",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "w7KvC",
+                          "name": "ctaPrimary",
+                          "fill": "#0A0A0B",
+                          "cornerRadius": 999,
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Z6yVN",
+                              "name": "ctaPrimaryText",
+                              "fill": "#F3EBE2",
+                              "content": "Start building",
+                              "fontFamily": "Funnel Sans",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "hwmHm",
+                          "name": "ctaSecondary",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 999,
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "5AbOF",
+                              "name": "ctaSecondaryText",
+                              "fill": "#1A1A1A",
+                              "content": "View models",
+                              "fontFamily": "Funnel Sans",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ffCs4",
+                  "name": "ctaProof",
+                  "width": 360,
+                  "fill": "#FFF7F1",
+                  "cornerRadius": 20,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VE0rY",
+                      "name": "ctaProofLabel",
+                      "fill": "#6B6B70",
+                      "content": "WHY TEAMS CONVERT",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.3
+                    },
+                    {
+                      "type": "text",
+                      "id": "iq48U",
+                      "name": "ctaProofBody",
+                      "fill": "#3D3D3D",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Fewer moving parts sit between product release, provider change, and monthly billing review.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Inter",
+                      "fontSize": 16
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hixdi",
+              "name": "footer",
+              "width": "fill_container",
+              "fill": "#141417",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oSVkf",
+                  "name": "footerTop",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tELYV",
+                      "name": "footerBrand",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "QKamH",
+                          "name": "footerMark",
+                          "fill": "#D4916E",
+                          "width": 14,
+                          "height": 14
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kZwFC",
+                          "name": "footerBrandText",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IkY47",
+                              "name": "footerName",
+                              "fill": "#FFFFFF",
+                              "content": "dryAPI",
+                              "fontFamily": "DM Mono",
+                              "fontSize": 18,
+                              "fontWeight": "600",
+                              "letterSpacing": 3.5
+                            },
+                            {
+                              "type": "text",
+                              "id": "e1ext",
+                              "name": "footerTag",
+                              "fill": "#8B8B90",
+                              "content": "One API. One ledger. One dashboard.",
+                              "fontFamily": "Inter",
+                              "fontSize": 13
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "G9ECV",
+                      "name": "footerOrb",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "radial",
+                        "enabled": true,
+                        "rotation": 0,
+                        "size": {
+                          "width": 1,
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#FF5C00",
+                            "position": 0
+                          },
+                          {
+                            "color": "#FF8A4C",
+                            "position": 0.45
+                          },
+                          {
+                            "color": "#1A1A1D",
+                            "position": 1
+                          }
+                        ],
+                        "center": {
+                          "x": 0.45,
+                          "y": 0.4
+                        }
+                      },
+                      "width": 120,
+                      "height": 60
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hoZ5C",
+                  "name": "footerCols",
+                  "width": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "2wvkG",
+                      "name": "col1",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "RgWkq",
+                          "name": "col1Title",
+                          "fill": "#6B6B70",
+                          "content": "Product",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "J3fdK",
+                          "name": "col1Link1",
+                          "fill": "#FFFFFF",
+                          "content": "Platform",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aIvdI",
+                          "name": "col1Link2",
+                          "fill": "#FFFFFF",
+                          "content": "Models",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wWdYO",
+                      "name": "col2",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kqe37",
+                          "name": "col2Title",
+                          "fill": "#6B6B70",
+                          "content": "Company",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "ddJ1b",
+                          "name": "col2Link1",
+                          "fill": "#FFFFFF",
+                          "content": "Pricing",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "9Re08",
+                          "name": "col2Link2",
+                          "fill": "#FFFFFF",
+                          "content": "Security",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S9Svj",
+                      "name": "col3",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NIKll",
+                          "name": "col3Title",
+                          "fill": "#6B6B70",
+                          "content": "Legal",
+                          "fontFamily": "DM Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "yagS1",
+                          "name": "col3Link1",
+                          "fill": "#FFFFFF",
+                          "content": "Terms",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "O7oRa",
+                          "name": "col3Link2",
+                          "fill": "#FFFFFF",
+                          "content": "Privacy",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "13lXB",
+                  "name": "footerBottom",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hXv9D",
+                      "name": "bottomLeft",
+                      "fill": "#8B8B90",
+                      "content": "© 2026 dryAPI. Built for teams shipping AI products.",
+                      "fontFamily": "Inter",
+                      "fontSize": 12
+                    },
+                    {
+                      "type": "text",
+                      "id": "zhbSQ",
+                      "name": "bottomRight",
+                      "fill": "#8B8B90",
+                      "content": "edge auth • provider routing • credit billing",
+                      "fontFamily": "DM Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "imports": {
+    "y": "pencil:shadcn.lib.pen"
+  }
+}

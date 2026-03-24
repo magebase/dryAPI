@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { dashboardSettingsProfiles } from "@/db/schema-metadata";
 import { createCloudflareDbAccessors } from "@/lib/cloudflare-db";
-import { D1_BINDING_PRIORITY } from "@/lib/d1-bindings";
+import { HYPERDRIVE_BINDING_PRIORITY } from "@/lib/cloudflare-db";
 import {
   DASHBOARD_SETTINGS_DEFAULTS,
   dashboardGeneralSettingsSchema,
@@ -78,7 +78,7 @@ const webhookTableReadyPromises = new WeakMap<object, Promise<void>>();
 const {
   getPrimaryBindingAsync: getPrimaryMetadataBindingAsync,
   getPrimaryDbAsync: getPrimaryMetadataDbAsync,
-} = createCloudflareDbAccessors(D1_BINDING_PRIORITY.metadata, {
+} = createCloudflareDbAccessors(HYPERDRIVE_BINDING_PRIORITY, {
   dashboardSettingsProfiles,
 });
 
@@ -385,8 +385,8 @@ async function upsertStoredRow(input: {
       generalJson: input.generalJson,
       securityJson: input.securityJson,
       webhooksJson: input.webhooksJson,
-      createdAt: input.createdAt,
-      updatedAt: input.updatedAt,
+      createdAt: input.createdAt.getTime(),
+      updatedAt: input.updatedAt.getTime(),
     })
     .onConflictDoUpdate({
       target: dashboardSettingsProfiles.userEmail,
@@ -394,7 +394,7 @@ async function upsertStoredRow(input: {
         generalJson: input.generalJson,
         securityJson: input.securityJson,
         webhooksJson: input.webhooksJson,
-        updatedAt: input.updatedAt,
+        updatedAt: input.updatedAt.getTime(),
       },
     });
 }

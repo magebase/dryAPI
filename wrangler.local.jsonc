@@ -31,6 +31,12 @@
       "service": "dryapi-site-local",
     },
   ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "1a71faa065b14698a9e0e14dbb5a8431",
+    },
+  ],
   "durable_objects": {
     "bindings": [
       {
@@ -69,33 +75,6 @@
     {
       "binding": "ACCOUNT_EXPORTS_R2_BUCKET",
       "bucket_name": "dryapi-site-account-exports-local",
-    },
-  ],
-  "d1_databases": [
-    {
-      "binding": "AUTH_DB",
-      "database_name": "dryapi-auth-db-local",
-      "migrations_dir": "drizzle/migrations/auth",
-    },
-    {
-      "binding": "BILLING_DB",
-      "database_name": "dryapi-billing-db-local",
-      "migrations_dir": "drizzle/migrations/billing",
-    },
-    {
-      "binding": "ANALYTICS_DB",
-      "database_name": "dryapi-analytics-db-local",
-      "migrations_dir": "drizzle/migrations/analytics",
-    },
-    {
-      "binding": "METADATA_DB",
-      "database_name": "dryapi-metadata-db-local",
-      "migrations_dir": "drizzle/migrations/metadata",
-    },
-    {
-      "binding": "APP_DB",
-      "database_name": "dryapi-analytics-db-local",
-      "migrations_dir": "drizzle/migrations/analytics",
     },
   ],
   "images": {

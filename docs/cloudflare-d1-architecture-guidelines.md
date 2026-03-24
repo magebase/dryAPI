@@ -1,46 +1,30 @@
-# Cloudflare D1 Architecture and Separation of Concerns
+# Cloudflare Shared Database Architecture
 
-This document defines how this repository uses Cloudflare D1 for scale, performance, and reliability.
-
-D1 uses SQLite semantics with serialized writes per database. The platform must optimize for read-heavy behavior and constrained write pipelines.
+This repository uses a single shared relational database per app boundary. Do not split auth, billing, analytics, metadata, or settings into separate databases unless there is a hard isolation requirement.
 
 ## Core Principles
 
 1. Prefer reads over writes.
 2. Minimize per-request writes.
 3. Batch and aggregate where possible.
-4. Separate D1 databases by write workload.
+4. Keep one database per application boundary.
 5. Keep rows and indexes small.
-6. Use retention and cleanup for all growth-prone tables.
+6. Use retention and cleanup for growth-prone tables.
 
-## Database Segmentation in This Repo
+## Table Grouping in This Repo
 
-Use dedicated D1 databases with dedicated Drizzle configs and migration directories:
+Use one database and keep tables grouped by domain:
 
-- `AUTH_DB`
-  - Drizzle config: `drizzle.config.auth.ts`
-  - Migrations: `drizzle/migrations/auth`
-  - Tables: `user`, `session`, `account`, `verification`
-- `BILLING_DB`
-  - Drizzle config: `drizzle.config.billing.ts`
-  - Migrations: `drizzle/migrations/billing`
-  - Tables: `credit_balance_profiles` and billing state tables
-- `ANALYTICS_DB`
-  - Drizzle config: `drizzle.config.analytics.ts`
-  - Migrations: `drizzle/migrations/analytics`
-  - Tables: `quote_requests`, `moderation_rejections`, aggregate usage/reporting tables
-- `METADATA_DB`
-  - Drizzle config: `drizzle.config.metadata.ts`
-  - Migrations: `drizzle/migrations/metadata`
-  - Tables: `deapi_pricing_snapshots`, `deapi_pricing_permutations`, `tina_level_entries`, `hot_cold_*`
-
-Compatibility fallback bindings (`APP_DB`, `TINA_DB`) may exist during migration but must not be the long-term primary architecture.
+- Auth tables: `user`, `session`, `account`, `verification`, `apikey`
+- Billing tables: `credit_balance_profiles`, `billing_credit_events`, `saas_monthly_token_buckets`
+- Analytics tables: `quote_requests`, `moderation_rejections`, page-view aggregates
+- Metadata tables: pricing snapshots, pricing permutations, Tina state, and other durable metadata tables
 
 ## Table Design Rules
 
 - Keep rows small and bounded.
 - Avoid unbounded JSON blobs and log-style append-only tables.
-- Index only fields used by real query filters/sorts.
+- Index only fields used by real query filters or sorts.
 - Prefer aggregate tables over high-cardinality event streams.
 
 ## Write Optimization Rules
@@ -48,33 +32,22 @@ Compatibility fallback bindings (`APP_DB`, `TINA_DB`) may exist during migration
 - Avoid immediate per-request writes for telemetry and counters.
 - Prefer buffered batching and periodic flush.
 - Use idempotent `UPSERT` patterns for aggregate counters.
-- Use D1 `batch` where multiple writes are required in one operation.
+- Use database `batch` operations where multiple writes are required.
 
 ## Read Scaling Rules
 
 - Design for SELECT-heavy traffic.
-- Cache read-heavy static data in KV/edge cache when possible.
+- Cache read-heavy static data in KV or edge cache when possible.
 - Good cache candidates:
   - pricing snapshots
   - model metadata
   - public configuration
 
-## Auth DB Rules
+## Table Rules
 
-- Keep auth DB low-write and highly indexed.
-- Session records must expire and be periodically cleaned.
-- Do not store large profile payloads in auth tables.
-
-## Billing DB Rules
-
-- Keep billing writes consistent and minimal.
-- Avoid per-request balance mutation when an aggregate window is possible.
-- Preserve immutable billing-critical facts before archival.
-
-## Snapshot and Metadata Rules
-
-- Snapshot tables are preferred for read-heavy immutable datasets.
-- Keep recent snapshots hot in D1 and archive older slices as needed.
+- Auth tables: keep them low-write and highly indexed. Session records must expire and be periodically cleaned.
+- Billing tables: keep billing writes consistent and minimal. Avoid per-request balance mutation when an aggregate window is possible.
+- Snapshot and metadata tables: prefer read-heavy immutable datasets. Keep recent snapshots hot and archive older slices as needed.
 
 ## Retention and Cleanup
 
@@ -103,20 +76,21 @@ Avoid:
 
 Follow additive-first rollouts:
 
-1. add new columns/tables
+1. add new columns or tables
 2. deploy app using new structures
 3. backfill data in controlled jobs
 4. remove old structures only after validation
 
 ## Anti-Patterns to Avoid
 
-- every request writes to D1
-- D1 as a queue
-- D1 as raw high-frequency telemetry store
-- large append-only log tables in primary operational DBs
+- splitting a single app into separate databases by domain when a shared database works
+- every request writes to the database
+- the database as a queue
+- the database as a raw high-frequency telemetry store
+- large append-only log tables in the primary operational database
 
-Use batching, aggregation, database segmentation, and edge caching instead.
+Use batching, aggregation, and edge caching instead.
 
 ## Target Envelope
 
-Design around conservative write throughput per database and keep sustained writes below saturation levels. Use additional databases and workload partitioning before approaching write ceilings.
+Design around conservative write throughput for the shared database and keep sustained writes below saturation levels. Introduce additional partitioning only when a measured bottleneck justifies it.
