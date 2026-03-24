@@ -8,6 +8,7 @@ import {
   applyPendingMigrations,
   collectMigrationFiles,
   MIGRATIONS_TABLE_NAME,
+  resolveMigrationConnectionString,
 } from "./apply-migrations"
 
 function createFakeMigrationClient() {
@@ -57,6 +58,23 @@ afterEach(() => {
 })
 
 describe("apply-migrations", () => {
+  it("prefers GH_ACTIONS_DATABASE_URL over DATABASE_URL", () => {
+    expect(
+      resolveMigrationConnectionString(
+        "postgres://gha.example/dryapi",
+        {
+          DATABASE_URL: "postgres://direct.example/dryapi",
+        } as NodeJS.ProcessEnv,
+      ),
+    ).toBe("postgres://gha.example/dryapi")
+
+    expect(
+      resolveMigrationConnectionString(undefined, {
+        DATABASE_URL: "postgres://direct.example/dryapi",
+      } as NodeJS.ProcessEnv),
+    ).toBe("postgres://direct.example/dryapi")
+  })
+
   it("collects SQL files recursively in lexical order", async () => {
     const tempRoot = await mkdtemp(path.join(os.tmpdir(), "dryapi-migrations-"))
 

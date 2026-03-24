@@ -59,6 +59,13 @@ function formatConnectionTarget(connectionString: string): string {
   return `${username}@${hostname}:${port}/${databaseName}`;
 }
 
+export function resolveMigrationConnectionString(
+  ciConnectionString: string | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  return ciConnectionString?.trim() || env["DATABASE_URL"]?.trim();
+}
+
 async function walkSqlFiles(directory: string): Promise<string[]> {
   const entries = await fs.readdir(directory, { withFileTypes: true });
   const paths: string[] = [];
@@ -168,11 +175,12 @@ export async function applyPendingMigrations(
 }
 
 export async function runDbMigrations(): Promise<void> {
+  const ciConnectionString = process.env["GH_ACTIONS_DATABASE_URL"]?.trim();
   loadEnv({ path: ".env.local", override: true });
 
-  const connectionString = process.env["DATABASE_URL"]?.trim();
+  const connectionString = resolveMigrationConnectionString(ciConnectionString);
   if (!connectionString) {
-    throw new Error("DATABASE_URL is required for db:migrate.");
+    throw new Error("GH_ACTIONS_DATABASE_URL or DATABASE_URL is required for db:migrate.");
   }
 
   const client = new Client({ connectionString });
