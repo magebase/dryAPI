@@ -15,18 +15,18 @@ export const user = pgTable(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull(),
-    normalizedEmail: text("normalizedEmail"),
-    emailVerified: boolean("emailVerified").notNull().default(false),
+    normalizedEmail: text("normalizedemail"),
+    emailVerified: boolean("emailverified").notNull().default(false),
     image: text("image"),
     role: text("role").default("user"),
     banned: boolean("banned").notNull().default(false),
-    banReason: text("banReason"),
-    banExpires: timestamp("banExpires", { mode: "date" }),
-    twoFactorEnabled: boolean("twoFactorEnabled").notNull().default(false),
-    stripeCustomerId: text("stripeCustomerId"),
-    lastLoginMethod: text("lastLoginMethod"),
-    createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
-    updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
+    banReason: text("banreason"),
+    banExpires: timestamp("banexpires", { mode: "date" }),
+    twoFactorEnabled: boolean("twofactorenabled").notNull().default(false),
+    stripeCustomerId: text("stripecustomerid"),
+    lastLoginMethod: text("lastloginmethod"),
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "date" }).notNull(),
   },
   (table) => ({
     emailUnique: uniqueIndex("idx_better_auth_user_email").on(table.email),
@@ -39,15 +39,15 @@ export const session = pgTable(
   "session",
   {
     id: text("id").primaryKey(),
-    expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
+    expiresAt: timestamp("expiresat", { mode: "date" }).notNull(),
     token: text("token").notNull(),
-    createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
-    updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
-    ipAddress: text("ipAddress"),
-    userAgent: text("userAgent"),
-    impersonatedBy: text("impersonatedBy"),
-    activeOrganizationId: text("activeOrganizationId"),
-    userId: text("userId")
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "date" }).notNull(),
+    ipAddress: text("ipaddress"),
+    userAgent: text("useragent"),
+    impersonatedBy: text("impersonatedby"),
+    activeOrganizationId: text("activeorganizationid"),
+    userId: text("userid")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
@@ -63,20 +63,20 @@ export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
-    accountId: text("accountId").notNull(),
-    providerId: text("providerId").notNull(),
-    userId: text("userId")
+    accountId: text("accountid").notNull(),
+    providerId: text("providerid").notNull(),
+    userId: text("userid")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    accessToken: text("accessToken"),
-    refreshToken: text("refreshToken"),
-    idToken: text("idToken"),
-    accessTokenExpiresAt: timestamp("accessTokenExpiresAt", { mode: "date" }),
-    refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt", { mode: "date" }),
+    accessToken: text("accesstoken"),
+    refreshToken: text("refreshtoken"),
+    idToken: text("idtoken"),
+    accessTokenExpiresAt: timestamp("accesstokenexpiresat", { mode: "date" }),
+    refreshTokenExpiresAt: timestamp("refreshtokenexpiresat", { mode: "date" }),
     scope: text("scope"),
     password: text("password"),
-    createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
-    updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "date" }).notNull(),
   },
   (table) => ({
     userIdIndex: index("idx_better_auth_account_user_id").on(table.userId),
@@ -93,9 +93,9 @@ export const verification = pgTable(
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
-    expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
-    createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
-    updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
+    expiresAt: timestamp("expiresat", { mode: "date" }).notNull(),
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "date" }).notNull(),
   },
   (table) => ({
     identifierIndex: index("idx_better_auth_verification_identifier").on(table.identifier),
@@ -103,12 +103,12 @@ export const verification = pgTable(
 )
 
 export const twoFactor = pgTable(
-  "twoFactor",
+  "twofactor",
   {
     id: text("id").primaryKey(),
     secret: text("secret").notNull(),
-    backupCodes: text("backupCodes").notNull(),
-    userId: text("userId")
+    backupCodes: text("backupcodes").notNull(),
+    userId: text("userid")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
@@ -126,8 +126,8 @@ export const organization = pgTable(
     slug: text("slug").notNull(),
     logo: text("logo"),
     metadata: text("metadata"),
-    stripeCustomerId: text("stripeCustomerId"),
-    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    stripeCustomerId: text("stripecustomerid"),
+    createdAt: bigint("createdat", { mode: "number" }).notNull(),
   },
   (table) => ({
     slugUnique: uniqueIndex("idx_better_auth_organization_slug").on(table.slug),
@@ -140,14 +140,14 @@ export const member = pgTable(
   "member",
   {
     id: text("id").primaryKey(),
-    organizationId: text("organizationId")
+    organizationId: text("organizationid")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
-    userId: text("userId")
+    userId: text("userid")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text("role").notNull().default("member"),
-    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    createdAt: bigint("createdat", { mode: "number" }).notNull(),
   },
   (table) => ({
     organizationIdIndex: index("idx_better_auth_member_organization_id").on(table.organizationId),
@@ -160,17 +160,17 @@ export const invitation = pgTable(
   "invitation",
   {
     id: text("id").primaryKey(),
-    organizationId: text("organizationId")
+    organizationId: text("organizationid")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
     role: text("role"),
     status: text("status").notNull().default("pending"),
-    expiresAt: bigint("expiresAt", { mode: "number" }).notNull(),
-    inviterId: text("inviterId")
+    expiresAt: bigint("expiresat", { mode: "number" }).notNull(),
+    inviterId: text("inviterid")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+    createdAt: bigint("createdat", { mode: "number" }).notNull(),
   },
   (table) => ({
     organizationIdIndex: index("idx_better_auth_invitation_organization_id").on(table.organizationId),
@@ -186,25 +186,25 @@ export const apikey = pgTable(
     start: text("start"),
     prefix: text("prefix"),
     key: text("key").notNull(),
-    userId: text("userId"),
-    organizationId: text("organizationId"),
-    refillInterval: integer("refillInterval"),
-    refillAmount: integer("refillAmount"),
-    lastRefillAt: bigint("lastRefillAt", { mode: "number" }),
+    userId: text("userid"),
+    organizationId: text("organizationid"),
+    refillInterval: integer("refillinterval"),
+    refillAmount: integer("refillamount"),
+    lastRefillAt: bigint("lastrefillat", { mode: "number" }),
     enabled: boolean("enabled").notNull().default(true),
-    rateLimitEnabled: boolean("rateLimitEnabled").notNull().default(true),
-    rateLimitTimeWindow: integer("rateLimitTimeWindow").notNull().default(86_400),
-    rateLimitMax: integer("rateLimitMax").notNull().default(10),
-    requestCount: integer("requestCount").notNull().default(0),
+    rateLimitEnabled: boolean("ratelimitenabled").notNull().default(true),
+    rateLimitTimeWindow: integer("ratelimittimewindow").notNull().default(86_400),
+    rateLimitMax: integer("ratelimitmax").notNull().default(10),
+    requestCount: integer("requestcount").notNull().default(0),
     remaining: integer("remaining"),
-    lastRequest: bigint("lastRequest", { mode: "number" }),
-    expiresAt: bigint("expiresAt", { mode: "number" }),
-    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
-    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+    lastRequest: bigint("lastrequest", { mode: "number" }),
+    expiresAt: bigint("expiresat", { mode: "number" }),
+    createdAt: bigint("createdat", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedat", { mode: "number" }).notNull(),
     permissions: text("permissions"),
     metadata: text("metadata"),
-    configId: text("configId").notNull().default("default"),
-    referenceId: text("referenceId").notNull(),
+    configId: text("configid").notNull().default("default"),
+    referenceId: text("referenceid").notNull(),
   },
   (table) => ({
     keyUnique: uniqueIndex("idx_better_auth_apikey_key").on(table.key),
@@ -215,19 +215,19 @@ export const apikey = pgTable(
 )
 
 export const ssoProvider = pgTable(
-  "ssoProvider",
+  "ssoprovider",
   {
     id: text("id").primaryKey(),
     issuer: text("issuer").notNull(),
-    oidcConfig: text("oidcConfig"),
-    samlConfig: text("samlConfig"),
-    userId: text("userId").references(() => user.id, { onDelete: "set null" }),
-    providerId: text("providerId").notNull(),
-    organizationId: text("organizationId").references(() => organization.id, { onDelete: "set null" }),
+    oidcConfig: text("oidcconfig"),
+    samlConfig: text("samlconfig"),
+    userId: text("userid").references(() => user.id, { onDelete: "set null" }),
+    providerId: text("providerid").notNull(),
+    organizationId: text("organizationid").references(() => organization.id, { onDelete: "set null" }),
     domain: text("domain").notNull(),
-    domainVerified: boolean("domainVerified").notNull().default(false),
-    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
-    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+    domainVerified: boolean("domainverified").notNull().default(false),
+    createdAt: bigint("createdat", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedat", { mode: "number" }).notNull(),
   },
   (table) => ({
     providerIdUnique: uniqueIndex("idx_better_auth_sso_provider_id").on(table.providerId),
@@ -241,24 +241,24 @@ export const subscription = pgTable(
   {
     id: text("id").primaryKey(),
     plan: text("plan").notNull(),
-    referenceId: text("referenceId").notNull(),
-    stripeCustomerId: text("stripeCustomerId"),
-    stripeSubscriptionId: text("stripeSubscriptionId"),
+    referenceId: text("referenceid").notNull(),
+    stripeCustomerId: text("stripecustomerid"),
+    stripeSubscriptionId: text("stripesubscriptionid"),
     status: text("status").notNull().default("incomplete"),
-    periodStart: bigint("periodStart", { mode: "number" }),
-    periodEnd: bigint("periodEnd", { mode: "number" }),
-    trialStart: bigint("trialStart", { mode: "number" }),
-    trialEnd: bigint("trialEnd", { mode: "number" }),
-    cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").notNull().default(false),
-    cancelAt: bigint("cancelAt", { mode: "number" }),
-    canceledAt: bigint("canceledAt", { mode: "number" }),
-    endedAt: bigint("endedAt", { mode: "number" }),
+    periodStart: bigint("periodstart", { mode: "number" }),
+    periodEnd: bigint("periodend", { mode: "number" }),
+    trialStart: bigint("trialstart", { mode: "number" }),
+    trialEnd: bigint("trialend", { mode: "number" }),
+    cancelAtPeriodEnd: boolean("cancelatperiodend").notNull().default(false),
+    cancelAt: bigint("cancelat", { mode: "number" }),
+    canceledAt: bigint("canceledat", { mode: "number" }),
+    endedAt: bigint("endedat", { mode: "number" }),
     seats: integer("seats"),
-    billingInterval: text("billingInterval"),
-    stripeScheduleId: text("stripeScheduleId"),
+    billingInterval: text("billinginterval"),
+    stripeScheduleId: text("stripescheduleid"),
     limits: text("limits"),
-    createdAt: bigint("createdAt", { mode: "number" }).notNull(),
-    updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+    createdAt: bigint("createdat", { mode: "number" }).notNull(),
+    updatedAt: bigint("updatedat", { mode: "number" }).notNull(),
   },
   (table) => ({
     referenceIdIndex: index("idx_better_auth_subscription_reference_id").on(table.referenceId),
