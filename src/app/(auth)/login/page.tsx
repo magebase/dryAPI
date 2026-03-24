@@ -9,7 +9,6 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
-import { EmailOtpSignInCard } from "@/components/site/auth/email-otp-sign-in-card"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 import { buildCaptchaHeaders } from "@/lib/auth-captcha"
 
@@ -334,7 +333,7 @@ export default function LoginPage() {
     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-2">Welcome back</h1>
-        <p className="text-slate-500">Use a social account, a password, or an email code to access your account.</p>
+        <p className="text-slate-500">Use a social account or a password to access your account.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -365,10 +364,6 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <div className="mb-8">
-        <EmailOtpSignInCard initialEmail={prefillEmail} />
-      </div>
-
       <div className="relative mb-8">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-slate-100"></span>
@@ -395,9 +390,8 @@ export default function LoginPage() {
           </p>
         ) : null}
 
-        <form.Field
-          name="email"
-          children={(field) => {
+        <form.Field name="email">
+          {(field) => {
             const isInvalid =
               (field.state.meta.isTouched || form.state.isSubmitted) &&
               !field.state.meta.isValid
@@ -424,11 +418,10 @@ export default function LoginPage() {
               </div>
             )
           }}
-        />
+        </form.Field>
 
-        <form.Field
-          name="password"
-          children={(field) => {
+        <form.Field name="password">
+          {(field) => {
             const isInvalid =
               (field.state.meta.isTouched || form.state.isSubmitted) &&
               !field.state.meta.isValid
@@ -458,7 +451,7 @@ export default function LoginPage() {
               </div>
             )
           }}
-        />
+        </form.Field>
 
         {turnstileEnabled ? (
           <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
