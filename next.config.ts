@@ -3,7 +3,9 @@ import withSerwistInit from "@serwist/next";
 import { createMDX } from "fumadocs-mdx/next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
-initOpenNextCloudflareForDev({ configPath: "wrangler.local.jsonc" });
+if (process.env.NODE_ENV === "development") {
+  initOpenNextCloudflareForDev({ configPath: "wrangler.local.jsonc" });
+}
 
 const TRUE_VALUES = new Set(["1", "true", "yes", "on", "enabled"]);
 const FALSE_VALUES = new Set(["0", "false", "no", "off", "disabled"]);
