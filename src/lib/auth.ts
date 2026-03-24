@@ -11,6 +11,7 @@ import {
   admin,
   captcha,
   haveIBeenPwned,
+  emailOTP,
   lastLoginMethod,
   organization,
   testUtils,
@@ -29,6 +30,7 @@ import {
   sendAuthDeleteAccountVerificationEmail,
   sendAuthVerificationEmail,
   sendWelcomeEmail,
+  sendEmailOtpEmail,
   type PasswordResetEmailPayload,
   type DeleteAccountVerificationEmailPayload,
   type VerificationEmailPayload,
@@ -1122,6 +1124,18 @@ function buildAuthPlugins(): NonNullable<BetterAuthOptions["plugins"]> {
     nextCookies(),
     emailHarmony({
       allowNormalizedSignin: true,
+    }),
+    emailOTP({
+      disableSignUp: true,
+      changeEmail: {
+        enabled: true,
+        verifyCurrentEmail: true,
+      },
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        void sendEmailOtpEmail({ email, otp, type }).catch((error) => {
+          console.error("[auth] Failed to send email OTP", error);
+        });
+      },
     }),
     buildI18nPlugin(),
     lastLoginMethod({ storeInDatabase: true }),

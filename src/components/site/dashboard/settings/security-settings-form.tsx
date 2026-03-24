@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { TwoFactorSettingsCard } from "@/components/site/dashboard/settings/two-factor-settings-card"
+import { EmailOtpSettingsCard } from "@/components/site/dashboard/settings/email-otp-settings-card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import {
@@ -161,7 +161,7 @@ export function SecuritySettingsForm({ initialValues }: SecuritySettingsFormProp
         <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           <ShieldCheck className="size-4" /> Account Protection
         </h3>
-        <TwoFactorSettingsCard />
+        <EmailOtpSettingsCard />
       </section>
 
       <section className="space-y-4">

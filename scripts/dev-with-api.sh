@@ -3,6 +3,24 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 API_LOG="${TMPDIR:-/tmp}/dryapi-api-dev.log"
+HIDDEN_ENV_DIR="$(mktemp -d "${TMPDIR:-/tmp}/dryapi-hidden-env.XXXXXX")"
+
+hide_env_file() {
+  local env_file="$1"
+  if [[ -f "$env_file" ]]; then
+    mv "$env_file" "$HIDDEN_ENV_DIR/$(basename "$env_file")"
+  fi
+}
+
+restore_env_files() {
+  for env_name in ".env" ".env.development" ".env.development.local"; do
+    if [[ -f "$HIDDEN_ENV_DIR/$env_name" ]]; then
+      mv "$HIDDEN_ENV_DIR/$env_name" "$ROOT_DIR/$env_name"
+    fi
+  done
+
+  rmdir "$HIDDEN_ENV_DIR" >/dev/null 2>&1 || true
+}
 
 load_env_file() {
   local env_file="$1"
@@ -14,12 +32,19 @@ load_env_file() {
   fi
 }
 
-# Load local development env defaults before booting dev servers.
-# Order matters: later files override earlier ones.
-load_env_file "$ROOT_DIR/.env"
-load_env_file "$ROOT_DIR/.env.development"
+# `pnpm dev` must only use the local override file.
+if [[ ! -f "$ROOT_DIR/.env.local" ]]; then
+  echo "[dev] Missing .env.local; aborting." >&2
+  exit 1
+fi
+
 load_env_file "$ROOT_DIR/.env.local"
-load_env_file "$ROOT_DIR/.env.development.local"
+
+# Keep Next.js and Wrangler on the local override file only while the dev
+# servers are running.
+hide_env_file "$ROOT_DIR/.env"
+hide_env_file "$ROOT_DIR/.env.development"
+hide_env_file "$ROOT_DIR/.env.development.local"
 
 # Cap the wrangler Node.js heap. workerd (the C++ binary it spawns) is separate,
 # but bounding the Node wrapper prevents the pnpm/wrangler orchestration layer from
@@ -34,7 +59,7 @@ cleanup() {
   fi
 }
 
-trap cleanup EXIT INT TERM
+trap 'cleanup; restore_env_files' EXIT INT TERM
 
 # Give the API worker a short head start before Next/Tina boot.
 sleep 1

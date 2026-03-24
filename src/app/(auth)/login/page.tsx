@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
+import { EmailOtpSignInCard } from "@/components/site/auth/email-otp-sign-in-card"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 import { buildCaptchaHeaders } from "@/lib/auth-captcha"
 
@@ -333,7 +334,7 @@ export default function LoginPage() {
     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-2">Welcome back</h1>
-        <p className="text-slate-500">Enter your credentials to access your account</p>
+        <p className="text-slate-500">Use a social account, a password, or an email code to access your account.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -402,13 +403,17 @@ export default function LoginPage() {
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
                 <input
                   aria-invalid={isInvalid}
+
+            <div className="mb-8">
+              <EmailOtpSignInCard initialEmail={prefillEmail} />
+            </div>
                   className="w-full rounded-lg border border-slate-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-slate-900 placeholder:text-slate-400"
                   name={field.name}
                   onBlur={field.handleBlur}
                   onChange={(event) => field.handleChange(event.target.value)}
                   placeholder="name@company.com"
                   required
-                  type="email"
+                <span className="bg-white px-2 text-slate-400 font-semibold tracking-wider">Or continue with a password</span>
                   value={field.state.value}
                 />
                 {isInvalid ? (

@@ -237,7 +237,8 @@ pnpm db:migrate:local:analytics
 pnpm db:migrate:local:metadata
 ```
 
-`db:migrate` and `db:generate` use the single shared database config in `drizzle.config.ts`.
+`db:generate` uses the single shared database config in `drizzle.config.ts`.
+`db:migrate` applies the checked-in SQL bundle from `drizzle/migrations` against the current `DATABASE_URL`.
 
 ### Shared Database
 

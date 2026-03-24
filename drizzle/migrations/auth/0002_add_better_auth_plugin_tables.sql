@@ -1,20 +1,20 @@
-ALTER TABLE user ADD COLUMN normalizedEmail TEXT;
-ALTER TABLE user ADD COLUMN role TEXT DEFAULT 'user';
-ALTER TABLE user ADD COLUMN banned INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE user ADD COLUMN banReason TEXT;
-ALTER TABLE user ADD COLUMN banExpires INTEGER;
-ALTER TABLE user ADD COLUMN twoFactorEnabled INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE user ADD COLUMN stripeCustomerId TEXT;
-ALTER TABLE user ADD COLUMN lastLoginMethod TEXT;
+ALTER TABLE "user" ADD COLUMN normalizedEmail TEXT;
+ALTER TABLE "user" ADD COLUMN role TEXT DEFAULT 'user';
+ALTER TABLE "user" ADD COLUMN banned INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "user" ADD COLUMN banReason TEXT;
+ALTER TABLE "user" ADD COLUMN banExpires INTEGER;
+ALTER TABLE "user" ADD COLUMN twoFactorEnabled INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "user" ADD COLUMN stripeCustomerId TEXT;
+ALTER TABLE "user" ADD COLUMN lastLoginMethod TEXT;
 
 ALTER TABLE session ADD COLUMN impersonatedBy TEXT;
 ALTER TABLE session ADD COLUMN activeOrganizationId TEXT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_user_normalized_email
-ON user (normalizedEmail);
+ON "user" (normalizedEmail);
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_user_stripe_customer_id
-ON user (stripeCustomerId);
+ON "user" (stripeCustomerId);
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_session_active_org_id
 ON session (activeOrganizationId);
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS twoFactor (
   secret TEXT NOT NULL,
   backupCodes TEXT NOT NULL,
   userId TEXT NOT NULL,
-  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+  FOREIGN KEY (userId) REFERENCES "user"(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_two_factor_user_id
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS member (
   role TEXT NOT NULL DEFAULT 'member',
   createdAt INTEGER NOT NULL,
   FOREIGN KEY (organizationId) REFERENCES organization(id) ON DELETE CASCADE,
-  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
+  FOREIGN KEY (userId) REFERENCES "user"(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_member_organization_id
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS invitation (
   inviterId TEXT NOT NULL,
   createdAt INTEGER NOT NULL,
   FOREIGN KEY (organizationId) REFERENCES organization(id) ON DELETE CASCADE,
-  FOREIGN KEY (inviterId) REFERENCES user(id) ON DELETE CASCADE
+  FOREIGN KEY (inviterId) REFERENCES "user"(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_invitation_organization_id
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS ssoProvider (
   domainVerified INTEGER NOT NULL DEFAULT 0,
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL,
-  FOREIGN KEY (userId) REFERENCES user(id) ON DELETE SET NULL,
+  FOREIGN KEY (userId) REFERENCES "user"(id) ON DELETE SET NULL,
   FOREIGN KEY (organizationId) REFERENCES organization(id) ON DELETE SET NULL
 );
 

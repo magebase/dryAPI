@@ -6,6 +6,7 @@ import { stripeClient } from "@better-auth/stripe/client"
 import { createAuthClient } from "better-auth/react"
 import {
   adminClient,
+  emailOTPClient,
   lastLoginMethodClient,
   organizationClient,
   twoFactorClient,
@@ -15,6 +16,7 @@ export const authClient = createAuthClient({
   plugins: [
     apiKeyClient(),
     adminClient(),
+    emailOTPClient(),
     i18nClient(),
     lastLoginMethodClient(),
     organizationClient(),

@@ -38,7 +38,7 @@
     "capture:landing:all": "pnpm capture:landing:screenshots && pnpm capture:landing:videos && pnpm capture:landing:demo",
     "capture:landing:all:extended": "pnpm capture:landing:all && pnpm capture:landing:feature-actions",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
+    "db:migrate": "tsx scripts/apply-migrations.ts",
     "cf:build": "pnpm dotenv -e .env -- bash -c 'rm -rf .open-next && tinacms build --local --skip-cloud-checks && opennextjs-cloudflare build && pnpm sitemap'",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy:only": "opennextjs-cloudflare deploy",

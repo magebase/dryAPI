@@ -1,75 +1,8 @@
-PRAGMA foreign_keys = OFF;
-
-CREATE TABLE subscription_new (
-  id TEXT PRIMARY KEY NOT NULL,
-  plan TEXT NOT NULL,
-  referenceId TEXT NOT NULL,
-  stripeCustomerId TEXT,
-  stripeSubscriptionId TEXT,
-  status TEXT NOT NULL DEFAULT 'incomplete',
-  periodStart INTEGER,
-  periodEnd INTEGER,
-  trialStart INTEGER,
-  trialEnd INTEGER,
-  cancelAtPeriodEnd INTEGER NOT NULL DEFAULT 0,
-  cancelAt INTEGER,
-  canceledAt INTEGER,
-  endedAt INTEGER,
-  seats INTEGER,
-  billingInterval TEXT,
-  stripeScheduleId TEXT,
-  limits TEXT,
-  createdAt INTEGER NOT NULL DEFAULT (CAST(strftime('%s', 'now') AS INTEGER) * 1000),
-  updatedAt INTEGER NOT NULL DEFAULT (CAST(strftime('%s', 'now') AS INTEGER) * 1000)
-);
-
-INSERT INTO subscription_new (
-  id,
-  plan,
-  referenceId,
-  stripeCustomerId,
-  stripeSubscriptionId,
-  status,
-  periodStart,
-  periodEnd,
-  trialStart,
-  trialEnd,
-  cancelAtPeriodEnd,
-  cancelAt,
-  canceledAt,
-  endedAt,
-  seats,
-  billingInterval,
-  stripeScheduleId,
-  limits,
-  createdAt,
-  updatedAt
-)
-SELECT
-  id,
-  plan,
-  referenceId,
-  stripeCustomerId,
-  stripeSubscriptionId,
-  status,
-  periodStart,
-  periodEnd,
-  trialStart,
-  trialEnd,
-  cancelAtPeriodEnd,
-  cancelAt,
-  canceledAt,
-  endedAt,
-  seats,
-  billingInterval,
-  stripeScheduleId,
-  limits,
-  COALESCE(createdAt, CAST(strftime('%s', 'now') AS INTEGER) * 1000),
-  COALESCE(updatedAt, CAST(strftime('%s', 'now') AS INTEGER) * 1000)
-FROM subscription;
-
-DROP TABLE subscription;
-ALTER TABLE subscription_new RENAME TO subscription;
+ALTER TABLE subscription
+  ALTER COLUMN createdat TYPE BIGINT USING createdat::bigint,
+  ALTER COLUMN updatedat TYPE BIGINT USING updatedat::bigint,
+  ALTER COLUMN createdat SET DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::bigint,
+  ALTER COLUMN updatedat SET DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::bigint;
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_subscription_reference_id
 ON subscription (referenceId);
@@ -82,5 +15,3 @@ ON subscription (stripeSubscriptionId);
 
 CREATE INDEX IF NOT EXISTS idx_better_auth_subscription_status
 ON subscription (status);
-
-PRAGMA foreign_keys = ON;
