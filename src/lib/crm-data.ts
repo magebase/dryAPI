@@ -24,7 +24,9 @@ type D1PreparedResult<T> = {
 
 type D1PreparedStatement = {
   bind: (...values: unknown[]) => D1PreparedStatement;
-  all: <T>() => Promise<D1PreparedResult<T>>;
+  all: <T = Record<string, unknown>>() => Promise<D1PreparedResult<T>>;
+  run: () => Promise<{ rowCount: number; meta?: { changes?: number } }>;
+  first: <T = Record<string, unknown>>(column?: string) => Promise<T | null>;
 };
 
 type D1DatabaseLike = {

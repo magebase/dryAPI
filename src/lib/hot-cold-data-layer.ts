@@ -6,7 +6,7 @@ type D1PreparedResult<T> = {
 
 type D1PreparedStatement = {
   bind: (...values: unknown[]) => D1PreparedStatement
-  run: () => Promise<unknown>
+  run: () => Promise<{ rowCount: number; meta?: { changes?: number } }>
   all: <T = SqlRow>() => Promise<D1PreparedResult<T>>
   first: <T = SqlRow>(columnName?: string) => Promise<T | null>
 }

@@ -39,6 +39,7 @@ type BillingTopUpControlsProps = {
   topUpAmounts: readonly number[]
   activePlan: ActivePlanSummary | null
   customerId: string | null
+  monthlyTokenExpiryIso?: string
   monthlyTokenExpiryLabel: string
   initialAutoTopUpSettings: AutoTopUpSettings
   safeguards: BillingSafeguards
@@ -58,6 +59,7 @@ export function BillingTopUpControls({
   topUpAmounts,
   activePlan,
   customerId,
+  monthlyTokenExpiryIso,
   monthlyTokenExpiryLabel,
   initialAutoTopUpSettings,
   safeguards,
@@ -140,7 +142,7 @@ export function BillingTopUpControls({
   const monthlyRemaining = Math.max(0, settings.monthlyCapCredits - settings.monthlySpentCredits)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-monthly-token-expiry-iso={monthlyTokenExpiryIso}>
       {activePlan ? (
         <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-300">
           <p className="font-medium text-zinc-900 dark:text-zinc-100">

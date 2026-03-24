@@ -154,6 +154,12 @@ const nextConfig: NextConfig = {
       type: "asset/source",
     });
 
+    config.resolve = config.resolve ?? {};
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      "pg-native": false,
+    };
+
     return config;
   },
   async headers() {

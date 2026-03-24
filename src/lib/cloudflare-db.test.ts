@@ -76,6 +76,10 @@ describe("createCloudflareDbAccessors", () => {
     }))
   })
 
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it("creates cached postgres accessors from Hyperdrive", async () => {
     const accessors = createCloudflareDbAccessors("HYPERDRIVE", schema)
 
@@ -139,6 +143,9 @@ describe("createCloudflareDbAccessors", () => {
   })
 
   it("throws when the connection string is missing", () => {
+    vi.stubEnv("DATABASE_URL", "")
+    vi.stubEnv("CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE", "")
+
     getCloudflareContextMock.mockImplementation((options?: { async?: boolean }) =>
       options?.async ? Promise.resolve({ env: {} }) : { env: {} },
     )

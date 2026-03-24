@@ -7,6 +7,7 @@ const { getDbAsyncMock } = vi.hoisted(() => ({
 }))
 
 vi.mock("@/lib/cloudflare-db", () => ({
+  HYPERDRIVE_BINDING_PRIORITY: ["HYPERDRIVE"],
   createCloudflareDbAccessors: () => ({
     getDbAsync: (...args: unknown[]) => getDbAsyncMock(...args),
   }),

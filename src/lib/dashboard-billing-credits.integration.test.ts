@@ -162,19 +162,19 @@ class FakePreparedStatement {
     return new FakePreparedStatement(this.state, this.query, values)
   }
 
-  async run(): Promise<{ meta?: { changes?: number } }> {
+  async run(): Promise<{ rowCount: number; meta?: { changes?: number } }> {
     const query = this.query.toLowerCase().replace(/\s+/g, " ").trim()
 
     if (query.includes("create table if not exists credit_balance_profiles")) {
-      return { meta: { changes: 0 } }
+      return { rowCount: 0, meta: { changes: 0 } }
     }
 
     if (query.includes("create table if not exists billing_credit_events")) {
-      return { meta: { changes: 0 } }
+      return { rowCount: 0, meta: { changes: 0 } }
     }
 
     if (query.includes("create table if not exists saas_monthly_token_buckets")) {
-      return { meta: { changes: 0 } }
+      return { rowCount: 0, meta: { changes: 0 } }
     }
 
     if (query.includes("alter table credit_balance_profiles add column auto_top_up_amount_credits")) {
@@ -184,7 +184,7 @@ class FakePreparedStatement {
           profile.auto_top_up_amount_credits = 25
         }
       }
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("alter table credit_balance_profiles add column auto_top_up_monthly_cap_credits")) {
@@ -194,7 +194,7 @@ class FakePreparedStatement {
           profile.auto_top_up_monthly_cap_credits = 250
         }
       }
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("alter table credit_balance_profiles add column auto_top_up_monthly_spent_credits")) {
@@ -204,7 +204,7 @@ class FakePreparedStatement {
           profile.auto_top_up_monthly_spent_credits = 0
         }
       }
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("alter table credit_balance_profiles add column auto_top_up_monthly_window_start_at")) {
@@ -214,7 +214,7 @@ class FakePreparedStatement {
           profile.auto_top_up_monthly_window_start_at = 0
         }
       }
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("insert into credit_balance_profiles (") && query.includes("auto_top_up_amount_credits")) {
@@ -232,7 +232,7 @@ class FakePreparedStatement {
         auto_top_up_monthly_window_start_at: windowStart as number,
         updated_at: updatedAt as number,
       })
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("insert into credit_balance_profiles (") && query.includes("balance_credits") && !query.includes("auto_top_up_amount_credits")) {
@@ -244,25 +244,25 @@ class FakePreparedStatement {
         balance_credits: balance as number,
         updated_at: updatedAt as number,
       })
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("update credit_balance_profiles set auto_top_up_monthly_spent_credits")) {
       const [spent, windowStart, updatedAt, customerRef] = this.params
       const existing = this.state.profiles.get(String(customerRef))
       if (!existing) {
-        return { meta: { changes: 0 } }
+        return { rowCount: 0, meta: { changes: 0 } }
       }
       existing.auto_top_up_monthly_spent_credits = spent as number
       existing.auto_top_up_monthly_window_start_at = windowStart as number
       existing.updated_at = updatedAt as number
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("insert or ignore into billing_credit_events")) {
       const [eventId, customerRef, creditsDelta, source, metadataJson, createdAt] = this.params
       if (this.state.events.has(String(eventId))) {
-        return { meta: { changes: 0 } }
+        return { rowCount: 0, meta: { changes: 0 } }
       }
       this.state.events.set(String(eventId), {
         event_id: String(eventId),
@@ -272,7 +272,7 @@ class FakePreparedStatement {
         metadata_json: String(metadataJson),
         created_at: Number(createdAt),
       })
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     if (query.includes("insert into saas_monthly_token_buckets")) {
@@ -290,7 +290,7 @@ class FakePreparedStatement {
           tokens_remaining: Number(tokensRemaining),
           updated_at: Number(updatedAt),
         })
-        return { meta: { changes: 1 } }
+        return { rowCount: 1, meta: { changes: 1 } }
       }
 
       existing.customer_ref = String(customerRef)
@@ -304,7 +304,7 @@ class FakePreparedStatement {
           : existing.tokens_remaining
       existing.updated_at = Number(updatedAt)
 
-      return { meta: { changes: 1 } }
+      return { rowCount: 1, meta: { changes: 1 } }
     }
 
     throw new Error(`Unhandled run query: ${this.query}`)
@@ -756,7 +756,7 @@ describe("dashboard-billing-credits", () => {
           const normalized = query.toLowerCase().replace(/\s+/g, " ")
           const statement: TestPreparedStatement = {
             async run() {
-              return { meta: { changes: 1 } }
+              return { rowCount: 1, meta: { changes: 1 } }
             },
             async all<T>() {
               if (normalized.startsWith("select column_name as name from information_schema.columns")) {
@@ -1039,10 +1039,10 @@ describe("dashboard-billing-credits", () => {
         const statement: TestPreparedStatement = {
           async run() {
             if (normalized.includes("insert or ignore into billing_credit_events")) {
-              return {}
+                return { rowCount: 0 }
             }
 
-            return { meta: { changes: 0 } }
+              return { rowCount: 0, meta: { changes: 0 } }
           },
           async all<T>() {
             if (normalized.startsWith("select column_name as name from information_schema.columns")) {
@@ -1132,7 +1132,7 @@ describe("dashboard-billing-credits", () => {
         const normalized = query.toLowerCase().replace(/\s+/g, " ")
         const statement: TestPreparedStatement = {
           async run() {
-            return { meta: { changes: 0 } }
+              return { rowCount: 0, meta: { changes: 0 } }
           },
           async all<T>() {
             if (normalized.startsWith("select column_name as name from information_schema.columns")) {
@@ -1267,7 +1267,7 @@ describe("dashboard-billing-credits", () => {
         const normalized = query.toLowerCase().replace(/\s+/g, " ")
         const statement: TestPreparedStatement = {
           async run() {
-            return { meta: { changes: 1 } }
+            return { rowCount: 1, meta: { changes: 1 } }
           },
           async all<T>() {
             if (normalized.startsWith("select column_name as name from information_schema.columns")) {

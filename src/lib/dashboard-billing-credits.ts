@@ -11,6 +11,7 @@ type D1PreparedResult<T> = {
 }
 
 type D1RunResult = {
+  rowCount: number
   meta?: {
     changes?: number
   }
@@ -18,13 +19,14 @@ type D1RunResult = {
 
 type D1PreparedStatement = {
   bind: (...values: unknown[]) => D1PreparedStatement
-  all: <T>() => Promise<D1PreparedResult<T>>
+  all: <T = Record<string, unknown>>() => Promise<D1PreparedResult<T>>
   run: () => Promise<D1RunResult>
+  first: <T = Record<string, unknown>>(column?: string) => Promise<T | null>
 }
 
-type D1DatabaseLike = {
+type BillingDatabaseLike = {
   prepare: (query: string) => D1PreparedStatement
-  batch: (statements: D1PreparedStatement[]) => Promise<unknown>
+  batch?: (statements: D1PreparedStatement[]) => Promise<unknown>
 }
 
 const { getSqlDbAsync } = createCloudflareDbAccessors(
@@ -198,12 +200,12 @@ function toIsoFromMs(value: number | null | undefined): string | null {
   return date.toISOString()
 }
 
-async function resolveBillingDb(): Promise<D1DatabaseLike | null> {
+async function resolveBillingDb(): Promise<BillingDatabaseLike | null> {
   return getSqlDbAsync()
 }
 
-async function ensureBillingTables(db: D1DatabaseLike): Promise<void> {
-  await db.batch([
+async function ensureBillingTables(db: BillingDatabaseLike): Promise<void> {
+  await db.batch!([
     db.prepare(CREATE_BALANCE_TABLE_SQL),
     db.prepare(CREATE_EVENTS_TABLE_SQL),
     db.prepare(CREATE_SAAS_BUCKETS_TABLE_SQL),
@@ -211,7 +213,7 @@ async function ensureBillingTables(db: D1DatabaseLike): Promise<void> {
   await ensureBalanceProfileColumns(db)
 }
 
-async function listTableColumnNames(db: D1DatabaseLike, tableName: string): Promise<Set<string>> {
+async function listTableColumnNames(db: BillingDatabaseLike, tableName: string): Promise<Set<string>> {
   const response = await db
     .prepare(`SELECT column_name AS name FROM information_schema.columns WHERE table_name = ? AND table_schema = current_schema()`)
     .bind(tableName)
@@ -220,7 +222,7 @@ async function listTableColumnNames(db: D1DatabaseLike, tableName: string): Prom
   return new Set(response.results.map((row) => row.name))
 }
 
-async function ensureBalanceProfileColumns(db: D1DatabaseLike): Promise<void> {
+async function ensureBalanceProfileColumns(db: BillingDatabaseLike): Promise<void> {
   const columns = await listTableColumnNames(db, "credit_balance_profiles")
 
   const statements: string[] = []
@@ -242,11 +244,11 @@ async function ensureBalanceProfileColumns(db: D1DatabaseLike): Promise<void> {
   }
 
   if (statements.length > 0) {
-    await db.batch(statements.map((statement) => db.prepare(statement)))
+    await db.batch!(statements.map((statement) => db.prepare(statement)))
   }
 }
 
-async function selectBalanceRow(db: D1DatabaseLike, customerRef: string): Promise<CreditBalanceRow | null> {
+async function selectBalanceRow(db: BillingDatabaseLike, customerRef: string): Promise<CreditBalanceRow | null> {
   const response = await db
     .prepare(
       `
@@ -263,7 +265,7 @@ async function selectBalanceRow(db: D1DatabaseLike, customerRef: string): Promis
 }
 
 async function selectBalanceProfileRow(
-  db: D1DatabaseLike,
+  db: BillingDatabaseLike,
   customerRef: string,
 ): Promise<CreditBalanceProfileRow | null> {
   const response = await db
@@ -335,7 +337,7 @@ function toAutoTopUpSettingsSnapshot(row: CreditBalanceProfileRow): AutoTopUpSet
 }
 
 async function upsertBalanceRow(
-  db: D1DatabaseLike,
+  db: BillingDatabaseLike,
   input: {
     customerRef: string
     balanceCredits: number
@@ -363,7 +365,7 @@ async function upsertBalanceRow(
 
 export async function getStoredCreditBalance(
   customerRef: string,
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<CreditBalanceSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -386,7 +388,7 @@ export async function getStoredCreditBalance(
 
 export async function getStoredAutoTopUpSettings(
   customerRef: string,
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<AutoTopUpSettingsSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -412,7 +414,7 @@ export async function updateStoredAutoTopUpSettings(
     amountCredits: number
     monthlyCapCredits: number
   },
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<AutoTopUpSettingsSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(input.customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -483,7 +485,7 @@ export async function incrementStoredAutoTopUpMonthlySpent(
     customerRef: string
     spentDeltaCredits: number
   },
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<AutoTopUpSettingsSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(input.customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -531,7 +533,7 @@ export async function incrementStoredAutoTopUpMonthlySpent(
 
 export async function getLifetimeDepositedCredits(
   customerRef: string,
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<number | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -562,7 +564,7 @@ export async function getLifetimeDepositedCredits(
 
 export async function getStoredSubscriptionCredits(
   customerRef: string,
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<StoredSubscriptionCreditsSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -616,7 +618,7 @@ async function recordCreditEventAndApplyDelta(
     metadata: Record<string, unknown>
     initialBalanceCredits: number
   },
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<{ applied: boolean; balance: CreditBalanceSnapshot | null }> {
   const normalizedCustomerRef = sanitizeCustomerRef(input.customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -650,7 +652,7 @@ async function recordCreditEventAndApplyDelta(
     )
     .run()
 
-  const wasInserted = Number(eventInsert?.meta?.changes ?? 0) > 0
+  const wasInserted = Number(eventInsert?.rowCount ?? eventInsert?.meta?.changes ?? 0) > 0
   if (wasInserted) {
     const currentBalance = await selectBalanceRow(db, normalizedCustomerRef)
     const previous = currentBalance?.balance_credits ?? input.initialBalanceCredits
@@ -679,7 +681,7 @@ export async function applyBillingCreditGrant(
     metadata: Record<string, unknown>
     initialBalanceCredits?: number
   },
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<{ applied: boolean; balance: CreditBalanceSnapshot | null }> {
   return recordCreditEventAndApplyDelta(
     {
@@ -703,7 +705,7 @@ export async function upsertSaasMonthlyTokenBucket(
     cycleExpireAtMs: number
     tokensGranted: number
   },
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<SaasMonthlyTokenBucketSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(input.customerRef)
   const db = options?.db ?? (await resolveBillingDb())
@@ -797,7 +799,7 @@ export async function ensureSaasSubscriptionCycleBenefits(
     metadata: Record<string, unknown>
     initialBalanceCredits?: number
   },
-  options?: { db?: D1DatabaseLike | null },
+  options?: { db?: BillingDatabaseLike | null },
 ): Promise<{
   appliedCredits: boolean
   balance: CreditBalanceSnapshot | null
@@ -893,7 +895,7 @@ export async function syncDashboardTopUpFromStripeCheckout(input: {
   customerRef: string
   stripePrivateKey: string
   initialBalanceCredits?: number
-  db?: D1DatabaseLike | null
+  db?: BillingDatabaseLike | null
 }): Promise<{ applied: boolean; balance: CreditBalanceSnapshot | null; reason?: string }> {
   const stripePrivateKey = input.stripePrivateKey.trim()
   if (!stripePrivateKey) {

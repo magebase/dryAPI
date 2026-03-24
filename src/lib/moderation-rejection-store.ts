@@ -44,6 +44,6 @@ export async function persistModerationRejectionAttempt(
     reason: attempt.reason,
     model: attempt.model,
     categories: attempt.categories.join(","),
-    createdAt: new Date(),
+    createdAt: Date.now(),
   });
 }

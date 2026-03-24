@@ -51,6 +51,6 @@ export async function persistQuoteRequest(
     preferredContactMethod: submission.preferredContactMethod,
     message: submission.message,
     sourcePath: metadata.sourcePath,
-    createdAt: new Date(),
+    createdAt: Date.now(),
   });
 }

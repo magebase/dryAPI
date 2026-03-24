@@ -16,10 +16,15 @@ type D1PreparedResult<T> = {
   results: T[];
 };
 
+type D1RunResult = {
+  rowCount: number;
+};
+
 type D1PreparedStatement = {
   bind: (...values: unknown[]) => D1PreparedStatement;
-  all: <T>() => Promise<D1PreparedResult<T>>;
-  run: () => Promise<unknown>;
+  all: <T = Record<string, unknown>>() => Promise<D1PreparedResult<T>>;
+  run: () => Promise<D1RunResult>;
+  first: <T = Record<string, unknown>>(column?: string) => Promise<T | null>;
 };
 
 type D1DatabaseLike = {

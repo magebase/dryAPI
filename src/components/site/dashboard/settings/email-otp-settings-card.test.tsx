@@ -75,13 +75,13 @@ describe("EmailOtpSettingsCard", () => {
   })
 
   it("sends an email code and enables protection", async () => {
-    getClientAuthSessionSnapshotMock.mockResolvedValue({
+    getClientAuthSessionSnapshotMock.mockImplementation(async ({ forceRefresh } = {}) => ({
       user: {
         email: "owner@dryapi.dev",
-        twoFactorEnabled: false,
+        twoFactorEnabled: Boolean(forceRefresh),
       },
       session: {},
-    })
+    }))
     authClientSendVerificationOtpMock.mockResolvedValue({ data: { success: true }, error: null })
     global.fetch = vi.fn(async (input: RequestInfo | URL) => {
       const path = typeof input === "string" ? new URL(input, "http://localhost").pathname : input instanceof URL ? input.pathname : new URL(input.url).pathname
@@ -105,8 +105,11 @@ describe("EmailOtpSettingsCard", () => {
 
     renderCard()
 
-  const sendCodeButton = await screen.findByRole("button", { name: "Send code" })
-  fireEvent.click(sendCodeButton)
+    await screen.findByText("owner@dryapi.dev")
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Send code" })).toBeEnabled()
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Send code" }))
 
     await waitFor(() => {
       expect(authClientSendVerificationOtpMock).toHaveBeenCalledWith({

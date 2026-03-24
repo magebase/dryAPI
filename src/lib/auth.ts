@@ -25,12 +25,12 @@ import { BillingReceiptEmail } from "@/emails/billing-receipt-email";
 import { buildEmailBranding } from "@/emails/brand";
 import { CheckoutSuccessEmail } from "@/emails/checkout-success-email";
 import { SubscriptionCanceledEmail } from "@/emails/subscription-canceled-email";
+import { sendEmailOtpEmail } from "@/lib/auth-email-otp-email";
 import {
   sendAuthPasswordResetEmail,
   sendAuthDeleteAccountVerificationEmail,
   sendAuthVerificationEmail,
   sendWelcomeEmail,
-  sendEmailOtpEmail,
   type PasswordResetEmailPayload,
   type DeleteAccountVerificationEmailPayload,
   type VerificationEmailPayload,
@@ -1281,7 +1281,7 @@ function buildAuthOptions(): Parameters<typeof betterAuth>[0] {
     baseURL,
     trustedOrigins: resolveTrustedOrigins(baseURL),
     secret: process.env.BETTER_AUTH_SECRET,
-    ...(database ? { database } : {}),
+    database,
     user: {
       deleteUser: {
         enabled: true,
@@ -1376,12 +1376,6 @@ export function getAuth(): BetterAuthInstance {
   if (process.env.NODE_ENV === "production") {
     globalAuthCache.__dryapiBetterAuth = instance;
     return instance;
-  }
-
-  // Only cache in dev when a D1 binding exists so compile-time imports cannot
-  // accidentally lock auth into temporary in-memory mode.
-  if (resolveAuthD1Binding()) {
-    globalAuthCache.__dryapiBetterAuth = instance;
   }
 
   return instance;
