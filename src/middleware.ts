@@ -22,11 +22,8 @@ import {
   resolvePerfSlowThresholdMs,
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
-import {
-  applyDashboardSessionSnapshotHeaders,
-  resolveDashboardSessionSnapshotFromToken,
-  type DashboardSessionSnapshot,
-} from "@/lib/dashboard-session"
+import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
+import { normalizeSiteUrl } from "@/lib/og/metadata"
 
 const SUCCESS_PATH = "/success"
 const DASHBOARD_PREFIX = "/dashboard"
@@ -35,24 +32,21 @@ const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth
 const SESSION_CHECK_CACHE_TTL_MS = 60_000
 const SESSION_CHECK_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_SESSION_CHECK_SLOW_MS", 150)
 
+type DashboardSessionSnapshot = {
+  authenticated: true
+  email: string | null
+  userId: string | null
+  userRole: string | null
+  activeOrganizationId: string | null
+  expiresAtMs: number | null
+}
+
 type SessionAuthCacheEntry = {
   snapshot: DashboardSessionSnapshot | null
   expiresAt: number
 }
 
 const sessionAuthCache = new Map<string, SessionAuthCacheEntry>()
-
-function isBypassRewritePath(pathname: string): boolean {
-  return (
-    pathname.startsWith("/_next")
-    || pathname.startsWith("/api/")
-    || pathname === "/favicon.ico"
-    || pathname === "/robots.txt"
-    || pathname === "/sitemap.xml"
-    || pathname.includes(".")
-  )
-}
-
 function isDeprecatedCrmPath(pathname: string): boolean {
   return (
     pathname === "/crm"
@@ -159,6 +153,187 @@ function writeCachedSessionAuth(
   })
 }
 
+function applyDashboardSessionSnapshotHeaders(
+  headers: Headers,
+  snapshot: DashboardSessionSnapshot,
+): void {
+  headers.set("x-dryapi-dashboard-authenticated", "1")
+
+  if (snapshot.email) {
+    headers.set("x-dryapi-dashboard-email", snapshot.email)
+  }
+
+  if (snapshot.userId) {
+    headers.set("x-dryapi-dashboard-user-id", snapshot.userId)
+  }
+
+  if (snapshot.userRole) {
+    headers.set("x-dryapi-dashboard-user-role", snapshot.userRole)
+  }
+
+  if (snapshot.activeOrganizationId) {
+    headers.set(
+      "x-dryapi-dashboard-active-organization-id",
+      snapshot.activeOrganizationId,
+    )
+  }
+
+  if (snapshot.expiresAtMs !== null) {
+    headers.set("x-dryapi-dashboard-session-expires-at", String(snapshot.expiresAtMs))
+  }
+}
+
+function normalizeString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+
+  return null
+}
+
+function resolveInternalFetchOrigin(request: NextRequest): string {
+  if (process.env.NODE_ENV !== "production") {
+    return request.nextUrl.origin
+  }
+
+  return normalizeSiteUrl()
+}
+
+function resolveDashboardSessionSnapshotFromPayload(
+  payload: unknown,
+): DashboardSessionSnapshot | null {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return null
+  }
+
+  const record = payload as Record<string, unknown>
+  const user = record.user && typeof record.user === "object" && !Array.isArray(record.user)
+    ? (record.user as Record<string, unknown>)
+    : null
+  const session = record.session && typeof record.session === "object" && !Array.isArray(record.session)
+    ? (record.session as Record<string, unknown>)
+    : null
+
+  if (!user && !session) {
+    return null
+  }
+
+  const userId = normalizeString(user?.id ?? session?.userId)
+  if (!userId) {
+    return null
+  }
+
+  return {
+    authenticated: true,
+    email: normalizeString(user?.email ?? session?.email),
+    userId,
+    userRole: normalizeString(user?.role ?? session?.userRole) || "user",
+    activeOrganizationId: normalizeString(
+      session?.activeOrganizationId ?? session?.session?.activeOrganizationId,
+    ),
+    expiresAtMs: toFiniteNumber(session?.expiresAt ?? session?.expiresAtMs),
+  }
+}
+
+async function fetchDashboardSessionSnapshot(
+  request: NextRequest,
+  traceId: string,
+  sessionToken: string,
+): Promise<DashboardSessionSnapshot | null> {
+  const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now()
+
+  try {
+    logServerAuthEvent("log", "middleware.dashboard.session-fetch.start", {
+      traceId,
+      fromPath: request.nextUrl.pathname,
+      cookie: summarizeCookieHeader(request.headers.get("cookie")),
+    })
+
+    const response = await internalWorkerFetch({
+      path: "/api/auth/get-session",
+      fallbackOrigin: resolveInternalFetchOrigin(request),
+      init: {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          cookie: request.headers.get("cookie") || "",
+          authorization: request.headers.get("authorization") || "",
+        },
+        cache: "no-store",
+      },
+    })
+
+    const payload = response.ok ? await response.json().catch(() => null) : null
+    const snapshot = resolveDashboardSessionSnapshotFromPayload(payload)
+
+    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
+
+    logServerAuthEvent("log", "middleware.dashboard.session-fetch.result", {
+      traceId,
+      authenticated: snapshot !== null,
+      status: response.status,
+      durationMs,
+    })
+
+    if (durationMs >= SESSION_CHECK_SLOW_MS) {
+      logServerPerfEvent("warn", "middleware.dashboard.session-fetch.slow", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+        authenticated: snapshot !== null,
+        status: response.status,
+        durationMs,
+        slowThresholdMs: SESSION_CHECK_SLOW_MS,
+      })
+    } else if (shouldEmitServerPerf("log")) {
+      logServerPerfEvent("log", "middleware.dashboard.session-fetch", {
+        traceId,
+        pathname: request.nextUrl.pathname,
+        authenticated: snapshot !== null,
+        status: response.status,
+        durationMs,
+      })
+    }
+
+    writeCachedSessionAuth(sessionToken, snapshot)
+    return snapshot
+  } catch (error) {
+    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
+
+    logServerAuthEvent("error", "middleware.dashboard.session-fetch.error", {
+      traceId,
+      error: error instanceof Error ? error.message : String(error),
+      durationMs,
+    })
+
+    logServerPerfEvent("error", "middleware.dashboard.session-fetch.error", {
+      traceId,
+      pathname: request.nextUrl.pathname,
+      durationMs,
+      slowThresholdMs: SESSION_CHECK_SLOW_MS,
+      error: error instanceof Error ? error.message : String(error),
+    })
+
+    writeCachedSessionAuth(sessionToken, null)
+    return null
+  }
+}
+
 function createDashboardSessionRequestHeaders(
   request: NextRequest,
   snapshot: DashboardSessionSnapshot,
@@ -173,10 +348,9 @@ async function resolveDashboardSessionSnapshot(
   traceId: string,
   sessionToken: string,
 ): Promise<DashboardSessionSnapshot | null> {
-  const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now()
   const cachedEntry = readCachedSessionEntry(sessionToken)
   if (cachedEntry) {
-    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
+    const durationMs = 0
     if (shouldEmitServerPerf("log")) {
       logServerPerfEvent("log", "middleware.dashboard.session-check.cache-hit", {
         traceId,
@@ -188,60 +362,7 @@ async function resolveDashboardSessionSnapshot(
     return cachedEntry.snapshot
   }
 
-  try {
-    logServerAuthEvent("log", "middleware.dashboard.session-check.start", {
-      traceId,
-      fromPath: request.nextUrl.pathname,
-      cookie: summarizeCookieHeader(request.headers.get("cookie")),
-    })
-
-    const snapshot = await resolveDashboardSessionSnapshotFromToken(sessionToken)
-
-    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
-
-    logServerAuthEvent("log", "middleware.dashboard.session-check.result", {
-      traceId,
-      authenticated: snapshot !== null,
-      durationMs,
-    })
-
-    if (durationMs >= SESSION_CHECK_SLOW_MS) {
-      logServerPerfEvent("warn", "middleware.dashboard.session-check.slow", {
-        traceId,
-        pathname: request.nextUrl.pathname,
-        authenticated: snapshot !== null,
-        durationMs,
-        slowThresholdMs: SESSION_CHECK_SLOW_MS,
-      })
-    } else if (shouldEmitServerPerf("log")) {
-      logServerPerfEvent("log", "middleware.dashboard.session-check", {
-        traceId,
-        pathname: request.nextUrl.pathname,
-        authenticated: snapshot !== null,
-        durationMs,
-      })
-    }
-
-    writeCachedSessionAuth(sessionToken, snapshot)
-    return snapshot
-  } catch (error) {
-    const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
-    logServerAuthEvent("error", "middleware.dashboard.session-check.error", {
-      traceId,
-      error: error instanceof Error ? error.message : String(error),
-      durationMs,
-    })
-
-    logServerPerfEvent("error", "middleware.dashboard.session-check.error", {
-      traceId,
-      pathname: request.nextUrl.pathname,
-      durationMs,
-      slowThresholdMs: SESSION_CHECK_SLOW_MS,
-      error: error instanceof Error ? error.message : String(error),
-    })
-    writeCachedSessionAuth(sessionToken, null)
-    return null
-  }
+  return fetchDashboardSessionSnapshot(request, traceId, sessionToken)
 }
 
 function createDashboardLoginRedirect(request: NextRequest, traceId: string): NextResponse {
