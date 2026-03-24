@@ -244,9 +244,7 @@ function resolveDashboardSessionSnapshotFromPayload(
     email: normalizeString(user?.email ?? session?.email),
     userId,
     userRole: normalizeString(user?.role ?? session?.userRole) || "user",
-    activeOrganizationId: normalizeString(
-      session?.activeOrganizationId ?? session?.session?.activeOrganizationId,
-    ),
+    activeOrganizationId: normalizeString(session?.activeOrganizationId),
     expiresAtMs: toFiniteNumber(session?.expiresAt ?? session?.expiresAtMs),
   }
 }
