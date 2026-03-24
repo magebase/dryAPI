@@ -16,4 +16,11 @@ describe("cloudflare deploy workflow", () => {
     expect(workflowContent).toContain(queueName)
     expect(workflowContent.indexOf(ensureStep)).toBeLessThan(workflowContent.indexOf(deployStep))
   })
+
+  it("exports the Hyperdrive local connection string for OpenNext deploy", () => {
+    const hyperdriveEnv =
+      "      CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE: ${{ secrets.GH_ACTIONS_DATABASE_URL }}"
+
+    expect(workflowContent).toContain(hyperdriveEnv)
+  })
 })
