@@ -34,22 +34,22 @@ const authBootstrapSql = [
     "role" TEXT DEFAULT 'user',
     "banned" BOOLEAN NOT NULL DEFAULT FALSE,
     "banReason" TEXT,
-    "banExpires" BIGINT,
+    "banExpires" TIMESTAMPTZ,
     "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT FALSE,
     "stripeCustomerId" TEXT,
     "lastLoginMethod" TEXT,
-    "createdAt" BIGINT NOT NULL,
-    "updatedAt" BIGINT NOT NULL
+    "createdAt" TIMESTAMPTZ NOT NULL,
+    "updatedAt" TIMESTAMPTZ NOT NULL
   );`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_user_email ON "user" ("email");`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_user_normalized_email ON "user" ("normalizedEmail");`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_user_stripe_customer_id ON "user" ("stripeCustomerId");`,
   `CREATE TABLE IF NOT EXISTS "session" (
     "id" TEXT PRIMARY KEY NOT NULL,
-    "expiresAt" BIGINT NOT NULL,
+    "expiresAt" TIMESTAMPTZ NOT NULL,
     "token" TEXT NOT NULL,
-    "createdAt" BIGINT NOT NULL,
-    "updatedAt" BIGINT NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "ipAddress" TEXT,
     "userAgent" TEXT,
     "impersonatedBy" TEXT,
@@ -68,12 +68,12 @@ const authBootstrapSql = [
     "accessToken" TEXT,
     "refreshToken" TEXT,
     "idToken" TEXT,
-    "accessTokenExpiresAt" BIGINT,
-    "refreshTokenExpiresAt" BIGINT,
+    "accessTokenExpiresAt" TIMESTAMPTZ,
+    "refreshTokenExpiresAt" TIMESTAMPTZ,
     "scope" TEXT,
     "password" TEXT,
-    "createdAt" BIGINT NOT NULL,
-    "updatedAt" BIGINT NOT NULL
+    "createdAt" TIMESTAMPTZ NOT NULL,
+    "updatedAt" TIMESTAMPTZ NOT NULL
   );`,
   `CREATE INDEX IF NOT EXISTS idx_better_auth_account_user_id ON "account" ("userId");`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_account_provider_account ON "account" ("providerId", "accountId");`,
@@ -81,9 +81,9 @@ const authBootstrapSql = [
     "id" TEXT PRIMARY KEY NOT NULL,
     "identifier" TEXT NOT NULL,
     "value" TEXT NOT NULL,
-    "expiresAt" BIGINT NOT NULL,
-    "createdAt" BIGINT NOT NULL,
-    "updatedAt" BIGINT NOT NULL
+    "expiresAt" TIMESTAMPTZ NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL,
+    "updatedAt" TIMESTAMPTZ NOT NULL
   );`,
   `CREATE INDEX IF NOT EXISTS idx_better_auth_verification_identifier ON "verification" ("identifier");`,
   `CREATE TABLE IF NOT EXISTS "twoFactor" (
