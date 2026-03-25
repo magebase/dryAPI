@@ -3,6 +3,7 @@ import "server-only"
 import { cache } from "react"
 
 import { listDashboardApiKeysForUser } from "@/lib/dashboard-api-keys-store"
+import type { DashboardApiKeyRecord as StoreDashboardApiKeyRecord } from "@/lib/dashboard-api-keys-store"
 import { buildDashboardReadCacheScope, readDashboardReadCache } from "@/lib/dashboard-read-cache"
 import { getDashboardSettingsForUser } from "@/lib/dashboard-settings-store"
 import { DASHBOARD_SETTINGS_DEFAULTS } from "@/lib/dashboard-settings-schema"
@@ -52,6 +53,25 @@ export type DashboardApiKeyRecord = {
   meta?: {
     environment?: string
     [key: string]: unknown
+  }
+}
+
+function toDashboardApiKeyRecord(record: StoreDashboardApiKeyRecord): DashboardApiKeyRecord {
+  const createdAt = record.createdAt ? Date.parse(record.createdAt) : NaN
+  const updatedAt = record.updatedAt ? Date.parse(record.updatedAt) : NaN
+  const expiresAt = record.expiresAt ? Date.parse(record.expiresAt) : NaN
+
+  return {
+    keyId: record.keyId,
+    start: record.keyPreview ?? record.keyStart ?? undefined,
+    name: record.name ?? undefined,
+    createdAt: Number.isFinite(createdAt) ? createdAt : undefined,
+    updatedAt: Number.isFinite(updatedAt) ? updatedAt : undefined,
+    permissions: record.permissions,
+    roles: record.roles,
+    enabled: record.enabled,
+    expires: Number.isFinite(expiresAt) ? expiresAt : undefined,
+    meta: record.meta,
   }
 }
 
@@ -194,8 +214,10 @@ export async function loadAccountDashboardSettingsValues(headerStore: HeaderStor
     }
   }
 
+  const accountEmail = session.email
+
   return readDashboardReadCache({
-    scope: buildDashboardReadCacheScope("account", session.email),
+    scope: buildDashboardReadCacheScope("account", accountEmail),
     key: "page-data",
     ttlSeconds: 15,
     loader: async () => {
@@ -214,7 +236,7 @@ export async function loadAccountDashboardSettingsValues(headerStore: HeaderStor
             },
           },
         }),
-        resolveCurrentUserSubscriptionPlanSummary(session.email),
+        resolveCurrentUserSubscriptionPlanSummary(accountEmail),
       ])
 
       const sessionsPayload = (await sessionsResponse.json().catch(() => null)) as unknown
@@ -228,7 +250,7 @@ export async function loadAccountDashboardSettingsValues(headerStore: HeaderStor
       return {
         user: {
           name: session.name,
-          email: session.email,
+          email: accountEmail,
         },
         sessions,
         currentPlan,
@@ -243,5 +265,6 @@ export async function loadDashboardApiKeys(headerStore: HeaderStore): Promise<Da
     return []
   }
 
-  return listDashboardApiKeysForUser(session.email)
+  const apiKeys = await listDashboardApiKeysForUser(session.email)
+  return apiKeys.map(toDashboardApiKeyRecord)
 }
