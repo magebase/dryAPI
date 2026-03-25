@@ -78,7 +78,7 @@ type SocialProviderConfig = {
 
 type SupportedSocialProvider = "google" | "github";
 
-const { getDb, getSqlDb } = createCloudflareDbAccessors(
+const { getDb } = createCloudflareDbAccessors(
   HYPERDRIVE_BINDING_PRIORITY,
   authSchema,
 );
@@ -1218,40 +1218,7 @@ function buildAuthPlugins(): NonNullable<BetterAuthOptions["plugins"]> {
 const baseURL = resolveBetterAuthBaseUrl();
 const socialProviders = readSocialProviders();
 
-const SESSION_CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
-let lastSessionCleanupAt = 0;
-let sessionCleanupPromise: Promise<void> | null = null;
-
-function maybeCleanupExpiredSessions(): void {
-  const now = Date.now();
-
-  if (sessionCleanupPromise) {
-    return;
-  }
-
-  if (now - lastSessionCleanupAt < SESSION_CLEANUP_INTERVAL_MS) {
-    return;
-  }
-
-  lastSessionCleanupAt = now;
-  sessionCleanupPromise = (async () => {
-    try {
-      await getSqlDb()
-        .prepare("DELETE FROM session WHERE expiresAt < ?")
-        .bind(now)
-        .run();
-    } catch (error) {
-      console.warn("[auth] Session cleanup skipped after Postgres error", {
-        message: error instanceof Error ? error.message : String(error),
-      });
-    } finally {
-      sessionCleanupPromise = null;
-    }
-  })();
-}
-
 function resolveBetterAuthDatabase() {
-  maybeCleanupExpiredSessions();
   const db = getDb();
 
   return drizzleAdapter(db, {

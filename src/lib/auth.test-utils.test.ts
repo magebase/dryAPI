@@ -293,6 +293,13 @@ async function bootstrapAuthDatabase(): Promise<TestAuthDatabase> {
 }
 
 let testAuthDatabase: TestAuthDatabase | null = null
+const getSqlDbMock = vi.fn(() => {
+  if (!testAuthDatabase) {
+    throw new Error("Auth test database is not initialized")
+  }
+
+  return testAuthDatabase.sqlDb
+})
 
 vi.mock("@/lib/cloudflare-db", () => ({
   HYPERDRIVE_BINDING_PRIORITY: ["HYPERDRIVE"],
@@ -311,13 +318,7 @@ vi.mock("@/lib/cloudflare-db", () => ({
 
       return testAuthDatabase.db
     },
-    getSqlDb: () => {
-      if (!testAuthDatabase) {
-        throw new Error("Auth test database is not initialized")
-      }
-
-      return testAuthDatabase.sqlDb
-    },
+    getSqlDb: getSqlDbMock,
     getSqlDbAsync: async () => {
       if (!testAuthDatabase) {
         throw new Error("Auth test database is not initialized")
@@ -336,6 +337,7 @@ describe("Better Auth test utils", () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "test-secret")
 
     testAuthDatabase = await bootstrapAuthDatabase()
+    getSqlDbMock.mockClear()
   })
 
   afterEach(async () => {
@@ -368,5 +370,7 @@ describe("Better Auth test utils", () => {
     } finally {
       await test.deleteUser(user.id)
     }
+
+    expect(getSqlDbMock).not.toHaveBeenCalled()
   })
 })
