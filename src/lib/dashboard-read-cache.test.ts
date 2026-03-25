@@ -33,14 +33,21 @@ import { getStoredCreditBalance } from "@/lib/dashboard-billing-credits"
 
 function createFakeKv() {
   const storage = new Map<string, string>()
+  const putCalls: Array<{
+    key: string
+    value: string
+    options?: { expiration?: number; expirationTtl?: number }
+  }> = []
 
   return {
     storage,
+    putCalls,
     binding: {
       async get(key: string) {
         return storage.has(key) ? storage.get(key) ?? null : null
       },
-      async put(key: string, value: string) {
+      async put(key: string, value: string, options?: { expiration?: number; expirationTtl?: number }) {
+        putCalls.push({ key, value, options })
         storage.set(key, value)
       },
       async delete(key: string) {
@@ -118,6 +125,13 @@ describe("dashboard-read-cache", () => {
   it("caches and invalidates raw read-through values", async () => {
     let loaderCalls = 0
     const scope = dashboardBillingCacheScope("owner@dryapi.dev")
+    const fakeKv = createFakeKv()
+
+    getCloudflareContextMock.mockResolvedValue({
+      env: {
+        DRIZZLE_CACHE_KV: fakeKv.binding,
+      },
+    })
 
     const first = await readDashboardReadCache({
       scope,
@@ -136,6 +150,7 @@ describe("dashboard-read-cache", () => {
     expect(first).toEqual({ value: 1 })
     expect(second).toEqual({ value: 1 })
     expect(loaderCalls).toBe(1)
+  expect(fakeKv.putCalls[0]?.options?.expirationTtl).toBe(60)
 
     await invalidateDashboardReadCacheScope(scope)
 
@@ -148,6 +163,24 @@ describe("dashboard-read-cache", () => {
 
     expect(third).toEqual({ value: 2 })
     expect(loaderCalls).toBe(2)
+  })
+
+  it("clamps dashboard cache ttl values below the KV minimum", async () => {
+    const fakeKv = createFakeKv()
+    getCloudflareContextMock.mockResolvedValue({
+      env: {
+        DRIZZLE_CACHE_KV: fakeKv.binding,
+      },
+    })
+
+    await readDashboardReadCache({
+      scope: dashboardBillingCacheScope("owner@dryapi.dev"),
+      key: "summary",
+      ttlSeconds: 30,
+      loader: async () => ({ value: 1 }),
+    })
+
+    expect(fakeKv.putCalls[0]?.options?.expirationTtl).toBe(60)
   })
 
   it("caches billing summary reads across sequential calls", async () => {
