@@ -55,15 +55,22 @@ function normalizeString(value: string | null | undefined): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
-function toFiniteNumber(value: unknown): number | null {
+function toEpochMilliseconds(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value
   }
 
   if (typeof value === "string" && value.trim().length > 0) {
-    const parsed = Number(value)
-    if (Number.isFinite(parsed)) {
-      return parsed
+    const normalized = value.trim()
+
+    const parsedNumber = Number(normalized)
+    if (Number.isFinite(parsedNumber)) {
+      return parsedNumber
+    }
+
+    const parsedDate = Date.parse(normalized)
+    if (Number.isFinite(parsedDate)) {
+      return parsedDate
     }
   }
 
@@ -138,7 +145,7 @@ export function readDashboardSessionSnapshotFromHeaders(
     activeOrganizationId: normalizeString(
       headers.get(DASHBOARD_SESSION_ACTIVE_ORG_HEADER),
     ),
-    expiresAtMs: toFiniteNumber(
+    expiresAtMs: toEpochMilliseconds(
       headers.get(DASHBOARD_SESSION_EXPIRES_AT_HEADER),
     ),
   }
@@ -153,7 +160,6 @@ export async function resolveDashboardSessionSnapshotFromToken(
   }
 
   const db = await resolveAuthDb()
-  const now = Date.now()
 
   const response = await db
     .prepare(
@@ -166,11 +172,11 @@ export async function resolveDashboardSessionSnapshotFromToken(
         u.role AS role
       FROM session s
       INNER JOIN "user" u ON u.id = s.userid
-      WHERE s.token = ? AND s.expiresat > ?
+      WHERE s.token = ? AND s.expiresat > NOW()
       LIMIT 1
       `,
     )
-    .bind(normalizedSessionToken, now)
+    .bind(normalizedSessionToken)
     .all<DashboardSessionRow & DashboardUserRow>()
 
   const row = response.results[0]
@@ -184,6 +190,6 @@ export async function resolveDashboardSessionSnapshotFromToken(
     userId: normalizeString(row.userId),
     userRole: normalizeString(row.role) || "user",
     activeOrganizationId: normalizeString(row.activeOrganizationId),
-    expiresAtMs: toFiniteNumber(row.expiresAt),
+    expiresAtMs: toEpochMilliseconds(row.expiresAt),
   }
 }

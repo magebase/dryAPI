@@ -100,7 +100,8 @@ describe("dashboard-session", () => {
     expect(queries[0]?.query).toContain('AS "userId"')
     expect(queries[0]?.query).toContain('AS "activeOrganizationId"')
     expect(queries[0]?.query).toContain('AS "expiresAt"')
-    expect(queries[0]?.values).toEqual(["session_1", expect.any(Number)])
+    expect(queries[0]?.query).toContain("s.expiresat > NOW()")
+    expect(queries[0]?.values).toEqual(["session_1"])
   })
 
   it("returns null when the session token is missing", async () => {

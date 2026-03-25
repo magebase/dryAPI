@@ -202,6 +202,19 @@ function deployVersionSplit(configPath: string, splits: string[], message: strin
   ])
 }
 
+function deployWorker(configPath: string, message: string, extraArgs: string[] = []): void {
+  runPnpm([
+    "exec",
+    "wrangler",
+    "deploy",
+    "--config",
+    configPath,
+    "--message",
+    message,
+    ...extraArgs,
+  ])
+}
+
 function main(): void {
   ensureConfigExists(SERVER_CONFIG_PATH)
   ensureConfigExists(MIDDLEWARE_CONFIG_PATH)
@@ -217,16 +230,12 @@ function main(): void {
     )
   }
 
-  const middlewareVersionId = uploadWorkerVersion(
+  // Always run a full middleware deploy so custom-domain routing is kept attached
+  // to the middleware worker, preventing traffic drift to the server worker.
+  deployWorker(
     MIDDLEWARE_CONFIG_PATH,
-    "middleware",
+    `activate middleware for server ${serverVersionId}`,
     ["--var", `WORKER_VERSION_ID:${serverVersionId}`],
-  )
-
-  deployVersionSplit(
-    MIDDLEWARE_CONFIG_PATH,
-    [`${middlewareVersionId}@100%`],
-    `activate middleware ${middlewareVersionId}`,
   )
 
   deployVersionSplit(
