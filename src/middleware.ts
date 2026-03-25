@@ -22,8 +22,7 @@ import {
   resolvePerfSlowThresholdMs,
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
-import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
-import { normalizeSiteUrl } from "@/lib/og/metadata"
+import { resolveDashboardSessionSnapshotFromToken } from "@/lib/dashboard-session"
 
 const SUCCESS_PATH = "/success"
 const DASHBOARD_PREFIX = "/dashboard"
@@ -137,6 +136,11 @@ function readCachedSessionEntry(sessionToken: string): SessionAuthCacheEntry | n
     return null
   }
 
+  if (cacheEntry.snapshot === null) {
+    sessionAuthCache.delete(sessionToken)
+    return null
+  }
+
   if (cacheEntry.expiresAt <= Date.now()) {
     sessionAuthCache.delete(sessionToken)
     return null
@@ -149,6 +153,10 @@ function writeCachedSessionAuth(
   sessionToken: string,
   snapshot: DashboardSessionSnapshot | null,
 ): void {
+  if (!snapshot) {
+    return
+  }
+
   // Keep this bounded so dev hot paths cannot grow memory unbounded.
   if (sessionAuthCache.size >= 1_024 && !sessionAuthCache.has(sessionToken)) {
     const firstKey = sessionAuthCache.keys().next().value
@@ -206,65 +214,6 @@ function applyDashboardSessionSnapshotHeaders(
   }
 }
 
-function normalizeString(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null
-  }
-
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : null
-}
-
-function toFiniteNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value
-  }
-
-  if (typeof value === "string" && value.trim().length > 0) {
-    const parsed = Number(value)
-    if (Number.isFinite(parsed)) {
-      return parsed
-    }
-  }
-
-  return null
-}
-
-function resolveInternalFetchOrigin(request: NextRequest): string {
-  if (process.env.NODE_ENV !== "production") {
-    return request.nextUrl.origin
-  }
-
-  return normalizeSiteUrl()
-}
-
-function resolveDashboardSessionSnapshotFromPayload(
-  payload: unknown,
-): DashboardSessionSnapshot | null {
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
-    return null
-  }
-
-  const record = payload as Record<string, unknown>
-  if (record.authenticated !== true) {
-    return null
-  }
-
-  const userId = normalizeString(record.userId)
-  if (!userId) {
-    return null
-  }
-
-  return {
-    authenticated: true,
-    email: normalizeString(record.email),
-    userId,
-    userRole: normalizeString(record.userRole) || "user",
-    activeOrganizationId: normalizeString(record.activeOrganizationId),
-    expiresAtMs: toFiniteNumber(record.expiresAtMs),
-  }
-}
-
 async function fetchDashboardSessionSnapshot(
   request: NextRequest,
   traceId: string,
@@ -279,29 +228,14 @@ async function fetchDashboardSessionSnapshot(
       cookie: summarizeCookieHeader(request.headers.get("cookie")),
     })
 
-    const response = await internalWorkerFetch({
-      path: "/api/internal/auth/session-snapshot",
-      fallbackOrigin: resolveInternalFetchOrigin(request),
-      init: {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          cookie: request.headers.get("cookie") || "",
-          authorization: request.headers.get("authorization") || "",
-        },
-        cache: "no-store",
-      },
-    })
-
-    const payload = response.ok ? await response.json().catch(() => null) : null
-    const snapshot = resolveDashboardSessionSnapshotFromPayload(payload)
+    const snapshot = await resolveDashboardSessionSnapshotFromToken(sessionToken)
 
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
 
     logServerAuthEvent("log", "middleware.dashboard.session-fetch.result", {
       traceId,
       authenticated: snapshot !== null,
-      status: response.status,
+      status: 200,
       durationMs,
     })
 
@@ -310,7 +244,7 @@ async function fetchDashboardSessionSnapshot(
         traceId,
         pathname: request.nextUrl.pathname,
         authenticated: snapshot !== null,
-        status: response.status,
+        status: 200,
         durationMs,
         slowThresholdMs: SESSION_CHECK_SLOW_MS,
       })
@@ -319,12 +253,14 @@ async function fetchDashboardSessionSnapshot(
         traceId,
         pathname: request.nextUrl.pathname,
         authenticated: snapshot !== null,
-        status: response.status,
+        status: 200,
         durationMs,
       })
     }
 
-    writeCachedSessionAuth(sessionToken, snapshot)
+    if (snapshot) {
+      writeCachedSessionAuth(sessionToken, snapshot)
+    }
     return snapshot
   } catch (error) {
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
@@ -343,7 +279,6 @@ async function fetchDashboardSessionSnapshot(
       error: error instanceof Error ? error.message : String(error),
     })
 
-    writeCachedSessionAuth(sessionToken, null)
     return null
   }
 }
