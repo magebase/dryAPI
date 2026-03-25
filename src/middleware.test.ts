@@ -5,25 +5,28 @@ const { internalWorkerFetchMock } = vi.hoisted(() => ({
   internalWorkerFetchMock: vi.fn(),
 }))
 
-const { resolveDashboardSessionSnapshotFromTokenMock } = vi.hoisted(() => ({
-  resolveDashboardSessionSnapshotFromTokenMock: vi.fn(),
-}))
-
 vi.mock("@/lib/internal-worker-fetch", () => ({
   internalWorkerFetch: internalWorkerFetchMock,
 }))
 
-vi.mock("@/lib/dashboard-session", () => ({
-  resolveDashboardSessionSnapshotFromToken: (
-    ...args: unknown[]
-  ) => resolveDashboardSessionSnapshotFromTokenMock(...args),
-}))
+vi.mock("@/lib/dashboard-session", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/dashboard-session")>()
+  return {
+    ...actual,
+    resolveDashboardSessionSnapshotFromToken: vi.fn(),
+  }
+})
 
 import { middleware } from "@/middleware"
+import { resolveDashboardSessionSnapshotFromToken } from "@/lib/dashboard-session"
+
+const resolveDashboardSessionSnapshotFromTokenMock = vi.mocked(
+  resolveDashboardSessionSnapshotFromToken,
+)
 
 function makeSessionSnapshot() {
   return {
-    authenticated: true,
+    authenticated: true as const,
     userId: "user_1",
     email: "owner@dryapi.dev",
     userRole: "admin",
