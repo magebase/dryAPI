@@ -47,15 +47,13 @@ export async function GET(request: NextRequest) {
   }
 
   const customerRef = resolveDashboardBillingCustomerRef(session);
-  const stored = customerRef
-    ? await getStoredCreditBalance(customerRef).catch(() => null)
-    : null;
-  const creditsSplit = customerRef
-    ? await getStoredSubscriptionCredits(customerRef).catch(() => null)
-    : null;
-  const lifetimeDepositedUsd = customerRef
-    ? await getLifetimeDepositedCredits(customerRef).catch(() => null)
-    : null;
+  const [stored, creditsSplit, lifetimeDepositedUsd] = customerRef
+    ? await Promise.all([
+        getStoredCreditBalance(customerRef).catch(() => null),
+        getStoredSubscriptionCredits(customerRef).catch(() => null),
+        getLifetimeDepositedCredits(customerRef).catch(() => null),
+      ])
+    : [null, null, null];
   const rpmLimit = resolveAccountRpmLimit(lifetimeDepositedUsd ?? 0);
   const balance = stored?.balanceCredits ?? resolveConfiguredBalance();
   const updatedAt = stored?.updatedAt || new Date().toISOString();

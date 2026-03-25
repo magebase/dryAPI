@@ -34,6 +34,25 @@ const { getSqlDbAsync } = createCloudflareDbAccessors(
   {},
 )
 
+type BillingSummaryRow = {
+  balance_credits: number | string | null
+  updated_at: number | string | null
+  lifetime_deposited_credits: number | string | null
+  total_subscription_grants: number | string | null
+}
+
+type BillingSummarySnapshot = {
+  balanceCredits: number
+  updatedAt: string | null
+  lifetimeDepositedCredits: number
+  subscriptionCredits: number
+  topUpCredits: number
+}
+
+const billingTablesReady = new WeakSet<BillingDatabaseLike>()
+const billingTablesReadyPromises = new WeakMap<BillingDatabaseLike, Promise<void>>()
+const billingSummarySnapshotPromises = new WeakMap<BillingDatabaseLike, Map<string, Promise<BillingSummarySnapshot | null>>>()
+
 type CreditBalanceRow = {
   balance_credits: number
   updated_at: number
@@ -205,12 +224,31 @@ async function resolveBillingDb(): Promise<BillingDatabaseLike | null> {
 }
 
 async function ensureBillingTables(db: BillingDatabaseLike): Promise<void> {
-  await db.batch!([
-    db.prepare(CREATE_BALANCE_TABLE_SQL),
-    db.prepare(CREATE_EVENTS_TABLE_SQL),
-    db.prepare(CREATE_SAAS_BUCKETS_TABLE_SQL),
-  ])
-  await ensureBalanceProfileColumns(db)
+  if (billingTablesReady.has(db)) {
+    return
+  }
+
+  const pending = billingTablesReadyPromises.get(db)
+  if (pending) {
+    await pending
+    return
+  }
+
+  const setupPromise = (async () => {
+    await db.batch!([
+      db.prepare(CREATE_BALANCE_TABLE_SQL),
+      db.prepare(CREATE_EVENTS_TABLE_SQL),
+      db.prepare(CREATE_SAAS_BUCKETS_TABLE_SQL),
+    ])
+    await ensureBalanceProfileColumns(db)
+    billingTablesReady.add(db)
+  })()
+    .finally(() => {
+      billingTablesReadyPromises.delete(db)
+    })
+
+  billingTablesReadyPromises.set(db, setupPromise)
+  await setupPromise
 }
 
 async function listTableColumnNames(db: BillingDatabaseLike, tableName: string): Promise<Set<string>> {
@@ -287,6 +325,90 @@ async function selectBalanceProfileRow(
     .all<CreditBalanceProfileRow>()
 
   return response.results[0] ?? null
+}
+
+async function readBillingSummarySnapshot(
+  db: BillingDatabaseLike,
+  customerRef: string,
+): Promise<BillingSummarySnapshot | null> {
+  const response = await db
+    .prepare(
+      `
+      SELECT
+        b.balance_credits,
+        b.updated_at,
+        COALESCE((
+          SELECT SUM(CASE WHEN e.credits_delta > 0 THEN e.credits_delta ELSE 0 END)
+          FROM billing_credit_events e
+          WHERE e.customer_ref = b.customer_ref
+        ), 0) AS lifetime_deposited_credits,
+        COALESCE((
+          SELECT SUM(CASE WHEN e.source = 'dryapi-dashboard-subscription' THEN e.credits_delta ELSE 0 END)
+          FROM billing_credit_events e
+          WHERE e.customer_ref = b.customer_ref
+        ), 0) AS total_subscription_grants
+      FROM credit_balance_profiles b
+      WHERE b.customer_ref = ?
+      LIMIT 1
+      `,
+    )
+    .bind(customerRef)
+    .all<BillingSummaryRow>()
+
+  const row = response.results[0]
+  if (!row) {
+    return null
+  }
+
+  const balanceCredits = Number((toFiniteNumber(row.balance_credits) ?? 0).toFixed(3))
+  const lifetimeDepositedCredits = Number(
+    Math.max(0, toFiniteNumber(row.lifetime_deposited_credits) ?? 0).toFixed(3),
+  )
+  const totalSubscriptionGrants = Number(
+    Math.max(0, toFiniteNumber(row.total_subscription_grants) ?? 0).toFixed(3),
+  )
+  const subscriptionCredits = Number(Math.min(balanceCredits, totalSubscriptionGrants).toFixed(3))
+  const topUpCredits = Number(Math.max(0, balanceCredits - subscriptionCredits).toFixed(3))
+
+  return {
+    balanceCredits,
+    updatedAt: toIsoFromMs(toFiniteNumber(row.updated_at)),
+    lifetimeDepositedCredits,
+    subscriptionCredits,
+    topUpCredits,
+  }
+}
+
+async function getBillingSummarySnapshot(
+  customerRef: string,
+  options?: { db?: BillingDatabaseLike | null },
+): Promise<BillingSummarySnapshot | null> {
+  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
+  const db = options?.db ?? (await resolveBillingDb())
+  if (!db) {
+    return null
+  }
+
+  await ensureBillingTables(db)
+
+  const bindingObject = db as BillingDatabaseLike & object
+  let customerCache = billingSummarySnapshotPromises.get(bindingObject)
+  if (!customerCache) {
+    customerCache = new Map<string, Promise<BillingSummarySnapshot | null>>()
+    billingSummarySnapshotPromises.set(bindingObject, customerCache)
+  }
+
+  const cachedPromise = customerCache.get(normalizedCustomerRef)
+  if (cachedPromise) {
+    return cachedPromise
+  }
+
+  const snapshotPromise = readBillingSummarySnapshot(db, normalizedCustomerRef).finally(() => {
+    customerCache?.delete(normalizedCustomerRef)
+  })
+
+  customerCache.set(normalizedCustomerRef, snapshotPromise)
+  return snapshotPromise
 }
 
 function toBooleanInteger(value: boolean): number {
@@ -367,22 +489,14 @@ export async function getStoredCreditBalance(
   customerRef: string,
   options?: { db?: BillingDatabaseLike | null },
 ): Promise<CreditBalanceSnapshot | null> {
-  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
-  const db = options?.db ?? (await resolveBillingDb())
-  if (!db) {
-    return null
-  }
-
-  await ensureBillingTables(db)
-
-  const row = await selectBalanceRow(db, normalizedCustomerRef)
-  if (!row) {
+  const summary = await getBillingSummarySnapshot(customerRef, options)
+  if (!summary) {
     return null
   }
 
   return {
-    balanceCredits: Number((toFiniteNumber(row.balance_credits) ?? 0).toFixed(3)),
-    updatedAt: toIsoFromMs(toFiniteNumber(row.updated_at)),
+    balanceCredits: summary.balanceCredits,
+    updatedAt: summary.updatedAt,
   }
 }
 
@@ -535,77 +649,26 @@ export async function getLifetimeDepositedCredits(
   customerRef: string,
   options?: { db?: BillingDatabaseLike | null },
 ): Promise<number | null> {
-  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
-  const db = options?.db ?? (await resolveBillingDb())
-  if (!db) {
+  const summary = await getBillingSummarySnapshot(customerRef, options)
+  if (!summary) {
     return null
   }
 
-  await ensureBillingTables(db)
-
-  const response = await db
-    .prepare(
-      `
-      SELECT COALESCE(SUM(CASE WHEN credits_delta > 0 THEN credits_delta ELSE 0 END), 0) AS lifetime_deposited_credits
-      FROM billing_credit_events
-      WHERE customer_ref = ?
-      `,
-    )
-    .bind(normalizedCustomerRef)
-    .all<CreditDepositAggregateRow>()
-
-  const lifetimeDepositedCredits = toFiniteNumber(response.results[0]?.lifetime_deposited_credits)
-  if (lifetimeDepositedCredits === null) {
-    return 0
-  }
-
-  return Number(Math.max(0, lifetimeDepositedCredits).toFixed(3))
+  return summary.lifetimeDepositedCredits
 }
 
 export async function getStoredSubscriptionCredits(
   customerRef: string,
   options?: { db?: BillingDatabaseLike | null },
 ): Promise<StoredSubscriptionCreditsSnapshot | null> {
-  const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
-  const db = options?.db ?? (await resolveBillingDb())
-  if (!db) {
+  const summary = await getBillingSummarySnapshot(customerRef, options)
+  if (!summary) {
     return null
   }
-
-  await ensureBillingTables(db)
-
-  const balanceRow = await selectBalanceRow(db, normalizedCustomerRef)
-  if (!balanceRow) {
-    return null
-  }
-
-  const totalBalance = Number((toFiniteNumber(balanceRow.balance_credits) ?? 0).toFixed(3))
-
-  // Sum all subscription cycle grants for this user.
-  // Note: source for subscription grants is 'dryapi-dashboard-subscription'
-  const response = await db
-    .prepare(
-      `
-      SELECT COALESCE(SUM(credits_delta), 0) AS total_subscription_grants
-      FROM billing_credit_events
-      WHERE customer_ref = ? AND source = 'dryapi-dashboard-subscription'
-      `,
-    )
-    .bind(normalizedCustomerRef)
-    .all<{ total_subscription_grants: number | string | null }>()
-
-  const totalSubscriptionGrants = toFiniteNumber(response.results[0]?.total_subscription_grants) ?? 0
-
-  // We treat subscription credits as "first out" (already handled by total balance reduction)
-  // but for the UI split, we'll assume subscription credits remain until they are exhausted by the total balance.
-  // This is a naive split: subscriptionCredits = min(totalBalance, totalSubscriptionGrants)
-  // topUpCredits = totalBalance - subscriptionCredits
-  const subscriptionCredits = Number(Math.min(totalBalance, totalSubscriptionGrants).toFixed(3))
-  const topUpCredits = Number(Math.max(0, totalBalance - subscriptionCredits).toFixed(3))
 
   return {
-    subscriptionCredits,
-    topUpCredits,
+    subscriptionCredits: summary.subscriptionCredits,
+    topUpCredits: summary.topUpCredits,
   }
 }
 

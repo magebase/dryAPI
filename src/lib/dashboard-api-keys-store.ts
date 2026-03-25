@@ -27,6 +27,20 @@ const { getSqlDbAsync } = createCloudflareDbAccessors(
   {},
 )
 
+type UsageSummaryRow = {
+  requests24h: number | string | null
+  active_api_keys: number | string | null
+  daily_series_json: string | null
+}
+
+type UsageSummarySnapshot = {
+  requests24h: number
+  activeApiKeys: number
+  dailySeries: Array<{ day: string; requests: number }>
+}
+
+const usageSummarySnapshotPromises = new WeakMap<D1DatabaseLike, Map<number, Promise<UsageSummarySnapshot | null>>>()
+
 type BetterAuthApiKey = {
   id: string
   name: string | null
@@ -203,6 +217,123 @@ async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
 
 async function resolveAnalyticsDb(): Promise<D1DatabaseLike | null> {
   return getSqlDbAsync()
+}
+
+function parseUsageSeriesJson(value: unknown): Array<{ day: string; requests: number }> {
+  const parsedValue =
+    typeof value === "string"
+      ? (() => {
+          try {
+            return JSON.parse(value) as unknown
+          } catch {
+            return []
+          }
+        })()
+      : value
+
+  if (!Array.isArray(parsedValue)) {
+    return []
+  }
+
+  return parsedValue
+    .filter((entry): entry is Record<string, unknown> => !!entry && typeof entry === "object")
+    .map((entry) => {
+      const day = typeof entry.day === "string" ? entry.day.slice(0, 10) : ""
+      const requestsRaw = typeof entry.requests === "number" ? entry.requests : Number(entry.requests)
+
+      return {
+        day,
+        requests: Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0,
+      }
+    })
+    .filter((entry) => entry.day.length > 0)
+    .sort((left, right) => left.day.localeCompare(right.day))
+}
+
+async function readUsageSummarySnapshot(
+  db: D1DatabaseLike,
+  days: number,
+): Promise<UsageSummarySnapshot | null> {
+  const response = await db
+    .prepare(
+      `
+      WITH thresholds AS (
+        SELECT
+          (EXTRACT(EPOCH FROM (NOW() - (? * INTERVAL '1 day'))) * 1000)::bigint AS since_days_ms,
+          (EXTRACT(EPOCH FROM (NOW() - INTERVAL '24 hours')) * 1000)::bigint AS since_24h_ms
+      ),
+      daily AS (
+        SELECT
+          to_char(date_trunc('day', to_timestamp(created_at / 1000.0))::date, 'YYYY-MM-DD') AS day,
+          COUNT(*)::bigint AS requests
+        FROM runpod_request_analytics, thresholds
+        WHERE created_at >= thresholds.since_days_ms
+        GROUP BY 1
+      ),
+      active_keys AS (
+        SELECT COUNT(*)::bigint AS active_api_keys
+        FROM apikey
+        WHERE enabled = TRUE
+          AND (expiresat IS NULL OR expiresat > (EXTRACT(EPOCH FROM NOW()) * 1000)::bigint)
+      )
+      SELECT
+        COALESCE((
+          SELECT COUNT(*)::bigint
+          FROM runpod_request_analytics, thresholds
+          WHERE created_at >= thresholds.since_24h_ms
+        ), 0) AS requests24h,
+        COALESCE((SELECT active_api_keys FROM active_keys), 0) AS active_api_keys,
+        COALESCE((
+          SELECT json_agg(json_build_object('day', day, 'requests', requests) ORDER BY day)::text
+          FROM daily
+        ), '[]') AS daily_series_json
+      `,
+    )
+    .bind(days)
+    .all<UsageSummaryRow>()
+
+  const row = response.results[0]
+  if (!row) {
+    return null
+  }
+
+  const requests24hRaw = typeof row.requests24h === "number" ? row.requests24h : Number(row.requests24h)
+  const activeApiKeysRaw = typeof row.active_api_keys === "number" ? row.active_api_keys : Number(row.active_api_keys)
+
+  return {
+    requests24h: Number.isFinite(requests24hRaw) ? Math.max(0, Math.round(requests24hRaw)) : 0,
+    activeApiKeys: Number.isFinite(activeApiKeysRaw) ? Math.max(0, Math.round(activeApiKeysRaw)) : 0,
+    dailySeries: parseUsageSeriesJson(row.daily_series_json),
+  }
+}
+
+async function getUsageSummarySnapshot(
+  days: number,
+  options?: { db?: D1DatabaseLike | null },
+): Promise<UsageSummarySnapshot | null> {
+  const db = options?.db ?? (await resolveAnalyticsDb())
+  if (!db) {
+    return null
+  }
+
+  const safeDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : 14
+  let daysCache = usageSummarySnapshotPromises.get(db)
+  if (!daysCache) {
+    daysCache = new Map<number, Promise<UsageSummarySnapshot | null>>()
+    usageSummarySnapshotPromises.set(db, daysCache)
+  }
+
+  const cachedPromise = daysCache.get(safeDays)
+  if (cachedPromise) {
+    return cachedPromise
+  }
+
+  const snapshotPromise = readUsageSummarySnapshot(db, safeDays).finally(() => {
+    daysCache?.delete(safeDays)
+  })
+
+  daysCache.set(safeDays, snapshotPromise)
+  return snapshotPromise
 }
 
 async function getUserEmailByReferenceId(referenceId: string): Promise<string | null> {
@@ -610,71 +741,24 @@ export async function verifyDashboardApiKeyToken(params: {
 }
 
 export async function countActiveDashboardApiKeys(): Promise<number | null> {
-  const db = await resolveAuthDb()
-  if (!db) return null
+  const summary = await getUsageSummarySnapshot(14)
+  if (!summary) return null
 
-  const now = Date.now()
-  const response = await db
-    .prepare(
-      `
-      SELECT COUNT(*) AS total
-      FROM apikey
-      WHERE enabled = TRUE AND (expiresat IS NULL OR expiresat > ?)
-      `,
-    )
-    .bind(now)
-    .all<{ total: number | string }>()
-
-  const value = response.results[0]?.total
-  const parsed = typeof value === "number" ? value : Number(value)
-  return Number.isFinite(parsed) ? parsed : null
+  return summary.activeApiKeys
 }
 
 export async function getPlatformDailyRequestSeries(days: number): Promise<Array<{ day: string; requests: number }> | null> {
-  const db = await resolveAnalyticsDb()
-  if (!db) return null
+  const summary = await getUsageSummarySnapshot(days)
+  if (!summary) return null
 
-  const safeDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : 14
-
-  const response = await db
-    .prepare(
-      `
-      SELECT TO_CHAR(TO_TIMESTAMP(created_at / 1000.0), 'YYYY-MM-DD') AS day, COUNT(*) AS requests
-      FROM runpod_request_analytics
-      WHERE created_at >= (EXTRACT(EPOCH FROM (NOW() - (? * INTERVAL '1 day'))) * 1000)::bigint
-      GROUP BY 1
-      ORDER BY 1 ASC
-      `,
-    )
-    .bind(safeDays)
-    .all<{ day: string; requests: number | string }>()
-
-  return response.results.map((row) => {
-    const requests = typeof row.requests === "number" ? row.requests : Number(row.requests)
-    return {
-      day: row.day,
-      requests: Number.isFinite(requests) ? Math.max(0, Math.round(requests)) : 0,
-    }
-  })
+  return summary.dailySeries
 }
 
 export async function getPlatformRequests24h(): Promise<number | null> {
-  const db = await resolveAnalyticsDb()
-  if (!db) return null
+  const summary = await getUsageSummarySnapshot(14)
+  if (!summary) return null
 
-  const response = await db
-    .prepare(
-      `
-      SELECT COUNT(*) AS total
-      FROM runpod_request_analytics
-      WHERE created_at >= (EXTRACT(EPOCH FROM (NOW() - INTERVAL '24 hours')) * 1000)::bigint
-      `,
-    )
-    .all<{ total: number | string }>()
-
-  const value = response.results[0]?.total
-  const parsed = typeof value === "number" ? value : Number(value)
-  return Number.isFinite(parsed) ? parsed : null
+  return summary.requests24h
 }
 
 export async function getDashboardApiKeyUsageSummary(params: {

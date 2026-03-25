@@ -333,6 +333,37 @@ class FakePreparedStatement {
       }
     }
 
+    if (query.includes("from credit_balance_profiles b")) {
+      const customerRef = String(this.params[0])
+      const row = this.state.profiles.get(customerRef)
+
+      if (!row) {
+        return { results: [] }
+      }
+
+      const lifetimeDepositedCredits = Array.from(this.state.events.values())
+        .filter((event) => event.customer_ref === customerRef && event.credits_delta > 0)
+        .reduce((sum, event) => sum + event.credits_delta, 0)
+      const totalSubscriptionGrants = Array.from(this.state.events.values())
+        .filter(
+          (event) =>
+            event.customer_ref === customerRef
+            && event.source === "dryapi-dashboard-subscription",
+        )
+        .reduce((sum, event) => sum + event.credits_delta, 0)
+
+      return {
+        results: [
+          {
+            balance_credits: row.balance_credits,
+            updated_at: row.updated_at,
+            lifetime_deposited_credits: lifetimeDepositedCredits,
+            total_subscription_grants: totalSubscriptionGrants,
+          } as T,
+        ],
+      }
+    }
+
     if (query.includes("select customer_ref, balance_credits, updated_at") && query.includes("from credit_balance_profiles")) {
       const row = this.state.profiles.get(String(this.params[0]))
       return {
@@ -763,6 +794,24 @@ describe("dashboard-billing-credits", () => {
                 return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
               }
 
+              if (normalized.includes("from credit_balance_profiles b")) {
+                if (mode === "increment" && profileSelectCalls === 0) {
+                  profileSelectCalls += 1
+                  return {
+                    results: [
+                      {
+                        balance_credits: 10,
+                        updated_at: Date.now(),
+                        lifetime_deposited_credits: 0,
+                        total_subscription_grants: 0,
+                      },
+                    ] as T[],
+                  }
+                }
+
+                return { results: [] as T[] }
+              }
+
               if (normalized.includes("select customer_ref, balance_credits, updated_at")) {
                 profileSelectCalls += 1
                 if (mode === "increment" && profileSelectCalls === 1) {
@@ -1049,6 +1098,19 @@ describe("dashboard-billing-credits", () => {
               return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
+            if (normalized.includes("from credit_balance_profiles b")) {
+              return {
+                results: [
+                  {
+                    balance_credits: 7,
+                    updated_at: 1710835200000,
+                    lifetime_deposited_credits: 7,
+                    total_subscription_grants: 5,
+                  },
+                ] as T[],
+              }
+            }
+
             if (normalized.includes("select balance_credits, updated_at") && normalized.includes("from credit_balance_profiles")) {
               return {
                 results: [
@@ -1139,8 +1201,17 @@ describe("dashboard-billing-credits", () => {
               return { results: FULL_PROFILE_COLUMNS.map((name) => ({ name })) as T[] }
             }
 
-            if (normalized.includes("sum(case when credits_delta > 0")) {
-              return { results: [{ lifetime_deposited_credits: "not-a-number" }] as T[] }
+            if (normalized.includes("from credit_balance_profiles b")) {
+              return {
+                results: [
+                  {
+                    balance_credits: 0,
+                    updated_at: 0,
+                    lifetime_deposited_credits: "not-a-number",
+                    total_subscription_grants: "not-a-number",
+                  },
+                ] as T[],
+              }
             }
 
             return { results: [] as T[] }
