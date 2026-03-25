@@ -66,6 +66,14 @@ describe("dashboard-session", () => {
     ).toBe("secure_session")
   })
 
+  it("prefers the secure session token when both cookies are present", () => {
+    expect(
+      readDashboardSessionTokenFromCookieHeader(
+        "better-auth.session_token=stale_session; __Secure-better-auth.session_token=secure_session",
+      ),
+    ).toBe("secure_session")
+  })
+
   it("round-trips snapshot headers", () => {
     const headers = new Headers()
 

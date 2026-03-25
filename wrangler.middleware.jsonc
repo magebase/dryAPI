@@ -6,11 +6,8 @@
   "compatibility_flags": [
     "nodejs_compat",
     "allow_importable_env",
-    "global_fetch_strictly_public"
+    "global_fetch_strictly_public",
   ],
-  "placement": {
-    "mode": "smart"
-  },
   "workers_dev": false,
   "observability": {
     "enabled": true,
@@ -18,73 +15,73 @@
       "enabled": true,
       "invocation_logs": true,
       "head_sampling_rate": 1,
-      "persist": true
+      "persist": true,
     },
     "traces": {
       "enabled": true,
       "head_sampling_rate": 0.1,
-      "persist": true
-    }
+      "persist": true,
+    },
   },
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "routes": [
     {
       "pattern": "dryapi.dev",
-      "custom_domain": true
+      "custom_domain": true,
     },
     {
       "pattern": "www.dryapi.dev",
-      "custom_domain": true
-    }
+      "custom_domain": true,
+    },
   ],
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "dryapi-site-middleware"
+      "service": "dryapi-site-middleware",
     },
     {
       "binding": "DEFAULT_WORKER",
-      "service": "dryapi-site"
-    }
+      "service": "dryapi-site",
+    },
   ],
   "durable_objects": {
     "bindings": [
       {
         "name": "NEXT_CACHE_DO_QUEUE",
         "class_name": "DOQueueHandler",
-        "script_name": "dryapi-site"
+        "script_name": "dryapi-site",
       },
       {
         "name": "NEXT_TAG_CACHE_DO_SHARDED",
         "class_name": "DOShardedTagCache",
-        "script_name": "dryapi-site"
+        "script_name": "dryapi-site",
       },
       {
         "name": "NEXT_CACHE_DO_PURGE",
         "class_name": "BucketCachePurge",
-        "script_name": "dryapi-site"
-      }
-    ]
+        "script_name": "dryapi-site",
+      },
+    ],
   },
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "dryapi-site-opennext-cache"
+      "bucket_name": "dryapi-site-opennext-cache",
     },
     {
       "binding": "MEDIA_R2_BUCKET",
-      "bucket_name": "dryapi-site-media"
+      "bucket_name": "dryapi-site-media",
     },
     {
       "binding": "ACCOUNT_EXPORTS_R2_BUCKET",
-      "bucket_name": "dryapi-site-account-exports"
-    }
+      "bucket_name": "dryapi-site-account-exports",
+    },
   ],
   "images": {
-    "binding": "IMAGES"
+    "binding": "IMAGES",
   },
   "vars": {
     "WORKER_VERSION_ID": "TO_REPLACE",
@@ -94,6 +91,6 @@
     "CLOUDFLARE_AI_SEARCH_ENDPOINT": "",
     "DRIZZLE_CACHE_DEFAULT_TTL_SECONDS": "60",
     "DRIZZLE_CACHE_INDEX_TTL_SECONDS": "300",
-    "DRIZZLE_CACHE_GLOBAL": "false"
-  }
+    "DRIZZLE_CACHE_GLOBAL": "false",
+  },
 }

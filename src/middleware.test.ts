@@ -133,6 +133,32 @@ describe("dashboard middleware auth checks", () => {
     )
   })
 
+  it("prefers the secure Better Auth session cookie when both variants are present", async () => {
+    internalWorkerFetchMock.mockResolvedValue(makeSessionResponse())
+
+    const request = new NextRequest("https://dryapi.dev/dashboard/settings", {
+      headers: new Headers({
+        cookie:
+          "better-auth.session_token=stale_session; __Secure-better-auth.session_token=secure_session",
+      }),
+    })
+
+    const response = await middleware(request)
+
+    expect(response.status).toBe(200)
+    expect(internalWorkerFetchMock).toHaveBeenCalledTimes(1)
+    expect(internalWorkerFetchMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: "/api/internal/auth/session-snapshot",
+        init: expect.objectContaining({
+          headers: expect.objectContaining({
+            cookie: "better-auth.session_token=stale_session; __Secure-better-auth.session_token=secure_session",
+          }),
+        }),
+      }),
+    )
+  })
+
   it("passes dashboard API requests without auth lookup when session cookie is missing", async () => {
     const request = new NextRequest("https://dryapi.dev/api/dashboard/settings", {
       headers: new Headers({

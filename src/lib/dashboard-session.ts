@@ -50,8 +50,8 @@ const DASHBOARD_SESSION_USER_ROLE_HEADER = "x-dryapi-dashboard-user-role"
 const DASHBOARD_SESSION_ACTIVE_ORG_HEADER = "x-dryapi-dashboard-active-organization-id"
 const DASHBOARD_SESSION_EXPIRES_AT_HEADER = "x-dryapi-dashboard-session-expires-at"
 const DASHBOARD_SESSION_COOKIE_NAMES = [
-  "better-auth.session_token",
   "__Secure-better-auth.session_token",
+  "better-auth.session_token",
 ] as const
 
 function normalizeString(value: string | null | undefined): string | null {

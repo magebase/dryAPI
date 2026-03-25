@@ -1,115 +1,109 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "dryapi-site",
-	"main": ".open-next/worker.js",
-	"compatibility_date": "2026-03-10",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"global_fetch_strictly_public"
-	],
-	"placement": {
-		"mode": "smart",
-	},
-	"workers_dev": false,
-	"observability": {
-		"enabled": true,
-		"logs": {
-			"enabled": true,
-			"invocation_logs": true,
-			"head_sampling_rate": 1,
-			"persist": true,
-		},
-		"traces": {
-			"enabled": true,
-			"head_sampling_rate": 0.1,
-			"persist": true,
-		},
-	},
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS",
-	},
-	"routes": [
-		{
-			"pattern": "dryapi.dev",
-			"custom_domain": true,
-		},
-		{
-			"pattern": "www.dryapi.dev",
-			"custom_domain": true,
-		},
-	],
-	"services": [
-		{
-			"binding": "WORKER_SELF_REFERENCE",
-			"service": "dryapi-site",
-		},
-	],
-	"hyperdrive": [
-		{
-			"binding": "HYPERDRIVE",
-			"id": "1a71faa065b14698a9e0e14dbb5a8431",
-		},
-	],
-	"durable_objects": {
-		"bindings": [
-			{
-				"name": "NEXT_CACHE_DO_QUEUE",
-				"class_name": "DOQueueHandler",
-			},
-			{
-				"name": "NEXT_TAG_CACHE_DO_SHARDED",
-				"class_name": "DOShardedTagCache",
-			},
-			{
-				"name": "NEXT_CACHE_DO_PURGE",
-				"class_name": "BucketCachePurge",
-			},
-		],
-	},
-	"migrations": [
-		{
-			"tag": "v1",
-			"new_sqlite_classes": [
-				"DOQueueHandler",
-				"DOShardedTagCache",
-				"BucketCachePurge",
-			],
-		},
-	],
-	"r2_buckets": [
-		{
-			"binding": "NEXT_INC_CACHE_R2_BUCKET",
-			"bucket_name": "dryapi-site-opennext-cache",
-		},
-		{
-			"binding": "MEDIA_R2_BUCKET",
-			"bucket_name": "dryapi-site-media",
-		},
-		{
-			"binding": "ACCOUNT_EXPORTS_R2_BUCKET",
-			"bucket_name": "dryapi-site-account-exports",
-		},
-	],
-	"kv_namespaces": [
-		{
-			"binding": "DRIZZLE_CACHE_KV",
-			"id": "drizzle_cache_kv_prod",
-		},
-	],
-	"images": {
-		"binding": "IMAGES",
-	},
-	"ai": {
-		"binding": "AI",
-	},
-	"vars": {
-		"CLOUDFLARE_AI_SEARCH_TIMEOUT_MS": "2500",
-		"CLOUDFLARE_AI_SEARCH_MAX_RESULTS": "4",
-		"CLOUDFLARE_AI_SEARCH_SOURCE": "",
-		"CLOUDFLARE_AI_SEARCH_ENDPOINT": "",
-		"DRIZZLE_CACHE_DEFAULT_TTL_SECONDS": "60",
-		"DRIZZLE_CACHE_INDEX_TTL_SECONDS": "300",
-		"DRIZZLE_CACHE_GLOBAL": "false",
-	}
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dryapi-site",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-03-10",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1,
+      "persist": true,
+    },
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "routes": [
+    {
+      "pattern": "dryapi.dev",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "www.dryapi.dev",
+      "custom_domain": true,
+    },
+  ],
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "dryapi-site",
+    },
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "1a71faa065b14698a9e0e14dbb5a8431",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler",
+      },
+      {
+        "name": "NEXT_TAG_CACHE_DO_SHARDED",
+        "class_name": "DOShardedTagCache",
+      },
+      {
+        "name": "NEXT_CACHE_DO_PURGE",
+        "class_name": "BucketCachePurge",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "DOQueueHandler",
+        "DOShardedTagCache",
+        "BucketCachePurge",
+      ],
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "dryapi-site-opennext-cache",
+    },
+    {
+      "binding": "MEDIA_R2_BUCKET",
+      "bucket_name": "dryapi-site-media",
+    },
+    {
+      "binding": "ACCOUNT_EXPORTS_R2_BUCKET",
+      "bucket_name": "dryapi-site-account-exports",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "DRIZZLE_CACHE_KV",
+      "id": "drizzle_cache_kv_prod",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+  "ai": {
+    "binding": "AI",
+  },
+  "vars": {
+    "CLOUDFLARE_AI_SEARCH_TIMEOUT_MS": "2500",
+    "CLOUDFLARE_AI_SEARCH_MAX_RESULTS": "4",
+    "CLOUDFLARE_AI_SEARCH_SOURCE": "",
+    "CLOUDFLARE_AI_SEARCH_ENDPOINT": "",
+    "DRIZZLE_CACHE_DEFAULT_TTL_SECONDS": "60",
+    "DRIZZLE_CACHE_INDEX_TTL_SECONDS": "300",
+    "DRIZZLE_CACHE_GLOBAL": "false",
+  },
 }
