@@ -4,16 +4,28 @@ import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
 
 const workflowPath = resolve(process.cwd(), ".github/workflows/cloudflare-deploy.yml")
+const serverWorkerPath = resolve(process.cwd(), "cloudflare/site/server-worker.js")
+const middlewareWorkerPath = resolve(process.cwd(), "cloudflare/site/middleware-worker.js")
 const serverWranglerPath = resolve(process.cwd(), "wrangler.server.jsonc")
 const middlewareWranglerPath = resolve(process.cwd(), "wrangler.middleware.jsonc")
 
 const workflowContent = readFileSync(workflowPath, "utf8")
+const serverWorkerContent = readFileSync(serverWorkerPath, "utf8")
+const middlewareWorkerContent = readFileSync(middlewareWorkerPath, "utf8")
 const serverWranglerContent = readFileSync(serverWranglerPath, "utf8")
 const middlewareWranglerContent = readFileSync(middlewareWranglerPath, "utf8")
 
 function readServiceTarget(content: string, bindingName: string): string | null {
   const match = content.match(
     new RegExp(`\"binding\":\\s*\"${bindingName}\"[\\s\\S]*?\"service\":\\s*\"([^\"]+)\"`),
+  )
+
+  return match?.[1] ?? null
+}
+
+function readDurableObjectScriptTarget(content: string, bindingName: string): string | null {
+  const match = content.match(
+    new RegExp(`\"name\":\\s*\"${bindingName}\"[\\s\\S]*?\"script_name\":\\s*\"([^\"]+)\"`),
   )
 
   return match?.[1] ?? null
@@ -43,5 +55,27 @@ describe("cloudflare deploy workflow", () => {
       "dryapi-site-middleware",
     )
     expect(readServiceTarget(middlewareWranglerContent, "DEFAULT_WORKER")).toBe("dryapi-site")
+  })
+
+  it("keeps Durable Object ownership on the server worker and binds middleware to it", () => {
+    const bindingNames = [
+      "NEXT_CACHE_DO_QUEUE",
+      "NEXT_TAG_CACHE_DO_SHARDED",
+      "NEXT_CACHE_DO_PURGE",
+    ]
+
+    for (const bindingName of bindingNames) {
+      expect(readDurableObjectScriptTarget(serverWranglerContent, bindingName)).toBeNull()
+      expect(readDurableObjectScriptTarget(middlewareWranglerContent, bindingName)).toBe(
+        "dryapi-site",
+      )
+    }
+
+    expect(serverWorkerContent).toContain('export { DOQueueHandler }')
+    expect(serverWorkerContent).toContain('export { DOShardedTagCache }')
+    expect(serverWorkerContent).toContain('export { BucketCachePurge }')
+    expect(middlewareWorkerContent).not.toContain('export { DOQueueHandler }')
+    expect(middlewareWorkerContent).not.toContain('export { DOShardedTagCache }')
+    expect(middlewareWorkerContent).not.toContain('export { BucketCachePurge }')
   })
 })

@@ -8,10 +8,6 @@ import { runWithCloudflareRequestContext } from "../../.open-next/cloudflare/ini
 import { maybeGetSkewProtectionResponse } from "../../.open-next/cloudflare/skew-protection.js"
 import { handler as middlewareHandler } from "../../.open-next/middleware/handler.mjs"
 
-export { DOQueueHandler } from "../../.open-next/.build/durable-objects/queue.js"
-export { DOShardedTagCache } from "../../.open-next/.build/durable-objects/sharded-tag-cache.js"
-export { BucketCachePurge } from "../../.open-next/.build/durable-objects/bucket-cache-purge.js"
-
 class MiddlewareWorker extends WorkerEntrypoint {
   async fetch(request) {
     return runWithCloudflareRequestContext(request, this.env, this.ctx, async () => {
