@@ -29,7 +29,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "dryapi-site-middleware"
+      "service": "dryapi-site"
     }
   ],
   "hyperdrive": [
