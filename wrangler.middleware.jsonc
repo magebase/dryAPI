@@ -8,6 +8,9 @@
     "allow_importable_env",
     "global_fetch_strictly_public"
   ],
+  "placement": {
+    "mode": "smart"
+  },
   "workers_dev": false,
   "observability": {
     "enabled": true,
