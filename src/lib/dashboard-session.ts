@@ -49,6 +49,10 @@ const DASHBOARD_SESSION_USER_ID_HEADER = "x-dryapi-dashboard-user-id"
 const DASHBOARD_SESSION_USER_ROLE_HEADER = "x-dryapi-dashboard-user-role"
 const DASHBOARD_SESSION_ACTIVE_ORG_HEADER = "x-dryapi-dashboard-active-organization-id"
 const DASHBOARD_SESSION_EXPIRES_AT_HEADER = "x-dryapi-dashboard-session-expires-at"
+const DASHBOARD_SESSION_COOKIE_NAMES = [
+  "better-auth.session_token",
+  "__Secure-better-auth.session_token",
+] as const
 
 function normalizeString(value: string | null | undefined): string | null {
   const normalized = value?.trim() || ""
@@ -79,6 +83,46 @@ function toEpochMilliseconds(value: unknown): number | null {
 
 function isHeaderStore(value: unknown): value is { get: (name: string) => string | null } {
   return Boolean(value && typeof value === "object" && "get" in value)
+}
+
+export function readDashboardSessionTokenFromCookieHeader(
+  cookieHeader: string | null | undefined,
+): string | null {
+  const normalizedCookieHeader = cookieHeader?.trim()
+  if (!normalizedCookieHeader) {
+    return null
+  }
+
+  const tokenMap = new Map<string, string>()
+
+  for (const cookiePart of normalizedCookieHeader.split(";")) {
+    const part = cookiePart.trim()
+    if (!part) {
+      continue
+    }
+
+    const separatorIndex = part.indexOf("=")
+    if (separatorIndex <= 0) {
+      continue
+    }
+
+    const name = part.slice(0, separatorIndex).trim()
+    const value = part.slice(separatorIndex + 1).trim()
+    if (!name || !value) {
+      continue
+    }
+
+    tokenMap.set(name, value)
+  }
+
+  for (const cookieName of DASHBOARD_SESSION_COOKIE_NAMES) {
+    const token = tokenMap.get(cookieName)
+    if (token && token.length > 0) {
+      return token
+    }
+  }
+
+  return null
 }
 
 async function resolveAuthDb(): Promise<D1DatabaseLike> {

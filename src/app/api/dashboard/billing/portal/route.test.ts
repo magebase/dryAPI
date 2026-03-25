@@ -5,9 +5,28 @@ const { authorizeOrganizationBillingReferenceMock } = vi.hoisted(() => ({
   authorizeOrganizationBillingReferenceMock: vi.fn(),
 }))
 
+const {
+  readDashboardSessionSnapshotFromHeadersMock,
+  readDashboardSessionTokenFromCookieHeaderMock,
+  resolveDashboardSessionSnapshotFromTokenMock,
+} = vi.hoisted(() => ({
+  readDashboardSessionSnapshotFromHeadersMock: vi.fn(),
+  readDashboardSessionTokenFromCookieHeaderMock: vi.fn(),
+  resolveDashboardSessionSnapshotFromTokenMock: vi.fn(),
+}))
+
 vi.mock("@/lib/auth-organization-access", () => ({
   authorizeOrganizationBillingReference: (...args: unknown[]) =>
     authorizeOrganizationBillingReferenceMock(...args),
+}))
+
+vi.mock("@/lib/dashboard-session", () => ({
+  readDashboardSessionSnapshotFromHeaders: (...args: unknown[]) =>
+    readDashboardSessionSnapshotFromHeadersMock(...args),
+  readDashboardSessionTokenFromCookieHeader: (...args: unknown[]) =>
+    readDashboardSessionTokenFromCookieHeaderMock(...args),
+  resolveDashboardSessionSnapshotFromToken: (...args: unknown[]) =>
+    resolveDashboardSessionSnapshotFromTokenMock(...args),
 }))
 
 import { GET } from "@/app/api/dashboard/billing/portal/route"
@@ -15,65 +34,41 @@ import { GET } from "@/app/api/dashboard/billing/portal/route"
 function makeRequest() {
   return new NextRequest("http://localhost:3000/api/dashboard/billing/portal", {
     method: "GET",
+    headers: {
+      cookie: "better-auth.session_token=session_abc",
+    },
   })
-}
-
-function makeSessionResponse(email: string) {
-  return new Response(
-    JSON.stringify({
-      user: { email },
-      session: { user: { email } },
-    }),
-    {
-      status: 200,
-      headers: {
-        "content-type": "application/json",
-      },
-    },
-  )
-}
-
-function makeOrganizationSessionResponse(input: {
-  email: string
-  userId: string
-  activeOrganizationId: string
-  userRole?: string
-}) {
-  return new Response(
-    JSON.stringify({
-      user: {
-        id: input.userId,
-        email: input.email,
-        role: input.userRole || "user",
-      },
-      session: {
-        activeOrganizationId: input.activeOrganizationId,
-      },
-    }),
-    {
-      status: 200,
-      headers: {
-        "content-type": "application/json",
-      },
-    },
-  )
 }
 
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
   authorizeOrganizationBillingReferenceMock.mockReset()
+  readDashboardSessionSnapshotFromHeadersMock.mockReset()
+  readDashboardSessionTokenFromCookieHeaderMock.mockReset()
+  resolveDashboardSessionSnapshotFromTokenMock.mockReset()
 })
 
 beforeEach(() => {
   vi.stubEnv("STRIPE_PRIVATE_KEY", "")
   vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "")
   vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "")
+  readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
+  readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
+  resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue({
+    authenticated: true,
+    email: "owner@dryapi.dev",
+    userId: "user_owner",
+    userRole: "admin",
+    activeOrganizationId: null,
+    expiresAtMs: Date.now() + 60_000,
+  })
 })
 
 describe("GET /api/dashboard/billing/portal", () => {
   it("returns 401 when the user is not signed in", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 401 }))
+    readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue(null)
+    const fetchMock = vi.fn()
     vi.stubGlobal("fetch", fetchMock)
 
     const res = await GET(makeRequest())
@@ -82,11 +77,11 @@ describe("GET /api/dashboard/billing/portal", () => {
     expect(await res.json()).toMatchObject({
       error: "unauthorized",
     })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("returns 500 when STRIPE_PRIVATE_KEY is missing", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(makeSessionResponse("owner@dryapi.dev"))
+    const fetchMock = vi.fn()
     vi.stubGlobal("fetch", fetchMock)
 
     const res = await GET(makeRequest())
@@ -101,19 +96,16 @@ describe("GET /api/dashboard/billing/portal", () => {
     vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
     authorizeOrganizationBillingReferenceMock.mockResolvedValue(false)
 
-    const fetchMock = vi.fn(async (input) => {
-      const url = typeof input === "string" ? input : input.url
-
-      if (url.endsWith("/api/auth/get-session")) {
-        return makeOrganizationSessionResponse({
-          email: "member@dryapi.dev",
-          userId: "user_member",
-          activeOrganizationId: "org_123",
-        })
-      }
-
-      throw new Error(`Unexpected fetch: ${url}`)
+    resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue({
+      authenticated: true,
+      email: "member@dryapi.dev",
+      userId: "user_member",
+      userRole: "user",
+      activeOrganizationId: "org_123",
+      expiresAtMs: Date.now() + 60_000,
     })
+
+    const fetchMock = vi.fn()
 
     vi.stubGlobal("fetch", fetchMock)
 
@@ -123,7 +115,7 @@ describe("GET /api/dashboard/billing/portal", () => {
     expect(await res.json()).toMatchObject({
       error: "organization_billing_forbidden",
     })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("redirects to Stripe when a customer id is available", async () => {
@@ -132,10 +124,6 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     const fetchMock = vi.fn(async (input) => {
       const url = typeof input === "string" ? input : input.url
-
-      if (url.endsWith("/api/auth/get-session")) {
-        return makeSessionResponse("owner@dryapi.dev")
-      }
 
       if (url.startsWith("https://api.stripe.com/v1/customers/cus_123")) {
         return new Response(JSON.stringify({ id: "cus_123" }), {
@@ -167,7 +155,7 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     expect(res.status).toBe(302)
     expect(res.headers.get("location")).toBe("https://billing.stripe.com/session/test")
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it("falls back to the signed-in email when the configured customer id is stale", async () => {
@@ -176,10 +164,6 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     const fetchMock = vi.fn(async (input) => {
       const url = typeof input === "string" ? input : input.url
-
-      if (url.endsWith("/api/auth/get-session")) {
-        return makeSessionResponse("owner@dryapi.dev")
-      }
 
       if (url.startsWith("https://api.stripe.com/v1/customers/cus_stale")) {
         return new Response(null, { status: 404 })
@@ -218,7 +202,7 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     expect(res.status).toBe(302)
     expect(res.headers.get("location")).toBe("https://billing.stripe.com/session/fallback")
-    expect(fetchMock).toHaveBeenCalledTimes(4)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
   it("returns a clear error when Stripe portal creation fails", async () => {
@@ -227,10 +211,6 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     const fetchMock = vi.fn(async (input) => {
       const url = typeof input === "string" ? input : input.url
-
-      if (url.endsWith("/api/auth/get-session")) {
-        return makeSessionResponse("owner@dryapi.dev")
-      }
 
       if (url.startsWith("https://api.stripe.com/v1/customers/cus_123")) {
         return new Response(JSON.stringify({ id: "cus_123" }), {
@@ -264,10 +244,6 @@ describe("GET /api/dashboard/billing/portal", () => {
     const fetchMock = vi.fn(async (input) => {
       const url = typeof input === "string" ? input : input.url
 
-      if (url.endsWith("/api/auth/get-session")) {
-        return makeSessionResponse("owner@dryapi.dev")
-      }
-
       if (url.startsWith("https://api.stripe.com/v1/customers?")) {
         return new Response(
           JSON.stringify({ data: [] }),
@@ -291,7 +267,7 @@ describe("GET /api/dashboard/billing/portal", () => {
     expect(await res.json()).toMatchObject({
       error: "stripe_customer_not_found",
     })
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("falls back to the default customer-not-found message when lookup errors are empty", async () => {
@@ -299,10 +275,6 @@ describe("GET /api/dashboard/billing/portal", () => {
 
     const fetchMock = vi.fn(async (input) => {
       const url = typeof input === "string" ? input : input.url
-
-      if (url.endsWith("/api/auth/get-session")) {
-        return makeSessionResponse("owner@dryapi.dev")
-      }
 
       if (url.startsWith("https://api.stripe.com/v1/customers?")) {
         return new Response(JSON.stringify({ data: [] }), {

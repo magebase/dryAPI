@@ -13,6 +13,7 @@ vi.mock("@/lib/cloudflare-db", () => ({
 
 import {
   applyDashboardSessionSnapshotHeaders,
+  readDashboardSessionTokenFromCookieHeader,
   readDashboardSessionSnapshotFromHeaders,
   resolveDashboardSessionSnapshotFromToken,
 } from "@/lib/dashboard-session"
@@ -49,6 +50,22 @@ afterEach(() => {
 })
 
 describe("dashboard-session", () => {
+  it("reads the primary Better Auth session token from Cookie headers", () => {
+    expect(
+      readDashboardSessionTokenFromCookieHeader(
+        "foo=bar; better-auth.session_token=session_1; baz=qux",
+      ),
+    ).toBe("session_1")
+  })
+
+  it("falls back to secure session token and ignores blank values", () => {
+    expect(
+      readDashboardSessionTokenFromCookieHeader(
+        "better-auth.session_token= ; __Secure-better-auth.session_token=secure_session",
+      ),
+    ).toBe("secure_session")
+  })
+
   it("round-trips snapshot headers", () => {
     const headers = new Headers()
 

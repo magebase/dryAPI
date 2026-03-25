@@ -10,7 +10,11 @@ import { DASHBOARD_SETTINGS_DEFAULTS } from "@/lib/dashboard-settings-schema"
 import { buildGeneralSettingsFormValues } from "@/lib/dashboard-settings-form-values"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 import { resolveCurrentUserSubscriptionPlanSummary } from "@/lib/auth-subscription-benefits"
-import { readDashboardSessionSnapshotFromHeaders } from "@/lib/dashboard-session"
+import {
+  readDashboardSessionSnapshotFromHeaders,
+  readDashboardSessionTokenFromCookieHeader,
+  resolveDashboardSessionSnapshotFromToken,
+} from "@/lib/dashboard-session"
 
 type HeaderStore = {
   get(name: string): string | null
@@ -75,34 +79,6 @@ function toDashboardApiKeyRecord(record: StoreDashboardApiKeyRecord): DashboardA
   }
 }
 
-function readPath(payload: unknown, path: readonly string[]): unknown {
-  let current: unknown = payload
-
-  for (const segment of path) {
-    if (!current || typeof current !== "object") {
-      return undefined
-    }
-
-    current = (current as Record<string, unknown>)[segment]
-  }
-
-  return current
-}
-
-function readFirstString(
-  payload: unknown,
-  paths: ReadonlyArray<readonly string[]>,
-): string | null {
-  for (const path of paths) {
-    const value = readPath(payload, path)
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value.trim()
-    }
-  }
-
-  return null
-}
-
 function resolveRequestOriginFromHeaders(headerStore: HeaderStore): string {
   const forwardedHost = headerStore.get("x-forwarded-host")?.trim()
   const host = forwardedHost || headerStore.get("host")?.trim() || ""
@@ -129,44 +105,39 @@ async function loadSessionProfile(headerStore: HeaderStore): Promise<SessionProf
     }
   }
 
-  const origin = resolveRequestOriginFromHeaders(headerStore)
-  const cookieHeader = headerStore.get("cookie") || ""
+  const sessionToken = readDashboardSessionTokenFromCookieHeader(
+    headerStore.get("cookie"),
+  )
+  if (!sessionToken) {
+    return {
+      authenticated: false,
+      email: null,
+      name: null,
+      role: null,
+    }
+  }
 
-  return loadSessionProfileCached(origin, cookieHeader)
+  const snapshot = await loadSessionProfileCached(sessionToken)
+  if (!snapshot) {
+    return {
+      authenticated: false,
+      email: null,
+      name: null,
+      role: null,
+    }
+  }
+
+  return {
+    authenticated: true,
+    email: snapshot.email,
+    name: null,
+    role: snapshot.userRole,
+  }
 }
 
 const loadSessionProfileCached = cache(
-  async (origin: string, cookieHeader: string): Promise<SessionProfile> => {
-    const response = await internalWorkerFetch({
-      path: "/api/auth/get-session",
-      fallbackOrigin: origin,
-      init: {
-        method: "GET",
-        cache: "no-store",
-        headers: {
-          accept: "application/json",
-          cookie: cookieHeader,
-        },
-      },
-    })
-
-    if (!response.ok) {
-      return {
-        authenticated: false,
-        email: null,
-        name: null,
-        role: null,
-      }
-    }
-
-    const payload = (await response.json().catch(() => null)) as unknown
-
-    return {
-      authenticated: true,
-      email: readFirstString(payload, [["user", "email"], ["session", "user", "email"], ["session", "email"]]),
-      name: readFirstString(payload, [["user", "name"], ["session", "user", "name"]]),
-      role: readFirstString(payload, [["user", "role"], ["session", "user", "role"]]),
-    }
+  async (sessionToken: string) => {
+    return resolveDashboardSessionSnapshotFromToken(sessionToken)
   },
 )
 

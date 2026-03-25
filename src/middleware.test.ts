@@ -14,15 +14,12 @@ import { middleware } from "@/middleware"
 function makeSessionResponse() {
   return new Response(
     JSON.stringify({
-      user: {
-        id: "user_1",
-        email: "owner@dryapi.dev",
-        role: "admin",
-      },
-      session: {
-        activeOrganizationId: null,
-        expiresAt: Date.now() + 60_000,
-      },
+      authenticated: true,
+      userId: "user_1",
+      email: "owner@dryapi.dev",
+      userRole: "admin",
+      activeOrganizationId: null,
+      expiresAtMs: Date.now() + 60_000,
     }),
     {
       status: 200,
@@ -58,7 +55,7 @@ describe("dashboard middleware auth checks", () => {
     expect(internalWorkerFetchMock).toHaveBeenCalledTimes(1)
     expect(internalWorkerFetchMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        path: "/api/auth/get-session",
+        path: "/api/internal/auth/session-snapshot",
         init: expect.objectContaining({
           method: "GET",
           cache: "no-store",
@@ -85,7 +82,7 @@ describe("dashboard middleware auth checks", () => {
     expect(internalWorkerFetchMock).toHaveBeenCalledTimes(1)
     expect(internalWorkerFetchMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        path: "/api/auth/get-session",
+        path: "/api/internal/auth/session-snapshot",
         init: expect.objectContaining({
           headers: expect.objectContaining({
             cookie: "better-auth.session_token=session_doc",
@@ -124,7 +121,7 @@ describe("dashboard middleware auth checks", () => {
     expect(internalWorkerFetchMock).toHaveBeenCalledTimes(1)
     expect(internalWorkerFetchMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        path: "/api/auth/get-session",
+        path: "/api/internal/auth/session-snapshot",
         init: expect.objectContaining({
           method: "GET",
           cache: "no-store",

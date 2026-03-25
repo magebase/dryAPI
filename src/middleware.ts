@@ -246,29 +246,22 @@ function resolveDashboardSessionSnapshotFromPayload(
   }
 
   const record = payload as Record<string, unknown>
-  const user = record.user && typeof record.user === "object" && !Array.isArray(record.user)
-    ? (record.user as Record<string, unknown>)
-    : null
-  const session = record.session && typeof record.session === "object" && !Array.isArray(record.session)
-    ? (record.session as Record<string, unknown>)
-    : null
-
-  if (!user && !session) {
+  if (record.authenticated !== true) {
     return null
   }
 
-  const userId = normalizeString(user?.id ?? session?.userId)
+  const userId = normalizeString(record.userId)
   if (!userId) {
     return null
   }
 
   return {
     authenticated: true,
-    email: normalizeString(user?.email ?? session?.email),
+    email: normalizeString(record.email),
     userId,
-    userRole: normalizeString(user?.role ?? session?.userRole) || "user",
-    activeOrganizationId: normalizeString(session?.activeOrganizationId),
-    expiresAtMs: toFiniteNumber(session?.expiresAt ?? session?.expiresAtMs),
+    userRole: normalizeString(record.userRole) || "user",
+    activeOrganizationId: normalizeString(record.activeOrganizationId),
+    expiresAtMs: toFiniteNumber(record.expiresAtMs),
   }
 }
 
@@ -287,7 +280,7 @@ async function fetchDashboardSessionSnapshot(
     })
 
     const response = await internalWorkerFetch({
-      path: "/api/auth/get-session",
+      path: "/api/internal/auth/session-snapshot",
       fallbackOrigin: resolveInternalFetchOrigin(request),
       init: {
         method: "GET",

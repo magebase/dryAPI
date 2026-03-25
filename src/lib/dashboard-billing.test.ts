@@ -5,9 +5,28 @@ const { authorizeOrganizationBillingReferenceMock } = vi.hoisted(() => ({
   authorizeOrganizationBillingReferenceMock: vi.fn(),
 }))
 
+const {
+  readDashboardSessionSnapshotFromHeadersMock,
+  readDashboardSessionTokenFromCookieHeaderMock,
+  resolveDashboardSessionSnapshotFromTokenMock,
+} = vi.hoisted(() => ({
+  readDashboardSessionSnapshotFromHeadersMock: vi.fn(),
+  readDashboardSessionTokenFromCookieHeaderMock: vi.fn(),
+  resolveDashboardSessionSnapshotFromTokenMock: vi.fn(),
+}))
+
 vi.mock("@/lib/auth-organization-access", () => ({
   authorizeOrganizationBillingReference: (...args: unknown[]) =>
     authorizeOrganizationBillingReferenceMock(...args),
+}))
+
+vi.mock("@/lib/dashboard-session", () => ({
+  readDashboardSessionSnapshotFromHeaders: (...args: unknown[]) =>
+    readDashboardSessionSnapshotFromHeadersMock(...args),
+  readDashboardSessionTokenFromCookieHeader: (...args: unknown[]) =>
+    readDashboardSessionTokenFromCookieHeaderMock(...args),
+  resolveDashboardSessionSnapshotFromToken: (...args: unknown[]) =>
+    resolveDashboardSessionSnapshotFromTokenMock(...args),
 }))
 
 import {
@@ -31,6 +50,9 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
   authorizeOrganizationBillingReferenceMock.mockReset()
+  readDashboardSessionSnapshotFromHeadersMock.mockReset()
+  readDashboardSessionTokenFromCookieHeaderMock.mockReset()
+  resolveDashboardSessionSnapshotFromTokenMock.mockReset()
 })
 
 describe("dashboard-billing", () => {
@@ -97,8 +119,14 @@ describe("dashboard-billing", () => {
     })
 
     it("uses middleware forwarded snapshot headers when available", async () => {
-      const fetchMock = vi.fn()
-      vi.stubGlobal("fetch", fetchMock)
+      readDashboardSessionSnapshotFromHeadersMock.mockReturnValue({
+        authenticated: true,
+        email: "owner@dryapi.dev",
+        userId: "user_123",
+        userRole: "admin",
+        activeOrganizationId: "org_123",
+        expiresAtMs: 123456,
+      })
 
       await expect(
         getDashboardSessionSnapshot(
@@ -119,102 +147,30 @@ describe("dashboard-billing", () => {
         activeOrganizationId: "org_123",
       })
 
-      expect(fetchMock).not.toHaveBeenCalled()
+      expect(readDashboardSessionTokenFromCookieHeaderMock).not.toHaveBeenCalled()
+      expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
     })
 
-    it("returns an authenticated session when user email is present", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              user: {
-                email: "owner@dryapi.dev",
-              },
-            }),
-            {
-              status: 200,
-              headers: {
-                "content-type": "application/json",
-              },
-            },
-          ),
-        ),
-      )
+    it("returns an authenticated snapshot when token lookup succeeds", async () => {
+      readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
+      readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
+      resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue({
+        authenticated: true,
+        email: "owner@dryapi.dev",
+        userId: "user_123",
+        userRole: "admin",
+        activeOrganizationId: "org_123",
+        expiresAtMs: 123456,
+      })
 
       await expect(
         getDashboardSessionSnapshot(
           makeRequest({
             host: "dryapi.dev",
-            cookie: "session=abc",
+            cookie: "better-auth.session_token=session_abc",
           }),
         ),
       ).resolves.toEqual({
-        authenticated: true,
-        email: "owner@dryapi.dev",
-        userId: null,
-        userRole: null,
-        activeOrganizationId: null,
-      })
-    })
-
-    it("reads nested session email paths", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              session: {
-                user: {
-                  email: "nested@dryapi.dev",
-                },
-              },
-            }),
-            {
-              status: 200,
-              headers: {
-                "content-type": "application/json",
-              },
-            },
-          ),
-        ),
-      )
-
-      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
-        authenticated: true,
-        email: "nested@dryapi.dev",
-        userId: null,
-        userRole: null,
-        activeOrganizationId: null,
-      })
-    })
-
-    it("reads user identifiers and roles from the session payload", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              user: {
-                id: "user_123",
-                role: "admin",
-                email: "owner@dryapi.dev",
-              },
-              session: {
-                activeOrganizationId: "org_123",
-              },
-            }),
-            {
-              status: 200,
-              headers: {
-                "content-type": "application/json",
-              },
-            },
-          ),
-        ),
-      )
-
-      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: true,
         email: "owner@dryapi.dev",
         userId: "user_123",
@@ -223,8 +179,9 @@ describe("dashboard-billing", () => {
       })
     })
 
-    it("returns unauthenticated when the session endpoint is not ok", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 401 })))
+    it("returns unauthenticated when no dashboard session token is present", async () => {
+      readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
+      readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue(null)
 
       await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: false,
@@ -233,68 +190,27 @@ describe("dashboard-billing", () => {
         userRole: null,
         activeOrganizationId: null,
       })
+
+      expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
     })
 
-    it("returns unauthenticated when the payload is invalid", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(
-          new Response("invalid-json", {
-            status: 200,
-            headers: {
-              "content-type": "application/json",
-            },
+    it("returns unauthenticated when token lookup returns no snapshot", async () => {
+      readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
+      readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
+      resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(null)
+
+      await expect(
+        getDashboardSessionSnapshot(
+          makeRequest({
+            cookie: "better-auth.session_token=session_abc",
           }),
         ),
-      )
-
-      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
+      ).resolves.toEqual({
         authenticated: false,
         email: null,
         userId: null,
         userRole: null,
         activeOrganizationId: null,
-      })
-    })
-
-    it("returns unauthenticated when fetch throws", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")))
-
-      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
-        authenticated: false,
-        email: null,
-        userId: null,
-        userRole: null,
-        activeOrganizationId: null,
-      })
-    })
-
-    it("reads active organization ids from the session payload", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              session: {
-                activeOrganizationId: "org_123",
-              },
-            }),
-            {
-              status: 200,
-              headers: {
-                "content-type": "application/json",
-              },
-            },
-          ),
-        ),
-      )
-
-      await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
-        authenticated: true,
-        email: null,
-        userId: null,
-        userRole: null,
-        activeOrganizationId: "org_123",
       })
     })
   })

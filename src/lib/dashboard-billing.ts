@@ -1,8 +1,11 @@
 import type { NextRequest } from "next/server"
 
 import { authorizeOrganizationBillingReference } from "@/lib/auth-organization-access"
-import { readDashboardSessionSnapshotFromHeaders } from "@/lib/dashboard-session"
-import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
+import {
+  readDashboardSessionSnapshotFromHeaders,
+  readDashboardSessionTokenFromCookieHeader,
+  resolveDashboardSessionSnapshotFromToken,
+} from "@/lib/dashboard-session"
 
 type SessionSnapshot = {
   authenticated: boolean
@@ -140,36 +143,10 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
     }
   }
 
-  const origin = resolveRequestOriginFromRequest(request)
-
-  try {
-    const response = await internalWorkerFetch({
-      path: "/api/auth/get-session",
-      fallbackOrigin: origin,
-      init: {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          cookie: request.headers.get("cookie") || "",
-        },
-        cache: "no-store",
-      },
-    })
-
-    if (!response.ok) {
-      return {
-        authenticated: false,
-        email: null,
-        userId: null,
-        userRole: null,
-        activeOrganizationId: null,
-      }
-    }
-
-    const payload = (await response.json().catch(() => null)) as unknown
-
-    return resolveDashboardBillingSessionSnapshot(payload)
-  } catch {
+  const sessionToken = readDashboardSessionTokenFromCookieHeader(
+    request.headers.get("cookie"),
+  )
+  if (!sessionToken) {
     return {
       authenticated: false,
       email: null,
@@ -177,6 +154,25 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
       userRole: null,
       activeOrganizationId: null,
     }
+  }
+
+  const snapshot = await resolveDashboardSessionSnapshotFromToken(sessionToken)
+  if (!snapshot) {
+    return {
+      authenticated: false,
+      email: null,
+      userId: null,
+      userRole: null,
+      activeOrganizationId: null,
+    }
+  }
+
+  return {
+    authenticated: true,
+    email: snapshot.email,
+    userId: snapshot.userId,
+    userRole: snapshot.userRole,
+    activeOrganizationId: snapshot.activeOrganizationId,
   }
 }
 
