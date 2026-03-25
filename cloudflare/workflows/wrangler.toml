@@ -3,6 +3,8 @@ main = "src/worker.ts"
 compatibility_date = "2026-03-11"
 workers_dev = true
 
+placement = { region = "aws:us-west-1"}
+
 [observability]
 enabled = true
 head_sampling_rate = 1

@@ -11,6 +11,7 @@ import { z } from "zod"
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 import { buildCaptchaHeaders } from "@/lib/auth-captcha"
+import { buildSocialSignInRequestBody } from "@/lib/auth-social-sign-in"
 
 const LOGIN_REGISTERED_TOAST_ID = "login-registered"
 const LOGIN_ERROR_TOAST_ID = "login-error"
@@ -294,13 +295,16 @@ export default function LoginPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({
-          provider,
-          callbackURL: "/dashboard",
-          errorCallbackURL: "/login",
-        }),
+        body: JSON.stringify(
+          buildSocialSignInRequestBody({
+            provider,
+            callbackURL: "/dashboard",
+            errorCallbackURL: "/login",
+          }),
+        ),
       })
 
       const payload = (await response.json().catch(() => null)) as

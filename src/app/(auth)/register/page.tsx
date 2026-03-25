@@ -13,6 +13,7 @@ import { TurnstileWidget } from "@/components/site/turnstile-widget"
 import { resolveLocalCallbackUrl } from "@/lib/auth-callback-url"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 import { buildCaptchaHeaders } from "@/lib/auth-captcha"
+import { buildSocialSignInRequestBody } from "@/lib/auth-social-sign-in"
 import { toRoute } from "@/lib/route"
 
 const REGISTER_ERROR_TOAST_ID = "register-error"
@@ -214,15 +215,18 @@ export default function RegisterPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({
-          provider,
-          callbackURL: safeCallbackUrl,
-          newUserCallbackURL: safeCallbackUrl,
-          errorCallbackURL: "/register",
-          requestSignUp: true,
-        }),
+        body: JSON.stringify(
+          buildSocialSignInRequestBody({
+            provider,
+            callbackURL: safeCallbackUrl,
+            newUserCallbackURL: safeCallbackUrl,
+            errorCallbackURL: "/register",
+            requestSignUp: true,
+          }),
+        ),
       })
 
       const payload = (await response.json().catch(() => null)) as

@@ -31,7 +31,7 @@ type ReadDashboardCacheInput<T> = {
 
 const CACHE_NAMESPACE = "dashboard-read-cache"
 const CACHE_VERSION = "v1"
-const MIN_TTL_SECONDS = 60
+const MIN_TTL_SECONDS = 5
 const DEFAULT_GENERATION_CACHE_TTL_MS = 5_000
 
 let cacheBindingPromise: Promise<CacheBinding> | null = null

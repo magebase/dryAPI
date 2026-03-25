@@ -9,6 +9,9 @@
     "global_fetch_strictly_public",
   ],
   "workers_dev": false,
+  "placement": {
+    "region": "aws:us-west-1", // Explicit cloud region to run your Worker closest to - e.g. "gcp:us-east4" or "aws:us-east-1"
+  },
   "observability": {
     "enabled": true,
     "logs": {
