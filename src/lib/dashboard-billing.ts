@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server"
 
 import { authorizeOrganizationBillingReference } from "@/lib/auth-organization-access"
+import { readDashboardSessionSnapshotFromHeaders } from "@/lib/dashboard-session"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 
 type SessionSnapshot = {
@@ -38,6 +39,8 @@ type StripeCustomerLookupResult = {
   customerId: string | null
   errors: string[]
 }
+
+const DASHBOARD_SESSION_SOURCE_HEADER = "x-dryapi-dashboard-auth-source"
 
 export function shouldRenderStripeBillingSummaryErrors(input: {
   customerId: string | null
@@ -123,6 +126,20 @@ export function resolveRequestOriginFromRequest(request: NextRequest): string {
 }
 
 export async function getDashboardSessionSnapshot(request: NextRequest): Promise<SessionSnapshot> {
+  const forwardedSessionSource = request.headers.get(DASHBOARD_SESSION_SOURCE_HEADER)?.trim()
+  if (forwardedSessionSource === "middleware") {
+    const forwardedSnapshot = readDashboardSessionSnapshotFromHeaders(request.headers)
+    if (forwardedSnapshot) {
+      return {
+        authenticated: true,
+        email: forwardedSnapshot.email,
+        userId: forwardedSnapshot.userId,
+        userRole: forwardedSnapshot.userRole,
+        activeOrganizationId: forwardedSnapshot.activeOrganizationId,
+      }
+    }
+  }
+
   const origin = resolveRequestOriginFromRequest(request)
 
   try {

@@ -96,6 +96,32 @@ describe("dashboard-billing", () => {
       })
     })
 
+    it("uses middleware forwarded snapshot headers when available", async () => {
+      const fetchMock = vi.fn()
+      vi.stubGlobal("fetch", fetchMock)
+
+      await expect(
+        getDashboardSessionSnapshot(
+          makeRequest({
+            "x-dryapi-dashboard-auth-source": "middleware",
+            "x-dryapi-dashboard-authenticated": "1",
+            "x-dryapi-dashboard-email": "owner@dryapi.dev",
+            "x-dryapi-dashboard-user-id": "user_123",
+            "x-dryapi-dashboard-user-role": "admin",
+            "x-dryapi-dashboard-active-organization-id": "org_123",
+          }),
+        ),
+      ).resolves.toEqual({
+        authenticated: true,
+        email: "owner@dryapi.dev",
+        userId: "user_123",
+        userRole: "admin",
+        activeOrganizationId: "org_123",
+      })
+
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
     it("returns an authenticated session when user email is present", async () => {
       vi.stubGlobal(
         "fetch",

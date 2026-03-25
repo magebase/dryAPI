@@ -108,6 +108,47 @@ describe("dashboard middleware auth checks", () => {
     expect(internalWorkerFetchMock).not.toHaveBeenCalled()
   })
 
+  it("authenticates dashboard API requests with the auth session endpoint", async () => {
+    internalWorkerFetchMock.mockResolvedValue(makeSessionResponse())
+
+    const request = new NextRequest("https://dryapi.dev/api/dashboard/settings", {
+      headers: new Headers({
+        accept: "application/json",
+        cookie: "better-auth.session_token=session_api",
+      }),
+    })
+
+    const response = await middleware(request)
+
+    expect(response.status).toBe(200)
+    expect(internalWorkerFetchMock).toHaveBeenCalledTimes(1)
+    expect(internalWorkerFetchMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: "/api/auth/get-session",
+        init: expect.objectContaining({
+          method: "GET",
+          cache: "no-store",
+          headers: expect.objectContaining({
+            cookie: "better-auth.session_token=session_api",
+          }),
+        }),
+      }),
+    )
+  })
+
+  it("passes dashboard API requests without auth lookup when session cookie is missing", async () => {
+    const request = new NextRequest("https://dryapi.dev/api/dashboard/settings", {
+      headers: new Headers({
+        accept: "application/json",
+      }),
+    })
+
+    const response = await middleware(request)
+
+    expect(response.status).toBe(200)
+    expect(internalWorkerFetchMock).not.toHaveBeenCalled()
+  })
+
   it("passes public marketing requests through without auth lookup", async () => {
     const request = new NextRequest("https://dryapi.dev/contact-sales")
 

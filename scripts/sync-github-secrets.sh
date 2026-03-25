@@ -47,7 +47,7 @@ discover_worker_targets() {
 
   mapfile -t wrangler_configs < <(
     find . -maxdepth 1 -type f \
-      \( -name "wrangler.json" -o -name "wrangler.jsonc" -o -name "wrangler.toml" \) \
+      \( -name "wrangler*.json" -o -name "wrangler*.jsonc" -o -name "wrangler*.toml" \) \
       -not -name "*.local.json" \
       -not -name "*.local.jsonc" \
       -not -name "*.local.toml" \

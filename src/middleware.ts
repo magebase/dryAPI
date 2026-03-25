@@ -27,10 +27,21 @@ import { normalizeSiteUrl } from "@/lib/og/metadata"
 
 const SUCCESS_PATH = "/success"
 const DASHBOARD_PREFIX = "/dashboard"
+const DASHBOARD_API_PREFIX = "/api/dashboard"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["better-auth.session_token", "__Secure-better-auth.session_token"] as const
 const SESSION_CHECK_CACHE_TTL_MS = 60_000
 const SESSION_CHECK_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_SESSION_CHECK_SLOW_MS", 150)
+const DASHBOARD_SESSION_SOURCE_HEADER = "x-dryapi-dashboard-auth-source"
+const DASHBOARD_SESSION_HEADER_NAMES = [
+  "x-dryapi-dashboard-authenticated",
+  "x-dryapi-dashboard-email",
+  "x-dryapi-dashboard-user-id",
+  "x-dryapi-dashboard-user-role",
+  "x-dryapi-dashboard-active-organization-id",
+  "x-dryapi-dashboard-session-expires-at",
+  DASHBOARD_SESSION_SOURCE_HEADER,
+] as const
 
 type DashboardSessionSnapshot = {
   authenticated: true
@@ -58,6 +69,10 @@ function isDeprecatedCrmPath(pathname: string): boolean {
 
 function isDashboardPath(pathname: string): boolean {
   return pathname === DASHBOARD_PREFIX || pathname.startsWith(`${DASHBOARD_PREFIX}/`)
+}
+
+function isDashboardApiPath(pathname: string): boolean {
+  return pathname === DASHBOARD_API_PREFIX || pathname.startsWith(`${DASHBOARD_API_PREFIX}/`)
 }
 
 function isAuthPagePath(pathname: string): boolean {
@@ -153,11 +168,19 @@ function writeCachedSessionAuth(
   })
 }
 
+function clearDashboardSessionSnapshotHeaders(headers: Headers): void {
+  for (const headerName of DASHBOARD_SESSION_HEADER_NAMES) {
+    headers.delete(headerName)
+  }
+}
+
 function applyDashboardSessionSnapshotHeaders(
   headers: Headers,
   snapshot: DashboardSessionSnapshot,
 ): void {
+  clearDashboardSessionSnapshotHeaders(headers)
   headers.set("x-dryapi-dashboard-authenticated", "1")
+  headers.set(DASHBOARD_SESSION_SOURCE_HEADER, "middleware")
 
   if (snapshot.email) {
     headers.set("x-dryapi-dashboard-email", snapshot.email)
@@ -338,6 +361,12 @@ function createDashboardSessionRequestHeaders(
 ): Headers {
   const headers = new Headers(request.headers)
   applyDashboardSessionSnapshotHeaders(headers, snapshot)
+  return headers
+}
+
+function createSanitizedDashboardSessionHeaders(request: NextRequest): Headers {
+  const headers = new Headers(request.headers)
+  clearDashboardSessionSnapshotHeaders(headers)
   return headers
 }
 
@@ -540,6 +569,35 @@ export async function middleware(request: NextRequest) {
       request,
       sessionSnapshot,
     )
+
+    return NextResponse.next({
+      request: {
+        headers: forwardedHeaders,
+      },
+    })
+  }
+
+  if (isDashboardApiPath(request.nextUrl.pathname)) {
+    const sessionToken = readSessionToken(request)
+    const forwardedHeaders = createSanitizedDashboardSessionHeaders(request)
+
+    if (!sessionToken) {
+      return NextResponse.next({
+        request: {
+          headers: forwardedHeaders,
+        },
+      })
+    }
+
+    const sessionSnapshot = await resolveDashboardSessionSnapshot(
+      request,
+      traceId,
+      sessionToken,
+    )
+
+    if (sessionSnapshot) {
+      applyDashboardSessionSnapshotHeaders(forwardedHeaders, sessionSnapshot)
+    }
 
     return NextResponse.next({
       request: {

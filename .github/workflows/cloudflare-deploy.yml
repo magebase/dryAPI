@@ -139,15 +139,26 @@ jobs:
           const fs = require('node:fs')
 
           const namespaceId = process.argv[2]
-          const configPath = 'wrangler.jsonc'
-          const original = fs.readFileSync(configPath, 'utf8')
-          const updated = original.replace('"id": "drizzle_cache_kv_prod"', `"id": "${namespaceId}"`)
+          const configPaths = ['wrangler.jsonc', 'wrangler.server.jsonc']
+          let updatedAny = false
 
-          if (updated === original) {
-            throw new Error('Failed to update wrangler.jsonc DRIZZLE_CACHE_KV namespace id')
+          for (const configPath of configPaths) {
+            if (!fs.existsSync(configPath)) {
+              continue
+            }
+
+            const original = fs.readFileSync(configPath, 'utf8')
+            const updated = original.replace('"id": "drizzle_cache_kv_prod"', `"id": "${namespaceId}"`)
+
+            if (updated !== original) {
+              fs.writeFileSync(configPath, updated)
+              updatedAny = true
+            }
           }
 
-          fs.writeFileSync(configPath, updated)
+          if (!updatedAny) {
+            throw new Error('Failed to update DRIZZLE_CACHE_KV namespace id in any wrangler config')
+          }
           NODE
 
       - name: Validate production site URL

@@ -111,25 +111,6 @@ function hasSessionPayload(payload: unknown): payload is { user: Record<string, 
   return Boolean(typed.user) && Boolean(typed.session)
 }
 
-function readRateLimitRpm(payload: unknown): number | undefined {
-  if (!payload || typeof payload !== 'object') {
-    return undefined
-  }
-
-  const typed = payload as {
-    rate_limit?: { rpm?: unknown }
-    data?: { rate_limit?: { rpm?: unknown } }
-  }
-
-  const direct = parseLimit(typed.rate_limit?.rpm, 0)
-  if (direct > 0) {
-    return direct
-  }
-
-  const nested = parseLimit(typed.data?.rate_limit?.rpm, 0)
-  return nested > 0 ? nested : undefined
-}
-
 export async function verifyApiKeyViaOrigin(c: AppContext, token: string): Promise<AuthorizationResult> {
   const cachedResult = readCachedAuthorization(apiKeyVerificationCache, token)
   if (cachedResult) {
@@ -243,34 +224,10 @@ export async function authenticateSessionViaOrigin(c: AppContext): Promise<Autho
 
   const userEmail = typeof payload.user.email === 'string' ? payload.user.email.trim().toLowerCase() : ''
 
-  let minuteLimit: number | undefined
-  const internalKey = String(c.env.INTERNAL_API_KEY ?? c.env.API_KEY ?? '').trim()
-
-  if (internalKey) {
-    try {
-      const balanceResponse = await fetch(`${origin}/api/v1/client/balance`, {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          cookie,
-          authorization: `Bearer ${internalKey}`,
-        },
-      })
-
-      if (balanceResponse.ok) {
-        const balancePayload = await balanceResponse.json().catch(() => null)
-        minuteLimit = readRateLimitRpm(balancePayload)
-      }
-    } catch {
-      // Keep session authentication available even when rate-limit lookup fails.
-    }
-  }
-
   const successfulResult = {
     ok: true,
     quotaKey: userEmail || undefined,
     ...(userEmail ? { creditUserId: userEmail } : {}),
-    ...(minuteLimit ? { minuteLimit } : {}),
   }
 
   writeCachedAuthorization(sessionAuthenticationCache, cookie, successfulResult)
