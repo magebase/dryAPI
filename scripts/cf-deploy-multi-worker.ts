@@ -202,16 +202,14 @@ function deployVersionSplit(configPath: string, splits: string[], message: strin
   ])
 }
 
-function deployWorker(configPath: string, message: string, extraArgs: string[] = []): void {
+function deployTriggers(configPath: string): void {
   runPnpm([
     "exec",
     "wrangler",
+    "triggers",
     "deploy",
     "--config",
     configPath,
-    "--message",
-    message,
-    ...extraArgs,
   ])
 }
 
@@ -230,13 +228,20 @@ function main(): void {
     )
   }
 
-  // Always run a full middleware deploy so custom-domain routing is kept attached
-  // to the middleware worker, preventing traffic drift to the server worker.
-  deployWorker(
+  const middlewareVersionId = uploadWorkerVersion(
     MIDDLEWARE_CONFIG_PATH,
-    `activate middleware for server ${serverVersionId}`,
+    "middleware",
     ["--var", `WORKER_VERSION_ID:${serverVersionId}`],
   )
+
+  deployVersionSplit(
+    MIDDLEWARE_CONFIG_PATH,
+    [`${middlewareVersionId}@100%`],
+    `activate middleware ${middlewareVersionId}`,
+  )
+
+  // Ensure public routes/custom domains stay attached to middleware.
+  deployTriggers(MIDDLEWARE_CONFIG_PATH)
 
   deployVersionSplit(
     SERVER_CONFIG_PATH,
