@@ -6,6 +6,13 @@ import {
 } from "@/lib/cloudflare-db"
 import { createAuthApiKey, invokeAuthHandler } from "@/lib/auth-handler-proxy"
 import { sendApiKeyCreatedNotification } from "@/lib/dashboard-api-key-emails"
+import {
+  dashboardApiKeyUsageCacheScope,
+  dashboardApiKeysCacheScope,
+  dashboardUsageCacheScope,
+  invalidateDashboardReadCacheScope,
+  readDashboardReadCache,
+} from "@/lib/dashboard-read-cache"
 
 type D1PreparedResult<T> = {
   results: T[]
@@ -311,12 +318,29 @@ async function getUsageSummarySnapshot(
   days: number,
   options?: { db?: D1DatabaseLike | null },
 ): Promise<UsageSummarySnapshot | null> {
+  const safeDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : 14
+
+  if (!options?.db) {
+    return readDashboardReadCache({
+      scope: dashboardUsageCacheScope(safeDays),
+      key: "summary",
+      ttlSeconds: 30,
+      loader: async () => {
+        const db = await resolveAnalyticsDb()
+        if (!db) {
+          return null
+        }
+
+        return getUsageSummarySnapshot(safeDays, { db })
+      },
+    })
+  }
+
   const db = options?.db ?? (await resolveAnalyticsDb())
   if (!db) {
     return null
   }
 
-  const safeDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : 14
   let daysCache = usageSummarySnapshotPromises.get(db)
   if (!daysCache) {
     daysCache = new Map<number, Promise<UsageSummarySnapshot | null>>()
@@ -471,52 +495,66 @@ export function permissionMatchesPath(permission: string, path: string, method: 
 }
 
 export async function listDashboardApiKeysForRequest(request: Request, userEmail: string): Promise<DashboardApiKeyRecord[]> {
-  const { response, data } = await invokeAuthHandler<BetterAuthApiKeyListResponse>({
-    request,
-    path: "/api/auth/api-key/list",
-    method: "GET",
+  return readDashboardReadCache({
+    scope: dashboardApiKeysCacheScope(userEmail),
+    key: "request-list",
+    ttlSeconds: 30,
+    loader: async () => {
+      const { response, data } = await invokeAuthHandler<BetterAuthApiKeyListResponse>({
+        request,
+        path: "/api/auth/api-key/list",
+        method: "GET",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to list API keys from Better Auth")
+      }
+
+      const apiKeys = Array.isArray(data?.apiKeys) ? data.apiKeys : []
+      return apiKeys.map((apiKey) => mapApiKeyRecord(apiKey, userEmail))
+    },
   })
-
-  if (!response.ok) {
-    throw new Error("Failed to list API keys from Better Auth")
-  }
-
-  const apiKeys = Array.isArray(data?.apiKeys) ? data.apiKeys : []
-  return apiKeys.map((apiKey) => mapApiKeyRecord(apiKey, userEmail))
 }
 
 export async function listDashboardApiKeysForUser(userEmail: string): Promise<DashboardApiKeyRecord[]> {
-  const db = await resolveAuthDb()
-  if (!db) {
-    return []
-  }
+  return readDashboardReadCache({
+    scope: dashboardApiKeysCacheScope(userEmail),
+    key: "user-list",
+    ttlSeconds: 30,
+    loader: async () => {
+      const db = await resolveAuthDb()
+      if (!db) {
+        return []
+      }
 
-  const response = await db
-    .prepare(
-      `
-      SELECT
-        a.id,
-        a.name,
-        a.start,
-        a.prefix,
-        a.referenceid AS "referenceId",
-        a.enabled,
-        a.expiresat AS "expiresAt",
-        a.createdat AS "createdAt",
-        a.updatedat AS "updatedAt",
-        a.permissions,
-        a.metadata,
-        a.key
-      FROM apikey a
-      INNER JOIN "user" u ON u.id = a.referenceid
-      WHERE lower(u.email) = ?
-      ORDER BY a.createdat DESC
-      `,
-    )
-    .bind(userEmail.trim().toLowerCase())
-    .all<BetterAuthApiKey>()
+      const response = await db
+        .prepare(
+          `
+          SELECT
+            a.id,
+            a.name,
+            a.start,
+            a.prefix,
+            a.referenceid AS "referenceId",
+            a.enabled,
+            a.expiresat AS "expiresAt",
+            a.createdat AS "createdAt",
+            a.updatedat AS "updatedAt",
+            a.permissions,
+            a.metadata,
+            a.key
+          FROM apikey a
+          INNER JOIN "user" u ON u.id = a.referenceid
+          WHERE lower(u.email) = ?
+          ORDER BY a.createdat DESC
+          `,
+        )
+        .bind(userEmail.trim().toLowerCase())
+        .all<BetterAuthApiKey>()
 
-  return response.results.map((apiKey) => mapApiKeyRecord(apiKey, userEmail))
+      return response.results.map((apiKey) => mapApiKeyRecord(apiKey, userEmail))
+    },
+  })
 }
 
 export async function createDashboardApiKey(
@@ -572,6 +610,11 @@ export async function createDashboardApiKey(
     console.error("[api-keys] Failed to send API key created email", error)
   })
 
+  await Promise.all([
+    invalidateDashboardReadCacheScope(dashboardApiKeysCacheScope(input.userEmail)),
+    invalidateDashboardReadCacheScope(dashboardUsageCacheScope(14)),
+  ])
+
   return {
     key: data.key,
     record,
@@ -613,6 +656,12 @@ export async function setDashboardApiKeyEnabled(
     throw new Error("Failed to update API key state with Better Auth")
   }
 
+  await Promise.all([
+    invalidateDashboardReadCacheScope(dashboardApiKeysCacheScope(params.userEmail)),
+    invalidateDashboardReadCacheScope(dashboardUsageCacheScope(14)),
+    invalidateDashboardReadCacheScope(dashboardApiKeyUsageCacheScope(params.userEmail, params.keyId)),
+  ])
+
   return mapApiKeyRecord(data, params.userEmail)
 }
 
@@ -651,6 +700,12 @@ export async function deleteDashboardApiKey(
     throw new Error("Failed to delete API key with Better Auth")
   }
 
+  await Promise.all([
+    invalidateDashboardReadCacheScope(dashboardApiKeysCacheScope(params.userEmail)),
+    invalidateDashboardReadCacheScope(dashboardUsageCacheScope(14)),
+    invalidateDashboardReadCacheScope(dashboardApiKeyUsageCacheScope(params.userEmail, params.keyId)),
+  ])
+
   return {
     deleted: true,
     keyId: params.keyId,
@@ -688,6 +743,12 @@ export async function rerollDashboardApiKey(
   if (!response.ok) {
     throw new Error("Failed to revoke previous API key after rotation")
   }
+
+  await Promise.all([
+    invalidateDashboardReadCacheScope(dashboardApiKeysCacheScope(params.userEmail)),
+    invalidateDashboardReadCacheScope(dashboardUsageCacheScope(14)),
+    invalidateDashboardReadCacheScope(dashboardApiKeyUsageCacheScope(params.userEmail, params.keyId)),
+  ])
 
   return rotated
 }
@@ -765,14 +826,21 @@ export async function getDashboardApiKeyUsageSummary(params: {
   userEmail: string
   keyId: string
 }): Promise<{ last_used: null; total_24h: number; cost_24h_usd: number | null } | null> {
-  const owned = await isApiKeyOwnedByUser(params.keyId, params.userEmail)
-  if (!owned) {
-    return null
-  }
+  return readDashboardReadCache({
+    scope: dashboardApiKeyUsageCacheScope(params.userEmail, params.keyId),
+    key: "summary",
+    ttlSeconds: 30,
+    loader: async () => {
+      const owned = await isApiKeyOwnedByUser(params.keyId, params.userEmail)
+      if (!owned) {
+        return null
+      }
 
-  return {
-    last_used: null,
-    total_24h: 0,
-    cost_24h_usd: null,
-  }
+      return {
+        last_used: null,
+        total_24h: 0,
+        cost_24h_usd: null,
+      }
+    },
+  })
 }

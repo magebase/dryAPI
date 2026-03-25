@@ -5,6 +5,11 @@ import {
   createCloudflareDbAccessors,
   HYPERDRIVE_BINDING_PRIORITY,
 } from "@/lib/cloudflare-db"
+import {
+  dashboardBillingCacheScope,
+  invalidateDashboardReadCacheScope,
+  readDashboardReadCache,
+} from "@/lib/dashboard-read-cache"
 
 type D1PreparedResult<T> = {
   results: T[]
@@ -72,10 +77,6 @@ type CreditBalanceProfileRow = {
 
 type D1TableInfoRow = {
   name: string
-}
-
-type CreditDepositAggregateRow = {
-  lifetime_deposited_credits: number | string | null
 }
 
 type SaasMonthlyTokenBucketRow = {
@@ -384,6 +385,23 @@ async function getBillingSummarySnapshot(
   options?: { db?: BillingDatabaseLike | null },
 ): Promise<BillingSummarySnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
+  if (!options?.db) {
+    return readDashboardReadCache({
+      scope: dashboardBillingCacheScope(normalizedCustomerRef),
+      key: "summary",
+      ttlSeconds: 30,
+      loader: async () => {
+        const db = await resolveBillingDb()
+        if (!db) {
+          return null
+        }
+
+        await ensureBillingTables(db)
+        return getBillingSummarySnapshot(normalizedCustomerRef, { db })
+      },
+    })
+  }
+
   const db = options?.db ?? (await resolveBillingDb())
   if (!db) {
     return null
@@ -505,6 +523,29 @@ export async function getStoredAutoTopUpSettings(
   options?: { db?: BillingDatabaseLike | null },
 ): Promise<AutoTopUpSettingsSnapshot | null> {
   const normalizedCustomerRef = sanitizeCustomerRef(customerRef)
+  if (!options?.db) {
+    return readDashboardReadCache({
+      scope: dashboardBillingCacheScope(normalizedCustomerRef),
+      key: "auto-top-up",
+      ttlSeconds: 30,
+      loader: async () => {
+        const db = await resolveBillingDb()
+        if (!db) {
+          return null
+        }
+
+        await ensureBillingTables(db)
+
+        const row = await selectBalanceProfileRow(db, normalizedCustomerRef)
+        if (!row) {
+          return null
+        }
+
+        return toAutoTopUpSettingsSnapshot(row)
+      },
+    })
+  }
+
   const db = options?.db ?? (await resolveBillingDb())
   if (!db) {
     return null
@@ -591,6 +632,8 @@ export async function updateStoredAutoTopUpSettings(
     return null
   }
 
+  await invalidateDashboardReadCacheScope(dashboardBillingCacheScope(normalizedCustomerRef))
+
   return toAutoTopUpSettingsSnapshot(updated)
 }
 
@@ -641,6 +684,8 @@ export async function incrementStoredAutoTopUpMonthlySpent(
   if (!updated) {
     return null
   }
+
+  await invalidateDashboardReadCacheScope(dashboardBillingCacheScope(normalizedCustomerRef))
 
   return toAutoTopUpSettingsSnapshot(updated)
 }
@@ -729,6 +774,7 @@ async function recordCreditEventAndApplyDelta(
   }
 
   const stored = await getStoredCreditBalance(normalizedCustomerRef, { db })
+  await invalidateDashboardReadCacheScope(dashboardBillingCacheScope(normalizedCustomerRef))
   return {
     applied: wasInserted,
     balance: stored,
@@ -836,6 +882,8 @@ export async function upsertSaasMonthlyTokenBucket(
   if (!row) {
     return null
   }
+
+  await invalidateDashboardReadCacheScope(dashboardBillingCacheScope(normalizedCustomerRef))
 
   return {
     bucketId: row.bucket_id,

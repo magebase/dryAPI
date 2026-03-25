@@ -6,6 +6,11 @@ import { dashboardSettingsProfiles } from "@/db/schema-metadata";
 import { createCloudflareDbAccessors } from "@/lib/cloudflare-db";
 import { HYPERDRIVE_BINDING_PRIORITY } from "@/lib/cloudflare-db";
 import {
+  dashboardSettingsCacheScope,
+  invalidateDashboardReadCacheScope,
+  readDashboardReadCache,
+} from "@/lib/dashboard-read-cache";
+import {
   DASHBOARD_SETTINGS_DEFAULTS,
   dashboardGeneralSettingsSchema,
   dashboardSecuritySettingsSchema,
@@ -514,13 +519,20 @@ export async function getDashboardSettingsForUser(
     return normalizeBundleFromRow(row, webhookRows);
   }
 
-  await ensurePrimaryMetadataTable();
-  const sqlDb = await getPrimaryMetadataSqlDbAsync();
-  const row = await selectRow(sqlDb, resolvedEmail);
-  const webhookRows = normalizeWebhookRows(
-    await selectWebhookRows(sqlDb, resolvedEmail),
-  );
-  return normalizeBundleFromRow(row, webhookRows);
+  return readDashboardReadCache({
+    scope: dashboardSettingsCacheScope(resolvedEmail),
+    key: "bundle",
+    ttlSeconds: 30,
+    loader: async () => {
+      await ensurePrimaryMetadataTable();
+      const sqlDb = await getPrimaryMetadataSqlDbAsync();
+      const row = await selectRow(sqlDb, resolvedEmail);
+      const webhookRows = normalizeWebhookRows(
+        await selectWebhookRows(sqlDb, resolvedEmail),
+      );
+      return normalizeBundleFromRow(row, webhookRows);
+    },
+  });
 }
 
 export async function updateDashboardSettingsSection(
@@ -603,6 +615,8 @@ export async function updateDashboardSettingsSection(
       })
     }
 
+    await invalidateDashboardReadCacheScope(dashboardSettingsCacheScope(resolvedEmail))
+
     return nextSettings;
   }
 
@@ -624,6 +638,8 @@ export async function updateDashboardSettingsSection(
       db: sqlDb,
     })
   }
+
+  await invalidateDashboardReadCacheScope(dashboardSettingsCacheScope(resolvedEmail))
 
   return nextSettings;
 }
@@ -698,6 +714,7 @@ export async function updateDashboardWebhookHealth(
 
     const updatedRows = await selectWebhookRows(db, resolvedEmail)
     const updatedRow = updatedRows.find((row) => row.webhookId === params.webhookId)
+    await invalidateDashboardReadCacheScope(dashboardSettingsCacheScope(resolvedEmail))
     return updatedRow ? normalizeWebhookRow(updatedRow) : null
   }
 
@@ -759,5 +776,6 @@ export async function updateDashboardWebhookHealth(
 
   const updatedRows = await selectWebhookRows(sqlDb, resolvedEmail)
   const updatedRow = updatedRows.find((row) => row.webhookId === params.webhookId)
+  await invalidateDashboardReadCacheScope(dashboardSettingsCacheScope(resolvedEmail))
   return updatedRow ? normalizeWebhookRow(updatedRow) : null
 }

@@ -2,11 +2,14 @@ import "server-only"
 
 import { cache } from "react"
 
+import { listDashboardApiKeysForUser } from "@/lib/dashboard-api-keys-store"
+import { buildDashboardReadCacheScope, readDashboardReadCache } from "@/lib/dashboard-read-cache"
 import { getDashboardSettingsForUser } from "@/lib/dashboard-settings-store"
 import { DASHBOARD_SETTINGS_DEFAULTS } from "@/lib/dashboard-settings-schema"
 import { buildGeneralSettingsFormValues } from "@/lib/dashboard-settings-form-values"
 import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 import { resolveCurrentUserSubscriptionPlanSummary } from "@/lib/auth-subscription-benefits"
+import { readDashboardSessionSnapshotFromHeaders } from "@/lib/dashboard-session"
 
 type HeaderStore = {
   get(name: string): string | null
@@ -96,6 +99,16 @@ function resolveRequestOriginFromHeaders(headerStore: HeaderStore): string {
 }
 
 async function loadSessionProfile(headerStore: HeaderStore): Promise<SessionProfile> {
+  const forwardedSnapshot = readDashboardSessionSnapshotFromHeaders(headerStore)
+  if (forwardedSnapshot) {
+    return {
+      authenticated: true,
+      email: forwardedSnapshot.email,
+      name: null,
+      role: forwardedSnapshot.userRole,
+    }
+  }
+
   const origin = resolveRequestOriginFromHeaders(headerStore)
   const cookieHeader = headerStore.get("cookie") || ""
 
@@ -181,40 +194,47 @@ export async function loadAccountDashboardSettingsValues(headerStore: HeaderStor
     }
   }
 
-  const origin = resolveRequestOriginFromHeaders(headerStore)
+  return readDashboardReadCache({
+    scope: buildDashboardReadCacheScope("account", session.email),
+    key: "page-data",
+    ttlSeconds: 15,
+    loader: async () => {
+      const origin = resolveRequestOriginFromHeaders(headerStore)
 
-  const [sessionsResponse, currentPlan] = await Promise.all([
-    internalWorkerFetch({
-      path: "/api/auth/list-sessions",
-      fallbackOrigin: origin,
-      init: {
-        method: "GET",
-        cache: "no-store",
-        headers: {
-          accept: "application/json",
-          cookie: headerStore.get("cookie") || "",
+      const [sessionsResponse, currentPlan] = await Promise.all([
+        internalWorkerFetch({
+          path: "/api/auth/list-sessions",
+          fallbackOrigin: origin,
+          init: {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+              accept: "application/json",
+              cookie: headerStore.get("cookie") || "",
+            },
+          },
+        }),
+        resolveCurrentUserSubscriptionPlanSummary(session.email),
+      ])
+
+      const sessionsPayload = (await sessionsResponse.json().catch(() => null)) as unknown
+      const sessions = Array.isArray(sessionsPayload)
+        ? sessionsPayload.filter(
+            (entry): entry is SessionRecord =>
+              !!entry && typeof entry === "object" && typeof (entry as SessionRecord).id === "string",
+          )
+        : []
+
+      return {
+        user: {
+          name: session.name,
+          email: session.email,
         },
-      },
-    }),
-    resolveCurrentUserSubscriptionPlanSummary(session.email),
-  ])
-
-  const sessionsPayload = (await sessionsResponse.json().catch(() => null)) as unknown
-  const sessions = Array.isArray(sessionsPayload)
-    ? sessionsPayload.filter(
-        (entry): entry is SessionRecord =>
-          !!entry && typeof entry === "object" && typeof (entry as SessionRecord).id === "string",
-      )
-    : []
-
-  return {
-    user: {
-      name: session.name,
-      email: session.email,
+        sessions,
+        currentPlan,
+      }
     },
-    sessions,
-    currentPlan,
-  }
+  })
 }
 
 export async function loadDashboardApiKeys(headerStore: HeaderStore): Promise<DashboardApiKeyRecord[]> {
@@ -223,35 +243,5 @@ export async function loadDashboardApiKeys(headerStore: HeaderStore): Promise<Da
     return []
   }
 
-  const origin = resolveRequestOriginFromHeaders(headerStore)
-  const response = await internalWorkerFetch({
-    path: "/api/dashboard/api-keys",
-    fallbackOrigin: origin,
-    init: {
-      method: "GET",
-      cache: "no-store",
-      headers: {
-        accept: "application/json",
-        cookie: headerStore.get("cookie") || "",
-      },
-    },
-  })
-
-  if (!response.ok) {
-    return []
-  }
-
-  const payload = (await response.json().catch(() => null)) as
-    | { data?: unknown }
-    | null
-  const rawData = payload?.data
-
-  if (!Array.isArray(rawData)) {
-    return []
-  }
-
-  return rawData.filter(
-    (entry): entry is DashboardApiKeyRecord =>
-      !!entry && typeof entry === "object" && typeof (entry as DashboardApiKeyRecord).keyId === "string",
-  )
+  return listDashboardApiKeysForUser(session.email)
 }

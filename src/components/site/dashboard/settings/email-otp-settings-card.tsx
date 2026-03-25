@@ -14,6 +14,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -62,29 +69,27 @@ async function loadSession(forceRefresh: boolean): Promise<TwoFactorSessionPaylo
 function EmailOtpSettingsCardSkeleton() {
   return (
     <Card aria-busy="true">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-5 w-48" />
+      <CardHeader className="space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-8 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-4 w-80" />
+            </div>
+          </div>
           <Skeleton className="h-5 w-16 rounded-full" />
         </div>
-        <Skeleton className="mt-1 h-4 w-80" />
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4">
         <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
           <Skeleton className="h-3 w-28" />
           <Skeleton className="h-4 w-52" />
           <Skeleton className="h-3 w-64" />
         </div>
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-56" />
-          </div>
-          <div className="flex items-end gap-3">
-            <Skeleton className="h-10 w-28" />
-            <Skeleton className="h-10 w-36" />
-          </div>
+        <div className="flex items-center justify-between gap-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-10 w-36" />
         </div>
       </CardContent>
     </Card>
@@ -98,6 +103,7 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
   const [email, setEmail] = useState<string | null>(initialEmail ?? null)
   const [enabled, setEnabled] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const sendCodeMutation = useMutation({
     mutationFn: async () => {
@@ -129,6 +135,10 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
 
   const updateProtectionMutation = useMutation({
     mutationFn: async (values: z.infer<typeof emailOtpStepUpSchema>) => {
+      if (!email) {
+        throw new Error("Unable to resolve the account email.")
+      }
+
       const response = await fetch("/api/dashboard/settings/security/two-factor", {
         method: "POST",
         cache: "no-store",
@@ -164,6 +174,7 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
       setEnabled(nextEnabled)
       setCodeSent(false)
       form.reset()
+      setDialogOpen(false)
       setReloadToken((value) => value + 1)
       toast.success(nextEnabled ? "Email OTP protection enabled" : "Email OTP protection disabled")
     },
@@ -234,116 +245,169 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
     )
   }
 
-  const helperText = enabled
-    ? "Email OTP is required to disable this protection."
-    : "Email OTP is required to enable this protection."
+  const protectionTitle = enabled
+    ? "Disable email OTP protection"
+    : "Enable email OTP protection"
+  const protectionDescription = enabled
+    ? `Enter the 6-digit code sent to ${email ?? "your inbox"} to disable this protection.`
+    : `Enter the 6-digit code sent to ${email ?? "your inbox"} to enable this protection.`
 
   return (
-    <Card className={cn("overflow-hidden transition-all", enabled && "border-primary/20 bg-primary/5 dark:bg-primary/5")}>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "flex size-8 items-center justify-center rounded-lg border",
-                enabled
-                  ? "border-primary/20 bg-primary/10 text-primary"
-                  : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800",
-              )}
-            >
-              <ShieldCheck className="size-4" />
+    <>
+      <Card
+        className={cn("overflow-hidden transition-all", enabled && "border-primary/20 bg-primary/5 dark:bg-primary/5")}
+      >
+        <CardHeader>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-lg border",
+                  enabled
+                    ? "border-primary/20 bg-primary/10 text-primary"
+                    : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800",
+                )}
+              >
+                <ShieldCheck className="size-4" />
+              </div>
+              <div className="space-y-1">
+                <CardTitle className="text-base">Email OTP protection</CardTitle>
+                <CardDescription>
+                  Add an extra layer of security by requiring a code sent to your inbox before changing this setting.
+                </CardDescription>
+              </div>
             </div>
-            <CardTitle className="text-base">Email OTP protection</CardTitle>
+            <Badge variant={enabled ? "default" : "secondary"} className="h-5">
+              {enabled ? (
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3" /> Enabled
+                </span>
+              ) : (
+                "Disabled"
+              )}
+            </Badge>
           </div>
-          <Badge variant={enabled ? "default" : "secondary"} className="h-5">
-            {enabled ? (
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="size-3" /> Enabled
-              </span>
-            ) : (
-              "Disabled"
-            )}
-          </Badge>
-        </div>
-        <CardDescription>
-          Add an extra layer of security by requiring a code sent to your inbox before changing this setting.
-        </CardDescription>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent className="space-y-5">
-        <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
-          <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">Protected inbox</p>
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{email || "No email available"}</p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Passwordless accounts can still sign in with email OTP from the login page.
-          </p>
-        </div>
+        <CardContent className="space-y-4">
+          <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
+            <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">Protected inbox</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{email || "No email available"}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {enabled ? "Protection is currently active." : "Protection is currently disabled."}
+            </p>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
-          <form.Field
-            name="otp"
-            children={(field) => {
-              const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
-              const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
-
-              return (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name} className="font-medium">
-                    Email code
-                  </Label>
-                  <Input
-                    id={field.name}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    placeholder="123456"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    className="font-mono tracking-[0.35em]"
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Codes expire after 5 minutes.
-                  </p>
-                  {isInvalid ? <p className="text-xs font-medium text-destructive">{errorMessage}</p> : null}
-                </div>
-              )
-            }}
-          />
-
-          <div className="flex items-end gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">
+              Open the modal to send a code and confirm a change.
+            </p>
             <Button
               type="button"
               variant="outline"
               onClick={() => {
-                void sendCodeMutation.mutateAsync()
+                setCodeSent(false)
+                form.reset()
+                setDialogOpen(true)
               }}
-              disabled={sendCodeMutation.isPending || !email}
-              className="gap-2"
+              disabled={!email}
             >
-              {sendCodeMutation.isPending ? <RotateCcw className="size-4 animate-spin" /> : <Mail className="size-4" />}
-              {codeSent ? "Resend code" : "Send code"}
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => {
-                void form.handleSubmit()
-              }}
-              disabled={!codeSent || updateProtectionMutation.isPending || form.state.isSubmitting}
-              className="gap-2"
-            >
-              {updateProtectionMutation.isPending || form.state.isSubmitting ? (
-                <RotateCcw className="size-4 animate-spin" />
-              ) : (
-                <ShieldCheck className="size-4" />
-              )}
-              {enabled ? "Disable protection" : "Enable protection"}
+              Manage protection
             </Button>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <p className="text-xs text-muted-foreground">{helperText}</p>
-      </CardContent>
-    </Card>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(nextOpen) => {
+          setDialogOpen(nextOpen)
+          if (!nextOpen) {
+            setCodeSent(false)
+            form.reset()
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{protectionTitle}</DialogTitle>
+            <DialogDescription>{protectionDescription}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
+            <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">Protected inbox</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{email || "No email available"}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Passwordless accounts can still sign in with email OTP from the login page.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+            <form.Field
+              name="otp"
+              children={(field) => {
+                const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
+                const errorMessage = String((field.state.meta.errors[0] as unknown) ?? "")
+
+                return (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name} className="font-medium">
+                      Email code
+                    </Label>
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      placeholder="123456"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      className="font-mono tracking-[0.35em]"
+                    />
+                    <p className="text-[11px] text-muted-foreground">Codes expire after 5 minutes.</p>
+                    {isInvalid ? <p className="text-xs font-medium text-destructive">{errorMessage}</p> : null}
+                  </div>
+                )
+              }}
+            />
+
+            <div className="flex items-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  void sendCodeMutation.mutateAsync()
+                }}
+                disabled={sendCodeMutation.isPending || !email}
+                className="gap-2"
+              >
+                {sendCodeMutation.isPending ? <RotateCcw className="size-4 animate-spin" /> : <Mail className="size-4" />}
+                {codeSent ? "Resend code" : "Send code"}
+              </Button>
+
+              <Button
+                type="button"
+                onClick={() => {
+                  void form.handleSubmit()
+                }}
+                disabled={!codeSent || updateProtectionMutation.isPending || form.state.isSubmitting || !email}
+                className="gap-2"
+              >
+                {updateProtectionMutation.isPending || form.state.isSubmitting ? (
+                  <RotateCcw className="size-4 animate-spin" />
+                ) : (
+                  <ShieldCheck className="size-4" />
+                )}
+                {enabled ? "Disable protection" : "Enable protection"}
+              </Button>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            {enabled ? "Email OTP is required to disable this protection." : "Email OTP is required to enable this protection."}
+          </p>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

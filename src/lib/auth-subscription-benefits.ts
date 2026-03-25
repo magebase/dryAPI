@@ -5,6 +5,10 @@ import {
   HYPERDRIVE_BINDING_PRIORITY,
 } from "@/lib/cloudflare-db"
 import {
+  dashboardSubscriptionCacheScope,
+  readDashboardReadCache,
+} from "@/lib/dashboard-read-cache"
+import {
   ensureSaasSubscriptionCycleBenefits,
 } from "@/lib/dashboard-billing-credits"
 import {
@@ -32,11 +36,6 @@ const { getSqlDbAsync } = createCloudflareDbAccessors(
   HYPERDRIVE_BINDING_PRIORITY,
   {},
 )
-
-type AuthUserRow = {
-  id: string
-  email: string
-}
 
 type AuthSubscriptionRow = {
   id: string
@@ -199,6 +198,22 @@ export async function resolveCurrentUserSubscriptionPlanSummary(
   email: string,
   options?: { db?: D1DatabaseLike | null },
 ): Promise<CurrentUserSubscriptionPlanSummary | null> {
+  if (!options?.db) {
+    return readDashboardReadCache({
+      scope: dashboardSubscriptionCacheScope(email),
+      key: "plan-summary",
+      ttlSeconds: 30,
+      loader: async () => {
+        const subscription = await getLatestActiveSubscriptionForEmail(email)
+        if (!subscription) {
+          return null
+        }
+
+        return resolveCurrentUserSubscriptionPlanSummaryFromSubscription(subscription)
+      },
+    })
+  }
+
   const subscription = await getLatestActiveSubscriptionForEmail(email, options)
   if (!subscription) {
     return null

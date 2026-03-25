@@ -107,8 +107,16 @@ describe("EmailOtpSettingsCard", () => {
 
     await screen.findByText("owner@dryapi.dev")
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Send code" })).toBeEnabled()
+      expect(screen.getByRole("button", { name: "Manage protection" })).toBeEnabled()
     })
+
+    expect(screen.queryByLabelText("Email code")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Manage protection" }))
+
+    await screen.findByRole("dialog", { name: "Enable email OTP protection" })
+    expect(screen.getByLabelText("Email code")).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole("button", { name: "Send code" }))
 
     await waitFor(() => {
@@ -142,6 +150,9 @@ describe("EmailOtpSettingsCard", () => {
       expect(screen.getByText("Enabled")).toBeInTheDocument()
     })
     expect(toastSuccess).toHaveBeenCalledWith("Email OTP protection enabled")
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Enable email OTP protection" })).not.toBeInTheDocument()
+    })
   })
 
   it("surfaces a session load error", async () => {
