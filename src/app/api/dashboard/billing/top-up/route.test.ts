@@ -104,6 +104,12 @@ afterEach(() => {
 })
 
 beforeEach(() => {
+  vi.stubEnv("STRIPE_PRIVATE_KEY", "")
+  vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "")
+  vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "")
+})
+
+beforeEach(() => {
   resolveDashboardBillingCustomerRefMock.mockImplementation(
     (session: { activeOrganizationId?: string | null; email?: string | null }) =>
       session.activeOrganizationId ?? session.email ?? null,

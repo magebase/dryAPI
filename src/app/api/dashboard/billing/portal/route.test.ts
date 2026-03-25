@@ -65,6 +65,12 @@ afterEach(() => {
   authorizeOrganizationBillingReferenceMock.mockReset()
 })
 
+beforeEach(() => {
+  vi.stubEnv("STRIPE_PRIVATE_KEY", "")
+  vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "")
+  vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "")
+})
+
 describe("GET /api/dashboard/billing/portal", () => {
   it("returns 401 when the user is not signed in", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 401 }))

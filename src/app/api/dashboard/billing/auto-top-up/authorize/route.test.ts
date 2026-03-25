@@ -53,6 +53,7 @@ afterEach(() => {
 
 describe("GET /api/dashboard/billing/auto-top-up/authorize", () => {
   beforeEach(() => {
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "")
     authorizeDashboardBillingAccessMock.mockImplementation(
       async (session: { authenticated?: boolean; activeOrganizationId?: string | null; email?: string | null }) => {
         const customerRef = session.activeOrganizationId ?? session.email ?? null

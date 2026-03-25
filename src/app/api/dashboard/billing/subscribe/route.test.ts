@@ -38,6 +38,18 @@ afterEach(() => {
   resolveRequestOriginFromRequestMock.mockReset()
 })
 
+beforeEach(() => {
+  vi.stubEnv("STRIPE_PRIVATE_KEY", "")
+  vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "")
+  vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "")
+  vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "")
+  vi.stubEnv("STRIPE_SAAS_ANNUAL_PRICE_STARTER", "")
+  vi.stubEnv("STRIPE_SAAS_PRICE_GROWTH", "")
+  vi.stubEnv("STRIPE_SAAS_ANNUAL_PRICE_GROWTH", "")
+  vi.stubEnv("STRIPE_SAAS_PRICE_SCALE", "")
+  vi.stubEnv("STRIPE_SAAS_ANNUAL_PRICE_SCALE", "")
+})
+
 describe("GET /api/dashboard/billing/subscribe", () => {
   beforeEach(() => {
     authorizeDashboardBillingAccessMock.mockImplementation(

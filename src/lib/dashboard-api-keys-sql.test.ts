@@ -104,8 +104,14 @@ describe("dashboard-api-keys SQL readers", () => {
 
   it("uses postgres date syntax for request usage series", async () => {
     const { binding, queries } = createQueryDb([
-      { day: "2026-03-23", requests: 4 },
-      { day: "2026-03-24", requests: 7 },
+      {
+        requests24h: 11,
+        active_api_keys: 5,
+        daily_series_json: JSON.stringify([
+          { day: "2026-03-23", requests: 4 },
+          { day: "2026-03-24", requests: 7 },
+        ]),
+      },
     ])
 
     getSqlDbAsyncMock.mockResolvedValue(binding)
@@ -115,13 +121,19 @@ describe("dashboard-api-keys SQL readers", () => {
       { day: "2026-03-24", requests: 7 },
     ])
 
-    expect(queries[0]?.query).toContain("TO_CHAR(TO_TIMESTAMP(created_at / 1000.0), 'YYYY-MM-DD') AS day")
+    expect(queries[0]?.query).toContain("to_char(date_trunc('day', to_timestamp(created_at / 1000.0))::date, 'YYYY-MM-DD') AS day")
     expect(queries[0]?.query).toContain("INTERVAL '1 day'")
     expect(queries[0]?.values).toEqual([14])
   })
 
   it("uses postgres date syntax for the 24h usage count", async () => {
-    const { binding, queries } = createQueryDb([{ total: 12 }])
+    const { binding, queries } = createQueryDb([
+      {
+        requests24h: 12,
+        active_api_keys: 5,
+        daily_series_json: "[]",
+      },
+    ])
 
     getSqlDbAsyncMock.mockResolvedValue(binding)
 
@@ -131,7 +143,13 @@ describe("dashboard-api-keys SQL readers", () => {
   })
 
   it("counts active dashboard api keys with boolean filters", async () => {
-    const { binding, queries } = createQueryDb([{ total: 5 }])
+    const { binding, queries } = createQueryDb([
+      {
+        requests24h: 12,
+        active_api_keys: 5,
+        daily_series_json: "[]",
+      },
+    ])
 
     getSqlDbAsyncMock.mockResolvedValue(binding)
 
