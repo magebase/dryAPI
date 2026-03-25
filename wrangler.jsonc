@@ -3,7 +3,7 @@
   "name": "dryapi-site",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-03-10",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": ["nodejs_compat", "allow_importable_env", "global_fetch_strictly_public"],
   "placement": {
     "region": "aws:us-west-1", // Explicit cloud region to run your Worker closest to - e.g. "gcp:us-east4" or "aws:us-east-1"
   },

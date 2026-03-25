@@ -139,7 +139,7 @@ jobs:
           const fs = require('node:fs')
 
           const namespaceId = process.argv[2]
-          const configPaths = ['wrangler.jsonc', 'wrangler.server.jsonc']
+          const configPaths = ['wrangler.jsonc']
           let updatedAny = false
 
           for (const configPath of configPaths) {

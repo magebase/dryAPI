@@ -1,19 +1,15 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
 const workflowPath = resolve(process.cwd(), ".github/workflows/cloudflare-deploy.yml")
-const serverWorkerPath = resolve(process.cwd(), "cloudflare/site/server-worker.js")
-const middlewareWorkerPath = resolve(process.cwd(), "cloudflare/site/middleware-worker.js")
-const serverWranglerPath = resolve(process.cwd(), "wrangler.server.jsonc")
-const middlewareWranglerPath = resolve(process.cwd(), "wrangler.middleware.jsonc")
+const rootWranglerPath = resolve(process.cwd(), "wrangler.jsonc")
+const packageJsonPath = resolve(process.cwd(), "package.json")
 
 const workflowContent = readFileSync(workflowPath, "utf8")
-const serverWorkerContent = readFileSync(serverWorkerPath, "utf8")
-const middlewareWorkerContent = readFileSync(middlewareWorkerPath, "utf8")
-const serverWranglerContent = readFileSync(serverWranglerPath, "utf8")
-const middlewareWranglerContent = readFileSync(middlewareWranglerPath, "utf8")
+const rootWranglerContent = readFileSync(rootWranglerPath, "utf8")
+const packageJsonContent = readFileSync(packageJsonPath, "utf8")
 
 function readServiceTarget(content: string, bindingName: string): string | null {
   const match = content.match(
@@ -49,15 +45,15 @@ describe("cloudflare deploy workflow", () => {
     expect(workflowContent).toContain(hyperdriveEnv)
   })
 
-  it("keeps the server worker self-referential and the middleware worker pointed at the server", () => {
-    expect(readServiceTarget(serverWranglerContent, "WORKER_SELF_REFERENCE")).toBe("dryapi-site")
-    expect(readServiceTarget(middlewareWranglerContent, "WORKER_SELF_REFERENCE")).toBe(
-      "dryapi-site-middleware",
+  it("deploys the single OpenNext worker directly", () => {
+    expect(packageJsonContent).toContain(
+      '"cf:deploy:only": "pnpm exec wrangler deploy --config wrangler.jsonc"',
     )
-    expect(readServiceTarget(middlewareWranglerContent, "DEFAULT_WORKER")).toBe("dryapi-site")
+    expect(rootWranglerContent).toContain('"main": ".open-next/worker.js"')
+    expect(readServiceTarget(rootWranglerContent, "WORKER_SELF_REFERENCE")).toBe("dryapi-site")
   })
 
-  it("keeps Durable Object ownership on the server worker and binds middleware to it", () => {
+  it("keeps Durable Object ownership on the OpenNext worker", () => {
     const bindingNames = [
       "NEXT_CACHE_DO_QUEUE",
       "NEXT_TAG_CACHE_DO_SHARDED",
@@ -65,17 +61,21 @@ describe("cloudflare deploy workflow", () => {
     ]
 
     for (const bindingName of bindingNames) {
-      expect(readDurableObjectScriptTarget(serverWranglerContent, bindingName)).toBeNull()
-      expect(readDurableObjectScriptTarget(middlewareWranglerContent, bindingName)).toBe(
-        "dryapi-site",
-      )
+      expect(readDurableObjectScriptTarget(rootWranglerContent, bindingName)).toBeNull()
     }
+  })
 
-    expect(serverWorkerContent).toContain('export { DOQueueHandler }')
-    expect(serverWorkerContent).toContain('export { DOShardedTagCache }')
-    expect(serverWorkerContent).toContain('export { BucketCachePurge }')
-    expect(middlewareWorkerContent).toContain('export { DOQueueHandler }')
-    expect(middlewareWorkerContent).toContain('export { DOShardedTagCache }')
-    expect(middlewareWorkerContent).toContain('export { BucketCachePurge }')
+  it("removes the split-worker artifacts", () => {
+    const removedPaths = [
+      "cloudflare/site/server-worker.js",
+      "cloudflare/site/middleware-worker.js",
+      "wrangler.server.jsonc",
+      "wrangler.middleware.jsonc",
+      "scripts/cf-deploy-multi-worker.ts",
+    ]
+
+    for (const relativePath of removedPaths) {
+      expect(existsSync(resolve(process.cwd(), relativePath))).toBe(false)
+    }
   })
 })

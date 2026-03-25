@@ -41,7 +41,7 @@
     "db:migrate": "tsx scripts/apply-migrations.ts",
     "cf:build": "pnpm dotenv -e .env -- bash -c 'rm -rf .open-next && tinacms build --local --skip-cloud-checks && opennextjs-cloudflare build && pnpm sitemap'",
     "cf:preview": "opennextjs-cloudflare preview",
-    "cf:deploy:only": "tsx scripts/cf-deploy-multi-worker.ts",
+    "cf:deploy:only": "pnpm exec wrangler deploy --config wrangler.jsonc",
     "cf:deploy": "npm run -s cf:build && npm run -s cf:deploy:only",
     "cf:secrets:sync:all": "bash ./scripts/sync-worker-secrets-from-env.sh --env-file .env",
     "cf:chatbot:ai-search:sync": "bash ./scripts/cf-chatbot-ai-search-sync.sh --env-file .env --config wrangler.jsonc",
