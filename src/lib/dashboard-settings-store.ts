@@ -77,7 +77,7 @@ const webhookTableReady = new WeakSet<object>();
 const webhookTableReadyPromises = new WeakMap<object, Promise<void>>();
 
 const {
-  getPrimaryBindingAsync: getPrimaryMetadataBindingAsync,
+  getSqlDbAsync: getPrimaryMetadataSqlDbAsync,
   getPrimaryDbAsync: getPrimaryMetadataDbAsync,
 } = createCloudflareDbAccessors(HYPERDRIVE_BINDING_PRIORITY, {
   dashboardSettingsProfiles,
@@ -159,30 +159,30 @@ async function ensureWebhookTable(db: D1DatabaseLike): Promise<void> {
 }
 
 async function ensurePrimaryMetadataTable(): Promise<void> {
-  const binding = await getPrimaryMetadataBindingAsync();
-  const bindingObject = binding as object;
+  const db = await getPrimaryMetadataSqlDbAsync();
+  const dbObject = db as object;
 
-  if (settingsTableReady.has(bindingObject)) {
+  if (settingsTableReady.has(dbObject)) {
     return;
   }
 
-  const existingPromise = settingsTableReadyPromises.get(bindingObject);
+  const existingPromise = settingsTableReadyPromises.get(dbObject);
   if (existingPromise) {
     await existingPromise;
     return;
   }
 
   const pendingPromise = (async () => {
-    await ensureTable(binding as unknown as D1DatabaseLike);
-    await ensureWebhookTable(binding as unknown as D1DatabaseLike);
-    settingsTableReady.add(bindingObject);
-    settingsTableReadyPromises.delete(bindingObject);
+    await ensureTable(db);
+    await ensureWebhookTable(db);
+    settingsTableReady.add(dbObject);
+    settingsTableReadyPromises.delete(dbObject);
   })().catch((error) => {
-    settingsTableReadyPromises.delete(bindingObject);
+    settingsTableReadyPromises.delete(dbObject);
     throw error;
   });
 
-  settingsTableReadyPromises.set(bindingObject, pendingPromise);
+  settingsTableReadyPromises.set(dbObject, pendingPromise);
   await pendingPromise;
 }
 
@@ -515,10 +515,10 @@ export async function getDashboardSettingsForUser(
   }
 
   await ensurePrimaryMetadataTable();
-  const binding = await getPrimaryMetadataBindingAsync();
-  const row = await selectRow(binding as unknown as D1DatabaseLike, resolvedEmail);
+  const sqlDb = await getPrimaryMetadataSqlDbAsync();
+  const row = await selectRow(sqlDb, resolvedEmail);
   const webhookRows = normalizeWebhookRows(
-    await selectWebhookRows(binding as unknown as D1DatabaseLike, resolvedEmail),
+    await selectWebhookRows(sqlDb, resolvedEmail),
   );
   return normalizeBundleFromRow(row, webhookRows);
 }
@@ -549,10 +549,10 @@ export async function updateDashboardSettingsSection(
     currentSettings = normalizeBundleFromRow(currentRow, currentWebhookRows);
   } else {
     await ensurePrimaryMetadataTable();
-    const binding = await getPrimaryMetadataBindingAsync();
-    const currentRow = await selectRow(binding as unknown as D1DatabaseLike, resolvedEmail);
+    const sqlDb = await getPrimaryMetadataSqlDbAsync();
+    const currentRow = await selectRow(sqlDb, resolvedEmail);
     const currentWebhookRows = normalizeWebhookRows(
-      await selectWebhookRows(binding as unknown as D1DatabaseLike, resolvedEmail),
+      await selectWebhookRows(sqlDb, resolvedEmail),
     );
     currentSettings = normalizeBundleFromRow(currentRow, currentWebhookRows);
   }
@@ -616,12 +616,12 @@ export async function updateDashboardSettingsSection(
   });
 
   if (params.section === "webhooks") {
-    const binding = await getPrimaryMetadataBindingAsync()
+    const sqlDb = await getPrimaryMetadataSqlDbAsync()
     await upsertWebhookRows({
       userEmail: resolvedEmail,
       webhooks: nextSettings.webhooks.webhooks,
-      existingRows: await selectWebhookRows(binding as unknown as D1DatabaseLike, resolvedEmail),
-      db: binding as unknown as D1DatabaseLike,
+      existingRows: await selectWebhookRows(sqlDb, resolvedEmail),
+      db: sqlDb,
     })
   }
 
@@ -702,8 +702,8 @@ export async function updateDashboardWebhookHealth(
   }
 
   await ensurePrimaryMetadataTable();
-  const binding = await getPrimaryMetadataBindingAsync();
-  const existingRows = await selectWebhookRows(binding as unknown as D1DatabaseLike, resolvedEmail)
+  const sqlDb = await getPrimaryMetadataSqlDbAsync();
+  const existingRows = await selectWebhookRows(sqlDb, resolvedEmail)
   const existingRow = existingRows.find((row) => row.webhookId === params.webhookId)
 
   if (!existingRow) {
@@ -723,7 +723,7 @@ export async function updateDashboardWebhookHealth(
     lastAlertAt: params.health.lastAlertAt ?? existingRow.lastAlertAt,
   }
 
-  await (binding as unknown as D1DatabaseLike)
+  await sqlDb
     .prepare(
       `
       UPDATE dashboard_webhooks
@@ -757,7 +757,7 @@ export async function updateDashboardWebhookHealth(
     )
     .run()
 
-  const updatedRows = await selectWebhookRows(binding as unknown as D1DatabaseLike, resolvedEmail)
+  const updatedRows = await selectWebhookRows(sqlDb, resolvedEmail)
   const updatedRow = updatedRows.find((row) => row.webhookId === params.webhookId)
   return updatedRow ? normalizeWebhookRow(updatedRow) : null
 }
