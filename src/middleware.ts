@@ -22,7 +22,6 @@ import {
   resolvePerfSlowThresholdMs,
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
-import { resolveDashboardSessionSnapshotFromToken } from "@/lib/dashboard-session"
 
 const SUCCESS_PATH = "/success"
 const DASHBOARD_PREFIX = "/dashboard"
@@ -228,7 +227,29 @@ async function fetchDashboardSessionSnapshot(
       cookie: summarizeCookieHeader(request.headers.get("cookie")),
     })
 
-    const snapshot = await resolveDashboardSessionSnapshotFromToken(sessionToken)
+    const sessionSnapshotUrl = new URL("/api/internal/auth/session-snapshot", request.nextUrl.origin)
+    const sessionResponse = await fetch(sessionSnapshotUrl.toString(), {
+      headers: {
+        cookie: request.headers.get("cookie") ?? "",
+      },
+    })
+
+    let snapshot: DashboardSessionSnapshot | null = null
+    if (sessionResponse.ok) {
+      const data = await sessionResponse.json() as Record<string, unknown>
+      const userId = typeof data.userId === "string" && data.userId ? data.userId : null
+      const userRole = typeof data.userRole === "string" && data.userRole ? data.userRole : null
+      if (data.authenticated === true && userId && userRole) {
+        snapshot = {
+          authenticated: true,
+          email: typeof data.email === "string" && data.email ? data.email : null,
+          userId,
+          userRole,
+          activeOrganizationId: typeof data.activeOrganizationId === "string" && data.activeOrganizationId ? data.activeOrganizationId : null,
+          expiresAtMs: typeof data.expiresAtMs === "number" ? data.expiresAtMs : null,
+        }
+      }
+    }
 
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
 
