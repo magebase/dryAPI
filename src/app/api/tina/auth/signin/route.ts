@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getConfiguredSocialProviders } from "@/lib/auth";
-import { resolveAuthInvocationOrigin } from "@/lib/auth-handler-proxy";
 
 const DEFAULT_PROVIDER = "google";
 const DEFAULT_CALLBACK_PATH = "/admin/index.html";
@@ -65,7 +64,7 @@ function resolveCallbackPath(
 }
 
 export async function GET(request: NextRequest) {
-  const authOrigin = resolveAuthInvocationOrigin(request);
+  const authOrigin = request.nextUrl.origin;
   const callbackUrl = resolveCallbackPath(
     authOrigin,
     request.nextUrl.searchParams.get("callbackUrl"),

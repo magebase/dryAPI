@@ -15,7 +15,6 @@ import { POST } from "@/app/api/tina/auth/logout/route"
 
 describe("POST /api/tina/auth/logout", () => {
   beforeEach(() => {
-    vi.stubEnv("BETTER_AUTH_URL", "https://auth.example.com/base")
     fetchMock.mockReset()
     fetchMock.mockResolvedValue(
       new Response("", {
@@ -31,7 +30,7 @@ describe("POST /api/tina/auth/logout", () => {
     vi.restoreAllMocks()
   })
 
-  it("uses the configured auth origin for the sign-out request", async () => {
+  it("uses the request origin for the sign-out request", async () => {
     const request = new NextRequest("https://spoofed.example.com/api/tina/auth/logout", {
       method: "POST",
       headers: {
@@ -45,11 +44,11 @@ describe("POST /api/tina/auth/logout", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
     const [input, init] = fetchMock.mock.calls[0] as [string | URL, RequestInit]
-    expect(String(input)).toBe("https://auth.example.com/api/auth/sign-out")
+    expect(String(input)).toBe("https://spoofed.example.com/api/auth/sign-out")
 
     const headers = new Headers(init.headers)
-    expect(headers.get("origin")).toBe("https://auth.example.com")
-    expect(headers.get("referer")).toBe("https://auth.example.com")
+    expect(headers.get("origin")).toBe("https://spoofed.example.com")
+    expect(headers.get("referer")).toBe("https://spoofed.example.com")
     expect(headers.get("cookie")).toBe("sid=1")
     expect(response.headers.get("set-cookie")).toBe("sid=logout; Path=/; HttpOnly")
   })

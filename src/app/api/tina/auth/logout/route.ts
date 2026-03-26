@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { resolveAuthInvocationOrigin } from "@/lib/auth-handler-proxy";
-
 export async function POST(request: NextRequest) {
-  const authOrigin = resolveAuthInvocationOrigin(request);
+  const authOrigin = request.nextUrl.origin;
 
   const signOutResponse = await fetch(
     new URL("/api/auth/sign-out", authOrigin),
