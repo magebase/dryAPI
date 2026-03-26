@@ -22,11 +22,11 @@ import {
   resolvePerfSlowThresholdMs,
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
-import { resolveDashboardSessionSnapshotFromToken } from "@/lib/dashboard-session"
 
 const SUCCESS_PATH = "/success"
 const DASHBOARD_PREFIX = "/dashboard"
 const DASHBOARD_API_PREFIX = "/api/dashboard"
+const INTERNAL_SESSION_SNAPSHOT_PATH = "/api/internal/auth/session-snapshot"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
 const SESSION_COOKIE_NAMES = ["__Secure-better-auth.session_token", "better-auth.session_token"] as const
 const SESSION_CHECK_CACHE_TTL_MS = 60_000
@@ -56,7 +56,67 @@ type SessionAuthCacheEntry = {
   expiresAt: number
 }
 
+type SessionSnapshotResponse = {
+  authenticated?: boolean
+  email?: string | null
+  userId?: string | null
+  userRole?: string | null
+  activeOrganizationId?: string | null
+  expiresAtMs?: number | string | null
+}
+
 const sessionAuthCache = new Map<string, SessionAuthCacheEntry>()
+
+function resolveInternalRequestOrigin(request: NextRequest): string {
+  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+
+  if (configuredSiteUrl) {
+    try {
+      return new URL(configuredSiteUrl).origin
+    } catch {
+      // Fall through to the current request origin.
+    }
+  }
+
+  return request.nextUrl.origin
+}
+
+function parseSessionSnapshotResponse(payload: unknown): DashboardSessionSnapshot | null {
+  if (!payload || typeof payload !== "object") {
+    return null
+  }
+
+  const snapshot = payload as SessionSnapshotResponse
+  if (snapshot.authenticated !== true) {
+    return null
+  }
+
+  const userId = typeof snapshot.userId === "string" ? snapshot.userId.trim() : ""
+  const userRole = typeof snapshot.userRole === "string" ? snapshot.userRole.trim() : ""
+
+  if (!userId || !userRole) {
+    return null
+  }
+
+  const expiresAtMs =
+    typeof snapshot.expiresAtMs === "number" && Number.isFinite(snapshot.expiresAtMs)
+      ? snapshot.expiresAtMs
+      : typeof snapshot.expiresAtMs === "string" && snapshot.expiresAtMs.trim().length > 0
+        ? Number(snapshot.expiresAtMs)
+        : null
+
+  return {
+    authenticated: true,
+    email: typeof snapshot.email === "string" && snapshot.email.trim().length > 0 ? snapshot.email.trim() : null,
+    userId,
+    userRole,
+    activeOrganizationId:
+      typeof snapshot.activeOrganizationId === "string" && snapshot.activeOrganizationId.trim().length > 0
+        ? snapshot.activeOrganizationId.trim()
+        : null,
+    expiresAtMs: expiresAtMs !== null && Number.isFinite(expiresAtMs) ? expiresAtMs : null,
+  }
+}
 function isDeprecatedCrmPath(pathname: string): boolean {
   return (
     pathname === "/crm"
@@ -228,14 +288,27 @@ async function fetchDashboardSessionSnapshot(
       cookie: summarizeCookieHeader(request.headers.get("cookie")),
     })
 
-    const snapshot = await resolveDashboardSessionSnapshotFromToken(sessionToken)
+    const origin = resolveInternalRequestOrigin(request)
+    const sessionSnapshotUrl = new URL(INTERNAL_SESSION_SNAPSHOT_PATH, origin)
+    const response = await fetch(sessionSnapshotUrl, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        accept: "application/json",
+        cookie: `better-auth.session_token=${sessionToken}`,
+        "x-request-id": traceId,
+      },
+    })
+
+    const payload = (await response.json().catch(() => null)) as unknown
+    const snapshot = response.ok ? parseSessionSnapshotResponse(payload) : null
 
     const durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt) * 100) / 100
 
     logServerAuthEvent("log", "middleware.dashboard.session-fetch.result", {
       traceId,
       authenticated: snapshot !== null,
-      status: 200,
+      status: response.status,
       durationMs,
     })
 
@@ -244,7 +317,7 @@ async function fetchDashboardSessionSnapshot(
         traceId,
         pathname: request.nextUrl.pathname,
         authenticated: snapshot !== null,
-        status: 200,
+        status: response.status,
         durationMs,
         slowThresholdMs: SESSION_CHECK_SLOW_MS,
       })
@@ -253,7 +326,7 @@ async function fetchDashboardSessionSnapshot(
         traceId,
         pathname: request.nextUrl.pathname,
         authenticated: snapshot !== null,
-        status: 200,
+        status: response.status,
         durationMs,
       })
     }
@@ -400,6 +473,10 @@ function resolveVersionedDocsPath(pathname: string): string | null {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  if (pathname === INTERNAL_SESSION_SNAPSHOT_PATH) {
+    return NextResponse.next()
+  }
 
   if (isPhpProbePath(pathname)) {
     return new NextResponse("Not Found", { status: 404 })

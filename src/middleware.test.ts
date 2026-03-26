@@ -1,28 +1,9 @@
 import { NextRequest } from "next/server"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const { internalWorkerFetchMock } = vi.hoisted(() => ({
-  internalWorkerFetchMock: vi.fn(),
-}))
-
-vi.mock("@/lib/internal-worker-fetch", () => ({
-  internalWorkerFetch: internalWorkerFetchMock,
-}))
-
-vi.mock("@/lib/dashboard-session", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/dashboard-session")>()
-  return {
-    ...actual,
-    resolveDashboardSessionSnapshotFromToken: vi.fn(),
-  }
-})
+const fetchMock = vi.fn()
 
 import { middleware } from "@/middleware"
-import { resolveDashboardSessionSnapshotFromToken } from "@/lib/dashboard-session"
-
-const resolveDashboardSessionSnapshotFromTokenMock = vi.mocked(
-  resolveDashboardSessionSnapshotFromToken,
-)
 
 function makeSessionSnapshot() {
   return {
@@ -35,17 +16,42 @@ function makeSessionSnapshot() {
   }
 }
 
+function makeSessionSnapshotResponse(snapshot: ReturnType<typeof makeSessionSnapshot> | null) {
+  return new Response(
+    JSON.stringify(snapshot ? snapshot : { authenticated: false }),
+    {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+      },
+    },
+  )
+}
+
 describe("dashboard middleware auth checks", () => {
+  beforeEach(() => {
+    fetchMock.mockReset()
+    vi.stubGlobal("fetch", fetchMock)
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
-    internalWorkerFetchMock.mockReset()
-    resolveDashboardSessionSnapshotFromTokenMock.mockReset()
+    vi.unstubAllGlobals()
+  })
+
+  it("bypasses the internal session snapshot route to avoid auth recursion", async () => {
+    const request = new NextRequest(
+      "https://dryapi.dev/api/internal/auth/session-snapshot",
+    )
+
+    const response = await middleware(request)
+
+    expect(response.status).toBe(200)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("authenticates dashboard RSC requests with the shared session resolver", async () => {
-    resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(
-      makeSessionSnapshot(),
-    )
+    fetchMock.mockResolvedValue(makeSessionSnapshotResponse(makeSessionSnapshot()))
 
     const request = new NextRequest(
       "https://dryapi.dev/dashboard/settings/api-keys?_rsc=ua385",
@@ -60,16 +66,25 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledTimes(1)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledWith(
-      "session_rsc",
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    const [requestUrl, requestInit] = fetchMock.mock.calls[0] ?? []
+    expect(requestUrl instanceof URL ? requestUrl.href : String(requestUrl)).toBe(
+      "https://dryapi.dev/api/internal/auth/session-snapshot",
     )
+    expect(requestInit).toMatchObject({
+      method: "GET",
+      cache: "no-store",
+    })
+
+    const requestHeaders = new Headers(requestInit?.headers as HeadersInit)
+    expect(requestHeaders.get("accept")).toBe("application/json")
+    expect(requestHeaders.get("cookie")).toBe("better-auth.session_token=session_rsc")
+    expect(requestHeaders.get("x-request-id")).toMatch(/^mn[0-9a-z-]+$/)
   })
 
   it("checks auth session for dashboard document requests", async () => {
-    resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(
-      makeSessionSnapshot(),
-    )
+    fetchMock.mockResolvedValue(makeSessionSnapshotResponse(makeSessionSnapshot()))
 
     const request = new NextRequest("https://dryapi.dev/dashboard/settings", {
       headers: new Headers({
@@ -80,10 +95,7 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledTimes(1)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledWith(
-      "session_doc",
-    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("redirects dashboard requests without a session cookie to login", async () => {
@@ -96,14 +108,13 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(307)
-    expect(internalWorkerFetchMock).not.toHaveBeenCalled()
-    expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("does not cache a transient dashboard auth miss", async () => {
-    resolveDashboardSessionSnapshotFromTokenMock
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(makeSessionSnapshot())
+    fetchMock
+      .mockResolvedValueOnce(makeSessionSnapshotResponse(null))
+      .mockResolvedValueOnce(makeSessionSnapshotResponse(makeSessionSnapshot()))
 
     const request = new NextRequest("https://dryapi.dev/dashboard/settings", {
       headers: new Headers({
@@ -117,21 +128,11 @@ describe("dashboard middleware auth checks", () => {
 
     expect(firstResponse.status).toBe(307)
     expect(secondResponse.status).toBe(200)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledTimes(2)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenNthCalledWith(
-      1,
-      "session_race",
-    )
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenNthCalledWith(
-      2,
-      "session_race",
-    )
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it("prefers the secure Better Auth session cookie when both variants are present", async () => {
-    resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(
-      makeSessionSnapshot(),
-    )
+    fetchMock.mockResolvedValue(makeSessionSnapshotResponse(makeSessionSnapshot()))
 
     const request = new NextRequest("https://dryapi.dev/dashboard/settings", {
       headers: new Headers({
@@ -143,10 +144,11 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledTimes(1)
-    expect(resolveDashboardSessionSnapshotFromTokenMock).toHaveBeenCalledWith(
-      "secure_session",
-    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const requestHeaders = new Headers(requestInit?.headers)
+    expect(requestHeaders.get("cookie")).toBe("better-auth.session_token=secure_session")
   })
 
   it("passes dashboard API requests without auth lookup when session cookie is missing", async () => {
@@ -159,8 +161,7 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(internalWorkerFetchMock).not.toHaveBeenCalled()
-    expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("passes public marketing requests through without auth lookup", async () => {
@@ -169,8 +170,7 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(200)
-    expect(internalWorkerFetchMock).not.toHaveBeenCalled()
-    expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("returns 404 for deprecated crm paths", async () => {
@@ -179,7 +179,6 @@ describe("dashboard middleware auth checks", () => {
     const response = await middleware(request)
 
     expect(response.status).toBe(404)
-    expect(internalWorkerFetchMock).not.toHaveBeenCalled()
-    expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
