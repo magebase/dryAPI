@@ -3,12 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import RootLayout from "./layout";
 
-vi.mock("next/font/google", () => ({
-  Manrope: () => ({ variable: "--font-manrope" }),
-  DM_Sans: () => ({ variable: "--font-dm-sans" }),
-  Fira_Code: () => ({ variable: "--font-fira-code" }),
-}));
-
 vi.mock("@/lib/feature-flags", () => ({
   isPwaEnabledServer: () => false,
 }));

@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..900&family=Fira+Code:wght@300..700&family=Manrope:wght@200..800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -82,6 +83,11 @@
   --site-text-inverse-muted: #d7e6f2;
   --site-text-inverse-soft: #bacbd9;
   --radius: 0.325rem;
+  --font-manrope: "Manrope", "Aptos", "Segoe UI", sans-serif;
+  --font-dm-sans: "DM Sans", "Aptos", "Segoe UI", sans-serif;
+  --font-fira-code: "Fira Code", "SFMono-Regular", "Consolas", monospace;
+  --font-body: var(--font-dm-sans);
+  --font-heading: var(--font-manrope);
 
   /* Landing CTA gradient tokens */
   --cta-cool-a: #45a6f5;

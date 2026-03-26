@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Manrope, DM_Sans, Fira_Code } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { readSiteConfig } from "@/lib/site-content-loader";
 import { isPwaEnabledServer } from "@/lib/feature-flags";
@@ -11,51 +10,6 @@ import { SerwistRegister } from "@/components/site/serwist-register";
 import { buildTakumiMetadata, normalizeSiteUrl } from "@/lib/og/metadata";
 import "./globals.css";
 import "aos/dist/aos.css";
-import { cn } from "@/lib/utils";
-
-const firaCode = Fira_Code({
-  subsets: [
-    "cyrillic",
-    "cyrillic-ext",
-    "greek",
-    "greek-ext",
-    "latin",
-    "latin-ext",
-    "symbols2",
-  ],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-fira-code",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin", "latin-ext"],
-  weight: [
-    "100",
-    "1000",
-    "200",
-    "300",
-    "400",
-    "500",
-    "600",
-    "700",
-    "800",
-    "900",
-  ],
-  variable: "--font-dm-sans",
-});
-
-const manrope = Manrope({
-  subsets: [
-    "cyrillic",
-    "cyrillic-ext",
-    "greek",
-    "latin",
-    "latin-ext",
-    "vietnamese",
-  ],
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
-  variable: "--font-manrope",
-});
 
 const FALLBACK_SITE_URL = "https://dryapi.dev";
 
@@ -127,18 +81,9 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={cn(
-        "font-manrope",
-        "font-dm-sans",
-        "font-fira-code",
-        manrope.variable,
-        dmSans.variable,
-        firaCode.variable,
-      )}
+      className="font-manrope font-dm-sans font-fira-code"
     >
-      <body
-        className={`${manrope.variable} ${dmSans.variable} ${firaCode.variable} m-0 antialiased`}
-      >
+      <body className="m-0 antialiased">
         <NuqsAdapter>
           <AppProviders>
             {pwaEnabled ? <SerwistRegister /> : null}
