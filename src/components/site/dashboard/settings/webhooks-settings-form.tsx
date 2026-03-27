@@ -90,6 +90,10 @@ function normalizeValidationState(health: WebhookHealth): WebhookValidationState
   return "unknown"
 }
 
+function isValidWebhookEndpointUrl(value: string): boolean {
+  return dashboardWebhookEntrySchema.shape.endpointUrl.safeParse(value).success
+}
+
 function formatCheckedAt(value: number | null): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "Never"
@@ -269,10 +273,12 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
   }, [form, webhooksSettingsQuery.data])
 
   const webhooks = useStore(form.store, (state) => state.values.webhooks)
+  const hasWebhookUrlErrors = webhooks.some((webhook) => !isValidWebhookEndpointUrl(webhook.endpointUrl))
   const canSave = webhooks.length === 0 || webhooks.every((webhook) => {
     const state = normalizeValidationState(webhook.health)
     return state === "healthy" && webhook.health.lastStatusCode === 200
   })
+  const canSubmit = canSave && !hasWebhookUrlErrors
   const pendingValidationId = validationMutation.variables ? validationMutation.variables.webhook.id : null
 
   if (webhooksSettingsQuery.isLoading) {
@@ -464,7 +470,13 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                             size="icon"
                             className={validationState === "healthy" ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300" : ""}
                             aria-label={`Validate ${webhook.name || `webhook ${index + 1}`}`}
-                            disabled={isValidationPending || !webhook.endpointUrl.trim() || !webhook.signingSecret.trim()}
+                            disabled={
+                              isValidationPending ||
+                              !webhook.endpointUrl.trim() ||
+                              !webhook.signingSecret.trim() ||
+                              !isValidWebhookEndpointUrl(webhook.endpointUrl) ||
+                              Boolean(endpointUrlErrors[webhook.id])
+                            }
                             onClick={() => {
                               form.setFieldValue(`webhooks[${index}].health`, {
                                 ...webhook.health,
@@ -581,7 +593,7 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
         <p className="text-xs text-muted-foreground">
           Health checks are rate-limited to keep repeated failures from generating noisy emails. Every webhook must respond with HTTP 200 before the settings can be saved.
         </p>
-        <Button type="submit" disabled={saveMutation.isPending || form.state.isSubmitting || validationMutation.isPending || !canSave}>
+        <Button type="submit" disabled={saveMutation.isPending || form.state.isSubmitting || validationMutation.isPending || !canSubmit}>
           {saveMutation.isPending || form.state.isSubmitting ? "Saving..." : "Save"}
         </Button>
       </div>

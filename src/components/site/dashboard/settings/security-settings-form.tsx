@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
-import { EmailOtpSettingsCard } from "@/components/site/dashboard/settings/email-otp-settings-card"
 import {
   DASHBOARD_SETTINGS_DEFAULTS,
   dashboardSecuritySettingsFormSchema,
@@ -154,10 +153,6 @@ export function SecuritySettingsForm({ initialValues }: SecuritySettingsFormProp
         void form.handleSubmit()
       }}
     >
-      <div className="space-y-4">
-        <EmailOtpSettingsCard />
-      </div>
-
       <section className="space-y-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           <Bell className="size-4" /> Workspace Guardrails

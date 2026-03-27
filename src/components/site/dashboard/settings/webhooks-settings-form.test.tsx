@@ -175,4 +175,25 @@ describe("WebhooksSettingsForm", () => {
     expect(await screen.findByText("Enter a valid webhook URL.")).toBeInTheDocument()
     expect(toastError).not.toHaveBeenCalled()
   })
+
+  it("keeps validation disabled while the webhook URL is invalid", async () => {
+    renderForm()
+
+    const input = screen.getByPlaceholderText("https://api.example.com/webhooks/dryapi")
+    const validateButton = screen.getByRole("button", { name: "Validate Primary" })
+
+    expect(validateButton).toBeEnabled()
+
+    fireEvent.change(input, { target: { value: "not-a-url" } })
+
+    expect(await screen.findByText("Enter a valid webhook URL.")).toBeInTheDocument()
+    expect(validateButton).toBeDisabled()
+
+    fireEvent.change(input, { target: { value: "https://hooks.example.com/dryapi" } })
+
+    await waitFor(() => {
+      expect(screen.queryByText("Enter a valid webhook URL.")).not.toBeInTheDocument()
+      expect(validateButton).toBeEnabled()
+    })
+  })
 })
