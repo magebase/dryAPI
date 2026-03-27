@@ -2,7 +2,7 @@
 /* eslint-disable react/no-children-prop */
 
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useMutation } from "@tanstack/react-query"
@@ -10,6 +10,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
+import { resolveAuthCallbackErrorMessage } from "@/lib/auth-callback-error"
 import { resolveLocalCallbackUrl } from "@/lib/auth-callback-url"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 import { buildCaptchaHeaders } from "@/lib/auth-captcha"
@@ -45,6 +46,7 @@ function resolveAuthErrorMessage(
 }
 
 export default function RegisterPage() {
+  const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -192,6 +194,33 @@ export default function RegisterPage() {
       description: error,
     })
   }, [error])
+
+  useEffect(() => {
+    const hasCallbackIssue = Boolean(searchParams?.get("error") || searchParams?.get("message"))
+    if (!hasCallbackIssue) {
+      return
+    }
+
+    const callbackError = resolveAuthCallbackErrorMessage(
+      searchParams?.get("error"),
+      searchParams?.get("message"),
+      "Unable to continue with Google.",
+    )
+
+    logClientAuthEvent("warn", "register.callback.error", {
+      error: searchParams?.get("error"),
+      hasMessage: Boolean(searchParams?.get("message")),
+    })
+
+    setError(callbackError)
+
+    const nextSearchParams = new URLSearchParams(searchParams?.toString())
+    nextSearchParams.delete("error")
+    nextSearchParams.delete("message")
+
+    const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname
+    router.replace(toRoute(nextUrl))
+  }, [pathname, router, searchParams])
 
   async function handleSocialSignUp(provider: SocialProvider) {
     const traceId = createAuthTraceId(undefined)

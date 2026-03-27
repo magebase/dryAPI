@@ -107,6 +107,7 @@ async function loadSessionProfile(headerStore: HeaderStore): Promise<SessionProf
 
   const sessionToken = readDashboardSessionTokenFromCookieHeader(
     headerStore.get("cookie"),
+    process.env.BETTER_AUTH_SECRET,
   )
   if (!sessionToken) {
     return {

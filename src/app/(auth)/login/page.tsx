@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 
 import { TurnstileWidget } from "@/components/site/turnstile-widget"
+import { resolveAuthCallbackErrorMessage } from "@/lib/auth-callback-error"
 import { createAuthTraceId, logClientAuthEvent, redactEmail } from "@/lib/auth-debug"
 import { buildCaptchaHeaders } from "@/lib/auth-captcha"
 import { buildSocialSignInRequestBody } from "@/lib/auth-social-sign-in"
@@ -70,6 +71,8 @@ export default function LoginPage() {
       verify: parseAsString,
       email: parseAsString,
       password: parseAsString,
+      error: parseAsString,
+      message: parseAsString,
     },
     {
       history: "replace",
@@ -274,6 +277,27 @@ export default function LoginPage() {
       description: error,
     })
   }, [error])
+
+  useEffect(() => {
+    const hasCallbackIssue = Boolean(authQuery.error || authQuery.message)
+    if (!hasCallbackIssue) {
+      return
+    }
+
+    const callbackError = resolveAuthCallbackErrorMessage(
+      authQuery.error,
+      authQuery.message,
+      "Unable to sign in with Google.",
+    )
+
+    logClientAuthEvent("warn", "login.callback.error", {
+      error: authQuery.error,
+      hasMessage: Boolean(authQuery.message),
+    })
+
+    setError(callbackError)
+    void setAuthQuery({ error: null, message: null })
+  }, [authQuery.error, authQuery.message, setAuthQuery])
 
   async function handleSocialSignIn(provider: SocialProvider) {
     const traceId = createAuthTraceId(undefined)

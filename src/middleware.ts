@@ -16,6 +16,7 @@ import {
   summarizeCookieHeader,
 } from "@/lib/auth-debug"
 import { isPhpProbePath } from "@/lib/blocked-routes"
+import { readDashboardSessionTokenFromCookieHeader } from "@/lib/dashboard-session"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 import {
   logServerPerfEvent,
@@ -28,7 +29,6 @@ const DASHBOARD_PREFIX = "/dashboard"
 const DASHBOARD_API_PREFIX = "/api/dashboard"
 const INTERNAL_SESSION_SNAPSHOT_PATH = "/api/internal/auth/session-snapshot"
 const AUTH_PAGE_PATHS = new Set(["/login", "/register"])
-const SESSION_COOKIE_NAMES = ["__Secure-better-auth.session_token", "better-auth.session_token"] as const
 const SESSION_CHECK_CACHE_TTL_MS = 60_000
 const SESSION_CHECK_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_SESSION_CHECK_SLOW_MS", 150)
 const DASHBOARD_SESSION_SOURCE_HEADER = "x-dryapi-dashboard-auth-source"
@@ -180,14 +180,10 @@ function isPrefetchRequest(request: NextRequest): boolean {
 }
 
 function readSessionToken(request: NextRequest): string | null {
-  for (const cookieName of SESSION_COOKIE_NAMES) {
-    const token = request.cookies.get(cookieName)?.value?.trim()
-    if (token) {
-      return token
-    }
-  }
-
-  return null
+  return readDashboardSessionTokenFromCookieHeader(
+    request.headers.get("cookie"),
+    process.env.BETTER_AUTH_SECRET,
+  )
 }
 
 function readCachedSessionEntry(sessionToken: string): SessionAuthCacheEntry | null {

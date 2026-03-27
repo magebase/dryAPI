@@ -145,6 +145,7 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
 
   const sessionToken = readDashboardSessionTokenFromCookieHeader(
     request.headers.get("cookie"),
+    process.env.BETTER_AUTH_SECRET,
   )
   if (!sessionToken) {
     return {

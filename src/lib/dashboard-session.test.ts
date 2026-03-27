@@ -1,3 +1,5 @@
+import { createHmac } from "node:crypto"
+
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 const { getSqlDbAsyncMock } = vi.hoisted(() => ({
@@ -72,6 +74,31 @@ describe("dashboard-session", () => {
         "better-auth.session_token=stale_session; __Secure-better-auth.session_token=secure_session",
       ),
     ).toBe("secure_session")
+  })
+
+  it("verifies a signed session token when the auth secret is available", () => {
+    const secret = "test-secret"
+    const signature = createHmac("sha256", secret).update("session_1").digest("base64")
+    const signedToken = `session_1.${signature}`
+
+    expect(
+      readDashboardSessionTokenFromCookieHeader(
+        `better-auth.session_token=${signedToken}`,
+        secret,
+      ),
+    ).toBe("session_1")
+  })
+
+  it("rejects a tampered signed session token", () => {
+    const secret = "test-secret"
+    const signature = createHmac("sha256", secret).update("session_1").digest("base64")
+
+    expect(
+      readDashboardSessionTokenFromCookieHeader(
+        `better-auth.session_token=session_1.${signature.slice(0, -1)}x`,
+        secret,
+      ),
+    ).toBeNull()
   })
 
   it("round-trips snapshot headers", () => {

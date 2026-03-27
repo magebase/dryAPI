@@ -22,6 +22,7 @@ function buildUnauthenticatedResponse(): NextResponse {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const sessionToken = readDashboardSessionTokenFromCookieHeader(
     request.headers.get("cookie"),
+    process.env.BETTER_AUTH_SECRET,
   )
 
   if (!sessionToken) {

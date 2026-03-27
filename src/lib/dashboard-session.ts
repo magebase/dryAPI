@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "node:crypto"
+
 import {
   createCloudflareDbAccessors,
   HYPERDRIVE_BINDING_PRIORITY,
@@ -85,8 +87,35 @@ function isHeaderStore(value: unknown): value is { get: (name: string) => string
   return Boolean(value && typeof value === "object" && "get" in value)
 }
 
+function verifySignedCookieValue(cookieValue: string, secret: string): string | null {
+  const separatorIndex = cookieValue.lastIndexOf(".")
+
+  if (separatorIndex <= 0 || separatorIndex >= cookieValue.length - 1) {
+    return null
+  }
+
+  const value = cookieValue.slice(0, separatorIndex)
+  const signature = cookieValue.slice(separatorIndex + 1)
+  const expectedSignature = createHmac("sha256", secret).update(value).digest("base64")
+
+  if (signature.length !== expectedSignature.length) {
+    return null
+  }
+
+  try {
+    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+      return null
+    }
+  } catch {
+    return null
+  }
+
+  return value
+}
+
 export function readDashboardSessionTokenFromCookieHeader(
   cookieHeader: string | null | undefined,
+  secret?: string | null,
 ): string | null {
   const normalizedCookieHeader = cookieHeader?.trim()
   if (!normalizedCookieHeader) {
@@ -117,8 +146,18 @@ export function readDashboardSessionTokenFromCookieHeader(
 
   for (const cookieName of DASHBOARD_SESSION_COOKIE_NAMES) {
     const token = tokenMap.get(cookieName)
-    if (token && token.length > 0) {
+    if (!token || token.length <= 0) {
+      continue
+    }
+
+    const normalizedSecret = secret?.trim()
+    if (!normalizedSecret) {
       return token
+    }
+
+    const verifiedToken = verifySignedCookieValue(token, normalizedSecret)
+    if (verifiedToken) {
+      return verifiedToken
     }
   }
 
