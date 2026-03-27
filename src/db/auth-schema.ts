@@ -127,7 +127,7 @@ export const organization = pgTable(
     logo: text("logo"),
     metadata: text("metadata"),
     stripeCustomerId: text("stripecustomerid"),
-    createdAt: bigint("createdat", { mode: "number" }).notNull(),
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
   },
   (table) => ({
     slugUnique: uniqueIndex("idx_better_auth_organization_slug").on(table.slug),
@@ -147,7 +147,7 @@ export const member = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text("role").notNull().default("member"),
-    createdAt: bigint("createdat", { mode: "number" }).notNull(),
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
   },
   (table) => ({
     organizationIdIndex: index("idx_better_auth_member_organization_id").on(table.organizationId),
@@ -166,11 +166,11 @@ export const invitation = pgTable(
     email: text("email").notNull(),
     role: text("role"),
     status: text("status").notNull().default("pending"),
-    expiresAt: bigint("expiresat", { mode: "number" }).notNull(),
+    expiresAt: timestamp("expiresat", { mode: "date" }).notNull(),
     inviterId: text("inviterid")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    createdAt: bigint("createdat", { mode: "number" }).notNull(),
+    createdAt: timestamp("createdat", { mode: "date" }).notNull(),
   },
   (table) => ({
     organizationIdIndex: index("idx_better_auth_invitation_organization_id").on(table.organizationId),

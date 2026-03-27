@@ -101,7 +101,7 @@ const authBootstrapSql = [
     "logo" TEXT,
     "metadata" TEXT,
     "stripecustomerid" TEXT,
-    "createdat" BIGINT NOT NULL
+    "createdat" TIMESTAMPTZ NOT NULL
   );`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_organization_slug ON "organization" ("slug");`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_better_auth_organization_stripe_customer_id ON "organization" ("stripecustomerid");`,
@@ -111,7 +111,7 @@ const authBootstrapSql = [
     "organizationid" TEXT NOT NULL,
     "userid" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'member',
-    "createdat" BIGINT NOT NULL
+    "createdat" TIMESTAMPTZ NOT NULL
   );`,
   `CREATE INDEX IF NOT EXISTS idx_better_auth_member_organization_id ON "member" ("organizationid");`,
   `CREATE INDEX IF NOT EXISTS idx_better_auth_member_user_id ON "member" ("userid");`,
@@ -122,9 +122,9 @@ const authBootstrapSql = [
     "email" TEXT NOT NULL,
     "role" TEXT,
     "status" TEXT NOT NULL DEFAULT 'pending',
-    "expiresat" BIGINT NOT NULL,
+    "expiresat" TIMESTAMPTZ NOT NULL,
     "inviterid" TEXT NOT NULL,
-    "createdat" BIGINT NOT NULL
+    "createdat" TIMESTAMPTZ NOT NULL
   );`,
   `CREATE INDEX IF NOT EXISTS idx_better_auth_invitation_organization_id ON "invitation" ("organizationid");`,
   `CREATE INDEX IF NOT EXISTS idx_better_auth_invitation_email ON "invitation" ("email");`,
