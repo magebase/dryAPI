@@ -65,6 +65,19 @@ describe("dashboard-session-server", () => {
     ).toBe("session_1")
   })
 
+  it("verifies a URL-encoded signed session token", () => {
+    const secret = "test-secret"
+    const signature = createHmac("sha256", secret).update("session_1").digest("base64")
+    const signedToken = encodeURIComponent(`session_1.${signature}`)
+
+    expect(
+      readVerifiedDashboardSessionTokenFromCookieHeader(
+        `better-auth.session_token=${signedToken}`,
+        secret,
+      ),
+    ).toBe("session_1")
+  })
+
   it("rejects a tampered signed session token", () => {
     const secret = "test-secret"
     const signature = createHmac("sha256", secret).update("session_1").digest("base64")

@@ -23,6 +23,15 @@ function normalizeString(value: string | null | undefined): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
+function decodeCookieValue(value: string): string | null {
+  try {
+    const decoded = decodeURIComponent(value)
+    return decoded.trim().length > 0 ? decoded : null
+  } catch {
+    return null
+  }
+}
+
 function toEpochMilliseconds(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value
@@ -71,7 +80,7 @@ export function readDashboardSessionTokenFromCookieHeader(
     }
 
     const name = part.slice(0, separatorIndex).trim()
-    const value = part.slice(separatorIndex + 1).trim()
+    const value = decodeCookieValue(part.slice(separatorIndex + 1).trim())
     if (!name || !value) {
       continue
     }

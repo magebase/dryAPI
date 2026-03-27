@@ -35,6 +35,14 @@ describe("dashboard-session", () => {
     ).toBe("secure_session")
   })
 
+  it("decodes URL-encoded Better Auth session cookies", () => {
+    expect(
+      readDashboardSessionTokenFromCookieHeader(
+        "__Secure-better-auth.session_token=session_1.sig%3D%3D",
+      ),
+    ).toBe("session_1.sig==")
+  })
+
   it("round-trips snapshot headers", () => {
     const headers = new Headers()
 
