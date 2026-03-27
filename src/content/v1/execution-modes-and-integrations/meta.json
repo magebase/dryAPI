@@ -3,7 +3,7 @@
   "pages": [
     "execution-modes-and-http-queue",
     "mcp-server",
-    "n8n-deapi-node",
+    "n8n-dryapi-node",
     "n8n-integration",
     "webhooks",
     "websockets"

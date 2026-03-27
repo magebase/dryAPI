@@ -304,7 +304,7 @@ function buildPreviewPayload(
   );
 
   return {
-    model: model?.slug ?? "",
+    `curl --request POST ${apiEndpoint} \\`,
     input: {
       prompt,
       ...modelParams,
@@ -342,8 +342,10 @@ function buildCurlSnippet(
     2,
   );
 
+  const apiEndpoint = `${normalizeSiteUrl()}/api/v1/inference`;
+
   return [
-    "curl --request POST https://api.dryapi.dev/api/v1/inference \\",
+    `curl --request POST ${apiEndpoint} \\\`,
     '  --header "Authorization: Bearer <YOUR_API_KEY>" \\',
     '  --header "Content-Type: application/json" \\',
     "  --data '{",

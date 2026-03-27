@@ -29,6 +29,6 @@ describe("ModelsCatalog", () => {
     expect(cards).toHaveLength(2)
     expect(cards.some((card) => card.textContent?.includes("$0.006588"))).toBe(true)
     expect(cards.some((card) => card.textContent?.includes("$0.003670"))).toBe(true)
-    expect(cards[0]).toHaveTextContent("Copy Flux_2_Klein_4B_BF16")
+    expect(cards[0]).toHaveTextContent("Copy flux-2-klein-4b-bf16")
   })
 })

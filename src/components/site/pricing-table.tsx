@@ -75,6 +75,10 @@ type GroupedPricingRow = {
   latestScrapedAt: string;
 };
 
+function formatCountLabel(count: number, singular: string): string {
+  return `${count} ${count === 1 ? singular : `${singular}s`}`;
+}
+
 function formatUsd(amount: number | null): string {
   if (amount === null || !Number.isFinite(amount)) {
     return "N/A";
@@ -102,12 +106,12 @@ function formatCredits(amount: number | null): string {
 function toParamText(params: DeapiPricingPermutation["params"]): string {
   const entries = Object.entries(params);
   if (entries.length === 0) {
-    return "-";
+    return "";
   }
 
   const preview = entries
     .slice(0, 3)
-    .map(([key, value]) => `${key}=${String(value)}`);
+    .map(([key, value]) => `${key.replace(/[_-]+/g, " ")}=${String(value)}`);
   const suffix = entries.length > 3 ? ` (+${entries.length - 3} more)` : "";
 
   return preview.join(", ") + suffix;
@@ -793,12 +797,18 @@ export function PricingTable({
                           </TableCell>
                           <TableCell className="py-4">
                             <div className="max-w-[300px]">
-                              <p
-                                className="truncate text-xs text-slate-600"
-                                title={entry.representativeParamText}
-                              >
-                                {entry.representativeParamText}
-                              </p>
+                              {entry.representativeParamText ? (
+                                <p
+                                  className="truncate text-xs text-slate-600"
+                                  title={entry.representativeParamText}
+                                >
+                                  {entry.representativeParamText}
+                                </p>
+                              ) : (
+                                <p className="text-xs text-site-soft">
+                                  No extra parameters
+                                </p>
+                              )}
                               <p className="mt-1 text-[10px] text-site-soft">
                                 Default for {entry.commonParamCount} of {totalRows}
                               </p>
@@ -820,7 +830,7 @@ export function PricingTable({
                               variant="ghost"
                             >
                               <span className="text-xs font-semibold">
-                                Explore {totalRows} rows
+                                {`Explore ${formatCountLabel(totalRows, "row")}`}
                               </span>
                               <ArrowRight
                                 className={`size-3.5 transition-transform ${isExpanded ? "rotate-90" : ""}`}
@@ -905,7 +915,7 @@ export function PricingTable({
                           {entry.categorySummary}
                         </Badge>
                         <span className="text-[10px] font-bold text-site-soft">
-                          {entry.rows.length} Variations
+                          {formatCountLabel(entry.rows.length, "variation")}
                         </span>
                       </div>
                       <CardTitle className="text-base font-bold">
@@ -934,7 +944,7 @@ export function PricingTable({
                       <Accordion type="single" collapsible>
                         <AccordionItem value="details" className="border-none">
                           <AccordionTrigger className="py-2 text-primary font-semibold text-xs border-t border-slate-100 hover:no-underline">
-                            View all {entry.rows.length} permutations
+                            {`View all ${formatCountLabel(entry.rows.length, "permutation")}`}
                           </AccordionTrigger>
                           <AccordionContent className="pt-2">
                             <div className="space-y-2">
@@ -1079,11 +1089,11 @@ export function PricingTable({
                     <div className="flex gap-3">
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-site-muted uppercase tracking-wider">
                         <Layers className="size-3 text-site-soft" />
-                        {summary.modelCount} Models
+                        {summary.modelCount === 1 ? "1 Model" : `${summary.modelCount} Models`}
                       </span>
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-site-muted uppercase tracking-wider">
                         <LayoutGrid className="size-3 text-site-soft" />
-                        {summary.rowCount} Rows
+                        {summary.rowCount === 1 ? "1 Row" : `${summary.rowCount} Rows`}
                       </span>
                     </div>
                   </div>

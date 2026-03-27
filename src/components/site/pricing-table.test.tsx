@@ -65,6 +65,24 @@ const snapshot: DeapiPricingSnapshot = {
   },
 }
 
+const singleRowSnapshot: DeapiPricingSnapshot = {
+  ...snapshot,
+  permutations: [
+    {
+      ...snapshot.permutations[0],
+      id: "single-row",
+      params: {},
+      priceText: "$0.100",
+      priceUsd: 0.1,
+      credits: 0.1,
+    },
+  ],
+  metadata: {
+    ...snapshot.metadata,
+    totalPermutations: 1,
+  },
+}
+
 describe("PricingTable", () => {
   it("renders desktop rows as full-width table rows and expands into a detail row", () => {
     const { container } = render(<PricingTable snapshot={snapshot} />)
@@ -84,5 +102,12 @@ describe("PricingTable", () => {
       true,
     )
     expect(outerTable?.querySelector('td[colspan="6"]')).toBeInTheDocument()
+  })
+
+  it("uses singular labels and hides empty parameter placeholders", () => {
+    render(<PricingTable snapshot={singleRowSnapshot} />)
+
+    expect(screen.getByRole("button", { name: /Explore 1 row/i })).toBeInTheDocument()
+    expect(screen.getByText("No extra parameters")).toBeInTheDocument()
   })
 })

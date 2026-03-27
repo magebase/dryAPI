@@ -170,7 +170,9 @@ function toModelNameLines(modelName: string): {
       primaryLine: displayWords.slice(0, bestSplitIndex).join(" "),
       secondaryLine: displayWords.slice(bestSplitIndex).join(" "),
       rawSlug:
-        modelName.includes("_") || modelName.includes("-") ? modelName : null,
+        modelName.includes("_") || modelName.includes("-")
+          ? toModelRouteSlug(modelName)
+          : null,
     };
   }
 
@@ -181,7 +183,9 @@ function toModelNameLines(modelName: string): {
       primaryLine: hyphenParts.slice(0, splitIndex).join("-"),
       secondaryLine: hyphenParts.slice(splitIndex).join("-"),
       rawSlug:
-        modelName.includes("_") || modelName.includes("-") ? modelName : null,
+        modelName.includes("_") || modelName.includes("-")
+          ? toModelRouteSlug(modelName)
+          : null,
     };
   }
 
@@ -189,8 +193,14 @@ function toModelNameLines(modelName: string): {
     primaryLine: displayName,
     secondaryLine: null,
     rawSlug:
-      modelName.includes("_") || modelName.includes("-") ? modelName : null,
+      modelName.includes("_") || modelName.includes("-")
+        ? toModelRouteSlug(modelName)
+        : null,
   };
+}
+
+function formatCountLabel(count: number, singular: string): string {
+  return `${count} ${count === 1 ? singular : `${singular}s`}`;
 }
 
 function toStrongExcerpt(
@@ -470,7 +480,7 @@ export function ModelsCatalog({ routeBasePath }: ModelsCatalogProps) {
                   variant="outline"
                   className="border-slate-200 bg-white px-3 font-mono text-[10px] dark:border-zinc-800 dark:bg-zinc-800"
                 >
-                  {section.models.length} variants
+                  {formatCountLabel(section.models.length, "variant")}
                 </Badge>
               </div>
               <p className="max-w-2xl text-sm leading-relaxed text-site-muted dark:text-zinc-400">
@@ -591,7 +601,7 @@ export function ModelsCatalog({ routeBasePath }: ModelsCatalogProps) {
                           <Link href={toRoute(modelCard.pricingHref)}>Pricing</Link>
                         </Button>
                         <ModelSlugCopyButton
-                          modelSlug={modelCard.modelName}
+                          modelSlug={modelNameLines.rawSlug ?? modelCard.modelName}
                           className="col-span-2 h-9 border-slate-200 bg-slate-50 text-[11px] font-bold uppercase tracking-wider transition-colors hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-800 dark:hover:bg-zinc-700"
                         />
                       </div>

@@ -34,7 +34,7 @@ export function DocumentationLayout({
     },
     {
       text: "Status",
-      url: `https://status.${brand.key}.ai/`,
+      url: `https://status.${new URL(brand.siteUrl).hostname}/`,
       external: true,
       active: "none",
     },

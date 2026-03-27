@@ -36,12 +36,12 @@
       }
     ],
     "phone": {
-      "label": "Sign In",
-      "href": "/login"
+      "label": "Contact Sales",
+      "href": "/contact-sales"
     },
     "quoteCta": {
       "label": "Get Started",
-      "href": "/login",
+      "href": "/register",
       "style": "outline"
     }
   },
@@ -61,28 +61,7 @@
         "href": "/about"
       }
     ],
-    "socialLinks": [
-      {
-        "label": "Facebook",
-        "href": "https://facebook.com",
-        "icon": "facebook"
-      },
-      {
-        "label": "Instagram",
-        "href": "https://instagram.com",
-        "icon": "instagram"
-      },
-      {
-        "label": "LinkedIn",
-        "href": "https://linkedin.com/company/deapi",
-        "icon": "linkedin"
-      },
-      {
-        "label": "YouTube",
-        "href": "https://youtube.com",
-        "icon": "youtube"
-      }
-    ],
+    "socialLinks": [],
     "columns": [
       {
         "title": "Platform",

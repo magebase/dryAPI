@@ -23,9 +23,9 @@ export function RoutePageTemplate({
 }) {
   const quoteHref = site.header.quoteCta.href
   const quoteLabel = site.header.quoteCta.label
-  const productsLink = site.header.primaryLinks.find((link) => link.href === "/products")
-  const productsHref = productsLink?.href ?? "/products"
-  const productsLabel = productsLink?.label ?? "Product Range"
+  const productsLink = site.header.primaryLinks.find((link) => link.href === "/models")
+  const productsHref = productsLink?.href ?? "/models"
+  const productsLabel = productsLink?.label ?? "Models"
   const heroGalleryImages = page.hero.galleryImages?.filter((image) => image.src.trim().length > 0) ?? []
   const ctaKicker = resolveSiteUiText(site, "routePage.ctaKicker", "Need Fast Advice?")
   const ctaHeading = resolveSiteUiText(site, "routePage.ctaHeading", "Get Scope And Pricing Support")

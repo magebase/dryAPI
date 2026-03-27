@@ -18,6 +18,7 @@ import { QuoteAwareLink } from "@/components/site/quote-aware-link";
 import { Reveal } from "@/components/site/reveal";
 import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text";
 import { SiteIcon } from "@/components/site/site-icon";
+import { normalizeSiteUrl } from "@/lib/og/metadata";
 import type { HomeContent, SiteConfig } from "@/lib/site-content-schema";
 import { HeroGradientCanvas } from "./hero-gradient-canvas";
 import { PricingPlanCards } from "./pricing/plan-cards";
@@ -31,6 +32,7 @@ export function HomeSections({
   home: HomeContent;
   site: SiteConfig;
 }) {
+  const apiEndpoint = `${normalizeSiteUrl()}/api/v1/inference`;
   const spotlightCards = home.spotlightCards
     .filter((card) => card.visible)
     .slice(0, 3);
@@ -128,7 +130,7 @@ export function HomeSections({
     "Need Help Picking Models, Pricing, Or API Rollout?",
   );
 
-  const requestSample = `const res = await fetch("https://api.dryapi.dev/v1/inference", {
+  const requestSample = `const res = await fetch("${apiEndpoint}", {
   method: "POST",
   headers: {
     "Authorization": "Bearer " + process.env.DRYAPI_KEY,
@@ -198,7 +200,7 @@ const result = await res.json();`;
   ];
 
   const heroMetrics = [
-    { value: "10+", label: "Production Models" },
+    { value: "11+", label: "Production Models" },
     { value: "99.99%", label: "Gateway Uptime" },
     { value: "<220ms", label: "Median Route Overhead" },
   ];
@@ -436,7 +438,7 @@ const result = await res.json();`;
                 actionLabel={spotlightAction2.value}
                 actionLabelField={spotlightAction2.field}
                 card={spotlightCards[2] ?? spotlightCards[1]}
-                linkHref={home.contactPanel.primaryAction.href}
+                linkHref={home.hero.tertiaryAction.href}
                 reverse
                 type="costs"
               />
@@ -584,7 +586,7 @@ const result = await res.json();`;
           >
             <div className="relative overflow-hidden rounded-lg bg-slate-950">
               <MockCodePanel
-                code={`const res = await fetch("https://api.dryapi.dev/v1/inference", {
+                code={`const res = await fetch("${apiEndpoint}", {
   method: "POST",
   headers: { "Authorization": "Bearer " + KEY },
   body: JSON.stringify({
@@ -1454,7 +1456,7 @@ function MockWorkflowFrame({ className }: { className?: string }) {
 }
 
 function MockCodePanel({ code }: { code?: string }) {
-  const defaultCode = `const res = await fetch("https://api.dryapi.dev/v1/inference", {
+  const defaultCode = `const res = await fetch("${normalizeSiteUrl()}/api/v1/inference", {
   method: "POST",
   headers: { "Authorization": "Bearer " + KEY },
   body: JSON.stringify({

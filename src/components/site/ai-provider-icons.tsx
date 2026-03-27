@@ -55,11 +55,10 @@ type SimpleIconProps = {
 function SimpleIcon({ path, hex, label, size = 14, className }: SimpleIconProps) {
   return (
     <svg
-      aria-label={label}
+      aria-hidden="true"
       className={className}
       fill={`#${hex}`}
       height={size}
-      role="img"
       viewBox="0 0 24 24"
       width={size}
       xmlns="http://www.w3.org/2000/svg"

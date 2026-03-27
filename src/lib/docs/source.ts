@@ -84,7 +84,7 @@ const EXECUTION_ORDER = [
   "websockets",
   "mcp-server",
   "n8n-integration",
-  "n8n-deapi-node",
+  "n8n-dryapi-node",
 ] as const
 
 const OTHER_ORDER = [

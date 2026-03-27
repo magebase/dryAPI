@@ -138,32 +138,32 @@ Generation operations (image, video, transcription) use an efficient webhook-bas
 ```text  theme={null}
 1. Execute Phase
 
-   +-----------+     POST /txt2img      +-----------+
-   |  dryAPI   | ---------------------> |  dryAPI   |
-   |   Node    |   (includes webhook)   |   Server  |
-   +-----------+                        +-----------+
-        |
-        v
-   Workflow pauses
-   (frees memory)
+	+-----------+     POST /txt2img      +-----------+
+	|  dryAPI   | ---------------------> |  dryAPI   |
+	|   Node    |   (includes webhook)   |   Server   |
+	+-----------+                        +-----------+
+		  |
+		  v
+	Workflow pauses
+	(frees memory)
 
 2. Processing Phase (no n8n resources used)
 
-   +-----------+                        +-----------+
-   |    n8n    |  <-- job.processing    |   dryAPI   |
-   | (waiting) |     (acknowledged)     | (working) |
-   +-----------+                        +-----------+
+	+-----------+                        +-----------+
+	|    n8n    |  <-- job.processing    |   dryAPI   |
+	| (waiting) |     (acknowledged)     | (working)  |
+	+-----------+                        +-----------+
 
 3. Resume Phase
 
-   +-----------+                        +-----------+
-   |    n8n    |  <-- job.completed     |   dryAPI   |
-   | (resumes) |   (with result_url)    |  (done)   |
-   +-----------+                        +-----------+
-        |
-        v
-   Workflow continues
-   with generated content
+	+-----------+                        +-----------+
+	|    n8n    |  <-- job.completed     |   dryAPI   |
+	| (resumes) |   (with result_url)    |  (done)    |
+	+-----------+                        +-----------+
+		  |
+		  v
+	Workflow continues
+	with generated content
 ```
 
 **Key benefits:**
@@ -185,10 +185,10 @@ This example demonstrates a simple image generation workflow.
 |  Manual Trigger  | ---> |   dryAPI Node     |
 |                  |      | (Image: Generate) |
 +------------------+      +-------------------+
-                                   |
-                                   v
-                          Generated image as
-                          binary data output
+											  |
+											  v
+								  Generated image as
+								  binary data output
 ```
 
 #### Step 1: Add a Trigger
@@ -210,18 +210,18 @@ Add a **Manual Trigger** (or Schedule, Webhook, etc.) to start your workflow.
 | **Aspect Ratio** | Square, Landscape, or Portrait         |
 
 4. Optionally configure:
-   * **Negative Prompt** — Elements to exclude from the image
-   * **Resolution** — Select image dimensions other than the default ones, depending on your needs
-   * **Seed** — For reproducible results (use `-1` for random)
-   * **Steps** — Number of inference steps (higher = more detail)
+	* **Negative Prompt** — Elements to exclude from the image
+	* **Resolution** — Select image dimensions other than the default ones, depending on your needs
+	* **Seed** — For reproducible results (use `-1` for random)
+	* **Steps** — Number of inference steps (higher = more detail)
 
 #### Step 3: Run the Workflow
 
 1. Click **Test Workflow** or **Execute Workflow**
 2. The node will:
-   * Submit the generation request to dryAPI
-   * Pause the workflow while waiting
-   * Resume automatically when the image is ready
+	* Submit the generation request to dryAPI
+	* Pause the workflow while waiting
+	* Resume automatically when the image is ready
 3. The output contains the generated image as binary data
 
 #### Using the Generated Image

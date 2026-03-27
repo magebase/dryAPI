@@ -19,7 +19,7 @@
         "id": "intro-link",
         "type": "link",
         "text": "Read Architecture",
-        "href": "/docs/architecture-and-security"
+        "href": "/docs/v1/architecture-and-security"
       }
     ]
   },
@@ -31,7 +31,7 @@
     "actions": [
       {
         "label": "Request Consultation",
-        "href": "/contact",
+        "href": "/contact-sales",
         "style": "solid"
       },
       {
@@ -51,7 +51,7 @@
           "id": "engagement-card-1",
           "title": "Discovery Session",
           "description": "Review use cases, expected throughput, and constraints.",
-          "href": "/contact",
+          "href": "/contact-sales",
           "ctaLabel": "Book Discovery"
         },
         {
@@ -79,7 +79,7 @@
           "id": "readiness-card-1",
           "title": "Security Review",
           "description": "Understand auth, gateway controls, and auditability options.",
-          "href": "/docs/architecture-and-security",
+          "href": "/docs/v1/architecture-and-security",
           "ctaLabel": "Review Security"
         },
         {
@@ -93,7 +93,7 @@
           "id": "readiness-card-3",
           "title": "Launch Governance",
           "description": "Set up monitoring and incident pathways before public traffic.",
-          "href": "/contact",
+          "href": "/contact-sales",
           "ctaLabel": "Discuss Launch Plan"
         }
       ]

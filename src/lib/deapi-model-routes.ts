@@ -1,9 +1,34 @@
-function normalizeToken(input: string): string {
+const MODEL_ACRONYMS = new Set([
+  "ai",
+  "api",
+  "bf16",
+  "fp8",
+  "fp16",
+  "gpu",
+  "int8",
+  "llm",
+  "ocr",
+  "sdxl",
+  "tts",
+  "xl",
+])
+
+function tokenizeModelName(input: string): string[] {
   return input
     .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/(?<=[a-z])(?=[A-Z])/g, " ")
+    .replace(/(?<=[A-Z])(?=[A-Z][a-z])/g, " ")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+}
+
+function normalizeToken(input: string): string {
+  return tokenizeModelName(input)
+    .map((token) => token.toLowerCase())
+    .join("-")
 }
 
 export function toModelRouteSlug(modelName: string): string {
@@ -26,9 +51,15 @@ export function findModelByRouteSlug(models: string[], modelSlug: string): strin
 }
 
 export function toModelDisplayName(modelName: string): string {
-  return modelName
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\s+/g, " ")
-    .trim()
+  return tokenizeModelName(modelName)
+    .map((token) => {
+      const lower = token.toLowerCase()
+
+      if (MODEL_ACRONYMS.has(lower) || token === token.toUpperCase()) {
+        return token.toUpperCase()
+      }
+
+      return `${token.charAt(0).toUpperCase()}${token.slice(1).toLowerCase()}`
+    })
+    .join(" ")
 }

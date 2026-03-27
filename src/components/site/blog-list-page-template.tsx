@@ -19,7 +19,7 @@ type BlogListPageTemplateProps = {
 export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplateProps) {
   const quoteHref = site.header.quoteCta.href
   const quoteLabel = site.header.quoteCta.label
-  const productsLink = site.header.primaryLinks.find((link) => link.href === "/products")
+  const productsLink = site.header.primaryLinks.find((link) => link.href === "/models")
   const heroGalleryImages = page.hero.galleryImages?.filter((image) => image.src.trim().length > 0) ?? []
   const ctaKicker = resolveSiteUiText(site, "blogList.ctaKicker", "Need Cost And Scale Guidance?")
   const ctaHeading = resolveSiteUiText(site, "blogList.ctaHeading", "Talk To An AI API Architect")
@@ -171,10 +171,10 @@ export function BlogListPageTemplate({ page, posts, site }: BlogListPageTemplate
             <QuoteAwareLink
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-700 transition hover:border-white hover:text-site-strong sm:w-auto"
               data-tina-field={productsLink ? tinaField(productsLink) : undefined}
-              href={productsLink?.href ?? "/products"}
+              href={productsLink?.href ?? "/models"}
             >
               <span data-tina-field={explorePrefix.field}>{explorePrefix.value}</span>{" "}
-              <span>{productsLink?.label ?? "Products"}</span>
+              <span>{productsLink?.label ?? "Models"}</span>
               <ArrowRight className="size-4" />
             </QuoteAwareLink>
           </div>
