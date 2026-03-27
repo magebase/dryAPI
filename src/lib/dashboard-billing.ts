@@ -3,9 +3,11 @@ import type { NextRequest } from "next/server"
 import { authorizeOrganizationBillingReference } from "@/lib/auth-organization-access"
 import {
   readDashboardSessionSnapshotFromHeaders,
-  readDashboardSessionTokenFromCookieHeader,
-  resolveDashboardSessionSnapshotFromToken,
 } from "@/lib/dashboard-session"
+import {
+  readVerifiedDashboardSessionTokenFromCookieHeader,
+  resolveDashboardSessionSnapshotFromToken,
+} from "@/lib/dashboard-session-server"
 
 type SessionSnapshot = {
   authenticated: boolean
@@ -143,7 +145,7 @@ export async function getDashboardSessionSnapshot(request: NextRequest): Promise
     }
   }
 
-  const sessionToken = readDashboardSessionTokenFromCookieHeader(
+  const sessionToken = readVerifiedDashboardSessionTokenFromCookieHeader(
     request.headers.get("cookie"),
     process.env.BETTER_AUTH_SECRET,
   )

@@ -2,17 +2,17 @@ import { NextRequest } from "next/server"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const {
-  readDashboardSessionTokenFromCookieHeaderMock,
+  readVerifiedDashboardSessionTokenFromCookieHeaderMock,
   resolveDashboardSessionSnapshotFromTokenMock,
 } = vi.hoisted(() => ({
-  readDashboardSessionTokenFromCookieHeaderMock: vi.fn(),
+  readVerifiedDashboardSessionTokenFromCookieHeaderMock: vi.fn(),
   resolveDashboardSessionSnapshotFromTokenMock: vi.fn(),
 }))
 
-vi.mock("@/lib/dashboard-session", () => ({
-  readDashboardSessionTokenFromCookieHeader: (
+vi.mock("@/lib/dashboard-session-server", () => ({
+  readVerifiedDashboardSessionTokenFromCookieHeader: (
     ...args: unknown[]
-  ) => readDashboardSessionTokenFromCookieHeaderMock(...args),
+  ) => readVerifiedDashboardSessionTokenFromCookieHeaderMock(...args),
   resolveDashboardSessionSnapshotFromToken: (
     ...args: unknown[]
   ) => resolveDashboardSessionSnapshotFromTokenMock(...args),
@@ -29,7 +29,7 @@ function buildRequest(cookie?: string): NextRequest {
 
 describe("GET /api/internal/auth/session-snapshot", () => {
   beforeEach(() => {
-    readDashboardSessionTokenFromCookieHeaderMock.mockReset()
+    readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReset()
     resolveDashboardSessionSnapshotFromTokenMock.mockReset()
   })
 
@@ -38,7 +38,7 @@ describe("GET /api/internal/auth/session-snapshot", () => {
   })
 
   it("returns unauthenticated when no dashboard session token is present", async () => {
-    readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue(null)
+    readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReturnValue(null)
 
     const response = await GET(buildRequest())
 
@@ -48,7 +48,7 @@ describe("GET /api/internal/auth/session-snapshot", () => {
   })
 
   it("returns unauthenticated when the session token is invalid", async () => {
-    readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_token")
+    readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_token")
     resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(null)
 
     const response = await GET(
@@ -63,7 +63,7 @@ describe("GET /api/internal/auth/session-snapshot", () => {
   })
 
   it("returns a normalized authenticated snapshot", async () => {
-    readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_token")
+    readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_token")
     resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue({
       authenticated: true,
       email: "owner@dryapi.dev",

@@ -7,11 +7,11 @@ const { authorizeOrganizationBillingReferenceMock } = vi.hoisted(() => ({
 
 const {
   readDashboardSessionSnapshotFromHeadersMock,
-  readDashboardSessionTokenFromCookieHeaderMock,
+  readVerifiedDashboardSessionTokenFromCookieHeaderMock,
   resolveDashboardSessionSnapshotFromTokenMock,
 } = vi.hoisted(() => ({
   readDashboardSessionSnapshotFromHeadersMock: vi.fn(),
-  readDashboardSessionTokenFromCookieHeaderMock: vi.fn(),
+  readVerifiedDashboardSessionTokenFromCookieHeaderMock: vi.fn(),
   resolveDashboardSessionSnapshotFromTokenMock: vi.fn(),
 }))
 
@@ -23,8 +23,11 @@ vi.mock("@/lib/auth-organization-access", () => ({
 vi.mock("@/lib/dashboard-session", () => ({
   readDashboardSessionSnapshotFromHeaders: (...args: unknown[]) =>
     readDashboardSessionSnapshotFromHeadersMock(...args),
-  readDashboardSessionTokenFromCookieHeader: (...args: unknown[]) =>
-    readDashboardSessionTokenFromCookieHeaderMock(...args),
+}))
+
+vi.mock("@/lib/dashboard-session-server", () => ({
+  readVerifiedDashboardSessionTokenFromCookieHeader: (...args: unknown[]) =>
+    readVerifiedDashboardSessionTokenFromCookieHeaderMock(...args),
   resolveDashboardSessionSnapshotFromToken: (...args: unknown[]) =>
     resolveDashboardSessionSnapshotFromTokenMock(...args),
 }))
@@ -51,7 +54,7 @@ afterEach(() => {
   vi.unstubAllEnvs()
   authorizeOrganizationBillingReferenceMock.mockReset()
   readDashboardSessionSnapshotFromHeadersMock.mockReset()
-  readDashboardSessionTokenFromCookieHeaderMock.mockReset()
+  readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReset()
   resolveDashboardSessionSnapshotFromTokenMock.mockReset()
 })
 
@@ -147,13 +150,13 @@ describe("dashboard-billing", () => {
         activeOrganizationId: "org_123",
       })
 
-      expect(readDashboardSessionTokenFromCookieHeaderMock).not.toHaveBeenCalled()
+      expect(readVerifiedDashboardSessionTokenFromCookieHeaderMock).not.toHaveBeenCalled()
       expect(resolveDashboardSessionSnapshotFromTokenMock).not.toHaveBeenCalled()
     })
 
     it("returns an authenticated snapshot when token lookup succeeds", async () => {
       readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
-      readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
+      readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
       resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue({
         authenticated: true,
         email: "owner@dryapi.dev",
@@ -181,7 +184,7 @@ describe("dashboard-billing", () => {
 
     it("returns unauthenticated when no dashboard session token is present", async () => {
       readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
-      readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue(null)
+      readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReturnValue(null)
 
       await expect(getDashboardSessionSnapshot(makeRequest())).resolves.toEqual({
         authenticated: false,
@@ -196,7 +199,7 @@ describe("dashboard-billing", () => {
 
     it("returns unauthenticated when token lookup returns no snapshot", async () => {
       readDashboardSessionSnapshotFromHeadersMock.mockReturnValue(null)
-      readDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
+      readVerifiedDashboardSessionTokenFromCookieHeaderMock.mockReturnValue("session_abc")
       resolveDashboardSessionSnapshotFromTokenMock.mockResolvedValue(null)
 
       await expect(

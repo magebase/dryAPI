@@ -218,7 +218,7 @@ export default function RegisterPage() {
     nextSearchParams.delete("error")
     nextSearchParams.delete("message")
 
-    const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname
+    const nextUrl = nextSearchParams.size > 0 ? `${pathname}?${nextSearchParams.toString()}` : pathname ?? "/"
     router.replace(toRoute(nextUrl))
   }, [pathname, router, searchParams])
 

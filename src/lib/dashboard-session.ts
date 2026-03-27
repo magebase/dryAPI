@@ -1,30 +1,3 @@
-import { createHmac, timingSafeEqual } from "node:crypto"
-
-import {
-  createCloudflareDbAccessors,
-  HYPERDRIVE_BINDING_PRIORITY,
-} from "@/lib/cloudflare-db"
-
-type D1PreparedResult<T> = {
-  results: T[]
-}
-
-type D1PreparedStatement = {
-  bind: (...values: unknown[]) => D1PreparedStatement
-  all: <T = Record<string, unknown>>() => Promise<D1PreparedResult<T>>
-  run: () => Promise<{ rowCount: number; meta?: { changes?: number } }>
-  first: <T = Record<string, unknown>>(column?: string) => Promise<T | null>
-}
-
-type D1DatabaseLike = {
-  prepare: (query: string) => D1PreparedStatement
-}
-
-const { getSqlDbAsync } = createCloudflareDbAccessors(
-  HYPERDRIVE_BINDING_PRIORITY,
-  {},
-)
-
 export type DashboardSessionSnapshot = {
   authenticated: true
   email: string | null
@@ -32,17 +5,6 @@ export type DashboardSessionSnapshot = {
   userRole: string | null
   activeOrganizationId: string | null
   expiresAtMs: number | null
-}
-
-type DashboardSessionRow = {
-  userId: string
-  activeOrganizationId: string | null
-  expiresAt: number | string
-}
-
-type DashboardUserRow = {
-  email: string
-  role: string | null
 }
 
 const DASHBOARD_SESSION_AUTHENTICATED_HEADER = "x-dryapi-dashboard-authenticated"
@@ -87,35 +49,8 @@ function isHeaderStore(value: unknown): value is { get: (name: string) => string
   return Boolean(value && typeof value === "object" && "get" in value)
 }
 
-function verifySignedCookieValue(cookieValue: string, secret: string): string | null {
-  const separatorIndex = cookieValue.lastIndexOf(".")
-
-  if (separatorIndex <= 0 || separatorIndex >= cookieValue.length - 1) {
-    return null
-  }
-
-  const value = cookieValue.slice(0, separatorIndex)
-  const signature = cookieValue.slice(separatorIndex + 1)
-  const expectedSignature = createHmac("sha256", secret).update(value).digest("base64")
-
-  if (signature.length !== expectedSignature.length) {
-    return null
-  }
-
-  try {
-    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-      return null
-    }
-  } catch {
-    return null
-  }
-
-  return value
-}
-
 export function readDashboardSessionTokenFromCookieHeader(
   cookieHeader: string | null | undefined,
-  secret?: string | null,
 ): string | null {
   const normalizedCookieHeader = cookieHeader?.trim()
   if (!normalizedCookieHeader) {
@@ -150,22 +85,10 @@ export function readDashboardSessionTokenFromCookieHeader(
       continue
     }
 
-    const normalizedSecret = secret?.trim()
-    if (!normalizedSecret) {
-      return token
-    }
-
-    const verifiedToken = verifySignedCookieValue(token, normalizedSecret)
-    if (verifiedToken) {
-      return verifiedToken
-    }
+    return token
   }
 
   return null
-}
-
-async function resolveAuthDb(): Promise<D1DatabaseLike> {
-  return getSqlDbAsync()
 }
 
 export function applyDashboardSessionSnapshotHeaders(
@@ -231,48 +154,5 @@ export function readDashboardSessionSnapshotFromHeaders(
     expiresAtMs: toEpochMilliseconds(
       headers.get(DASHBOARD_SESSION_EXPIRES_AT_HEADER),
     ),
-  }
-}
-
-export async function resolveDashboardSessionSnapshotFromToken(
-  sessionToken: string,
-): Promise<DashboardSessionSnapshot | null> {
-  const normalizedSessionToken = normalizeString(sessionToken)
-  if (!normalizedSessionToken) {
-    return null
-  }
-
-  const db = await resolveAuthDb()
-
-  const response = await db
-    .prepare(
-      `
-      SELECT
-        s.userid AS "userId",
-        s.activeorganizationid AS "activeOrganizationId",
-        s.expiresat AS "expiresAt",
-        u.email AS email,
-        u.role AS role
-      FROM session s
-      INNER JOIN "user" u ON u.id = s.userid
-      WHERE s.token = ? AND s.expiresat > NOW()
-      LIMIT 1
-      `,
-    )
-    .bind(normalizedSessionToken)
-    .all<DashboardSessionRow & DashboardUserRow>()
-
-  const row = response.results[0]
-  if (!row) {
-    return null
-  }
-
-  return {
-    authenticated: true,
-    email: normalizeString(row.email),
-    userId: normalizeString(row.userId),
-    userRole: normalizeString(row.role) || "user",
-    activeOrganizationId: normalizeString(row.activeOrganizationId),
-    expiresAtMs: toEpochMilliseconds(row.expiresAt),
   }
 }

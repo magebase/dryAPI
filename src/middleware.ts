@@ -180,10 +180,7 @@ function isPrefetchRequest(request: NextRequest): boolean {
 }
 
 function readSessionToken(request: NextRequest): string | null {
-  return readDashboardSessionTokenFromCookieHeader(
-    request.headers.get("cookie"),
-    process.env.BETTER_AUTH_SECRET,
-  )
+  return readDashboardSessionTokenFromCookieHeader(request.headers.get("cookie"))
 }
 
 function readCachedSessionEntry(sessionToken: string): SessionAuthCacheEntry | null {

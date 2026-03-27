@@ -12,9 +12,11 @@ import { internalWorkerFetch } from "@/lib/internal-worker-fetch"
 import { resolveCurrentUserSubscriptionPlanSummary } from "@/lib/auth-subscription-benefits"
 import {
   readDashboardSessionSnapshotFromHeaders,
-  readDashboardSessionTokenFromCookieHeader,
-  resolveDashboardSessionSnapshotFromToken,
 } from "@/lib/dashboard-session"
+import {
+  readVerifiedDashboardSessionTokenFromCookieHeader,
+  resolveDashboardSessionSnapshotFromToken,
+} from "@/lib/dashboard-session-server"
 
 type HeaderStore = {
   get(name: string): string | null
@@ -105,7 +107,7 @@ async function loadSessionProfile(headerStore: HeaderStore): Promise<SessionProf
     }
   }
 
-  const sessionToken = readDashboardSessionTokenFromCookieHeader(
+  const sessionToken = readVerifiedDashboardSessionTokenFromCookieHeader(
     headerStore.get("cookie"),
     process.env.BETTER_AUTH_SECRET,
   )

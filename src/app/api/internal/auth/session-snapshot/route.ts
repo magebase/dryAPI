@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import {
-  readDashboardSessionTokenFromCookieHeader,
+  readVerifiedDashboardSessionTokenFromCookieHeader,
   resolveDashboardSessionSnapshotFromToken,
-} from "@/lib/dashboard-session"
+} from "@/lib/dashboard-session-server"
 
 function buildUnauthenticatedResponse(): NextResponse {
   return NextResponse.json(
@@ -20,7 +20,7 @@ function buildUnauthenticatedResponse(): NextResponse {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const sessionToken = readDashboardSessionTokenFromCookieHeader(
+  const sessionToken = readVerifiedDashboardSessionTokenFromCookieHeader(
     request.headers.get("cookie"),
     process.env.BETTER_AUTH_SECRET,
   )
