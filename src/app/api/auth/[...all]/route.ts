@@ -18,6 +18,8 @@ import {
 	type RequestPerfTracker,
 } from "@/lib/server-observability"
 
+export const dynamic = "force-dynamic"
+
 const authHandlers = toNextJsHandler(auth)
 
 const AUTH_ROUTE_SLOW_MS = resolvePerfSlowThresholdMs("AUTH_PERF_SLOW_MS", 250)

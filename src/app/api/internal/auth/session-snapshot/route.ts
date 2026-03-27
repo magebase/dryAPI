@@ -5,6 +5,8 @@ import {
   resolveDashboardSessionSnapshotFromToken,
 } from "@/lib/dashboard-session-server"
 
+export const dynamic = "force-dynamic"
+
 function buildUnauthenticatedResponse(): NextResponse {
   return NextResponse.json(
     {

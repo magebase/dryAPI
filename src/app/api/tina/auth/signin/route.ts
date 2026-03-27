@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getConfiguredSocialProviders } from "@/lib/auth";
 
+export const dynamic = "force-dynamic"
+
 const DEFAULT_PROVIDER = "google";
 const DEFAULT_CALLBACK_PATH = "/admin/index.html";
 
