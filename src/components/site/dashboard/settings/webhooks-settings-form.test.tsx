@@ -164,4 +164,15 @@ describe("WebhooksSettingsForm", () => {
       expect(screen.getAllByRole("button", { name: /Validate/ })).toHaveLength(2)
     })
   })
+
+  it("shows an inline error for an invalid webhook URL", async () => {
+    renderForm()
+
+    const input = screen.getByPlaceholderText("https://api.example.com/webhooks/dryapi")
+    fireEvent.change(input, { target: { value: "not-a-url" } })
+    fireEvent.blur(input)
+
+    expect(await screen.findByText("Enter a valid webhook URL.")).toBeInTheDocument()
+    expect(toastError).not.toHaveBeenCalled()
+  })
 })

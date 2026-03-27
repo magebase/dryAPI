@@ -36,7 +36,7 @@ describe("POST /api/dashboard/settings/account/export", () => {
 
   beforeEach(() => {
     getDashboardSessionSnapshotMock.mockReset()
-    vi.stubEnv("CLOUDFLARE_API_BASE_URL", "https://api.test")
+    vi.unstubAllEnvs()
   })
 
   afterEach(() => {
@@ -60,6 +60,8 @@ describe("POST /api/dashboard/settings/account/export", () => {
   })
 
   it("forwards the queued export request to the Cloudflare API worker", async () => {
+    vi.stubEnv("CLOUDFLARE_API_BASE_URL", "https://api.test")
+
     getDashboardSessionSnapshotMock.mockResolvedValue({
       authenticated: true,
       email: "owner@dryapi.dev",
@@ -81,5 +83,27 @@ describe("POST /api/dashboard/settings/account/export", () => {
     expect(url).toBe("https://api.test/v1/account-exports")
     expect(init.method).toBe("POST")
     expect(new Headers(init.headers).get("cookie")).toContain("better-auth.session=abc123")
+  })
+
+  it("falls back to the request origin when the Cloudflare API base URL is missing", async () => {
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: "queued", request_id: "req_456" }, 202))
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    const response = await POST(makeRequest())
+
+    expect(response.status).toBe(202)
+    expect(await response.json()).toEqual({
+      ok: true,
+      status: "queued",
+      request_id: "req_456",
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe("http://localhost/v1/account-exports")
   })
 })

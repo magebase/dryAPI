@@ -157,5 +157,6 @@ describe("dashboard-api-keys SQL readers", () => {
 
     expect(queries[0]?.query).toContain("enabled = TRUE")
     expect(queries[0]?.query).toContain("expiresat IS NULL")
+    expect(queries[0]?.query).toContain("expiresat > NOW()")
   })
 })

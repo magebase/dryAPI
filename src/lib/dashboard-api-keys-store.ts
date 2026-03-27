@@ -281,7 +281,7 @@ async function readUsageSummarySnapshot(
         SELECT COUNT(*)::bigint AS active_api_keys
         FROM apikey
         WHERE enabled = TRUE
-          AND (expiresat IS NULL OR expiresat > (EXTRACT(EPOCH FROM NOW()) * 1000)::bigint)
+          AND (expiresat IS NULL OR expiresat > NOW())
       )
       SELECT
         COALESCE((

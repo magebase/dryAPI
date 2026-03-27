@@ -60,7 +60,59 @@ describe("dashboard api keys store", () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
+  })
+
+  it("converts an absolute expiry into Better Auth expiresIn seconds", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-03-27T00:00:00.000Z"))
+
+    try {
+      createAuthApiKeyMock.mockResolvedValue({
+        id: "key_123",
+        name: "Production Server",
+        start: "dry_live_preview",
+        prefix: null,
+        referenceId: "user_123",
+        enabled: true,
+        expiresAt: null,
+        createdAt: "2026-03-17T12:00:00.000Z",
+        updatedAt: "2026-03-17T12:00:00.000Z",
+        permissions: {
+          legacy: ["models:infer", "billing:read"],
+        },
+        metadata: {
+          roles: [],
+          meta: {
+            environment: "production",
+          },
+        },
+        key: "dry_live_secret_token_1234",
+      })
+
+      const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
+        method: "POST",
+      })
+
+      await createDashboardApiKey(request, {
+        userEmail: "ops@example.com",
+        name: "Production Server",
+        permissions: ["models:infer", "billing:read"],
+        expires: Date.now() + 180 * 24 * 60 * 60 * 1000,
+        meta: {
+          environment: "production",
+        },
+      })
+
+      expect(createAuthApiKeyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          expiresIn: 180 * 24 * 60 * 60,
+        }),
+      )
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("sends a notification after creating an API key", async () => {

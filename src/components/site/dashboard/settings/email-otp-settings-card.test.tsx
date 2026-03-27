@@ -105,10 +105,12 @@ describe("EmailOtpSettingsCard", () => {
 
     renderCard()
 
-    await screen.findByText("owner@dryapi.dev")
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Manage protection" })).toBeEnabled()
     })
+
+    expect(screen.queryByText("Protected inbox")).not.toBeInTheDocument()
+    expect(screen.queryByText("Open the modal to send a code and confirm a change.")).not.toBeInTheDocument()
 
     expect(screen.queryByLabelText("Email code")).not.toBeInTheDocument()
 

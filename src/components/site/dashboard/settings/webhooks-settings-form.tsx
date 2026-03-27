@@ -1,7 +1,7 @@
 "use client"
 /* eslint-disable react/no-children-prop */
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm, useStore } from "@tanstack/react-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Check, CircleAlert, Loader2, Plus, Trash2 } from "lucide-react"
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table"
 import {
   DASHBOARD_SETTINGS_DEFAULTS,
+  dashboardWebhookEntrySchema,
   dashboardWebhooksSettingsFormSchema,
   type DashboardWebhookEntry,
   type DashboardWebhooksSettingsFormValues,
@@ -189,6 +190,7 @@ function WebhooksSettingsFormSkeleton() {
 
 export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProps) {
   const queryClient = useQueryClient()
+  const [endpointUrlErrors, setEndpointUrlErrors] = useState<Record<string, string>>({})
   const webhooksSettingsQuery = useQuery<DashboardWebhooksSettingsFormValues>({
     queryKey: ["dashboard-settings", "webhooks"],
     queryFn: loadWebhookSettings,
@@ -208,9 +210,14 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
     },
     onSuccess: (savedValues) => {
       queryClient.setQueryData(["dashboard-settings", "webhooks"], savedValues)
+      setEndpointUrlErrors({})
       toast.success("Webhook settings saved")
     },
     onError: (error) => {
+      if (error instanceof Error && error.message.includes("Enter a valid webhook URL.")) {
+        return
+      }
+
       toast.error(error instanceof Error ? error.message : "Unable to save webhook settings")
     },
   })
@@ -384,7 +391,9 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                             name={`webhooks[${index}].endpointUrl`}
                             children={(field) => {
                               const isInvalid = (field.state.meta.isTouched || form.state.isSubmitted) && !field.state.meta.isValid
-                              const errorMessage = formatFieldError(field.state.meta.errors[0])
+                              const localError = endpointUrlErrors[webhook.id] ?? ""
+                              const errorMessage = localError || formatFieldError(field.state.meta.errors[0])
+                              const showError = Boolean(errorMessage) && (isInvalid || Boolean(localError))
 
                               return (
                                 <div className="flex-1 space-y-2">
@@ -393,9 +402,24 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                                     id={field.name}
                                     type="url"
                                     value={field.state.value}
-                                    onBlur={field.handleBlur}
                                     onChange={(event) => {
-                                      field.handleChange(event.target.value)
+                                      const nextValue = event.target.value
+                                      field.handleChange(nextValue)
+                                      const validation = dashboardWebhookEntrySchema.shape.endpointUrl.safeParse(nextValue)
+                                      setEndpointUrlErrors((previous) => {
+                                        const nextErrors = { ...previous }
+
+                                        if (validation.success || nextValue.trim().length === 0) {
+                                          if (nextErrors[webhook.id]) {
+                                            delete nextErrors[webhook.id]
+                                          }
+
+                                          return nextErrors
+                                        }
+
+                                        nextErrors[webhook.id] = validation.error.issues[0]?.message || "Enter a valid webhook URL."
+                                        return nextErrors
+                                      })
                                       form.setFieldValue(`webhooks[${index}].health`, {
                                         ...webhook.health,
                                         validationStatus: "unknown",
@@ -404,9 +428,31 @@ export function WebhooksSettingsForm({ initialValues }: WebhooksSettingsFormProp
                                         lastStatusCode: null,
                                       })
                                     }}
+                                    onBlur={() => {
+                                      field.handleBlur()
+
+                                      const validation = dashboardWebhookEntrySchema.shape.endpointUrl.safeParse(field.state.value)
+                                      if (validation.success) {
+                                        setEndpointUrlErrors((previous) => {
+                                          if (!previous[webhook.id]) {
+                                            return previous
+                                          }
+
+                                          const nextErrors = { ...previous }
+                                          delete nextErrors[webhook.id]
+                                          return nextErrors
+                                        })
+                                        return
+                                      }
+
+                                      setEndpointUrlErrors((previous) => ({
+                                        ...previous,
+                                        [webhook.id]: validation.error.issues[0]?.message || "Enter a valid webhook URL.",
+                                      }))
+                                    }}
                                     placeholder="https://api.example.com/webhooks/dryapi"
                                   />
-                                  {isInvalid ? <p className="text-xs text-red-600">{errorMessage}</p> : null}
+                                  {showError ? <p className="text-xs text-red-600">{errorMessage}</p> : null}
                                 </div>
                               )
                             }}

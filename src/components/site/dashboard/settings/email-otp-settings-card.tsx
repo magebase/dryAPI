@@ -13,7 +13,7 @@ import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -69,28 +69,17 @@ async function loadSession(forceRefresh: boolean): Promise<TwoFactorSessionPaylo
 function EmailOtpSettingsCardSkeleton() {
   return (
     <Card aria-busy="true">
-      <CardHeader className="space-y-3">
-        <div className="flex items-start justify-between gap-4">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Skeleton className="size-8 rounded-lg" />
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-48" />
-              <Skeleton className="h-4 w-80" />
-            </div>
+            <Skeleton className="h-5 w-28" />
           </div>
           <Skeleton className="h-5 w-16 rounded-full" />
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
-          <Skeleton className="h-3 w-28" />
-          <Skeleton className="h-4 w-52" />
-          <Skeleton className="h-3 w-64" />
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-10 w-36" />
-        </div>
+      <CardContent className="flex justify-end">
+        <Skeleton className="h-10 w-36" />
       </CardContent>
     </Card>
   )
@@ -270,12 +259,7 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
               >
                 <ShieldCheck className="size-4" />
               </div>
-              <div className="space-y-1">
-                <CardTitle className="text-base">Email OTP protection</CardTitle>
-                <CardDescription>
-                  Add an extra layer of security by requiring a code sent to your inbox before changing this setting.
-                </CardDescription>
-              </div>
+              <CardTitle className="text-base">Email OTP</CardTitle>
             </div>
             <Badge variant={enabled ? "default" : "secondary"} className="h-5">
               {enabled ? (
@@ -289,32 +273,19 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
-            <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">Protected inbox</p>
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{email || "No email available"}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {enabled ? "Protection is currently active." : "Protection is currently disabled."}
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">
-              Open the modal to send a code and confirm a change.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setCodeSent(false)
-                form.reset()
-                setDialogOpen(true)
-              }}
-              disabled={!email}
-            >
-              Manage protection
-            </Button>
-          </div>
+        <CardContent className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setCodeSent(false)
+              form.reset()
+              setDialogOpen(true)
+            }}
+            disabled={!email}
+          >
+            Manage protection
+          </Button>
         </CardContent>
       </Card>
 
@@ -333,14 +304,6 @@ export function EmailOtpSettingsCard({ initialEmail }: SecurityEmailOtpSettingsC
             <DialogTitle>{protectionTitle}</DialogTitle>
             <DialogDescription>{protectionDescription}</DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/40">
-            <p className="text-xs uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">Protected inbox</p>
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{email || "No email available"}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Passwordless accounts can still sign in with email OTP from the login page.
-            </p>
-          </div>
 
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
             <form.Field

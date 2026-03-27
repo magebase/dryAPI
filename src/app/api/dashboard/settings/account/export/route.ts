@@ -2,16 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getDashboardSessionSnapshot } from "@/lib/dashboard-billing";
 
-function resolveCloudflareApiBaseUrl(): string {
+function resolveCloudflareApiBaseUrl(request: NextRequest): string {
   const configured =
     process.env.CLOUDFLARE_API_BASE_URL?.trim() ||
     process.env.DASHBOARD_API_BASE_URL?.trim() ||
     process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
-    "";
-
-  if (!configured) {
-    throw new Error("CLOUDFLARE_API_BASE_URL is required for account export requests.");
-  }
+    request.nextUrl.origin;
 
   return configured.replace(/\/$/, "");
 }
@@ -30,17 +26,7 @@ export async function POST(request: NextRequest) {
   }
 
   let baseUrl: string;
-  try {
-    baseUrl = resolveCloudflareApiBaseUrl();
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error: "missing_cloudflare_api_base_url",
-        message: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 },
-    );
-  }
+  baseUrl = resolveCloudflareApiBaseUrl(request);
 
   const upstreamUrl = new URL("/v1/account-exports", baseUrl);
   const upstreamResponse = await fetch(upstreamUrl.toString(), {

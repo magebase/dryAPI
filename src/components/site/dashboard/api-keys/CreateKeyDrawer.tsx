@@ -41,6 +41,8 @@
 import React, { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useMutation } from "@tanstack/react-query"
+import { addDays, endOfDay, format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -56,6 +58,15 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import ApiKeyCopyIconButton from "./ApiKeyCopyIconButton"
 
 type Props = {
@@ -65,14 +76,31 @@ type Props = {
 }
 
 type PermissionPreset = "all" | "read-only" | "models:infer" | "billing:read" | "custom"
-type ExpirationPreset = "never" | "7d" | "30d" | "90d"
+type ExpirationPreset = "never" | "7d" | "30d" | "90d" | "180d" | "1y" | "custom"
 
 type CreatedKeyState = {
   secret: string
 }
 
 const permissionPresets = ["all", "read-only", "models:infer", "billing:read", "custom"] as const
-const expirationPresets = ["never", "7d", "30d", "90d"] as const
+const expirationPresets = ["never", "7d", "30d", "90d", "180d", "1y", "custom"] as const
+
+function resolveMinimumCustomExpirationDate() {
+  return endOfDay(addDays(new Date(), 1))
+}
+
+function resolveCustomExpirationLabel(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Choose a date"
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return "Choose a date"
+  }
+
+  return format(date, "PPP")
+}
 
 const createKeySchema = z
   .object({
@@ -81,6 +109,7 @@ const createKeySchema = z
     permissionPreset: z.enum(permissionPresets),
     customPermissions: z.string().trim(),
     expirationPreset: z.enum(expirationPresets),
+    customExpirationAt: z.number().int().finite().nullable(),
   })
   .superRefine((values, ctx) => {
     if (values.permissionPreset === "custom") {
@@ -90,6 +119,23 @@ const createKeySchema = z
           code: z.ZodIssueCode.custom,
           path: ["customPermissions"],
           message: "Add at least one custom permission or choose a preset.",
+        })
+      }
+    }
+
+    if (values.expirationPreset === "custom") {
+      const minimumCustomExpiration = resolveMinimumCustomExpirationDate().getTime()
+      if (typeof values.customExpirationAt !== "number" || !Number.isFinite(values.customExpirationAt)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["customExpirationAt"],
+          message: "Choose an expiration date at least 1 day from now.",
+        })
+      } else if (values.customExpirationAt < minimumCustomExpiration) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["customExpirationAt"],
+          message: "Choose an expiration date at least 1 day from now.",
         })
       }
     }
@@ -103,6 +149,7 @@ const INITIAL_VALUES: CreateKeyFormValues = {
   permissionPreset: "all",
   customPermissions: "",
   expirationPreset: "never",
+  customExpirationAt: null,
 }
 
 function parseCustomCsv(value: string) {
@@ -112,10 +159,23 @@ function parseCustomCsv(value: string) {
     .filter(Boolean)
 }
 
-function getExpiresAt(preset: ExpirationPreset) {
-  if (preset === "never") return undefined
-  const days = preset === "7d" ? 7 : preset === "30d" ? 30 : 90
-  return Date.now() + days * 24 * 60 * 60 * 1000
+function getExpiresAt(values: CreateKeyFormValues) {
+  switch (values.expirationPreset) {
+    case "never":
+      return undefined
+    case "7d":
+      return Date.now() + 7 * 24 * 60 * 60 * 1000
+    case "30d":
+      return Date.now() + 30 * 24 * 60 * 60 * 1000
+    case "90d":
+      return Date.now() + 90 * 24 * 60 * 60 * 1000
+    case "180d":
+      return Date.now() + 180 * 24 * 60 * 60 * 1000
+    case "1y":
+      return Date.now() + 365 * 24 * 60 * 60 * 1000
+    case "custom":
+      return values.customExpirationAt ?? undefined
+  }
 }
 
 function getPermissions(preset: PermissionPreset, customPermissions: string) {
@@ -130,6 +190,7 @@ function getPermissions(preset: PermissionPreset, customPermissions: string) {
 export default function CreateKeyDrawer({ open, onClose, onCreated }: Props) {
   const [createdKey, setCreatedKey] = useState<CreatedKeyState | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [customExpirationOpen, setCustomExpirationOpen] = useState(false)
 
   const createKeyMutation = useMutation({
     mutationFn: async (values: CreateKeyFormValues) => {
@@ -141,7 +202,7 @@ export default function CreateKeyDrawer({ open, onClose, onCreated }: Props) {
         body: JSON.stringify({
           name: values.name || undefined,
           permissions,
-          expires: getExpiresAt(values.expirationPreset),
+          expires: getExpiresAt(values),
           meta: {
             environment: values.environment,
           },
@@ -187,6 +248,7 @@ export default function CreateKeyDrawer({ open, onClose, onCreated }: Props) {
     form.reset(INITIAL_VALUES)
     setCreatedKey(null)
     setCreateError(null)
+    setCustomExpirationOpen(false)
   }
 
   function handleClose() {
@@ -296,17 +358,94 @@ export default function CreateKeyDrawer({ open, onClose, onCreated }: Props) {
                 children={(field) => (
                   <div className="space-y-2">
                     <Label htmlFor={field.name}>Expiration</Label>
-                    <NativeSelect
-                      id={field.name}
-                      className="w-full"
+                    <Select
                       value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value as CreateKeyFormValues["expirationPreset"])}
+                      onValueChange={(value) => {
+                        const nextPreset = value as CreateKeyFormValues["expirationPreset"]
+                        field.handleChange(nextPreset)
+
+                        if (nextPreset === "custom") {
+                          const minimumDate = resolveMinimumCustomExpirationDate()
+                          form.setFieldValue(
+                            "customExpirationAt",
+                            form.state.values.customExpirationAt ?? minimumDate.getTime(),
+                          )
+                          setCustomExpirationOpen(true)
+                        } else {
+                          setCustomExpirationOpen(false)
+                        }
+                      }}
                     >
-                      <NativeSelectOption value="never">Never</NativeSelectOption>
-                      <NativeSelectOption value="7d">7 days</NativeSelectOption>
-                      <NativeSelectOption value="30d">30 days</NativeSelectOption>
-                      <NativeSelectOption value="90d">90 days</NativeSelectOption>
-                    </NativeSelect>
+                      <SelectTrigger
+                        id={field.name}
+                        className={field.state.value === "never" ? "w-full text-destructive" : "w-full"}
+                      >
+                        <SelectValue placeholder="Select expiration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem className="text-destructive focus:text-destructive" value="never">
+                          Never
+                        </SelectItem>
+                        <SelectItem value="7d">7 days</SelectItem>
+                        <SelectItem value="30d">30 days</SelectItem>
+                        <SelectItem value="90d">90 days</SelectItem>
+                        <SelectItem value="180d">180 days</SelectItem>
+                        <SelectItem value="1y">1 year</SelectItem>
+                        <SelectItem value="custom">Custom date</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {field.state.value === "custom" ? (
+                      <form.Field
+                        name="customExpirationAt"
+                        children={(customField) => {
+                          const minimumDate = resolveMinimumCustomExpirationDate()
+                          const selectedDate =
+                            typeof customField.state.value === "number" && Number.isFinite(customField.state.value)
+                              ? new Date(customField.state.value)
+                              : undefined
+                          const isInvalid = (customField.state.meta.isTouched || form.state.isSubmitted) && !customField.state.meta.isValid
+                          const errorMessage = String((customField.state.meta.errors[0] as unknown) ?? "")
+
+                          return (
+                            <div className="space-y-2">
+                              <Popover open={customExpirationOpen} onOpenChange={setCustomExpirationOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full justify-start gap-2 font-normal"
+                                  >
+                                    <CalendarIcon className="size-4 text-muted-foreground" />
+                                    <span>{resolveCustomExpirationLabel(customField.state.value)}</span>
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    disabled={{ before: minimumDate }}
+                                    initialFocus
+                                    onSelect={(date) => {
+                                      if (!date) {
+                                        return
+                                      }
+
+                                      customField.handleChange(endOfDay(date).getTime())
+                                      setCustomExpirationOpen(false)
+                                    }}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <p className="text-xs text-muted-foreground">
+                                Dates earlier than tomorrow are disabled.
+                              </p>
+                              {isInvalid ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+                            </div>
+                          )
+                        }}
+                      />
+                    ) : null}
                   </div>
                 )}
               />
