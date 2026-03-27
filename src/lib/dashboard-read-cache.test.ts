@@ -33,14 +33,21 @@ import { getStoredCreditBalance } from "@/lib/dashboard-billing-credits"
 
 function createFakeKv() {
   const storage = new Map<string, string>()
+  const putCalls: Array<{
+    key: string
+    value: string
+    options?: { expiration?: number; expirationTtl?: number }
+  }> = []
 
   return {
     storage,
+    putCalls,
     binding: {
       async get(key: string) {
         return storage.has(key) ? storage.get(key) ?? null : null
       },
-      async put(key: string, value: string) {
+      async put(key: string, value: string, options?: { expiration?: number; expirationTtl?: number }) {
+        putCalls.push({ key, value, options })
         storage.set(key, value)
       },
       async delete(key: string) {
@@ -118,6 +125,12 @@ describe("dashboard-read-cache", () => {
   it("caches and invalidates raw read-through values", async () => {
     let loaderCalls = 0
     const scope = dashboardBillingCacheScope("owner@dryapi.dev")
+    const fakeKv = createFakeKv()
+    getCloudflareContextMock.mockResolvedValue({
+      env: {
+        DRIZZLE_CACHE_KV: fakeKv.binding,
+      },
+    })
 
     const first = await readDashboardReadCache({
       scope,
@@ -136,6 +149,7 @@ describe("dashboard-read-cache", () => {
     expect(first).toEqual({ value: 1 })
     expect(second).toEqual({ value: 1 })
     expect(loaderCalls).toBe(1)
+    expect(fakeKv.putCalls.at(-1)?.options?.expirationTtl).toBe(60)
 
     await invalidateDashboardReadCacheScope(scope)
 
