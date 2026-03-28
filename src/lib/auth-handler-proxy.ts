@@ -8,22 +8,6 @@ import {
   shouldEmitServerPerf,
 } from "@/lib/server-observability"
 
-type CreateApiKeyInput = {
-  userId: string
-  name?: string
-  prefix?: string
-  expiresIn?: number
-  permissions?: Record<string, string[]>
-  metadata?: Record<string, unknown>
-}
-
-type AuthApiWithApiKey = {
-  createApiKey: (input: {
-    method: "POST"
-    body: CreateApiKeyInput
-  }) => Promise<unknown>
-}
-
 type InvokeAuthHandlerInput = {
   request?: Request
   path: string
@@ -177,60 +161,6 @@ export async function invokeAuthHandler<T = unknown>(input: InvokeAuthHandlerInp
     return { response, data }
   } catch (error) {
     emitAuthHandlerProxyPerfSummary("auth.handler-proxy.invoke.error", tracker, {
-      message: error instanceof Error ? error.message : String(error),
-    })
-    throw error
-  }
-}
-
-export async function createAuthApiKey<T = unknown>(input: CreateApiKeyInput): Promise<T> {
-  const tracker = createRequestPerfTracker({
-    component: "auth-handler-proxy",
-    method: "POST",
-    pathname: "/api/auth/api-key",
-  })
-
-  try {
-    const authApi = getAuth().api as unknown as AuthApiWithApiKey
-
-    const result = await tracker.measure(
-      "auth.api-key.create",
-      () =>
-        authApi.createApiKey({
-          method: "POST",
-          body: {
-            userId: input.userId,
-            ...(input.name ? { name: input.name } : {}),
-            ...(input.prefix ? { prefix: input.prefix } : {}),
-            ...(input.expiresIn ? { expiresIn: input.expiresIn } : {}),
-            ...(input.permissions ? { permissions: input.permissions } : {}),
-            ...(input.metadata ? { metadata: input.metadata } : {}),
-          },
-        }),
-      {
-        hasName: Boolean(input.name),
-        hasPrefix: Boolean(input.prefix),
-        hasExpiresIn: Boolean(input.expiresIn),
-        permissionCount: input.permissions
-          ? Object.keys(input.permissions).length
-          : 0,
-        hasMetadata: Boolean(input.metadata),
-      },
-    )
-
-    emitAuthHandlerProxyPerfSummary("auth.handler-proxy.create-api-key", tracker, {
-      hasName: Boolean(input.name),
-      hasPrefix: Boolean(input.prefix),
-      hasExpiresIn: Boolean(input.expiresIn),
-      permissionCount: input.permissions
-        ? Object.keys(input.permissions).length
-        : 0,
-      hasMetadata: Boolean(input.metadata),
-    })
-
-    return result as T
-  } catch (error) {
-    emitAuthHandlerProxyPerfSummary("auth.handler-proxy.create-api-key.error", tracker, {
       message: error instanceof Error ? error.message : String(error),
     })
     throw error

@@ -4,7 +4,9 @@ import {
   createCloudflareDbAccessors,
   HYPERDRIVE_BINDING_PRIORITY,
 } from "@/lib/cloudflare-db"
-import { createAuthApiKey, invokeAuthHandler } from "@/lib/auth-handler-proxy"
+import { defaultKeyHasher } from "@better-auth/api-key"
+import { generateRandomString } from "better-auth/crypto"
+import { invokeAuthHandler } from "@/lib/auth-handler-proxy"
 import { sendApiKeyCreatedNotification } from "@/lib/dashboard-api-key-emails"
 import {
   dashboardApiKeyUsageCacheScope,
@@ -47,6 +49,12 @@ type UsageSummarySnapshot = {
 }
 
 const usageSummarySnapshotPromises = new WeakMap<D1DatabaseLike, Map<number, Promise<UsageSummarySnapshot | null>>>()
+
+const DASHBOARD_API_KEY_ID_LENGTH = 32
+const DASHBOARD_API_KEY_LENGTH = 64
+const DASHBOARD_API_KEY_START_LENGTH = 16
+const DASHBOARD_API_KEY_ALPHABET_START = "a-z"
+const DASHBOARD_API_KEY_ALPHABET_END = "A-Z"
 
 type BetterAuthApiKey = {
   id: string
@@ -218,6 +226,24 @@ function resolveAbsoluteExpiryToSeconds(expiresAtMs: number | undefined): number
   return Math.max(1, Math.ceil(diffMs / 1000))
 }
 
+function generateDashboardApiKeyId(): string {
+  return generateRandomString(
+    DASHBOARD_API_KEY_ID_LENGTH,
+    DASHBOARD_API_KEY_ALPHABET_START,
+    DASHBOARD_API_KEY_ALPHABET_END,
+  )
+}
+
+function generateDashboardApiKeySecret(prefix?: string): string {
+  const rawSecret = generateRandomString(
+    DASHBOARD_API_KEY_LENGTH,
+    DASHBOARD_API_KEY_ALPHABET_START,
+    DASHBOARD_API_KEY_ALPHABET_END,
+  )
+
+  return `${prefix?.trim() ?? ""}${rawSecret}`
+}
+
 async function resolveAuthDb(): Promise<D1DatabaseLike | null> {
   return getSqlDbAsync()
 }
@@ -381,13 +407,16 @@ async function getUserEmailByReferenceId(referenceId: string): Promise<string | 
   return response.results[0]?.email?.trim().toLowerCase() || null
 }
 
-async function getUserIdByEmail(email: string): Promise<string | null> {
-  const db = await resolveAuthDb()
-  if (!db) {
+async function getUserIdByEmail(
+  email: string,
+  db?: D1DatabaseLike | null,
+): Promise<string | null> {
+  const resolvedDb = db ?? (await resolveAuthDb())
+  if (!resolvedDb) {
     return null
   }
 
-  const response = await db
+  const response = await resolvedDb
     .prepare(
       `
       SELECT id
@@ -573,28 +602,113 @@ export async function createDashboardApiKey(
   const metadata = encodeMetadata({ roles: input.roles, meta: input.meta })
   const expiresIn = resolveAbsoluteExpiryToSeconds(input.expires)
 
-  const userId = await getUserIdByEmail(input.userEmail)
+  const db = await resolveAuthDb()
+  if (!db) {
+    throw new Error("Failed to resolve auth database for API key creation")
+  }
+
+  const userId = await getUserIdByEmail(input.userEmail, db)
   if (!userId) {
     throw new Error(`Failed to resolve user id for ${input.userEmail}`)
   }
 
-  let data: BetterAuthApiKey
-  try {
-    data = await createAuthApiKey<BetterAuthApiKey>({
-      userId,
-      ...(input.name?.trim() ? { name: input.name.trim() } : {}),
-      ...(input.prefix?.trim() ? { prefix: input.prefix.trim() } : {}),
-      ...(expiresIn ? { expiresIn } : {}),
-      ...(permissions ? { permissions } : {}),
-      ...(metadata ? { metadata } : {}),
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    throw new Error(`Failed to create API key with Better Auth: ${message}`)
-  }
+  const key = generateDashboardApiKeySecret(input.prefix)
+  const hashedKey = await defaultKeyHasher(key)
+  const now = new Date()
+  const expiresAt = expiresIn ? new Date(now.getTime() + expiresIn * 1000) : null
+  const apiKeyId = generateDashboardApiKeyId()
+  const start = key.slice(0, DASHBOARD_API_KEY_START_LENGTH)
 
-  if (!data.key) {
-    throw new Error("Failed to create API key with Better Auth: missing key in response")
+  const response = await db
+    .prepare(
+      `
+      INSERT INTO apikey (
+        id,
+        name,
+        start,
+        prefix,
+        key,
+        userid,
+        organizationid,
+        refillinterval,
+        refillamount,
+        lastrefillat,
+        enabled,
+        ratelimitenabled,
+        ratelimittimewindow,
+        ratelimitmax,
+        requestcount,
+        remaining,
+        lastrequest,
+        expiresat,
+        createdat,
+        updatedat,
+        permissions,
+        metadata,
+        configid,
+        referenceid
+      )
+      VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      )
+      RETURNING
+        id,
+        name,
+        start,
+        prefix,
+        key,
+        userid AS "userId",
+        organizationid AS "organizationId",
+        refillinterval AS "refillInterval",
+        refillamount AS "refillAmount",
+        lastrefillat AS "lastRefillAt",
+        enabled,
+        ratelimitenabled AS "rateLimitEnabled",
+        ratelimittimewindow AS "rateLimitTimeWindow",
+        ratelimitmax AS "rateLimitMax",
+        requestcount AS "requestCount",
+        remaining,
+        lastrequest AS "lastRequest",
+        expiresat AS "expiresAt",
+        createdat AS "createdAt",
+        updatedat AS "updatedAt",
+        permissions,
+        metadata,
+        configid AS "configId",
+        referenceid AS "referenceId"
+      `,
+    )
+    .bind(
+      apiKeyId,
+      input.name?.trim() || null,
+      start,
+      input.prefix?.trim() || null,
+      hashedKey,
+      userId,
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      86_400,
+      10,
+      0,
+      null,
+      null,
+      expiresAt?.toISOString() ?? null,
+      now.toISOString(),
+      now.toISOString(),
+      permissions ? JSON.stringify(permissions) : null,
+      metadata ? JSON.stringify(metadata) : null,
+      "default",
+      userId,
+    )
+    .all<BetterAuthApiKey>()
+
+  const data = response.results[0]
+  if (!data) {
+    throw new Error("Failed to create API key with Better Auth: missing database row")
   }
 
   const record = mapApiKeyRecord(data, input.userEmail)
@@ -605,7 +719,7 @@ export async function createDashboardApiKey(
     keyName: record.name,
     createdAt: record.createdAt,
     permissions: record.permissions,
-    key: data.key,
+    key,
   }).catch((error) => {
     console.error("[api-keys] Failed to send API key created email", error)
   })
@@ -616,7 +730,7 @@ export async function createDashboardApiKey(
   ])
 
   return {
-    key: data.key,
+    key,
     record,
   }
 }

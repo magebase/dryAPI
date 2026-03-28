@@ -14,7 +14,6 @@ vi.mock("@/lib/cloudflare-db", () => ({
 }))
 
 vi.mock("@/lib/auth-handler-proxy", () => ({
-  createAuthApiKey: vi.fn(),
   invokeAuthHandler: vi.fn(),
 }))
 

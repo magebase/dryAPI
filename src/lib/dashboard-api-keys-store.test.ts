@@ -6,6 +6,11 @@ const { getSqlDbAsyncMock } = vi.hoisted(() => ({
   getSqlDbAsyncMock: vi.fn(),
 }))
 
+const { generateRandomStringMock, defaultKeyHasherMock } = vi.hoisted(() => ({
+  generateRandomStringMock: vi.fn((length: number) => "x".repeat(length)),
+  defaultKeyHasherMock: vi.fn(async (value: string) => `hashed:${value}`),
+}))
+
 vi.mock("@/lib/cloudflare-db", () => ({
   HYPERDRIVE_BINDING_PRIORITY: ["HYPERDRIVE"],
   createCloudflareDbAccessors: () => ({
@@ -13,13 +18,20 @@ vi.mock("@/lib/cloudflare-db", () => ({
   }),
 }))
 
-const { createAuthApiKeyMock, sendApiKeyCreatedNotificationMock } = vi.hoisted(() => ({
-  createAuthApiKeyMock: vi.fn(),
+vi.mock("better-auth/crypto", () => ({
+  generateRandomString: (...args: unknown[]) => generateRandomStringMock(...args),
+}))
+
+vi.mock("@better-auth/api-key", () => ({
+  defaultKeyHasher: (...args: unknown[]) => defaultKeyHasherMock(...args),
+}))
+
+const { sendApiKeyCreatedNotificationMock } = vi.hoisted(() => ({
   sendApiKeyCreatedNotificationMock: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("@/lib/auth-handler-proxy", () => ({
-  createAuthApiKey: createAuthApiKeyMock,
+  invokeAuthHandler: vi.fn(),
 }))
 
 vi.mock("@/lib/dashboard-api-key-emails", () => ({
@@ -35,28 +47,9 @@ import {
 
 describe("dashboard api keys store", () => {
   beforeEach(() => {
-    createAuthApiKeyMock.mockReset()
+    generateRandomStringMock.mockClear()
+    defaultKeyHasherMock.mockClear()
     sendApiKeyCreatedNotificationMock.mockClear()
-
-    getSqlDbAsyncMock.mockResolvedValue({
-      prepare(query: string) {
-        return {
-          bind() {
-            return {
-              async all() {
-                if (query.includes("SELECT id") && query.includes('FROM "user"')) {
-                  return {
-                    results: [{ id: "user_123" }],
-                  }
-                }
-
-                return { results: [] }
-              },
-            }
-          },
-        }
-      },
-    })
   })
 
   afterEach(() => {
@@ -68,29 +61,92 @@ describe("dashboard api keys store", () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-03-27T00:00:00.000Z"))
 
-    try {
-      createAuthApiKeyMock.mockResolvedValue({
-        id: "key_123",
-        name: "Production Server",
-        start: "dry_live_preview",
-        prefix: null,
-        referenceId: "user_123",
-        enabled: true,
-        expiresAt: null,
-        createdAt: "2026-03-17T12:00:00.000Z",
-        updatedAt: "2026-03-17T12:00:00.000Z",
-        permissions: {
-          legacy: ["models:infer", "billing:read"],
-        },
-        metadata: {
-          roles: [],
-          meta: {
-            environment: "production",
-          },
-        },
-        key: "dry_live_secret_token_1234",
-      })
+    const queries: Array<{ query: string; values: unknown[] }> = []
 
+    getSqlDbAsyncMock.mockResolvedValue({
+      prepare(query: string) {
+        const values: unknown[] = []
+        queries.push({ query, values })
+
+        return {
+          bind(...boundValues: unknown[]) {
+            values.push(...boundValues)
+            return this
+          },
+          async all() {
+            if (query.includes('FROM "user"')) {
+              return {
+                results: [{ id: "user_123" }],
+              }
+            }
+
+            if (query.includes("INSERT INTO apikey")) {
+              const [
+                id,
+                name,
+                start,
+                prefix,
+                key,
+                userId,
+                organizationId,
+                refillInterval,
+                refillAmount,
+                lastRefillAt,
+                enabled,
+                rateLimitEnabled,
+                rateLimitTimeWindow,
+                rateLimitMax,
+                requestCount,
+                remaining,
+                lastRequest,
+                expiresAt,
+                createdAt,
+                updatedAt,
+                permissions,
+                metadata,
+                configId,
+                referenceId,
+              ] = values
+
+              return {
+                results: [
+                  {
+                    id,
+                    name,
+                    start,
+                    prefix,
+                    key,
+                    userId,
+                    organizationId,
+                    refillInterval,
+                    refillAmount,
+                    lastRefillAt,
+                    enabled,
+                    rateLimitEnabled,
+                    rateLimitTimeWindow,
+                    rateLimitMax,
+                    requestCount,
+                    remaining,
+                    lastRequest,
+                    expiresAt,
+                    createdAt,
+                    updatedAt,
+                    permissions,
+                    metadata,
+                    configId,
+                    referenceId,
+                  },
+                ],
+              }
+            }
+
+            return { results: [] }
+          },
+        }
+      },
+    })
+
+    try {
       const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
         method: "POST",
       })
@@ -105,116 +161,138 @@ describe("dashboard api keys store", () => {
         },
       })
 
-      expect(createAuthApiKeyMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          expiresIn: 180 * 24 * 60 * 60,
-        }),
-      )
+      const insertQuery = queries.find((entry) => entry.query.includes("INSERT INTO apikey"))
+      expect(insertQuery).toBeDefined()
+      expect(insertQuery?.values[0]).toBe("x".repeat(32))
+      expect(insertQuery?.values[4]).toBe("hashed:" + "x".repeat(64))
+      expect(insertQuery?.values[5]).toBe("user_123")
+      expect(insertQuery?.values[17]).toBe("2026-09-23T00:00:00.000Z")
+      expect(insertQuery?.values[20]).toBe(JSON.stringify({ legacy: ["models:infer", "billing:read"] }))
+      expect(insertQuery?.values[21]).toBe(JSON.stringify({ roles: [], meta: { environment: "production" } }))
+      expect(insertQuery?.values[23]).toBe("user_123")
     } finally {
       vi.useRealTimers()
     }
   })
 
   it("sends a notification after creating an API key", async () => {
-    createAuthApiKeyMock.mockResolvedValue({
-      id: "key_123",
-      name: "Production Server",
-      start: "dry_live_preview",
-      prefix: null,
-      referenceId: "user_123",
-      enabled: true,
-      expiresAt: null,
-      createdAt: "2026-03-17T12:00:00.000Z",
-      updatedAt: "2026-03-17T12:00:00.000Z",
-      permissions: {
-        legacy: ["models:infer", "billing:read"],
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-03-27T00:00:00.000Z"))
+
+    getSqlDbAsyncMock.mockResolvedValue({
+      prepare(query: string) {
+        const values: unknown[] = []
+
+        return {
+          bind(...boundValues: unknown[]) {
+            values.push(...boundValues)
+            return this
+          },
+          async all() {
+            if (query.includes('FROM "user"')) {
+              return {
+                results: [{ id: "user_123" }],
+              }
+            }
+
+            if (query.includes("INSERT INTO apikey")) {
+              const [
+                id,
+                name,
+                start,
+                prefix,
+                key,
+                userId,
+                organizationId,
+                refillInterval,
+                refillAmount,
+                lastRefillAt,
+                enabled,
+                rateLimitEnabled,
+                rateLimitTimeWindow,
+                rateLimitMax,
+                requestCount,
+                remaining,
+                lastRequest,
+                expiresAt,
+                createdAt,
+                updatedAt,
+                permissions,
+                metadata,
+                configId,
+                referenceId,
+              ] = values
+
+              return {
+                results: [
+                  {
+                    id,
+                    name,
+                    start,
+                    prefix,
+                    key,
+                    userId,
+                    organizationId,
+                    refillInterval,
+                    refillAmount,
+                    lastRefillAt,
+                    enabled,
+                    rateLimitEnabled,
+                    rateLimitTimeWindow,
+                    rateLimitMax,
+                    requestCount,
+                    remaining,
+                    lastRequest,
+                    expiresAt,
+                    createdAt,
+                    updatedAt,
+                    permissions,
+                    metadata,
+                    configId,
+                    referenceId,
+                  },
+                ],
+              }
+            }
+
+            return { results: [] }
+          },
+        }
       },
-      metadata: {
-        roles: [],
+    })
+
+    try {
+      const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
+        method: "POST",
+      })
+
+      const result = await createDashboardApiKey(request, {
+        userEmail: "ops@example.com",
+        name: "Production Server",
+        permissions: ["models:infer", "billing:read"],
         meta: {
           environment: "production",
         },
-      },
-      key: "dry_live_secret_token_1234",
-    })
+      })
 
-    const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
-      method: "POST",
-    })
-
-    const result = await createDashboardApiKey(request, {
-      userEmail: "ops@example.com",
-      name: "Production Server",
-      permissions: ["models:infer", "billing:read"],
-      meta: {
-        environment: "production",
-      },
-    })
-
-    expect(result.record.name).toBe("Production Server")
-    expect(result.key).toBe("dry_live_secret_token_1234")
-    expect(sendApiKeyCreatedNotificationMock).toHaveBeenCalledTimes(1)
-    expect(sendApiKeyCreatedNotificationMock).toHaveBeenCalledWith({
-      request,
-      userEmail: "ops@example.com",
-      keyName: "Production Server",
-      createdAt: "2026-03-17T12:00:00.000Z",
-      permissions: ["models:infer", "billing:read"],
-      key: "dry_live_secret_token_1234",
-    })
+      expect(result.record.name).toBe("Production Server")
+      expect(result.key).toBe("x".repeat(64))
+      expect(sendApiKeyCreatedNotificationMock).toHaveBeenCalledTimes(1)
+      expect(sendApiKeyCreatedNotificationMock).toHaveBeenCalledWith({
+        request,
+        userEmail: "ops@example.com",
+        keyName: "Production Server",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        permissions: ["models:infer", "billing:read"],
+        key: "x".repeat(64),
+      })
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
-  it("passes user id, permissions, and metadata to the server auth api", async () => {
-    createAuthApiKeyMock.mockResolvedValue({
-      id: "key_123",
-      name: "Production Server",
-      start: "dry_live_preview",
-      prefix: null,
-      referenceId: "user_123",
-      enabled: true,
-      expiresAt: null,
-      createdAt: "2026-03-17T12:00:00.000Z",
-      updatedAt: "2026-03-17T12:00:00.000Z",
-      permissions: {
-        legacy: ["models:infer", "billing:read"],
-      },
-      metadata: {
-        roles: [],
-        meta: {
-          environment: "production",
-        },
-      },
-      key: "dry_live_secret_token_1234",
-    })
-
-    const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
-      method: "POST",
-    })
-
-    await createDashboardApiKey(request, {
-      userEmail: "ops@example.com",
-      name: "Production Server",
-      permissions: ["models:infer", "billing:read"],
-      meta: {
-        environment: "production",
-      },
-    })
-
-    expect(createAuthApiKeyMock).toHaveBeenCalledWith({
-      userId: "user_123",
-      name: "Production Server",
-      permissions: { legacy: ["models:infer", "billing:read"] },
-      metadata: {
-        roles: [],
-        meta: {
-          environment: "production",
-        },
-      },
-    })
-  })
-
-  it("includes auth failure details in the thrown error", async () => {
-    createAuthApiKeyMock.mockRejectedValue(new Error("SERVER_ONLY_PROPERTY"))
+  it("fails when the auth database cannot be resolved", async () => {
+    getSqlDbAsyncMock.mockResolvedValue(null)
 
     const request = new Request("https://agentapi.dev/api/dashboard/api-keys", {
       method: "POST",
@@ -229,7 +307,7 @@ describe("dashboard api keys store", () => {
           environment: "production",
         },
       }),
-    ).rejects.toThrow("Failed to create API key with Better Auth: SERVER_ONLY_PROPERTY")
+    ).rejects.toThrow("Failed to resolve auth database for API key creation")
   })
 })
 
