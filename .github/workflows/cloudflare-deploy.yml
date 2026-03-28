@@ -239,6 +239,13 @@ jobs:
           append_env_var "STRIPE_PORTAL_PRO_MONTHLY_PRICE_ID"
           append_env_var "STRIPE_PORTAL_PRO_ANNUAL_PRICE_ID"
 
+          if [[ -z "${STRIPE_PRIVATE_KEY}" ]]; then
+            echo "STRIPE_PRIVATE_KEY is required for Stripe deploy validation."
+            exit 1
+          fi
+
+          printf 'STRIPE_PRIVATE_KEY=%s\n' "${STRIPE_PRIVATE_KEY}" >> "$GITHUB_ENV"
+
           if [[ -n "${NEXT_PUBLIC_SITE_URL:-}" ]]; then
             printf 'NEXT_PUBLIC_SITE_URL=%q\n' "${NEXT_PUBLIC_SITE_URL}" >> "${portal_env_file}"
             printf 'SYNC_SECRET_NEXT_PUBLIC_SITE_URL=%q\n' "${NEXT_PUBLIC_SITE_URL}" >> "${sync_env_file}"
