@@ -5,6 +5,8 @@ const invokeAuthHandlerMock = vi.fn()
 const getDashboardSessionSnapshotMock = vi.fn()
 const authorizeDashboardBillingAccessMock = vi.fn()
 const resolveRequestOriginFromRequestMock = vi.fn()
+const resolveStripeCustomerLookupMock = vi.fn()
+const resolveStripeCheckoutMessagingMock = vi.fn()
 
 vi.mock("@/lib/auth-handler-proxy", () => ({
   invokeAuthHandler: (...args: unknown[]) => invokeAuthHandlerMock(...args),
@@ -14,11 +16,13 @@ vi.mock("@/lib/dashboard-billing", () => ({
   getDashboardSessionSnapshot: (...args: unknown[]) => getDashboardSessionSnapshotMock(...args),
   authorizeDashboardBillingAccess: (...args: unknown[]) => authorizeDashboardBillingAccessMock(...args),
   resolveRequestOriginFromRequest: (...args: unknown[]) => resolveRequestOriginFromRequestMock(...args),
+  resolveStripeCustomerLookup: (...args: unknown[]) => resolveStripeCustomerLookupMock(...args),
 }))
 
 vi.mock("@/lib/stripe-branding", () => ({
   buildBrandedCheckoutSuccessUrl: () => "https://example.com/dashboard/billing?checkout=success",
   buildBrandedCheckoutCancelUrl: () => "https://example.com/dashboard/billing?checkout=cancel",
+  resolveStripeCheckoutMessaging: (...args: unknown[]) => resolveStripeCheckoutMessagingMock(...args),
 }))
 
 import { GET } from "@/app/api/dashboard/billing/subscribe/route"
@@ -36,10 +40,12 @@ afterEach(() => {
   getDashboardSessionSnapshotMock.mockReset()
   authorizeDashboardBillingAccessMock.mockReset()
   resolveRequestOriginFromRequestMock.mockReset()
+  resolveStripeCustomerLookupMock.mockReset()
+  resolveStripeCheckoutMessagingMock.mockReset()
 })
 
 beforeEach(() => {
-  vi.stubEnv("STRIPE_PRIVATE_KEY", "")
+  vi.stubEnv("STRIPE_PRIVATE_KEY", "sk_test_123")
   vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "")
   vi.stubEnv("STRIPE_METER_BILLING_CUSTOMER_ID", "")
   vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "")
@@ -48,6 +54,20 @@ beforeEach(() => {
   vi.stubEnv("STRIPE_SAAS_ANNUAL_PRICE_GROWTH", "")
   vi.stubEnv("STRIPE_SAAS_PRICE_SCALE", "")
   vi.stubEnv("STRIPE_SAAS_ANNUAL_PRICE_SCALE", "")
+  resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+  resolveStripeCustomerLookupMock.mockResolvedValue({
+    customerId: "cus_123",
+    errors: [],
+  })
+  resolveStripeCheckoutMessagingMock.mockReturnValue({
+    checkoutBrandName: "dryAPI",
+    legalEntityName: "AdStim LLC",
+    statementDescriptor: "DRYAPI*ADSTIM",
+    statementDescriptorSuffix: "DRYAPI",
+    checkoutSubmitMessage: "You will be charged by AdStim LLC for your dryAPI purchase.",
+    checkoutDisclosure: "Charges appear as DRYAPI*ADSTIM. Billing is processed by AdStim LLC.",
+    checkoutLegalHint: "Powered by AdStim LLC",
+  })
 })
 
 describe("GET /api/dashboard/billing/subscribe", () => {
@@ -133,6 +153,51 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     expect(invokeAuthHandlerMock).toHaveBeenCalledTimes(1)
   })
 
+  it("creates a direct subscription checkout session when no Stripe customer exists yet", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
+    resolveStripeCustomerLookupMock.mockResolvedValue({
+      customerId: null,
+      errors: ["No Stripe customer matched the signed-in email."],
+    })
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "cs_test_subscription",
+          url: "https://checkout.stripe.com/c/subscription",
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const res = await GET(makeRequest())
+
+    expect(res.status).toBe(302)
+    expect(res.headers.get("location")).toBe("https://checkout.stripe.com/c/subscription")
+    expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    const requestBody = new URLSearchParams(String(fetchMock.mock.calls[0]?.[1]?.body || ""))
+    expect(requestBody.get("mode")).toBe("subscription")
+    expect(requestBody.get("line_items[0][price]")).toBe("price_monthly_starter")
+    expect(requestBody.get("customer_email")).toBe("owner@dryapi.dev")
+    expect(requestBody.get("client_reference_id")).toBe("owner@dryapi.dev")
+    expect(requestBody.get("metadata[planSlug]")).toBe("starter")
+    expect(requestBody.get("metadata[referenceId]")).toBe("owner@dryapi.dev")
+  })
+
   it("returns 400 for an invalid billing period", async () => {
     getDashboardSessionSnapshotMock.mockResolvedValue({
       authenticated: true,
@@ -208,6 +273,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
   it("returns 501 when portal configuration is set without a Stripe private key", async () => {
     vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_monthly_starter")
     vi.stubEnv("STRIPE_PORTAL_CONFIGURATION_ID", "bpc_test")
+    vi.stubEnv("STRIPE_PRIVATE_KEY", "")
 
     getDashboardSessionSnapshotMock.mockResolvedValue({
       authenticated: true,

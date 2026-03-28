@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveActiveBrand } from "@/lib/brand-catalog";
 import { invokeAuthHandler } from "@/lib/auth-handler-proxy";
 import {
   authorizeDashboardBillingAccess,
   getDashboardSessionSnapshot,
   resolveRequestOriginFromRequest,
+  resolveStripeCustomerLookup,
 } from "@/lib/dashboard-billing";
 import {
   resolveSaasPlanStripeAnnualPriceId,
@@ -14,6 +16,7 @@ import {
 import {
   buildBrandedCheckoutCancelUrl,
   buildBrandedCheckoutSuccessUrl,
+  resolveStripeCheckoutMessaging,
 } from "@/lib/stripe-branding";
 
 type BillingPeriod = "monthly" | "annual";
@@ -50,6 +53,14 @@ type PortalPriceMismatch = {
   subscriptionItemId: string;
   priceId: string;
   configurationId: string;
+};
+
+type StripeCheckoutSessionResponse = {
+  id?: string;
+  url?: string;
+  error?: {
+    message?: string;
+  };
 };
 
 const STRIPE_PORTAL_PRICE_MISMATCH_PATTERN =
@@ -179,6 +190,112 @@ async function validateStripePortalConfigurationForPrice(input: {
   return { ok: true };
 }
 
+function buildSubscriptionCheckoutParams(input: {
+  customerEmail: string | null;
+  customerRef: string;
+  selectedPriceId: string;
+  successUrl: string;
+  cancelUrl: string;
+  planSlug: string;
+  billingPeriod: BillingPeriod;
+  brandKey: string;
+  checkoutMessaging: ReturnType<typeof resolveStripeCheckoutMessaging>;
+}): URLSearchParams {
+  const params = new URLSearchParams();
+
+  params.set("mode", "subscription");
+  params.set("success_url", input.successUrl);
+  params.set("cancel_url", input.cancelUrl);
+  params.set("line_items[0][quantity]", "1");
+  params.set("line_items[0][price]", input.selectedPriceId);
+  params.set("allow_promotion_codes", "true");
+  params.set("automatic_tax[enabled]", "true");
+  params.set("tax_id_collection[enabled]", "true");
+  params.set("custom_text[submit][message]", input.checkoutMessaging.checkoutSubmitMessage);
+  params.set("client_reference_id", input.customerRef);
+  params.set("metadata[source]", "dryapi-dashboard-subscribe");
+  params.set("metadata[customerRef]", input.customerRef);
+  params.set("metadata[referenceId]", input.customerRef);
+  params.set("metadata[planSlug]", input.planSlug);
+  params.set("metadata[billingPeriod]", input.billingPeriod);
+  params.set("metadata[dryapi_brand_key]", input.brandKey);
+  params.set("metadata[merchant_legal_entity]", input.checkoutMessaging.legalEntityName);
+  params.set("metadata[statement_descriptor_hint]", input.checkoutMessaging.statementDescriptor);
+  params.set("subscription_data[metadata][source]", "dryapi-dashboard-subscribe");
+  params.set("subscription_data[metadata][customerRef]", input.customerRef);
+  params.set("subscription_data[metadata][referenceId]", input.customerRef);
+  params.set("subscription_data[metadata][planSlug]", input.planSlug);
+  params.set("subscription_data[metadata][billingPeriod]", input.billingPeriod);
+  params.set("subscription_data[metadata][dryapi_brand_key]", input.brandKey);
+  params.set("subscription_data[metadata][merchant_legal_entity]", input.checkoutMessaging.legalEntityName);
+  params.set("subscription_data[metadata][statement_descriptor_hint]", input.checkoutMessaging.statementDescriptor);
+
+  if (input.customerEmail?.trim()) {
+    params.set("customer_email", input.customerEmail.trim());
+  }
+
+  return params;
+}
+
+async function createSubscriptionCheckoutSession(input: {
+  stripePrivateKey: string;
+  origin: string;
+  customerEmail: string | null;
+  customerRef: string;
+  planSlug: string;
+  billingPeriod: BillingPeriod;
+  selectedPriceId: string;
+  brandKey: string;
+  checkoutMessaging: ReturnType<typeof resolveStripeCheckoutMessaging>;
+}): Promise<NextResponse> {
+  const sessionParams = buildSubscriptionCheckoutParams({
+    customerEmail: input.customerEmail,
+    customerRef: input.customerRef,
+    selectedPriceId: input.selectedPriceId,
+    successUrl: buildBrandedCheckoutSuccessUrl({
+      origin: input.origin,
+      flow: "subscription",
+      planSlug: input.planSlug,
+      billingPeriod: input.billingPeriod,
+    }),
+    cancelUrl: buildBrandedCheckoutCancelUrl({
+      origin: input.origin,
+      flow: "subscription",
+      planSlug: input.planSlug,
+      billingPeriod: input.billingPeriod,
+    }),
+    planSlug: input.planSlug,
+    billingPeriod: input.billingPeriod,
+    brandKey: input.brandKey,
+    checkoutMessaging: input.checkoutMessaging,
+  });
+
+  const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${input.stripePrivateKey}`,
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: sessionParams.toString(),
+  });
+
+  const payload = (await stripeResponse.json().catch(() => null)) as StripeCheckoutSessionResponse | null;
+
+  if (!stripeResponse.ok || !payload?.url || !payload.id) {
+    return NextResponse.json(
+      {
+        error: "checkout_creation_failed",
+        message:
+          payload?.error?.message ||
+          "Unable to create Stripe subscription checkout session.",
+      },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.redirect(payload.url, 302);
+}
+
 export async function GET(request: NextRequest) {
   const session = await getDashboardSessionSnapshot(request);
   const access = await authorizeDashboardBillingAccess(session)
@@ -254,21 +371,45 @@ export async function GET(request: NextRequest) {
     billingPeriod === "annual" ? annualPriceId! : monthlyPriceId;
 
   const stripePrivateKey = process.env.STRIPE_PRIVATE_KEY?.trim() || "";
+  if (!stripePrivateKey) {
+    return NextResponse.json(
+      {
+        error: "stripe_not_configured",
+        message: "Missing STRIPE_PRIVATE_KEY.",
+      },
+      { status: 501 },
+    );
+  }
+
+  const origin = resolveRequestOriginFromRequest(request);
+  const brand = await resolveActiveBrand({ hostname: new URL(origin).hostname });
+  const checkoutMessaging = resolveStripeCheckoutMessaging({
+    brandMark: brand.mark,
+  });
+  const customerLookup = await resolveStripeCustomerLookup({
+    stripePrivateKey,
+    sessionEmail: session.email,
+    activeOrganizationId: session.activeOrganizationId,
+  });
+
+  if (!customerLookup.customerId) {
+    return createSubscriptionCheckoutSession({
+      stripePrivateKey,
+      origin,
+      customerEmail: session.email,
+      customerRef: access.customerRef,
+      planSlug: plan.slug,
+      billingPeriod,
+      selectedPriceId,
+      brandKey: brand.key,
+      checkoutMessaging,
+    });
+  }
+
   const stripePortalConfigurationId =
     process.env.STRIPE_PORTAL_CONFIGURATION_ID?.trim() || "";
 
   if (stripePortalConfigurationId) {
-    if (!stripePrivateKey) {
-      return NextResponse.json(
-        {
-          error: "stripe_not_configured",
-          message:
-            "Missing STRIPE_PRIVATE_KEY while STRIPE_PORTAL_CONFIGURATION_ID is set.",
-        },
-        { status: 501 },
-      );
-    }
-
     const validation = await validateStripePortalConfigurationForPrice({
       stripePrivateKey,
       configurationId: stripePortalConfigurationId,
@@ -286,7 +427,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const origin = resolveRequestOriginFromRequest(request);
   const customerType = session.activeOrganizationId ? "organization" : "user";
 
   const { response, data } =
