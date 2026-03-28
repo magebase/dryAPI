@@ -19,6 +19,7 @@ import { invalidateClientAuthSessionSnapshot } from "@/lib/client-auth-session"
 
 type MockState = {
   organizations: Array<{ id: string; name: string; slug: string }>
+  staleOrganizationListAfterCreate?: boolean
   session: {
     user: { id: string }
     session: { activeOrganizationId: string | null }
@@ -97,8 +98,23 @@ function createFetchMock(state: MockState) {
     if (path === "/api/auth/organization/create" && method === "POST") {
       const body = JSON.parse(String(init?.body || "{}")) as { name: string; slug: string }
       const id = `org_${state.organizations.length + 1}`
-      state.organizations.push({ id, name: body.name, slug: body.slug })
+      if (!state.staleOrganizationListAfterCreate) {
+        state.organizations.push({ id, name: body.name, slug: body.slug })
+      }
       state.session.session.activeOrganizationId = id
+      state.members = [
+        {
+          id: `member_${id}`,
+          organizationId: id,
+          userId: state.session.user.id,
+          role: "owner",
+          user: {
+            id: state.session.user.id,
+            name: "Owner",
+            email: "owner@example.com",
+          },
+        },
+      ]
       return jsonResponse({ id, name: body.name, slug: body.slug })
     }
 
@@ -250,6 +266,34 @@ describe("OrganizationSettingsPanel invitation flows", () => {
     expect(JSON.parse(String(createCall?.[1]?.body || "{}"))).toEqual({
       name: "DryAPI Ops",
       slug: "dryapi-ops",
+    })
+  })
+
+  it("keeps a newly created workspace visible when the list response is stale", async () => {
+    const state = createDefaultState()
+    state.staleOrganizationListAfterCreate = true
+    const fetchMock = createFetchMock(state)
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderOrganizationSettingsPanel()
+
+    await screen.findByText("Your workspaces")
+
+    fireEvent.change(screen.getByLabelText("Workspace name"), {
+      target: { value: "DryAPI Ops" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Create workspace" }))
+
+    await waitFor(() => {
+      expect(toastSuccess).toHaveBeenCalledWith("Workspace DryAPI Ops created")
+    })
+
+    await waitFor(() => {
+      const workspaceLabel = screen
+        .getAllByText("DryAPI Ops")
+        .find((element) => element.tagName.toLowerCase() === "p")
+
+      expect(workspaceLabel).toBeVisible()
     })
   })
 

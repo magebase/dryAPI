@@ -84,6 +84,25 @@ type OrganizationDetailsResponse = {
   invitations?: OrganizationInvitation[];
 };
 
+function mergeOrganizationsById(
+  currentOrganizations: OrganizationRecord[],
+  nextOrganizations: OrganizationRecord[],
+): OrganizationRecord[] {
+  const mergedById = new Map<string, OrganizationRecord>()
+
+  for (const organization of nextOrganizations) {
+    mergedById.set(organization.id, organization)
+  }
+
+  for (const organization of currentOrganizations) {
+    if (!mergedById.has(organization.id)) {
+      mergedById.set(organization.id, organization)
+    }
+  }
+
+  return Array.from(mergedById.values())
+}
+
 const ORGANIZATION_ROLES = ["owner", "admin", "member"] as const;
 const PERSONAL_WORKSPACE_SWITCH_KEY = "__personal_workspace__";
 
@@ -250,6 +269,8 @@ export function OrganizationSettingsPanel() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [recentlyCreatedOrganizationId, setRecentlyCreatedOrganizationId] =
+    useState<string | null>(null)
   const [slugTouched, setSlugTouched] = useState(false);
   const [switchingId, setSwitchingId] = useState<string | null>(null);
   const [memberActionId, setMemberActionId] = useState<string | null>(null);
@@ -282,14 +303,40 @@ export function OrganizationSettingsPanel() {
       });
 
       const payload = (await response.json().catch(() => null)) as {
+        id?: string
         message?: string;
         name?: string;
+        slug?: string
       } | null;
 
       if (!response.ok) {
         throw new Error(payload?.message || "Unable to create workspace");
       }
 
+      if (payload?.id) {
+        const createdOrganizationId = payload.id
+
+        setRecentlyCreatedOrganizationId(createdOrganizationId)
+        setOrganizations((currentOrganizations) => {
+          if (
+            currentOrganizations.some(
+              (organization) => organization.id === createdOrganizationId,
+            )
+          ) {
+            return currentOrganizations
+          }
+
+          return [
+            ...currentOrganizations,
+            {
+              id: createdOrganizationId,
+              name: payload.name || "Workspace",
+              slug: payload.slug || createdOrganizationId,
+            },
+          ]
+        })
+        setActiveOrganizationId(createdOrganizationId)
+      }
       return payload;
     },
     onSuccess: (payload) => {
@@ -343,16 +390,15 @@ export function OrganizationSettingsPanel() {
       if (activeOrganizationId) {
         await loadOrganizationDetails(activeOrganizationId);
       }
-
-      inviteMemberForm.reset(INVITE_MEMBER_DEFAULTS);
-      toast.success("Invitation created");
+      inviteMemberForm.reset(INVITE_MEMBER_DEFAULTS)
+      toast.success("Invitation created")
     },
     onError: (error) => {
       toast.error(
         error instanceof Error ? error.message : "Unable to create invitation",
-      );
+      )
     },
-  });
+  })
 
   const createOrganizationForm = useForm({
     defaultValues: CREATE_ORGANIZATION_DEFAULTS,
@@ -361,9 +407,9 @@ export function OrganizationSettingsPanel() {
       onSubmit: createOrganizationSchema,
     },
     onSubmit: async ({ value }) => {
-      await createOrganizationMutation.mutateAsync(value);
+      await createOrganizationMutation.mutateAsync(value)
     },
-  });
+  })
 
   const inviteMemberForm = useForm({
     defaultValues: INVITE_MEMBER_DEFAULTS,
@@ -372,9 +418,9 @@ export function OrganizationSettingsPanel() {
       onSubmit: inviteMemberSchema,
     },
     onSubmit: async ({ value }) => {
-      await inviteMemberMutation.mutateAsync(value);
+      await inviteMemberMutation.mutateAsync(value)
     },
-  });
+  })
 
   async function loadOrganizationDetails(organizationId: string) {
     const response = await fetch(
@@ -383,22 +429,22 @@ export function OrganizationSettingsPanel() {
         cache: "no-store",
         credentials: "include",
       },
-    );
+    )
 
     if (!response.ok) {
-      throw new Error("Failed to load organization details");
+      throw new Error("Failed to load organization details")
     }
 
     const payload = (await response
       .json()
-      .catch(() => null)) as OrganizationDetailsResponse | null;
-    const nextMembers = Array.isArray(payload?.members) ? payload.members : [];
+      .catch(() => null)) as OrganizationDetailsResponse | null
+    const nextMembers = Array.isArray(payload?.members) ? payload.members : []
     const nextInvitations = Array.isArray(payload?.invitations)
       ? payload.invitations
-      : [];
+      : []
 
-    setMembers(nextMembers);
-    setInvitations(nextInvitations);
+    setMembers(nextMembers)
+    setInvitations(nextInvitations)
     setMemberRoleUpdates(
       Object.fromEntries(
         nextMembers.map((member) => [
@@ -406,9 +452,8 @@ export function OrganizationSettingsPanel() {
           normalizeOrganizationRole(member.role),
         ]),
       ),
-    );
+    )
   }
-
   async function loadUserInvitations() {
     const response = await fetch(
       "/api/auth/organization/list-user-invitations",
@@ -465,9 +510,23 @@ export function OrganizationSettingsPanel() {
         const nextActiveOrganizationId =
           sessionRecord?.activeOrganizationId ?? null;
 
-        setOrganizations(nextOrganizations);
+        setOrganizations((currentOrganizations) =>
+          mergeOrganizationsById(currentOrganizations, nextOrganizations),
+        )
         setCurrentUserId(sessionUser?.id ?? null);
-        setActiveOrganizationId(nextActiveOrganizationId);
+
+        const createdOrganizationStillMissing =
+          recentlyCreatedOrganizationId !== null &&
+          !nextOrganizations.some(
+            (organization) => organization.id === recentlyCreatedOrganizationId,
+          )
+
+        if (!createdOrganizationStillMissing) {
+          setActiveOrganizationId(nextActiveOrganizationId)
+          if (recentlyCreatedOrganizationId !== null) {
+            setRecentlyCreatedOrganizationId(null)
+          }
+        }
 
         if (nextActiveOrganizationId) {
           await loadOrganizationDetails(nextActiveOrganizationId);

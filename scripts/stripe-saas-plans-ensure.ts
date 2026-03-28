@@ -97,6 +97,11 @@ function loadEnvFile(filePath) {
   }
 }
 
+function loadStripeSaasPlanEnvFiles() {
+  loadEnvFile(".env.local")
+  loadEnvFile(".env")
+}
+
 function upsertEnvFile(filePath, entries) {
   const existing = existsSync(filePath) ? readFileSync(filePath, "utf8") : ""
   const lines = existing.length > 0 ? existing.split(/\r?\n/) : []
@@ -357,8 +362,7 @@ async function ensurePlanPrice(apiKey, {
 async function main() {
   const options = parseArgs(process.argv)
 
-  loadEnvFile(".env")
-  loadEnvFile(".env.local")
+  loadStripeSaasPlanEnvFiles()
   for (const filePath of options.writeEnvFiles) {
     loadEnvFile(filePath)
   }
@@ -484,4 +488,4 @@ if (isEntrypoint()) {
   })
 }
 
-export { buildPlanEnvOutput }
+export { buildPlanEnvOutput, loadStripeSaasPlanEnvFiles }
