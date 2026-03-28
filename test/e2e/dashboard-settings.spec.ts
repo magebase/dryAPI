@@ -489,7 +489,6 @@ describe("dashboard settings e2e", () => {
       await playwrightExpect(page.getByRole("heading", { name: "API Keys" })).toBeVisible()
       await playwrightExpect(page.getByRole("button", { name: "+ Create API Key" })).toBeVisible()
       await playwrightExpect(page.getByRole("columnheader", { name: "Name" })).toBeVisible()
-      await playwrightExpect(page.getByRole("columnheader", { name: "Key Prefix" })).toBeVisible()
       await playwrightExpect(page.getByRole("columnheader", { name: "Permissions" })).toBeVisible()
     } finally {
       await context.close()

@@ -47,12 +47,6 @@ async function parseJsonSafely(response: Response): Promise<Record<string, unkno
   }
 }
 
-function formatKeyPrefix(start?: string) {
-  if (!start) return "-"
-  if (start.length <= 8) return `${start}****`
-  return `${start}****${start.slice(-4)}`
-}
-
 function formatRelativeTime(input: unknown) {
   if (!input) return "Never"
 
@@ -264,7 +258,6 @@ export default function KeyTable({ initialKeys }: KeyTableProps) {
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-[180px]">Name</TableHead>
-              <TableHead className="w-[140px]">Key Prefix</TableHead>
               <TableHead>Permissions</TableHead>
               <TableHead className="w-[120px]">Last Used</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
@@ -276,7 +269,6 @@ export default function KeyTable({ initialKeys }: KeyTableProps) {
               Array.from({ length: 5 }, (_, index) => (
                 <TableRow key={`api-key-skeleton-${index}`} aria-hidden="true">
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-40 max-w-full" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-16" /></TableCell>
@@ -285,7 +277,7 @@ export default function KeyTable({ initialKeys }: KeyTableProps) {
               ))
             ) : loadError ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <p className="text-sm text-destructive">{loadError}</p>
                     <Button
@@ -303,7 +295,7 @@ export default function KeyTable({ initialKeys }: KeyTableProps) {
               </TableRow>
             ) : keys.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">
                   No API keys found. Create one to get started.
                 </TableCell>
               </TableRow>
@@ -311,7 +303,7 @@ export default function KeyTable({ initialKeys }: KeyTableProps) {
               keys.map((key) => {
                 const status = getStatus(key)
                 const usage = usageByKey[key.keyId]
-                
+
                 return (
                   <TableRow key={key.keyId} className="group">
                     <TableCell>
@@ -321,11 +313,6 @@ export default function KeyTable({ initialKeys }: KeyTableProps) {
                           {getEnvironmentLabel(key)}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium text-muted-foreground">
-                        {formatKeyPrefix(key.start)}
-                      </code>
                     </TableCell>
                     <TableCell>
                       <span className="text-xs text-muted-foreground line-clamp-1">
