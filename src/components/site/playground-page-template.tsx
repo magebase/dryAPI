@@ -303,8 +303,10 @@ function buildPreviewPayload(
     {} as Record<string, number>,
   );
 
+  const apiEndpoint = `${normalizeSiteUrl()}/api/v1/inference`;
+
   return {
-    `curl --request POST ${apiEndpoint} \\`,
+    apiEndpoint,
     input: {
       prompt,
       ...modelParams,
@@ -345,7 +347,7 @@ function buildCurlSnippet(
   const apiEndpoint = `${normalizeSiteUrl()}/api/v1/inference`;
 
   return [
-    `curl --request POST ${apiEndpoint} \\\`,
+    "curl --request POST " + apiEndpoint + " \\",
     '  --header "Authorization: Bearer <YOUR_API_KEY>" \\',
     '  --header "Content-Type: application/json" \\',
     "  --data '{",
