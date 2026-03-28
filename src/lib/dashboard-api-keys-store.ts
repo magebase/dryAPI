@@ -63,9 +63,9 @@ type BetterAuthApiKey = {
   prefix: string | null
   referenceId: string
   enabled: boolean
-  expiresAt: string | Date | null
-  createdAt: string | Date
-  updatedAt: string | Date
+  expiresAt: string | number | bigint | Date | null
+  createdAt: string | number | bigint | Date
+  updatedAt: string | number | bigint | Date
   permissions?: unknown
   metadata?: unknown
   key?: string
@@ -112,7 +112,7 @@ type VerifiedDashboardApiKey = {
   meta: Record<string, unknown>
 }
 
-function toIsoString(value: string | Date | null | undefined): string | null {
+function toIsoString(value: string | number | bigint | Date | null | undefined): string | null {
   if (!value) {
     return null
   }
@@ -120,6 +120,8 @@ function toIsoString(value: string | Date | null | undefined): string | null {
   const date =
     value instanceof Date
       ? value
+      : typeof value === "number" || typeof value === "bigint"
+        ? new Date(Number(value))
       : typeof value === "string" && /^-?\d+$/.test(value.trim())
         ? new Date(Number(value))
         : new Date(value)
@@ -696,9 +698,9 @@ export async function createDashboardApiKey(
       0,
       null,
       null,
-      expiresAt?.toISOString() ?? null,
-      now.toISOString(),
-      now.toISOString(),
+      expiresAt?.getTime() ?? null,
+      now.getTime(),
+      now.getTime(),
       permissions ? JSON.stringify(permissions) : null,
       metadata ? JSON.stringify(metadata) : null,
       "default",

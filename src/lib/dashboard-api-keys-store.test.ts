@@ -151,6 +151,9 @@ describe("dashboard api keys store", () => {
         method: "POST",
       })
 
+      const expectedNowMs = new Date("2026-03-27T00:00:00.000Z").getTime()
+      const expectedExpiresAtMs = new Date("2026-09-23T00:00:00.000Z").getTime()
+
       await createDashboardApiKey(request, {
         userEmail: "ops@example.com",
         name: "Production Server",
@@ -166,7 +169,9 @@ describe("dashboard api keys store", () => {
       expect(insertQuery?.values[0]).toBe("x".repeat(32))
       expect(insertQuery?.values[4]).toBe("hashed:" + "x".repeat(64))
       expect(insertQuery?.values[5]).toBe("user_123")
-      expect(insertQuery?.values[17]).toBe("2026-09-23T00:00:00.000Z")
+      expect(insertQuery?.values[17]).toBe(expectedExpiresAtMs)
+      expect(insertQuery?.values[18]).toBe(expectedNowMs)
+      expect(insertQuery?.values[19]).toBe(expectedNowMs)
       expect(insertQuery?.values[20]).toBe(JSON.stringify({ legacy: ["models:infer", "billing:read"] }))
       expect(insertQuery?.values[21]).toBe(JSON.stringify({ roles: [], meta: { environment: "production" } }))
       expect(insertQuery?.values[23]).toBe("user_123")
@@ -276,6 +281,7 @@ describe("dashboard api keys store", () => {
       })
 
       expect(result.record.name).toBe("Production Server")
+      expect(result.record.createdAt).toBe("2026-03-27T00:00:00.000Z")
       expect(result.key).toBe("x".repeat(64))
       expect(sendApiKeyCreatedNotificationMock).toHaveBeenCalledTimes(1)
       expect(sendApiKeyCreatedNotificationMock).toHaveBeenCalledWith({
