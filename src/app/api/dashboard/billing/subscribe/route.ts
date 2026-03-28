@@ -18,6 +18,7 @@ import {
   buildBrandedCheckoutSuccessUrl,
   resolveStripeCheckoutMessaging,
 } from "@/lib/stripe-branding";
+import { validateStripeSaasPriceId } from "@/lib/stripe-saas-price-validation";
 
 type BillingPeriod = "monthly" | "annual";
 
@@ -386,6 +387,29 @@ export async function GET(request: NextRequest) {
   const checkoutMessaging = resolveStripeCheckoutMessaging({
     brandMark: brand.mark,
   });
+
+  const selectedPriceValidation = await validateStripeSaasPriceId({
+    stripePrivateKey,
+    envKey:
+      billingPeriod === "annual"
+        ? plan.stripeAnnualPriceIdEnvKey
+        : plan.stripePriceIdEnvKey,
+    priceId: selectedPriceId,
+    planLabel: plan.label,
+    billingPeriod,
+    expectedInterval: billingPeriod === "annual" ? "year" : "month",
+  })
+
+  if (!selectedPriceValidation.ok) {
+    return NextResponse.json(
+      {
+        error: selectedPriceValidation.error,
+        message: selectedPriceValidation.message,
+      },
+      { status: selectedPriceValidation.status },
+    )
+  }
+
   const customerLookup = await resolveStripeCustomerLookup({
     stripePrivateKey,
     sessionEmail: session.email,

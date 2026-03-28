@@ -322,6 +322,9 @@ jobs:
 
           cat "${plans_env_file}" >> "$GITHUB_ENV"
 
+      - name: Validate Stripe SaaS prices
+        run: pnpm stripe:saas:prices:validate
+
       - name: Ensure Stripe billing portal configuration
         run: |
           set -euo pipefail

@@ -8,6 +8,107 @@ const resolveRequestOriginFromRequestMock = vi.fn()
 const resolveStripeCustomerLookupMock = vi.fn()
 const resolveStripeCheckoutMessagingMock = vi.fn()
 
+function createStripeFetchMock(handlers: {
+  checkoutSessionUrl?: string
+  portalConfig?: Response
+  priceNotFound?: string[]
+}) {
+  return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString()
+
+    if (url.includes("/v1/prices/")) {
+      const priceId = decodeURIComponent(url.split("/v1/prices/")[1]?.split("?")[0] || "")
+
+      if (handlers.priceNotFound?.includes(priceId)) {
+        return new Response(
+          JSON.stringify({
+            error: {
+              message: `No such price: '${priceId}'`,
+            },
+          }),
+          {
+            status: 404,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        )
+      }
+
+      return new Response(
+        JSON.stringify({
+          id: priceId,
+          object: "price",
+          type: "recurring",
+          active: true,
+          recurring: {
+            interval: /annual/i.test(priceId) ? "year" : "month",
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      )
+    }
+
+    if (url.includes("/v1/billing_portal/configurations/")) {
+      if (handlers.portalConfig) {
+        return handlers.portalConfig
+      }
+
+      return new Response(null, { status: 404 })
+    }
+
+    if (url.includes("/v1/checkout/sessions") && init?.method === "POST") {
+      if (handlers.checkoutSessionUrl) {
+        return new Response(
+          JSON.stringify({
+            id: "cs_test_subscription",
+            url: handlers.checkoutSessionUrl,
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        )
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: "Unexpected checkout session request in test",
+          },
+        }),
+        {
+          status: 500,
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      )
+    }
+
+    return new Response(
+      JSON.stringify({
+        error: {
+          message: `Unexpected fetch: ${url}`,
+        },
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    )
+  })
+}
+
 vi.mock("@/lib/auth-handler-proxy", () => ({
   invokeAuthHandler: (...args: unknown[]) => invokeAuthHandlerMock(...args),
 }))
@@ -68,6 +169,7 @@ beforeEach(() => {
     checkoutDisclosure: "Charges appear as DRYAPI*ADSTIM. Billing is processed by AdStim LLC.",
     checkoutLegalHint: "Powered by AdStim LLC",
   })
+  vi.stubGlobal("fetch", createStripeFetchMock({}))
 })
 
 describe("GET /api/dashboard/billing/subscribe", () => {
@@ -166,20 +268,9 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     })
     resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
 
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          id: "cs_test_subscription",
-          url: "https://checkout.stripe.com/c/subscription",
-        }),
-        {
-          status: 200,
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      ),
-    )
+    const fetchMock = createStripeFetchMock({
+      checkoutSessionUrl: "https://checkout.stripe.com/c/subscription",
+    })
     vi.stubGlobal("fetch", fetchMock)
 
     const res = await GET(makeRequest())
@@ -187,15 +278,46 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     expect(res.status).toBe(302)
     expect(res.headers.get("location")).toBe("https://checkout.stripe.com/c/subscription")
     expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
 
-    const requestBody = new URLSearchParams(String(fetchMock.mock.calls[0]?.[1]?.body || ""))
+    const requestBody = new URLSearchParams(String(fetchMock.mock.calls[1]?.[1]?.body || ""))
     expect(requestBody.get("mode")).toBe("subscription")
     expect(requestBody.get("line_items[0][price]")).toBe("price_monthly_starter")
     expect(requestBody.get("customer_email")).toBe("owner@dryapi.dev")
     expect(requestBody.get("client_reference_id")).toBe("owner@dryapi.dev")
     expect(requestBody.get("metadata[planSlug]")).toBe("starter")
     expect(requestBody.get("metadata[referenceId]")).toBe("owner@dryapi.dev")
+  })
+
+  it("returns a misconfiguration error when the selected plan price id is missing from Stripe", async () => {
+    vi.stubEnv("STRIPE_SAAS_PRICE_STARTER", "price_missing_starter")
+    resolveStripeCustomerLookupMock.mockResolvedValue({
+      customerId: null,
+      errors: ["No Stripe customer matched the signed-in email."],
+    })
+
+    getDashboardSessionSnapshotMock.mockResolvedValue({
+      authenticated: true,
+      email: "owner@dryapi.dev",
+    })
+    resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
+
+    const fetchMock = createStripeFetchMock({
+      priceNotFound: ["price_missing_starter"],
+    })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(501)
+    expect(body).toMatchObject({
+      error: "stripe_plan_price_invalid",
+    })
+    expect(String(body.message)).toContain("STRIPE_SAAS_PRICE_STARTER")
+    expect(String(body.message)).toContain("No such price")
+    expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("returns 400 for an invalid billing period", async () => {
@@ -300,8 +422,8 @@ describe("GET /api/dashboard/billing/subscribe", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
+      createStripeFetchMock({
+        portalConfig: new Response(
           JSON.stringify({
             id: "bpc_test",
             features: {
@@ -317,7 +439,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
             },
           },
         ),
-      ),
+      }),
     )
 
     const res = await GET(makeRequest())
@@ -340,8 +462,8 @@ describe("GET /api/dashboard/billing/subscribe", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
+      createStripeFetchMock({
+        portalConfig: new Response(
           JSON.stringify({
             id: "bpc_test",
             features: {},
@@ -353,7 +475,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
             },
           },
         ),
-      ),
+      }),
     )
 
     const res = await GET(makeRequest())
@@ -376,8 +498,8 @@ describe("GET /api/dashboard/billing/subscribe", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
+      createStripeFetchMock({
+        portalConfig: new Response(
           JSON.stringify({
             id: "bpc_test",
           }),
@@ -388,7 +510,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
             },
           },
         ),
-      ),
+      }),
     )
 
     const res = await GET(makeRequest())
@@ -411,14 +533,14 @@ describe("GET /api/dashboard/billing/subscribe", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response("invalid-json", {
+      createStripeFetchMock({
+        portalConfig: new Response("invalid-json", {
           status: 200,
           headers: {
             "content-type": "application/json",
           },
         }),
-      ),
+      }),
     )
 
     const res = await GET(makeRequest())
@@ -475,8 +597,8 @@ describe("GET /api/dashboard/billing/subscribe", () => {
       email: "owner@dryapi.dev",
     })
 
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
+    const fetchMock = createStripeFetchMock({
+      portalConfig: new Response(
         JSON.stringify({
           id: "bpc_test",
           features: {
@@ -497,7 +619,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
           },
         },
       ),
-    )
+    })
     vi.stubGlobal("fetch", fetchMock)
 
     const res = await GET(makeRequest())
@@ -508,7 +630,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
       error: "stripe_portal_configuration_mismatch",
     })
     expect(invokeAuthHandlerMock).not.toHaveBeenCalled()
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it("ignores portal products with non-array price lists", async () => {
@@ -523,8 +645,8 @@ describe("GET /api/dashboard/billing/subscribe", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
+      createStripeFetchMock({
+        portalConfig: new Response(
           JSON.stringify({
             id: "bpc_test",
             features: {
@@ -541,7 +663,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
             },
           },
         ),
-      ),
+      }),
     )
 
     const res = await GET(makeRequest())
@@ -564,8 +686,8 @@ describe("GET /api/dashboard/billing/subscribe", () => {
     resolveRequestOriginFromRequestMock.mockReturnValue("https://example.com")
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
+      createStripeFetchMock({
+        portalConfig: new Response(
           JSON.stringify({
             id: "bpc_test",
             features: {
@@ -582,7 +704,7 @@ describe("GET /api/dashboard/billing/subscribe", () => {
             },
           },
         ),
-      ),
+      }),
     )
     invokeAuthHandlerMock.mockResolvedValue({
       response: new Response(JSON.stringify({ url: "https://checkout.stripe.com/c/test" }), { status: 200 }),
