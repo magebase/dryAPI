@@ -167,4 +167,74 @@ describe("POST /api/playground/generate", () => {
       }),
     );
   });
+
+  it("logs and returns 502 when upstream dispatch throws", async () => {
+    getDashboardApiKeyForRequestMock.mockResolvedValue({
+      keyId: "key_1",
+      enabled: true,
+      expiresAt: null,
+      permissions: ["models:infer"],
+    });
+    permissionMatchesPathMock.mockReturnValue(true);
+    dispatchToRunpodUpstreamMock.mockRejectedValue(new Error("upstream timeout"));
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await POST(
+      jsonRequest({ apiKeyId: "key_1", model: "flux", prompt: "hello" }),
+    );
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({
+      error: { code: "upstream_unavailable" },
+    });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[playground] Failed to dispatch generation request",
+      expect.objectContaining({
+        model: "flux-test",
+        endpoint: "runpod://endpoint",
+        error: expect.objectContaining({ message: "upstream timeout" }),
+      }),
+    );
+  });
+
+  it("returns 502 when upstream responds with invalid JSON", async () => {
+    getDashboardApiKeyForRequestMock.mockResolvedValue({
+      keyId: "key_1",
+      enabled: true,
+      expiresAt: null,
+      permissions: ["models:infer"],
+    });
+    permissionMatchesPathMock.mockReturnValue(true);
+    dispatchToRunpodUpstreamMock.mockResolvedValue(
+      new Response("not-json", {
+        status: 200,
+        headers: { "content-type": "text/plain" },
+      }),
+    );
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await POST(
+      jsonRequest({ apiKeyId: "key_1", model: "flux", prompt: "hello" }),
+    );
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({
+      error: { code: "upstream_invalid_response" },
+    });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[playground] Runpod upstream returned invalid JSON",
+      expect.objectContaining({
+        model: "flux-test",
+        endpoint: "runpod://endpoint",
+        status: 200,
+        body: "not-json",
+      }),
+    );
+
+    const loggedError = consoleErrorSpy.mock.calls[0]?.[1]?.error;
+    expect(loggedError).toBeInstanceOf(SyntaxError);
+    expect((loggedError as Error).message).toBe(
+      "Unexpected token 'o', \"not-json\" is not valid JSON",
+    );
+  });
 });

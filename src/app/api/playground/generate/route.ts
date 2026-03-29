@@ -16,6 +16,20 @@ import {
 } from "@/lib/dashboard-api-keys-store";
 import { playgroundGenerateSchema } from "@/lib/input-validation-schemas";
 
+function logPlaygroundGenerationError(
+  message: string,
+  request: NextRequest,
+  context: Record<string, unknown>,
+  error?: unknown,
+) {
+  console.error(message, {
+    requestId:
+      request.headers.get("cf-ray") ?? request.headers.get("x-request-id"),
+    ...context,
+    error,
+  });
+}
+
 function isExpired(expiresAt: string | null): boolean {
   if (!expiresAt) {
     return false;
@@ -127,15 +141,59 @@ export async function POST(request: NextRequest) {
       routing: plan,
     });
 
+    const upstreamBodyText = await upstreamResponse.text();
+
     if (!upstreamResponse.ok) {
+      console.error("[playground] Runpod upstream returned an error response", {
+        requestId:
+          request.headers.get("cf-ray") ?? request.headers.get("x-request-id"),
+        model: plan.modelSlug,
+        endpoint: plan.endpoint,
+        status: upstreamResponse.status,
+        body: upstreamBodyText,
+      });
+
       return upstreamFailureResponse(
         upstreamResponse.status,
-        await upstreamResponse.text(),
+        upstreamBodyText,
       );
     }
 
-    return NextResponse.json(await upstreamResponse.json());
-  } catch {
+    let upstreamPayload: unknown;
+    try {
+      upstreamPayload = JSON.parse(upstreamBodyText);
+    } catch (error) {
+      logPlaygroundGenerationError(
+        "[playground] Runpod upstream returned invalid JSON",
+        request,
+        {
+          model: plan.modelSlug,
+          endpoint: plan.endpoint,
+          status: upstreamResponse.status,
+          body: upstreamBodyText,
+        },
+        error,
+      );
+
+      return errorResponse(
+        502,
+        "upstream_invalid_response",
+        "Image generation upstream returned invalid data.",
+      );
+    }
+
+    return NextResponse.json(upstreamPayload);
+  } catch (error) {
+    logPlaygroundGenerationError(
+      "[playground] Failed to dispatch generation request",
+      request,
+      {
+        model: plan.modelSlug,
+        endpoint: plan.endpoint,
+      },
+      error,
+    );
+
     return errorResponse(
       502,
       "upstream_unavailable",
