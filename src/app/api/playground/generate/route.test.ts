@@ -35,6 +35,7 @@ function jsonRequest(body: unknown) {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      cookie: "__session=test-session",
     },
     body: JSON.stringify(body),
   });
@@ -177,10 +178,11 @@ describe("POST /api/playground/generate", () => {
       method: "POST",
       cache: "no-store",
     });
-    expect((requestInit?.headers as HeadersInit | undefined) ?? {}).toMatchObject({
-      "content-type": "application/json",
-      accept: "application/json",
-    });
+    const headers = new Headers(requestInit?.headers);
+    expect(headers.get("content-type")).toBe("application/json");
+    expect(headers.get("accept")).toBe("application/json");
+    expect(headers.get("cookie")).toBe("__session=test-session");
+    expect(headers.get("authorization")).toBeNull();
     expect(JSON.parse(String(requestInit?.body))).toMatchObject({
       model: "flux-test",
       endpointId: "runpod://endpoint",

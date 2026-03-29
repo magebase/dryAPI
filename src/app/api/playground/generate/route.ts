@@ -54,17 +54,6 @@ function canGenerateImages(permissions: string[]): boolean {
   );
 }
 
-function resolveApiToken(): string | null {
-  const token =
-    process.env.DASHBOARD_API_KEY?.trim() ||
-    process.env.DEAPI_API_KEY?.trim() ||
-    process.env.API_KEY?.trim() ||
-    process.env.INTERNAL_API_KEY?.trim() ||
-    "";
-
-  return token.length > 0 ? token : null;
-}
-
 function resolveCloudflareApiBaseUrl(request: NextRequest): string {
   const configured =
     process.env.CLOUDFLARE_API_BASE_URL?.trim() ||
@@ -170,8 +159,9 @@ export async function POST(request: NextRequest) {
   void apiKeyId;
 
   const apiBaseUrl = resolveCloudflareApiBaseUrl(request);
-  const apiToken = resolveApiToken();
   const upstreamUrl = new URL("/v1/runpod/images/runsync", apiBaseUrl);
+  const cookie = request.headers.get("cookie");
+  const requestId = request.headers.get("x-request-id") ?? request.headers.get("cf-ray");
 
   try {
     const upstreamResponse = await fetch(upstreamUrl.toString(), {
@@ -179,7 +169,8 @@ export async function POST(request: NextRequest) {
       headers: {
         accept: "application/json",
         "content-type": "application/json",
-        ...(apiToken ? { authorization: `Bearer ${apiToken}` } : {}),
+        ...(cookie ? { cookie } : {}),
+        ...(requestId ? { "x-request-id": requestId } : {}),
       },
       cache: "no-store",
       body: JSON.stringify({
