@@ -269,8 +269,8 @@ export function OrganizationSettingsPanel() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
-  const [recentlyCreatedOrganizationId, setRecentlyCreatedOrganizationId] =
-    useState<string | null>(null)
+  // const [recentlyCreatedOrganizationId, setRecentlyCreatedOrganizationId] =
+  //   useState<string | null>(null)
   const [slugTouched, setSlugTouched] = useState(false);
   const [switchingId, setSwitchingId] = useState<string | null>(null);
   const [memberActionId, setMemberActionId] = useState<string | null>(null);
@@ -316,7 +316,6 @@ export function OrganizationSettingsPanel() {
       if (payload?.id) {
         const createdOrganizationId = payload.id
 
-        setRecentlyCreatedOrganizationId(createdOrganizationId)
         setOrganizations((currentOrganizations) => {
           if (
             currentOrganizations.some(
@@ -515,18 +514,18 @@ export function OrganizationSettingsPanel() {
         )
         setCurrentUserId(sessionUser?.id ?? null);
 
-        const createdOrganizationStillMissing =
-          recentlyCreatedOrganizationId !== null &&
-          !nextOrganizations.some(
-            (organization) => organization.id === recentlyCreatedOrganizationId,
-          )
+        // const createdOrganizationStillMissing =
+        //   recentlyCreatedOrganizationId !== null &&
+        //   !nextOrganizations.some(
+        //     (organization) => organization.id === recentlyCreatedOrganizationId,
+        //   )
 
-        if (!createdOrganizationStillMissing) {
+        // if (!createdOrganizationStillMissing) {
           setActiveOrganizationId(nextActiveOrganizationId)
-          if (recentlyCreatedOrganizationId !== null) {
-            setRecentlyCreatedOrganizationId(null)
-          }
-        }
+        //   if (recentlyCreatedOrganizationId !== null) {
+        //     setRecentlyCreatedOrganizationId(null)
+        //   }
+        // }
 
         if (nextActiveOrganizationId) {
           await loadOrganizationDetails(nextActiveOrganizationId);
