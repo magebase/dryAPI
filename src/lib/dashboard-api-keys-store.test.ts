@@ -153,6 +153,8 @@ describe("dashboard api keys store", () => {
 
       const expectedNowMs = new Date("2026-03-27T00:00:00.000Z").getTime()
       const expectedExpiresAtMs = new Date("2026-09-23T00:00:00.000Z").getTime()
+      const expectedNow = new Date(expectedNowMs)
+      const expectedExpiresAt = new Date(expectedExpiresAtMs)
 
       await createDashboardApiKey(request, {
         userEmail: "ops@example.com",
@@ -169,9 +171,9 @@ describe("dashboard api keys store", () => {
       expect(insertQuery?.values[0]).toBe("x".repeat(32))
       expect(insertQuery?.values[4]).toBe("hashed:" + "x".repeat(64))
       expect(insertQuery?.values[5]).toBe("user_123")
-      expect(insertQuery?.values[17]).toBe(expectedExpiresAtMs)
-      expect(insertQuery?.values[18]).toBe(expectedNowMs)
-      expect(insertQuery?.values[19]).toBe(expectedNowMs)
+      expect(insertQuery?.values[17]).toEqual(expectedExpiresAt)
+      expect(insertQuery?.values[18]).toEqual(expectedNow)
+      expect(insertQuery?.values[19]).toEqual(expectedNow)
       expect(insertQuery?.values[20]).toBe(JSON.stringify({ legacy: ["models:infer", "billing:read"] }))
       expect(insertQuery?.values[21]).toBe(JSON.stringify({ roles: [], meta: { environment: "production" } }))
       expect(insertQuery?.values[23]).toBe("user_123")
