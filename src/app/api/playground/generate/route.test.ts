@@ -8,13 +8,11 @@ const {
   getDashboardApiKeyForRequestMock,
   permissionMatchesPathMock,
   resolveRunpodRoutingPlanMock,
-  dispatchToRunpodUpstreamMock,
 } = vi.hoisted(() => ({
   getDashboardSessionSnapshotMock: vi.fn(),
   getDashboardApiKeyForRequestMock: vi.fn(),
   permissionMatchesPathMock: vi.fn(),
   resolveRunpodRoutingPlanMock: vi.fn(),
-  dispatchToRunpodUpstreamMock: vi.fn(),
 }));
 
 vi.mock("@/lib/dashboard-billing", () => ({
@@ -28,7 +26,6 @@ vi.mock("@/lib/dashboard-api-keys-store", () => ({
 
 vi.mock("@/lib/runpod-runtime-routing", () => ({
   resolveRunpodRoutingPlan: resolveRunpodRoutingPlanMock,
-  dispatchToRunpodUpstream: dispatchToRunpodUpstreamMock,
 }));
 
 import { POST } from "@/app/api/playground/generate/route";
@@ -46,7 +43,23 @@ function jsonRequest(body: unknown) {
 function buildPlan() {
   return {
     modelSlug: "flux-test",
-    endpoint: "runpod://endpoint",
+    endpoint: {
+      modelSlug: "flux-test",
+      endpointKey: "runpod://endpoint",
+      primaryGpuTier: "rtx4090",
+      gpuFallbackOrder: ["rtx4090", "a6000", "a100"],
+      autoscaling: {
+        minWorkers: 0,
+        maxWorkers: 3,
+      },
+      workerPool: {
+        activeWorkers: 0,
+        flexWorkers: 3,
+      },
+      defaultBatchSize: 2,
+      maxBatchSize: 8,
+      batchWindowSeconds: 0,
+    },
     guardrail: {
       shouldDispatch: true,
       reason: "ok",
@@ -62,14 +75,15 @@ describe("POST /api/playground/generate", () => {
     getDashboardApiKeyForRequestMock.mockReset();
     permissionMatchesPathMock.mockReset();
     resolveRunpodRoutingPlanMock.mockReset();
-    dispatchToRunpodUpstreamMock.mockReset();
+
+    vi.stubEnv("CLOUDFLARE_API_BASE_URL", "https://api.test");
 
     getDashboardSessionSnapshotMock.mockResolvedValue({
       authenticated: true,
       email: "user@example.com",
     });
     resolveRunpodRoutingPlanMock.mockReturnValue(buildPlan());
-    dispatchToRunpodUpstreamMock.mockResolvedValue(
+    global.fetch = vi.fn(async () =>
       new Response(
         JSON.stringify({
           data: [{ url: "https://cdn.example.com/output.png" }],
@@ -79,7 +93,7 @@ describe("POST /api/playground/generate", () => {
           headers: { "content-type": "application/json" },
         },
       ),
-    );
+    ) as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -143,7 +157,7 @@ describe("POST /api/playground/generate", () => {
     });
   });
 
-  it("dispatches generation when key is active and authorized", async () => {
+  it("dispatches generation through the API worker when key is active and authorized", async () => {
     getDashboardApiKeyForRequestMock.mockResolvedValue({
       keyId: "key_1",
       enabled: true,
@@ -157,15 +171,27 @@ describe("POST /api/playground/generate", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(dispatchToRunpodUpstreamMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        surface: "images",
-        payload: expect.objectContaining({
-          model: "flux",
-          prompt: "hello",
-        }),
+    const [requestInput, requestInit] = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0] as [RequestInfo | URL, RequestInit | undefined];
+    expect(String(requestInput)).toBe("https://api.test/v1/runpod/images/runsync");
+    expect(requestInit).toMatchObject({
+      method: "POST",
+      cache: "no-store",
+    });
+    expect((requestInit?.headers as HeadersInit | undefined) ?? {}).toMatchObject({
+      "content-type": "application/json",
+      accept: "application/json",
+    });
+    expect(JSON.parse(String(requestInit?.body))).toMatchObject({
+      model: "flux-test",
+      endpointId: "runpod://endpoint",
+      input: expect.objectContaining({
+        model: "flux",
+        prompt: "hello",
+        n: 1,
+        size: "1024x1024",
+        allowLowMarginOverride: false,
       }),
-    );
+    });
   });
 
   it("logs and returns 502 when upstream dispatch throws", async () => {
@@ -176,14 +202,16 @@ describe("POST /api/playground/generate", () => {
       permissions: ["models:infer"],
     });
     permissionMatchesPathMock.mockReturnValue(true);
-    dispatchToRunpodUpstreamMock.mockRejectedValue(new Error("upstream timeout"));
+    global.fetch = vi.fn(async () => {
+      throw new Error("upstream timeout");
+    }) as unknown as typeof fetch;
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const response = await POST(
-      jsonRequest({ apiKeyId: "key_1", model: "flux", prompt: "hello" }),
+      jsonRequest({ apiKeyId: "key_1", model: "flux", prompt: "hello", n: 2 }),
     );
 
-    expect(response.status).toBe(502);
+    expect(response.status).toBe(502)
     expect(await response.json()).toMatchObject({
       error: { code: "upstream_unavailable" },
     });
@@ -191,10 +219,13 @@ describe("POST /api/playground/generate", () => {
       "[playground] Failed to dispatch generation request",
       expect.objectContaining({
         model: "flux-test",
-        endpoint: "runpod://endpoint",
+        endpoint: expect.objectContaining({
+          endpointKey: "runpod://endpoint",
+        }),
+        apiBaseUrl: "https://api.test",
         error: expect.objectContaining({ message: "upstream timeout" }),
       }),
-    );
+    )
   });
 
   it("returns 502 when upstream responds with invalid JSON", async () => {
@@ -205,12 +236,12 @@ describe("POST /api/playground/generate", () => {
       permissions: ["models:infer"],
     });
     permissionMatchesPathMock.mockReturnValue(true);
-    dispatchToRunpodUpstreamMock.mockResolvedValue(
+    global.fetch = vi.fn(async () =>
       new Response("not-json", {
         status: 200,
         headers: { "content-type": "text/plain" },
       }),
-    );
+    ) as unknown as typeof fetch;
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const response = await POST(
@@ -225,7 +256,9 @@ describe("POST /api/playground/generate", () => {
       "[playground] Runpod upstream returned invalid JSON",
       expect.objectContaining({
         model: "flux-test",
-        endpoint: "runpod://endpoint",
+        endpoint: expect.objectContaining({
+          endpointKey: "runpod://endpoint",
+        }),
         status: 200,
         body: "not-json",
       }),

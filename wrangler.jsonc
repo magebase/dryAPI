@@ -42,6 +42,10 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "dryapi-site",
     },
+    {
+      "binding": "API_WORKER",
+      "service": "dryapi-api",
+    },
   ],
   "hyperdrive": [
     {

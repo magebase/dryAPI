@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import {
-  dispatchToRunpodUpstream,
-  resolveRunpodRoutingPlan,
-} from "@/lib/runpod-runtime-routing";
+import { resolveRunpodRoutingPlan } from "@/lib/runpod-runtime-routing";
 import {
   errorResponse,
   marginGuardrailError,
@@ -55,6 +52,44 @@ function canGenerateImages(permissions: string[]): boolean {
       "POST",
     ),
   );
+}
+
+function resolveApiToken(): string | null {
+  const token =
+    process.env.DASHBOARD_API_KEY?.trim() ||
+    process.env.DEAPI_API_KEY?.trim() ||
+    process.env.API_KEY?.trim() ||
+    process.env.INTERNAL_API_KEY?.trim() ||
+    "";
+
+  return token.length > 0 ? token : null;
+}
+
+function resolveCloudflareApiBaseUrl(request: NextRequest): string {
+  const configured =
+    process.env.CLOUDFLARE_API_BASE_URL?.trim() ||
+    process.env.DASHBOARD_API_BASE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
+    "";
+
+  if (configured.length > 0) {
+    return configured.replace(/\/$/, "");
+  }
+
+  const hostname = request.nextUrl.hostname.trim().toLowerCase();
+  if (!hostname) {
+    throw new Error("Unable to resolve Cloudflare API base URL.");
+  }
+
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "http://127.0.0.1:8787";
+  }
+
+  if (hostname.startsWith("api.")) {
+    return `${request.nextUrl.protocol}//${hostname}`.replace(/\/$/, "");
+  }
+
+  return `${request.nextUrl.protocol}//api.${hostname}`.replace(/\/$/, "");
 }
 
 export async function POST(request: NextRequest) {
@@ -134,11 +169,24 @@ export async function POST(request: NextRequest) {
   const { apiKeyId, ...payload } = parsed.data;
   void apiKeyId;
 
+  const apiBaseUrl = resolveCloudflareApiBaseUrl(request);
+  const apiToken = resolveApiToken();
+  const upstreamUrl = new URL("/v1/runpod/images/runsync", apiBaseUrl);
+
   try {
-    const upstreamResponse = await dispatchToRunpodUpstream({
-      surface: "images",
-      payload,
-      routing: plan,
+    const upstreamResponse = await fetch(upstreamUrl.toString(), {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        ...(apiToken ? { authorization: `Bearer ${apiToken}` } : {}),
+      },
+      cache: "no-store",
+      body: JSON.stringify({
+        model: plan.modelSlug,
+        endpointId: plan.endpoint.endpointKey,
+        input: payload,
+      }),
     });
 
     const upstreamBodyText = await upstreamResponse.text();
@@ -190,6 +238,7 @@ export async function POST(request: NextRequest) {
       {
         model: plan.modelSlug,
         endpoint: plan.endpoint,
+        apiBaseUrl,
       },
       error,
     );
