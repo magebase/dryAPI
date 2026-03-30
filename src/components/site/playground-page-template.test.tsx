@@ -10,6 +10,10 @@ type QuoteAwareLinkMockProps = {
 }
 
 const routerPushMock = vi.fn()
+const { toastErrorMock, currentPathnameState } = vi.hoisted(() => ({
+  toastErrorMock: vi.fn(),
+  currentPathnameState: { value: "/playground/text-to-image" },
+}))
 const routerMock = {
   push: routerPushMock,
 }
@@ -17,6 +21,13 @@ const routerMock = {
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => routerMock,
+  usePathname: () => currentPathnameState.value,
+}))
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: toastErrorMock,
+  },
 }))
 
 // Mock tinaField
@@ -56,6 +67,8 @@ beforeAll(() => {
 
 beforeEach(() => {
   routerPushMock.mockReset()
+  toastErrorMock.mockReset()
+  currentPathnameState.value = "/playground/text-to-image"
 
   global.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
     const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
@@ -144,6 +157,20 @@ describe("PlaygroundPageTemplate", () => {
     expect(screen.getByText("Categories")).toBeDefined()
     // Use getAllByText and check that at least one exists because it appears in sidebar and main header
     expect(screen.getAllByText("Text To Image").length).toBeGreaterThan(0)
+  })
+
+  it("updates the url when a model is selected", async () => {
+    await act(async () => {
+      render(<PlaygroundPageTemplate page={mockPage} site={mockSite} />)
+    })
+
+    const modelButton = await screen.findByRole("button", {
+      name: "FLUX.2 Klein 4B BF16",
+    })
+
+    fireEvent.click(modelButton)
+
+    expect(routerPushMock).toHaveBeenCalledWith("/playground/text-to-image/flux2-klein-4b")
   })
 
   it("runs generation and updates preview state", async () => {
@@ -278,7 +305,7 @@ describe("PlaygroundPageTemplate", () => {
     const signInButton = screen.getByRole("button", { name: "Sign in to try playground" })
     fireEvent.click(signInButton)
 
-    expect(routerPushMock).toHaveBeenCalledWith("/register?callbackURL=%2Fplayground")
+    expect(routerPushMock).toHaveBeenCalledWith("/register?callbackURL=%2Fplayground%2Ftext-to-image")
     expect(fetchMock.mock.calls.some(([requestUrl]) => requestUrl === "/api/playground/generate")).toBe(false)
   })
 
@@ -323,5 +350,81 @@ describe("PlaygroundPageTemplate", () => {
     const generateButton = await screen.findByRole("button", { name: "Generate" })
     expect(generateButton).toBeDisabled()
     expect(screen.getByText(/Create an API key first in/i)).toBeDefined()
+  })
+
+  it("toasts generation errors", async () => {
+    const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
+
+      if (requestUrl === "/api/playground/models") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            data: [
+              {
+                id: "flux2-klein-4b",
+                slug: "flux2-klein-4b",
+                model: "flux2-klein-4b",
+                display_name: "FLUX.2 Klein 4B BF16",
+                inference_types: ["text-to-image"],
+                categories: ["text-to-image"],
+                parameter_keys: ["prompt", "size"],
+              },
+            ],
+            meta: { generated_at: new Date().toISOString() },
+          }),
+        })
+      }
+
+      if (requestUrl === "/api/playground/api-keys") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            data: [
+              {
+                keyId: "key_1",
+                name: "Playground Key",
+                environment: "staging",
+              },
+            ],
+          }),
+        })
+      }
+
+      if (requestUrl === "/api/playground/generate") {
+        return Promise.resolve({
+          ok: false,
+          status: 400,
+          json: () => Promise.resolve({
+            error: { message: "Runpod upstream dispatch failed." },
+          }),
+        })
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch call: ${requestUrl}`))
+    })
+
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await act(async () => {
+      render(<PlaygroundPageTemplate page={mockPage} site={mockSite} />)
+    })
+
+    const generateButton = await screen.findByRole("button", { name: "Generate" })
+    await waitFor(() => {
+      expect(generateButton).toBeEnabled()
+    })
+
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: {
+        value: "Create a cinematic product hero shot of a matte black keyboard.",
+      },
+    })
+
+    fireEvent.click(generateButton)
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith("Runpod upstream dispatch failed.")
+    })
   })
 })

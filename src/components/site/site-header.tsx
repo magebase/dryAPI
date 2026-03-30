@@ -7,6 +7,7 @@ import { tinaField } from "tinacms/dist/react";
 
 import { BrandLogo } from "@/components/site/brand-logo";
 import { QuoteAwareLink } from "@/components/site/quote-aware-link";
+import { getClientAuthSessionSnapshot } from "@/lib/client-auth-session";
 import { toRoute } from "@/lib/route";
 import type { SiteConfig } from "@/lib/site-content-schema";
 
@@ -32,8 +33,11 @@ export function SiteHeader({
   const [hasScrolled, setHasScrolled] = useState(!isHome);
   const [scrollProgress, setScrollProgress] = useState(isHome ? 0 : 1);
   const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null);
+  const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
   const isMobileMenuOpen = mobileMenuPath === pathname;
   const utilityCtaLabel = site.header.phone.label.replace(/\s+/g, " ").trim();
+  const quoteCtaLabel = isSignedIn ? "Dashboard" : site.header.quoteCta.label;
+  const quoteCtaHref = isSignedIn ? "/dashboard" : site.header.quoteCta.href;
   const useSolidPalette =
     hasScrolled ||
     pathname === "/blog" ||
@@ -119,6 +123,28 @@ export function SiteHeader({
       setScrollProgress(1);
     }
   }, [isHome, pathname]);
+
+  useEffect(() => {
+    let active = true;
+
+    void getClientAuthSessionSnapshot()
+      .then((snapshot) => {
+        if (!active) {
+          return;
+        }
+
+        setIsSignedIn(Boolean(snapshot.user && snapshot.session));
+      })
+      .catch(() => {
+        if (active) {
+          setIsSignedIn(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const announcementStyle = {
     opacity: 1 - scrollProgress * 0.3,
@@ -210,14 +236,24 @@ export function SiteHeader({
           >
             {utilityCtaLabel}
           </Link>
-          <QuoteAwareLink
-            className="rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-lg transition hover:brightness-110"
-            data-tina-field={tinaField(site.header, "quoteCta")}
-            href={site.header.quoteCta.href}
-            quoteLabel={site.header.quoteCta.label}
-          >
-            {site.header.quoteCta.label}
-          </QuoteAwareLink>
+          {isSignedIn ? (
+            <Link
+              className="rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-lg transition hover:brightness-110"
+              data-tina-field={tinaField(site.header, "quoteCta")}
+              href={toRoute(quoteCtaHref)}
+            >
+              {quoteCtaLabel}
+            </Link>
+          ) : (
+            <QuoteAwareLink
+              className="rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-lg transition hover:brightness-110"
+              data-tina-field={tinaField(site.header, "quoteCta")}
+              href={quoteCtaHref}
+              quoteLabel={quoteCtaLabel}
+            >
+              {quoteCtaLabel}
+            </QuoteAwareLink>
+          )}
         </div>
 
         <div className="flex items-center gap-2 xl:hidden">
@@ -295,15 +331,26 @@ export function SiteHeader({
               {utilityCtaLabel}
             </Link>
 
-            <QuoteAwareLink
-              className="inline-flex items-center justify-center rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground shadow-lg transition hover:brightness-110"
-              data-tina-field={tinaField(site.header, "quoteCta")}
-              href={site.header.quoteCta.href}
-              onClick={() => setMobileMenuPath(null)}
-              quoteLabel={site.header.quoteCta.label}
-            >
-              {site.header.quoteCta.label}
-            </QuoteAwareLink>
+            {isSignedIn ? (
+              <Link
+                className="inline-flex items-center justify-center rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground shadow-lg transition hover:brightness-110"
+                data-tina-field={tinaField(site.header, "quoteCta")}
+                href={toRoute(quoteCtaHref)}
+                onClick={() => setMobileMenuPath(null)}
+              >
+                {quoteCtaLabel}
+              </Link>
+            ) : (
+              <QuoteAwareLink
+                className="inline-flex items-center justify-center rounded-sm border border-primary/40 bg-gradient-to-r from-primary via-accent to-[color:var(--cta-cool-b)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground shadow-lg transition hover:brightness-110"
+                data-tina-field={tinaField(site.header, "quoteCta")}
+                href={quoteCtaHref}
+                onClick={() => setMobileMenuPath(null)}
+                quoteLabel={quoteCtaLabel}
+              >
+                {quoteCtaLabel}
+              </QuoteAwareLink>
+            )}
           </div>
         </div>
       </div>

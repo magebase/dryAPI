@@ -53,6 +53,24 @@ function isBlogPostPath(slug: string[]) {
   return slug.length === 2 && slug[0] === "blog";
 }
 
+function isPlaygroundPath(slug: string[]) {
+  return slug.length >= 2 && slug[0] === "playground" && Boolean(slug[1]);
+}
+
+async function readPlaygroundRoutePage(slug: string[]): Promise<Awaited<ReturnType<typeof readRoutePage>> | null> {
+  const exactPage = await readRoutePage(toPath(slug));
+  if (exactPage || !isPlaygroundPath(slug)) {
+    return exactPage;
+  }
+
+  const categorySlug = slug[1];
+  if (!categorySlug) {
+    return null;
+  }
+
+  return readRoutePage(CATEGORY_TO_PLAYGROUND[categorySlug] ?? `/playground/${categorySlug}`);
+}
+
 const CATEGORY_TO_PLAYGROUND: Record<string, string> = {
   "text-to-image": "/playground/text-to-image",
   "image-to-image": "/playground/image-to-image",
@@ -210,7 +228,7 @@ export async function generateMetadata({
     };
   }
 
-  const page = await readRoutePage(toPath(slug));
+  const page = await readPlaygroundRoutePage(slug);
 
   if (!page) {
     return {};
@@ -318,7 +336,7 @@ export default async function CatchAllPage({ params }: CatchAllPageProps) {
     );
   }
 
-  const page = await readRoutePage(toPath(slug));
+  const page = await readPlaygroundRoutePage(slug);
 
   if (!page) {
     notFound();

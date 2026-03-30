@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { tinaField } from "tinacms/dist/react";
+import { toast } from "sonner";
 import {
   Braces,
   Eye,
@@ -222,6 +223,33 @@ function resolveCategoryFromPageSlug(slug: string): string | null {
   return nextSegment && nextSegment.length > 0 ? nextSegment : null;
 }
 
+function resolvePlaygroundRouteState(pathname: string): {
+  categorySlug: string | null;
+  modelSlug: string | null;
+} {
+  const segments = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+
+  if (segments[0] !== "playground") {
+    return {
+      categorySlug: null,
+      modelSlug: null,
+    };
+  }
+
+  return {
+    categorySlug: segments[1] ?? null,
+    modelSlug: segments[2] ?? null,
+  };
+}
+
+function buildPlaygroundCategoryHref(categorySlug: string): string {
+  return `/playground/${categorySlug}`;
+}
+
+function buildPlaygroundModelHref(categorySlug: string, modelSlug: string): string {
+  return `${buildPlaygroundCategoryHref(categorySlug).replace(/\/+$/, "")}/${modelSlug}`;
+}
+
 function toModelDisplayName(slug: string): string {
   return slug
     .replace(/[-_]+/g, " ")
@@ -365,7 +393,10 @@ export function PlaygroundPageTemplate({
   site: SiteConfig;
 }) {
   const router = useRouter();
-  const initialRouteCategory = resolveCategoryFromPageSlug(page.slug);
+  const pathname = usePathname() ?? page.slug;
+  const routeState = useMemo(() => resolvePlaygroundRouteState(pathname), [pathname]);
+  const initialRouteCategory = routeState.categorySlug ?? resolveCategoryFromPageSlug(page.slug);
+  const initialRouteModelSlug = routeState.modelSlug;
 
   const [models, setModels] = useState<PlaygroundModelRecord[]>([]);
   const [modelsLoading, setModelsLoading] = useState(true);
@@ -383,7 +414,9 @@ export function PlaygroundPageTemplate({
   const [activeCategory, setActiveCategory] = useState<string>(
     initialRouteCategory ?? "text-to-image",
   );
-  const [activeModelSlug, setActiveModelSlug] = useState<string | null>(null);
+  const [activeModelSlug, setActiveModelSlug] = useState<string | null>(
+    initialRouteModelSlug,
+  );
   const [activeTab, setActiveTab] = useState<PlaygroundTab>("preview");
   const [prompt, setPrompt] = useState<string>("");
   const [params, setParams] = useState<Record<string, number>>(DEFAULT_PARAMS);
@@ -402,6 +435,10 @@ export function PlaygroundPageTemplate({
       setActiveCategory(initialRouteCategory);
     }
   }, [initialRouteCategory]);
+
+  useEffect(() => {
+    setActiveModelSlug(initialRouteModelSlug);
+  }, [initialRouteModelSlug]);
 
   useEffect(() => {
     let active = true;
@@ -554,12 +591,23 @@ export function PlaygroundPageTemplate({
       return;
     }
 
+    if (
+      routeState.categorySlug &&
+      categories.some((category) => category.slug === routeState.categorySlug)
+    ) {
+      if (routeState.categorySlug !== activeCategory) {
+        setActiveCategory(routeState.categorySlug);
+      }
+
+      return;
+    }
+
     if (categories.some((category) => category.slug === activeCategory)) {
       return;
     }
 
     setActiveCategory(categories[0]?.slug ?? "text-to-image");
-  }, [activeCategory, categories]);
+  }, [activeCategory, categories, routeState.categorySlug]);
 
   const visibleModels = useMemo(() => {
     return models.filter((model) => model.categories.includes(activeCategory));
@@ -584,6 +632,17 @@ export function PlaygroundPageTemplate({
     }
 
     if (
+      routeState.modelSlug &&
+      visibleModels.some((model) => model.slug === routeState.modelSlug)
+    ) {
+      if (routeState.modelSlug !== activeModelSlug) {
+        setActiveModelSlug(routeState.modelSlug);
+      }
+
+      return;
+    }
+
+    if (
       activeModelSlug &&
       visibleModels.some((model) => model.slug === activeModelSlug)
     ) {
@@ -591,7 +650,7 @@ export function PlaygroundPageTemplate({
     }
 
     setActiveModelSlug(visibleModels[0]?.slug ?? null);
-  }, [activeModelSlug, visibleModels]);
+  }, [activeModelSlug, routeState.modelSlug, visibleModels]);
 
   useEffect(() => {
     setPrompt(getRandomPromptSample(activeCategory));
@@ -617,15 +676,17 @@ export function PlaygroundPageTemplate({
 
   const generateDisabled =
     isGenerating ||
-    (!playgroundAuthRequired && (
-      !selectedApiKeyId ||
-      !activeModel ||
-      activeCategory !== "text-to-image"
-    ));
+    (!playgroundAuthRequired && (!selectedApiKeyId || !activeModel));
 
   const signInToTryPlaygroundHref = toRoute(
-    `/register?callbackURL=${encodeURIComponent(page.slug)}`,
+    `/register?callbackURL=${encodeURIComponent(pathname)}`,
   );
+
+  function setGenerateFailure(message: string) {
+    setGenerateMessage(null);
+    setGenerateError(message);
+    toast.error(message);
+  }
 
   async function handleGenerateClick() {
     if (playgroundAuthRequired) {
@@ -637,22 +698,12 @@ export function PlaygroundPageTemplate({
     }
 
     if (!selectedApiKeyId) {
-      setGenerateMessage(null);
-      setGenerateError("Create and select an API key before generating.");
+      setGenerateFailure("Create and select an API key before generating.");
       return;
     }
 
     if (!activeModel) {
-      setGenerateMessage(null);
-      setGenerateError("Select a live model before generating.");
-      return;
-    }
-
-    if (activeCategory !== "text-to-image") {
-      setGenerateMessage(null);
-      setGenerateError(
-        "Live generation is currently available only for text-to-image in this playground surface.",
-      );
+      setGenerateFailure("Select a live model before generating.");
       return;
     }
 
@@ -676,7 +727,9 @@ export function PlaygroundPageTemplate({
     const parsedGenerationInput = playgroundGenerateSchema.safeParse(generationInput);
     if (!parsedGenerationInput.success) {
       setIsGenerating(false);
-      setGenerateError(parsedGenerationInput.error.issues[0]?.message ?? "Invalid generation request.");
+      setGenerateFailure(
+        parsedGenerationInput.error.issues[0]?.message ?? "Invalid generation request.",
+      );
       return;
     }
 
@@ -704,7 +757,7 @@ export function PlaygroundPageTemplate({
 
       if (!generationResponse.ok) {
         const errorMessage = extractGenerateErrorMessage(generationPayload);
-        setGenerateError(
+        setGenerateFailure(
           errorMessage ??
             `Generation request failed (${generationResponse.status}).`,
         );
@@ -725,7 +778,7 @@ export function PlaygroundPageTemplate({
         "Generation completed, but no image URL was returned. Check the JSON tab for details.",
       );
     } catch {
-      setGenerateError(
+      setGenerateFailure(
         "Generation failed because the request could not be completed. Retry in a moment.",
       );
     } finally {
@@ -810,6 +863,7 @@ export function PlaygroundPageTemplate({
                   className="mt-4"
                   onValueChange={(value) => {
                     if (value && value !== activeCategory) {
+                      router.push(toRoute(buildPlaygroundCategoryHref(value)));
                       setActiveCategory(value);
                     }
                   }}
@@ -872,9 +926,17 @@ export function PlaygroundPageTemplate({
                                           ? "bg-primary/10 text-primary"
                                           : "text-site-muted hover:bg-site-surface-0 hover:text-site-strong"
                                       }`}
-                                      onClick={() =>
+                                      onClick={() => {
+                                        router.push(
+                                          toRoute(
+                                            buildPlaygroundModelHref(
+                                              c.slug,
+                                              model.slug,
+                                            ),
+                                          ),
+                                        );
                                         setActiveModelSlug(model.slug)
-                                      }
+                                      }}
                                       type="button"
                                     >
                                       <span className="line-clamp-1">
@@ -895,7 +957,7 @@ export function PlaygroundPageTemplate({
 
               <AskAiWidget
                 brandName={site.brand.mark}
-                pageUrl={`${normalizeSiteUrl()}${page.slug}`}
+                pageUrl={`${normalizeSiteUrl()}${pathname}`}
               />
 
               {modelsGeneratedAt ? (
