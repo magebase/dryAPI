@@ -35,6 +35,15 @@ describe("runpod-runtime-routing", () => {
     expect(plan.guardrail.estimate.requestCount).toBe(2)
   })
 
+  it("rejects requested models that are not active", () => {
+    expect(() =>
+      resolveRunpodRoutingPlan("images", {
+        requestedModel: "RealVisXL",
+        candidateSlugs: ["Flux_2_Klein_4B_BF16"],
+      }),
+    ).toThrow(/is not active for inference type txt2img/)
+  })
+
   it("produces a hard-stop guardrail when margin floor is too high", () => {
     const plan = resolveRunpodRoutingPlan("images", {
       requestedModel: "Flux1schnell",

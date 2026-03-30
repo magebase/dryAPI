@@ -12,6 +12,7 @@ import {
   permissionMatchesPath,
 } from "@/lib/dashboard-api-keys-store";
 import { playgroundGenerateSchema } from "@/lib/input-validation-schemas";
+import { getActiveRunpodModelSlugSet } from "@/lib/runpod-active-models";
 
 function logPlaygroundGenerationError(
   message: string,
@@ -139,6 +140,7 @@ export async function POST(request: NextRequest) {
   try {
     plan = resolveRunpodRoutingPlan("images", {
       requestedModel: parsed.data.model,
+      candidateSlugs: [...getActiveRunpodModelSlugSet()],
       expectedRpm: parsed.data.expectedRpm,
       requestCount: parsed.data.n,
       allowLowMarginOverride: parsed.data.allowLowMarginOverride,

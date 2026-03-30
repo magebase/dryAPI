@@ -43,10 +43,10 @@ function jsonRequest(body: unknown) {
 
 function buildPlan() {
   return {
-    modelSlug: "flux-test",
+    modelSlug: "Flux_2_Klein_4B_BF16",
     endpoint: {
-      modelSlug: "flux-test",
-      endpointKey: "runpod://endpoint",
+      modelSlug: "Flux_2_Klein_4B_BF16",
+      endpointKey: "endpoint-flux-2-klein",
       primaryGpuTier: "rtx4090",
       gpuFallbackOrder: ["rtx4090", "a6000", "a100"],
       autoscaling: {
@@ -193,8 +193,8 @@ describe("POST /api/playground/generate", () => {
     expect(headers.get("cookie")).toBe("__session=test-session");
     expect(headers.get("authorization")).toBeNull();
     expect(JSON.parse(String(requestInit?.body))).toMatchObject({
-      model: "flux-test",
-      endpointId: "runpod://endpoint",
+      model: "Flux_2_Klein_4B_BF16",
+      endpointId: "endpoint-flux-2-klein",
       input: expect.objectContaining({
         model: "flux",
         prompt: "hello",
@@ -236,9 +236,9 @@ describe("POST /api/playground/generate", () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       "[playground] Failed to dispatch generation request",
       expect.objectContaining({
-        model: "flux-test",
+        model: "Flux_2_Klein_4B_BF16",
         endpoint: expect.objectContaining({
-          endpointKey: "runpod://endpoint",
+          endpointKey: "endpoint-flux-2-klein",
         }),
         apiBaseUrl: "https://api.test",
         error: expect.objectContaining({ message: "upstream timeout" }),
@@ -273,9 +273,9 @@ describe("POST /api/playground/generate", () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       "[playground] Runpod upstream returned invalid JSON",
       expect.objectContaining({
-        model: "flux-test",
+        model: "Flux_2_Klein_4B_BF16",
         endpoint: expect.objectContaining({
-          endpointKey: "runpod://endpoint",
+          endpointKey: "endpoint-flux-2-klein",
         }),
         status: 200,
         body: "not-json",

@@ -17,6 +17,7 @@ export type RunpodGatewaySurface = (typeof RUNPOD_GATEWAY_SURFACES)[number]
 
 type PlanInput = {
   requestedModel?: string
+  candidateSlugs?: string[]
   inferenceType?: DeapiInferenceType
   objective?: ModelSelectionObjective
   requestCount?: number
@@ -66,8 +67,15 @@ function isModelCompatibleWithInferenceType(modelSlug: string, inferenceType: De
 
 function resolveModelSlug(surface: RunpodGatewaySurface, input: PlanInput): string {
   const inferenceType = resolveInferenceType(surface, input.inferenceType)
+  const candidateSlugs = Array.isArray(input.candidateSlugs) && input.candidateSlugs.length > 0
+    ? input.candidateSlugs
+    : null
 
   if (input.requestedModel) {
+    if (candidateSlugs && !candidateSlugs.includes(input.requestedModel)) {
+      throw new Error(`Model ${input.requestedModel} is not active for inference type ${inferenceType}`)
+    }
+
     if (!isModelCompatibleWithInferenceType(input.requestedModel, inferenceType)) {
       throw new Error(`Model ${input.requestedModel} does not support inference type ${inferenceType}`)
     }
@@ -79,6 +87,7 @@ function resolveModelSlug(surface: RunpodGatewaySurface, input: PlanInput): stri
     inferenceType,
     objective: input.objective,
     expectedRpm: input.expectedRpm,
+    candidateSlugs: candidateSlugs ?? undefined,
   })
 
   return selection.modelSlug
