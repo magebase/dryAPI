@@ -562,7 +562,7 @@ export function PlaygroundPageTemplate({
       modelCategories.map((category) => [category.slug, category]),
     );
     const dynamicSlugs = new Set(models.flatMap((model) => model.categories));
-    const orderedSlugs = [...CATEGORY_ORDER];
+    const orderedSlugs = [...CATEGORY_ORDER.filter((slug) => dynamicSlugs.has(slug))];
 
     for (const slug of [...dynamicSlugs].sort((left, right) =>
       left.localeCompare(right),
@@ -591,23 +591,12 @@ export function PlaygroundPageTemplate({
       return;
     }
 
-    if (
-      routeState.categorySlug &&
-      categories.some((category) => category.slug === routeState.categorySlug)
-    ) {
-      if (routeState.categorySlug !== activeCategory) {
-        setActiveCategory(routeState.categorySlug);
-      }
-
-      return;
-    }
-
     if (categories.some((category) => category.slug === activeCategory)) {
       return;
     }
 
     setActiveCategory(categories[0]?.slug ?? "text-to-image");
-  }, [activeCategory, categories, routeState.categorySlug]);
+  }, [activeCategory, categories]);
 
   const visibleModels = useMemo(() => {
     return models.filter((model) => model.categories.includes(activeCategory));
@@ -863,7 +852,6 @@ export function PlaygroundPageTemplate({
                   className="mt-4"
                   onValueChange={(value) => {
                     if (value && value !== activeCategory) {
-                      router.push(toRoute(buildPlaygroundCategoryHref(value)));
                       setActiveCategory(value);
                     }
                   }}

@@ -173,6 +173,20 @@ describe("PlaygroundPageTemplate", () => {
     expect(routerPushMock).toHaveBeenCalledWith("/playground/text-to-image/flux2-klein-4b")
   })
 
+  it("does not navigate when a category is selected", async () => {
+    await act(async () => {
+      render(<PlaygroundPageTemplate page={mockPage} site={mockSite} />)
+    })
+
+    const categoryButton = await screen.findByRole("button", {
+      name: "Text To Image",
+    })
+
+    fireEvent.click(categoryButton)
+
+    expect(routerPushMock).not.toHaveBeenCalled()
+  })
+
   it("runs generation and updates preview state", async () => {
     const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
       const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
