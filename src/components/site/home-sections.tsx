@@ -15,6 +15,7 @@ import Image from "next/image";
 import { tinaField } from "tinacms/dist/react";
 
 import { QuoteAwareLink } from "@/components/site/quote-aware-link";
+import { ProofModeSwitcher } from "@/components/site/proof-mode-switcher";
 import { Reveal } from "@/components/site/reveal";
 import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text";
 import { SiteIcon } from "@/components/site/site-icon";
@@ -47,36 +48,63 @@ export function HomeSections({
         site,
         "home.capabilitySignal.label.1",
         "Catalog",
-      ),
+      ).value,
       value: resolveSiteUiText(
         site,
         "home.capabilitySignal.value.1",
         "Chat / Image / Speech / Video / OCR / Embeddings",
-      ),
+      ).value,
     },
     {
       label: resolveSiteUiText(
         site,
         "home.capabilitySignal.label.2",
         "Client Support",
-      ),
+      ).value,
       value: resolveSiteUiText(
         site,
         "home.capabilitySignal.value.2",
         "Standard TypeScript/Fetch API",
-      ),
+      ).value,
     },
     {
       label: resolveSiteUiText(
         site,
         "home.capabilitySignal.label.3",
         "Economics",
-      ),
+      ).value,
       value: resolveSiteUiText(
         site,
         "home.capabilitySignal.value.3",
         "Cheap pricing, elastic scale",
-      ),
+      ).value,
+    },
+  ];
+
+  const highlightSignals = [
+    {
+      label: resolveSiteUiText(site, "home.highlightSignal.label.1", "Ready to go").value,
+      value: resolveSiteUiText(
+        site,
+        "home.highlightSignal.value.1",
+        "OpenAI-compatible from day one",
+      ).value,
+    },
+    {
+      label: resolveSiteUiText(site, "home.highlightSignal.label.2", "Serverless").value,
+      value: resolveSiteUiText(
+        site,
+        "home.highlightSignal.value.2",
+        "No infrastructure to manage",
+      ).value,
+    },
+    {
+      label: resolveSiteUiText(site, "home.highlightSignal.label.3", "One API").value,
+      value: resolveSiteUiText(
+        site,
+        "home.highlightSignal.value.3",
+        "Chat, image, speech, and more",
+      ).value,
     },
   ];
 
@@ -205,6 +233,25 @@ const result = await res.json();`;
     { value: "<220ms", label: "Median Route Overhead" },
   ];
 
+  const highlightMetrics = [
+    {
+      value: resolveSiteUiText(site, "home.highlightMetric.value.1", "Ready to go").value,
+      label: resolveSiteUiText(site, "home.highlightMetric.label.1", "Drop-in launch").value,
+    },
+    {
+      value: resolveSiteUiText(site, "home.highlightMetric.value.2", "Serverless").value,
+      label: resolveSiteUiText(site, "home.highlightMetric.label.2", "No infra overhead").value,
+    },
+    {
+      value: resolveSiteUiText(
+        site,
+        "home.highlightMetric.value.3",
+        "OpenAI-compatible",
+      ).value,
+      label: resolveSiteUiText(site, "home.highlightMetric.label.3", "Existing clients").value,
+    },
+  ];
+
   return (
     <>
       {home.hero.visible ? (
@@ -283,44 +330,12 @@ const result = await res.json();`;
                       tone="ghost"
                     />
                   </div>
-
-                  <div className="mt-8 flex flex-wrap gap-2">
-                    {capabilitySignals.map((signal) => (
-                      <div
-                        className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-[11px] text-white/80 backdrop-blur-md transition-colors hover:bg-white/10"
-                        key={signal.label.value}
-                      >
-                        <span
-                          className="font-medium opacity-60"
-                          data-tina-field={signal.label.field}
-                        >
-                          {signal.label.value}:
-                        </span>{" "}
-                        <span
-                          className="font-semibold"
-                          data-tina-field={signal.value.field}
-                        >
-                          {signal.value.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-8 grid gap-1.5 sm:grid-cols-3">
-                    {heroMetrics.map((metric) => (
-                      <div
-                        className="rounded-xl border border-white/10 bg-black/20 p-4 transition-colors hover:bg-black/30"
-                        key={metric.label}
-                      >
-                        <p className="font-display text-2xl font-bold tracking-tight text-white">
-                          {metric.value}
-                        </p>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-                          {metric.label}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                  <ProofModeSwitcher
+                    highlightMetrics={highlightMetrics}
+                    highlightSignals={highlightSignals}
+                    metricMetrics={heroMetrics}
+                    metricSignals={capabilitySignals}
+                  />
                 </div>
 
                 <div className="relative">
