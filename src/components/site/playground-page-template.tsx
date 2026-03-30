@@ -665,7 +665,7 @@ export function PlaygroundPageTemplate({
 
   const generateDisabled =
     isGenerating ||
-    (!playgroundAuthRequired && (!selectedApiKeyId || !activeModel));
+    (!playgroundAuthRequired && !selectedApiKeyId);
 
   const signInToTryPlaygroundHref = toRoute(
     `/register?callbackURL=${encodeURIComponent(pathname)}`,
