@@ -155,8 +155,15 @@ export async function POST(request: NextRequest) {
     return marginGuardrailError(plan);
   }
 
-  const { apiKeyId, ...payload } = parsed.data;
+  const {
+    apiKeyId,
+    size: _size,
+    allowLowMarginOverride: _allowLowMarginOverride,
+    ...payload
+  } = parsed.data;
   void apiKeyId;
+  void _size;
+  void _allowLowMarginOverride;
 
   const apiBaseUrl = resolveCloudflareApiBaseUrl(request);
   const upstreamUrl = new URL("/v1/runpod/images/runsync", apiBaseUrl);

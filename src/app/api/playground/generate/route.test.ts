@@ -168,7 +168,16 @@ describe("POST /api/playground/generate", () => {
     permissionMatchesPathMock.mockReturnValue(true);
 
     const response = await POST(
-      jsonRequest({ apiKeyId: "key_1", model: "flux", prompt: "hello" }),
+      jsonRequest({
+        apiKeyId: "key_1",
+        model: "flux",
+        prompt: "hello",
+        size: "1024x1024",
+        allowLowMarginOverride: false,
+        width: 1024,
+        height: 1024,
+        seed: 42,
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -190,10 +199,17 @@ describe("POST /api/playground/generate", () => {
         model: "flux",
         prompt: "hello",
         n: 1,
-        size: "1024x1024",
-        allowLowMarginOverride: false,
+        width: 1024,
+        height: 1024,
+        seed: 42,
       }),
     });
+
+    const outboundBody = JSON.parse(String(requestInit?.body)) as {
+      input?: Record<string, unknown>;
+    };
+    expect(outboundBody.input).not.toHaveProperty("size");
+    expect(outboundBody.input).not.toHaveProperty("allowLowMarginOverride");
   });
 
   it("logs and returns 502 when upstream dispatch throws", async () => {
