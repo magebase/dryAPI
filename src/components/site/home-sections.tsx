@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Brain,
   FileText,
   Image as ImageIcon,
   MessageSquare,
@@ -10,10 +11,21 @@ import {
   TerminalSquare,
   TrendingUp,
   Video,
+  Zap,
 } from "lucide-react";
 import Image from "next/image";
 import { tinaField } from "tinacms/dist/react";
 
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
+import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
+import { BorderBeam } from "@/components/ui/border-beam";
+import { DotPattern } from "@/components/ui/dot-pattern";
+import { MagicCard } from "@/components/ui/magic-card";
+import { Marquee } from "@/components/ui/marquee";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { OrbitingCircles } from "@/components/ui/orbiting-circles";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { cn } from "@/lib/utils";
 import { QuoteAwareLink } from "@/components/site/quote-aware-link";
 import { ProofModeSwitcher } from "@/components/site/proof-mode-switcher";
 import { Reveal } from "@/components/site/reveal";
@@ -268,6 +280,7 @@ const result = await res.json();`;
               data-tina-field={tinaField(home.hero, "backgroundImage")}
               fill
               priority
+              sizes="100vw"
               src={home.hero.backgroundImage}
             />
           )}
@@ -287,14 +300,14 @@ const result = await res.json();`;
 
               <div className="relative grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 mb-6 backdrop-blur-sm">
-                    <div className="size-2 animate-pulse rounded-full bg-indigo-400" />
-                    <p
-                      className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70"
-                      data-tina-field={tinaField(home.hero, "kicker")}
+                  <div className="mb-6 w-fit rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
+                    <AnimatedShinyText
+                      className="inline-flex items-center gap-2 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/70"
+                      shimmerWidth={180}
                     >
-                      {home.hero.kicker}
-                    </p>
+                      <div className="size-2 animate-pulse rounded-full bg-indigo-400" />
+                      <span data-tina-field={tinaField(home.hero, "kicker")}>{home.hero.kicker}</span>
+                    </AnimatedShinyText>
                   </div>
                   <h1
                     className="mt-4 max-w-3xl whitespace-pre-line bg-gradient-to-b from-white via-[#dceeff] to-[#91cfff] bg-clip-text font-display text-5xl leading-[0.92] tracking-[-0.03em] text-transparent sm:text-6xl md:text-7xl"
@@ -311,13 +324,19 @@ const result = await res.json();`;
 
                   <div className="mt-8 flex flex-wrap items-center gap-3">
                     <QuoteAwareLink
-                      className="inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-[color:var(--cta-cool-a)] to-[color:var(--cta-cool-b)] px-7 py-4 text-sm font-bold tracking-tight text-white shadow-[0_16px_40px_-8px_rgba(40,80,200,0.45)] transition hover:brightness-110 hover:shadow-[0_20px_48px_-8px_rgba(40,80,200,0.55)] active:scale-[0.98]"
                       data-tina-field={tinaField(home.hero, "primaryAction")}
                       href={home.hero.primaryAction.href}
                       quoteLabel={home.hero.primaryAction.label}
                     >
-                      {home.hero.primaryAction.label}
-                      <ArrowRight className="size-4" />
+                      <ShimmerButton
+                        background="linear-gradient(135deg, var(--cta-cool-a), var(--cta-cool-b))"
+                        className="flex items-center gap-2.5 px-7 py-3.5 text-sm font-bold tracking-tight text-white"
+                        shimmerColor="rgba(255,255,255,0.35)"
+                        shimmerDuration="2.4s"
+                      >
+                        {home.hero.primaryAction.label}
+                        <ArrowRight className="size-4" />
+                      </ShimmerButton>
                     </QuoteAwareLink>
                     <ActionLink
                       action={home.hero.secondaryAction}
@@ -340,10 +359,11 @@ const result = await res.json();`;
 
                 <div className="relative">
                   <div className="absolute -inset-4 rounded-[24px] bg-white/14 blur-2xl" />
-                  <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/28 p-2 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
+                  <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/10 shadow-[0_24px_38px_rgba(8,12,24,0.36)] backdrop-blur-sm">
                     <div className="h-[280px] w-full md:h-[340px]">
-                      <MockWorkflowFrame className="h-full border-none shadow-none bg-white/40" />
+                      <HeroOrbitingVisual />
                     </div>
+                    <BorderBeam colorFrom="#a78bfa" colorTo="#f97316" duration={8} size={120} />
                   </div>
                 </div>
               </div>
@@ -360,15 +380,14 @@ const result = await res.json();`;
                   Used by teams consolidating multi-model AI stacks
                 </p>
 
-                <div className="marquee-vignette relative left-1/2 mt-4 w-screen max-w-none -translate-x-1/2 overflow-hidden border-0 bg-transparent px-2 py-3 [--marquee-vignette-tint:transparent] md:px-4">
-                  <div className="marquee-track bg-transparent flex w-max gap-2 [--marquee-duration:26s]">
-                    {/* {trustedMarqueeLogos.map((logo, index) => (
-                      <TrustedLogoPill
-                        key={`${logo.id}-${index}`}
-                        logo={logo}
-                      />
-                    ))} */}
-                  </div>
+                <div className="relative mt-4 overflow-hidden">
+                  <Marquee className="[--duration:26s]" pauseOnHover>
+                    {modelBadges.map((badge) => (
+                      <ModelBadgePill key={badge.label} {...badge} />
+                    ))}
+                  </Marquee>
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-transparent to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-transparent to-transparent" />
                 </div>
               </Reveal>
             ) : null}
@@ -390,16 +409,12 @@ const result = await res.json();`;
               </p>
             </Reveal>
 
-            <Reveal
-              as="div"
-              className="marquee-vignette relative left-1/2 mt-5 w-screen max-w-none -translate-x-1/2 overflow-hidden border-y border-[#dddddd] bg-transparent px-2 py-3 [--marquee-vignette-tint:transparent] md:px-4"
-              y={14}
-            >
-              <div className="marquee-track flex w-max gap-2 [--marquee-duration:26s]">
-                {/* {trustedMarqueeLogos.map((logo, index) => (
-                  <TrustedLogoPill key={`${logo.id}-${index}`} logo={logo} />
-                ))} */}
-              </div>
+            <Reveal as="div" className="relative mt-5 overflow-hidden" y={14}>
+              <Marquee className="[--duration:26s]" pauseOnHover>
+                {modelBadges.map((badge) => (
+                  <ModelBadgePill key={badge.label} {...badge} />
+                ))}
+              </Marquee>
             </Reveal>
           </div>
         </section>
@@ -447,7 +462,6 @@ const result = await res.json();`;
                 card={spotlightCards[1]}
                 linkHref={home.hero.secondaryAction.href}
                 reverse={false}
-                type="image"
               />
               <FeatureStory
                 actionLabel={spotlightAction2.value}
@@ -455,7 +469,6 @@ const result = await res.json();`;
                 card={spotlightCards[2] ?? spotlightCards[1]}
                 linkHref={home.hero.tertiaryAction.href}
                 reverse
-                type="costs"
               />
             </div>
           </div>
@@ -521,68 +534,61 @@ const result = await res.json();`;
         id="landing-slot-capability-grid"
       >
         <div className="mx-auto max-w-7xl px-4">
-          <div className="rounded-xl border border-[#dedede] bg-[#f5f5f5] p-5 md:p-8">
-            <Reveal as="div" className="mx-auto max-w-2xl text-center">
-              <h2
-                className="text-site-strong text-2xl leading-tight md:text-3xl"
-                data-tina-field={tinaField(home.capabilitySection, "title")}
-              >
-                {home.capabilitySection.title}
-              </h2>
-            </Reveal>
+          <Reveal as="div" className="mx-auto max-w-2xl text-center mb-8">
+            <h2
+              className="text-site-strong text-2xl leading-tight md:text-3xl"
+              data-tina-field={tinaField(home.capabilitySection, "title")}
+            >
+              {home.capabilitySection.title}
+            </h2>
+          </Reveal>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {valueCards.map((card, index) => (
-                <article
-                  className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
-                  key={card.id}
-                >
-                  <div className="relative h-40 rounded-lg border border-[#f0f0f0] overflow-hidden bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_50%,#fdfaff_100%)]">
-                    {card.image && (
+          <BentoGrid className="auto-rows-[14rem] grid-cols-1 sm:grid-cols-3 gap-4">
+            {valueCards.map((card, index) => (
+              <BentoCard
+                key={card.id}
+                className={index === 0 ? "sm:col-span-2" : "sm:col-span-1"}
+                name={card.title}
+                description={card.description}
+                href={home.hero.primaryAction.href}
+                cta="Explore"
+                Icon={index === 0 ? MessageSquare : index === 1 ? ImageIcon : TerminalSquare}
+                background={
+                  <div className="absolute inset-0">
+                    {card.image ? (
                       <Image
                         alt={card.title}
                         fill
-                        className="object-cover opacity-20 transition-opacity group-hover:opacity-100"
+                        className="object-cover opacity-20 transition-opacity group-hover:opacity-35"
+                        sizes="(min-width: 768px) 40vw, 100vw"
                         src={card.image}
                       />
-                    )}
+                    ) : null}
                     <MockUiPreview
                       compact
-                      type={
-                        index === 0
-                          ? "chat"
-                          : index === 1
-                            ? "image"
-                            : "embeddings"
-                      }
+                      type={index === 0 ? "chat" : index === 1 ? "image" : "embeddings"}
                     />
                   </div>
-                  <h3
-                    className="text-site-strong mt-4 text-base font-bold tracking-tight"
-                    data-tina-field={tinaField(card, "title")}
-                  >
-                    {card.title}
-                  </h3>
-                  <p
-                    className="text-site-muted mt-2 text-sm leading-relaxed"
-                    data-tina-field={tinaField(card, "description")}
-                  >
-                    {card.description}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </div>
+                }
+              />
+            ))}
+          </BentoGrid>
         </div>
       </section>
 
       <section
-        className="border-y border-[#dfdfdf] bg-[#f2f2f2] py-12"
+        className="relative border-y border-[#dfdfdf] bg-[#f2f2f2] py-12 overflow-hidden"
         data-landing-slot="operational-proof"
         data-tina-field={operationalHeading.field}
         id="landing-slot-operational-proof"
       >
-        <div className="mx-auto max-w-7xl px-4">
+        <DotPattern
+          className="absolute inset-0 opacity-40 [mask-image:radial-gradient(640px_circle_at_center,white,transparent)]"
+          cr={1}
+          cx={8}
+          cy={8}
+        />
+        <div className="relative mx-auto max-w-7xl px-4">
           <Reveal as="div" className="mx-auto max-w-2xl text-center">
             <h2 className="text-site-strong text-3xl leading-tight md:text-4xl">
               {operationalHeading.value}
@@ -708,17 +714,16 @@ const { output } = await res.json()`}
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {omnichannelTiles.map((tile, idx) => (
-                <article
+                <MagicCard
                   key={tile.title}
-                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-slate-300 hover:shadow-2xl"
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+                  gradientColor="rgba(99,102,241,0.06)"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
                   <div className="relative mb-6 flex items-center justify-between">
                     <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-xl ring-8 ring-slate-50 transition-transform duration-500 group-hover:scale-110">
                       <tile.icon className="size-6" />
                     </div>
-                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 shadow-sm transition-colors group-hover:bg-emerald-100">
+                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 shadow-sm">
                       Active
                     </div>
                   </div>
@@ -737,6 +742,7 @@ const { output } = await res.json()`}
                       alt={tile.title}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110 saturate-150"
+                      sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
                       src={`/landing/${omnichannelTilePreviewImages[idx % omnichannelTilePreviewImages.length]}.png`}
                     />
                   </div>
@@ -745,7 +751,7 @@ const { output } = await res.json()`}
                     <div className="h-px w-8 bg-slate-200 transition-all group-hover:w-12 group-hover:bg-slate-900" />
                     Explore {tile.title}
                   </div>
-                </article>
+                </MagicCard>
               ))}
             </div>
           </Reveal>
@@ -778,21 +784,18 @@ const { output } = await res.json()`}
                 body="Automated triage and safe responses across every customer touchpoint."
                 icon={MessageSquare}
                 title="Customer Support"
-                type="chat"
                 image="/landing/agent-chat-generation.png"
               />
               <UseCaseCard
                 body="OCR, embeddings, and retrieval to extract value from massive datasets."
                 icon={FileText}
                 title="Document Intelligence"
-                type="embeddings"
                 image="/landing/text-ocr-embeddings.png"
               />
               <UseCaseCard
                 body="High-volume, low-cost image pipelines with professional quality tiers."
                 icon={ImageIcon}
                 title="Image Generation"
-                type="image"
                 image="/landing/image-generation.png"
               />
             </div>
@@ -802,15 +805,16 @@ const { output } = await res.json()`}
 
       {/* Institutional trust / certifications */}
       <section
-        className="bg-[#f7f9fb] py-10"
+        className="relative bg-[#f7f9fb] py-10 overflow-hidden"
         data-landing-slot="trust-security"
         id="landing-slot-trust-security"
       >
         <div className="mx-auto max-w-7xl px-4">
           <Reveal
             as="div"
-            className="rounded-xl border border-[#eef2f4] bg-white p-6 md:p-8 text-center"
+            className="relative rounded-xl border border-[#eef2f4] bg-white p-6 md:p-8 text-center overflow-hidden"
           >
+            <BorderBeam colorFrom="#6366f1" colorTo="#38bdf8" duration={10} size={100} borderWidth={1.5} />
             <p className="text-site-soft text-[11px] font-semibold uppercase tracking-[0.12em]">
               Trust &amp; Security
             </p>
@@ -822,29 +826,41 @@ const { output } = await res.json()`}
               every request.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
-                <ShieldCheck className="size-4 text-[#2b6cb0]" />
-                <span className="text-xs font-semibold text-slate-700">
-                  Auth on every key
-                </span>
+              {[
+                "Auth on every key",
+                "Per-key rate limits",
+                "Stripe billing controls",
+                "HTTPS end-to-end",
+              ].map((label) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5"
+                >
+                  <ShieldCheck className="size-4 text-[#2b6cb0]" />
+                  <span className="text-xs font-semibold text-slate-700">{label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Metric counters */}
+            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-slate-100 pt-8">
+              <div className="text-center">
+                <p className="text-site-strong text-2xl font-bold tabular-nums">
+                  <NumberTicker value={11} />+
+                </p>
+                <p className="text-site-muted mt-1 text-xs">Production models</p>
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
-                <ShieldCheck className="size-4 text-[#2b6cb0]" />
-                <span className="text-xs font-semibold text-slate-700">
-                  Per-key rate limits
-                </span>
+              <div className="text-center">
+                <p className="text-site-strong text-2xl font-bold tabular-nums">
+                  99.<NumberTicker value={99} />%
+                </p>
+                <p className="text-site-muted mt-1 text-xs">Gateway uptime</p>
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
-                <ShieldCheck className="size-4 text-[#2b6cb0]" />
-                <span className="text-xs font-semibold text-slate-700">
-                  Stripe billing controls
-                </span>
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5">
-                <ShieldCheck className="size-4 text-[#2b6cb0]" />
-                <span className="text-xs font-semibold text-slate-700">
-                  HTTPS end-to-end
-                </span>
+              <div className="text-center">
+                <p className="text-site-strong text-2xl font-bold tabular-nums">
+                  {"<"}<NumberTicker value={220} />ms
+                </p>
+                <p className="text-site-muted mt-1 text-xs">Median route overhead</p>
               </div>
             </div>
           </Reveal>
@@ -872,7 +888,8 @@ const { output } = await res.json()`}
           id="landing-slot-final-cta-band"
         >
           <div className="mx-auto max-w-7xl px-4">
-            <div className="text-site-inverse rounded-[16px] bg-[linear-gradient(90deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_56%,var(--cta-cool-b)_100%)] p-8">
+            <div className="relative overflow-hidden text-site-inverse rounded-[16px] bg-[linear-gradient(90deg,var(--cta-cool-a)_0%,var(--cta-cool-mid)_56%,var(--cta-cool-b)_100%)] p-8">
+              <BorderBeam colorFrom="rgba(255,255,255,0.6)" colorTo="rgba(255,255,255,0.1)" duration={6} size={180} />
               <div className="grid gap-6 lg:grid-cols-[1fr_0.6fr] lg:items-center">
                 <div>
                   <h3 className="text-3xl font-semibold">
@@ -884,11 +901,19 @@ const { output } = await res.json()`}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-                  <ActionLink
-                    action={home.contactPanel.primaryAction}
-                    field={tinaField(home.contactPanel, "primaryAction")}
-                    tone="dark"
-                  />
+                  <QuoteAwareLink
+                    href={home.contactPanel.primaryAction.href}
+                    quoteLabel={home.contactPanel.primaryAction.label}
+                  >
+                    <ShimmerButton
+                      background="rgba(0,0,0,0.35)"
+                      className="flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white"
+                      shimmerColor="rgba(255,255,255,0.25)"
+                    >
+                      {home.contactPanel.primaryAction.label}
+                      <ArrowRight className="size-3.5" />
+                    </ShimmerButton>
+                  </QuoteAwareLink>
                   <ActionLink
                     action={home.hero.secondaryAction}
                     field={tinaField(home.hero, "secondaryAction")}
@@ -943,11 +968,20 @@ const { output } = await res.json()`}
                   </p>
 
                   <div className="mt-12 flex flex-wrap gap-4">
-                    <ActionLink
-                      action={home.contactPanel.primaryAction}
-                      field={tinaField(home.contactPanel, "primaryAction")}
-                      tone="ink"
-                    />
+                    <QuoteAwareLink
+                      href={home.contactPanel.primaryAction.href}
+                      quoteLabel={home.contactPanel.primaryAction.label}
+                    >
+                      <ShimmerButton
+                        background="linear-gradient(135deg, var(--cta-cool-a), var(--cta-cool-b))"
+                        className="flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white"
+                        shimmerColor="rgba(255,255,255,0.25)"
+                        shimmerDuration="2.4s"
+                      >
+                        {home.contactPanel.primaryAction.label}
+                        <ArrowRight className="size-3.5" />
+                      </ShimmerButton>
+                    </QuoteAwareLink>
                     <ActionLink
                       action={home.hero.secondaryAction}
                       field={tinaField(home.hero, "secondaryAction")}
@@ -1027,24 +1061,12 @@ function FeatureStory({
   card,
   linkHref,
   reverse,
-  type = "default",
 }: {
   actionLabel: string;
   actionLabelField?: string;
   card?: HomeContent["spotlightCards"][number];
   linkHref: string;
   reverse: boolean;
-  type?:
-    | "default"
-    | "chat"
-    | "image"
-    | "speech"
-    | "embeddings"
-    | "video"
-    | "music"
-    | "policy"
-    | "audit"
-    | "costs";
 }) {
   if (!card) {
     return null;
@@ -1094,6 +1116,7 @@ function FeatureStory({
               alt={card.title}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
+              sizes="(min-width: 1024px) 48vw, 100vw"
               src={card.image ?? "/landing/generic-models-dashboard.png"}
             />
           </div>
@@ -1107,13 +1130,11 @@ function UseCaseCard({
   title,
   body,
   icon: Icon,
-  type,
   image,
 }: {
   title: string;
   body: string;
   icon: React.ElementType;
-  type: MockUiPreviewProps["type"];
   image?: string;
 }) {
   return (
@@ -1138,6 +1159,7 @@ function UseCaseCard({
             alt={title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
+            sizes="(min-width: 768px) 30vw, 100vw"
             src={image ?? "/landing/chatbot-dashboard.png"}
           />
           <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
@@ -1148,32 +1170,6 @@ function UseCaseCard({
         Deploy pipeline
         <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
       </div>
-    </div>
-  );
-}
-
-function TrustedLogoPill({
-  logo,
-}: {
-  logo: HomeContent["trustedBySection"]["logos"][number];
-}) {
-  return (
-    <div
-      className="shrink-0 flex items-center justify-center gap-2 rounded-md border border-white/45 bg-white/65 px-3 py-2.5 shadow-[0_10px_24px_rgba(10,16,30,0.12)] backdrop-blur-md"
-      data-tina-field={tinaField(logo)}
-    >
-      <span
-        className="text-site-strong inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--site-surface-1)] text-[10px] font-semibold uppercase"
-        data-tina-field={tinaField(logo, "abbreviation")}
-      >
-        {logo.abbreviation}
-      </span>
-      <span
-        className="text-site-strong text-[10px] font-semibold uppercase tracking-[0.1em]"
-        data-tina-field={tinaField(logo, "name")}
-      >
-        {logo.name}
-      </span>
     </div>
   );
 }
@@ -1442,34 +1438,6 @@ function MockUiPreview({
   );
 }
 
-function MockWorkflowFrame({ className }: { className?: string }) {
-  return (
-    <div
-      className={
-        "h-full w-full rounded-2xl border border-white/45 bg-white/76 shadow-sm backdrop-blur-sm p-4 md:p-6 flex flex-col " +
-        (className ? " " + className : "")
-      }
-    >
-      <Image
-        alt="AI touching mesh"
-        fill
-        className="object-cover rounded-md"
-        src="/landing/hero.png"
-      />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(8,10,20,0.18))]" />
-      <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-white/15 bg-black/20 px-3 py-2 backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="space-y-0.5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70"></p>
-            <p className="text-xs text-white/75"></p>
-          </div>
-          <div className="h-1.5 w-20 rounded-full bg-emerald-400/50" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function MockCodePanel({ code }: { code?: string }) {
   const defaultCode = `const res = await fetch("${normalizeSiteUrl()}/api/v1/inference", {
   method: "POST",
@@ -1497,6 +1465,85 @@ function MockCodePanel({ code }: { code?: string }) {
         <pre className="text-indigo-300">
           <code>{code || defaultCode}</code>
         </pre>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MagicUI-enhanced visuals
+// ---------------------------------------------------------------------------
+
+const modelBadges = [
+  { label: "FLUX Schnell", color: "bg-orange-500/10 text-orange-600 border-orange-200" },
+  { label: "Llama 3 70B", color: "bg-indigo-500/10 text-indigo-600 border-indigo-200" },
+  { label: "Stable Diffusion XL", color: "bg-pink-500/10 text-pink-600 border-pink-200" },
+  { label: "Whisper Large v3", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200" },
+  { label: "BGE Large", color: "bg-violet-500/10 text-violet-600 border-violet-200" },
+  { label: "Mistral 7B", color: "bg-sky-500/10 text-sky-600 border-sky-200" },
+  { label: "JuggernautXL", color: "bg-rose-500/10 text-rose-600 border-rose-200" },
+  { label: "Mixtral 8×7B", color: "bg-amber-500/10 text-amber-600 border-amber-200" },
+  { label: "E5 Large", color: "bg-teal-500/10 text-teal-600 border-teal-200" },
+  { label: "RealVisXL", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
+];
+
+function ModelBadgePill({ label, color }: { label: string; color: string }) {
+  return (
+    <div
+      className={cn(
+        "mx-2 shrink-0 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold",
+        color,
+      )}
+    >
+      <Zap className="size-3" />
+      {label}
+    </div>
+  );
+}
+
+function HeroOrbitingVisual() {
+  return (
+    <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-transparent">
+      {/* Center hub */}
+      <div className="relative z-10 flex size-16 items-center justify-center rounded-2xl border border-white/30 bg-white/20 shadow-xl backdrop-blur-sm">
+        <Brain className="size-8 text-white" />
+      </div>
+
+      {/* Inner ring — fast models */}
+      <OrbitingCircles duration={14} iconSize={28} radius={72}>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-orange-300/40 bg-orange-400/20 text-orange-200 shadow-sm">
+          <ImageIcon className="size-4" />
+        </div>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-indigo-300/40 bg-indigo-400/20 text-indigo-200 shadow-sm">
+          <MessageSquare className="size-4" />
+        </div>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-emerald-300/40 bg-emerald-400/20 text-emerald-200 shadow-sm">
+          <Mic className="size-4" />
+        </div>
+      </OrbitingCircles>
+
+      {/* Outer ring — slow models, reverse */}
+      <OrbitingCircles duration={22} iconSize={28} radius={120} reverse>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-violet-300/40 bg-violet-400/20 text-violet-200 shadow-sm">
+          <TerminalSquare className="size-4" />
+        </div>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-rose-300/40 bg-rose-400/20 text-rose-200 shadow-sm">
+          <Video className="size-4" />
+        </div>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-sky-300/40 bg-sky-400/20 text-sky-200 shadow-sm">
+          <Music className="size-4" />
+        </div>
+        <div className="flex size-7 items-center justify-center rounded-lg border border-amber-300/40 bg-amber-400/20 text-amber-200 shadow-sm">
+          <TrendingUp className="size-4" />
+        </div>
+      </OrbitingCircles>
+
+      {/* Label */}
+      <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-lg border border-white/15 bg-black/20 px-3 py-2 backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-white/75">One contract across models, pricing, and usage controls.</p>
+          <div className="h-1.5 w-20 rounded-full bg-emerald-400/50" />
+        </div>
       </div>
     </div>
   );

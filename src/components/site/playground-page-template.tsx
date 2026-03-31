@@ -78,18 +78,55 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function extractNestedErrorMessage(details: unknown): string | null {
+  if (!isRecord(details)) {
+    return null;
+  }
+
+  const body = details.body;
+  if (typeof body === "string") {
+    const trimmedBody = body.trim();
+    if (trimmedBody.length > 0) {
+      try {
+        const parsedBody = JSON.parse(trimmedBody);
+        const parsedMessage = extractGenerateErrorMessage(parsedBody);
+        if (parsedMessage) {
+          return parsedMessage;
+        }
+      } catch {
+        if (!trimmedBody.startsWith("{") && !trimmedBody.startsWith("[")) {
+          return trimmedBody;
+        }
+      }
+    }
+  }
+
+  const message = details.message;
+  if (typeof message === "string" && message.trim().length > 0) {
+    return message;
+  }
+
+  return null;
+}
+
 function extractGenerateErrorMessage(payload: unknown): string | null {
   if (!isRecord(payload)) {
     return null;
   }
 
   const error = payload.error;
-  if (
-    isRecord(error) &&
-    typeof error.message === "string" &&
-    error.message.trim().length > 0
-  ) {
-    return error.message;
+  if (isRecord(error)) {
+    const nestedMessage = extractNestedErrorMessage(error.details);
+    if (nestedMessage) {
+      return nestedMessage;
+    }
+
+    if (
+      typeof error.message === "string" &&
+      error.message.trim().length > 0
+    ) {
+      return error.message;
+    }
   }
 
   const message = payload.message;
@@ -1065,6 +1102,7 @@ export function PlaygroundPageTemplate({
                                 alt="playground preview"
                                 fill
                                 className="object-cover opacity-80"
+                                sizes="(min-width: 768px) 50vw, 100vw"
                               />
                             )}
                             <div className="absolute left-1/2 top-0 h-full w-px bg-white/40 shadow-sm" />

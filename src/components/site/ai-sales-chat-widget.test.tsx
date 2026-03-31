@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { AiSalesChatWidget } from "@/components/site/ai-sales-chat-widget"
 
@@ -29,8 +29,27 @@ describe("AiSalesChatWidget", () => {
     })
     Object.defineProperty(window, "sessionStorage", {
       configurable: true,
-      value: createStorage({ "dryapi-chat-welcome-v1": "true" }),
+      value: createStorage(),
     })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("does not auto-open after idle time passes", () => {
+    vi.useFakeTimers()
+
+    render(<AiSalesChatWidget pathname="/pricing" />)
+
+    act(() => {
+      vi.advanceTimersByTime(60_000)
+    })
+
+    expect(screen.queryByRole("log")).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Open dryAPI assistant" }),
+    ).toBeInTheDocument()
   })
 
   it("renders the marketing chat window without an internal vertical scroll container", async () => {

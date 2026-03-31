@@ -13,12 +13,14 @@ import { isValidElement, useEffect, useMemo, useState } from "react";
 import { tinaField } from "tinacms/dist/react";
 import { TinaMarkdown } from "tinacms/dist/rich-text";
 
+import { CmsImage } from "@/components/site/cms-image";
 import { KeywordGradientText } from "@/components/site/keyword-gradient-text";
 import { QuoteAwareLink } from "@/components/site/quote-aware-link";
 import { Reveal } from "@/components/site/reveal";
 import { resolveSiteUiText } from "@/components/site/resolve-site-ui-text";
 import { SummarizeWithAi } from "@/components/site/summarize-with-ai";
 import { TryModelCta } from "@/components/site/try-model-cta";
+import { normalizeSiteImageSrc } from "@/lib/site-image";
 import type { BlogPost, SiteConfig } from "@/lib/site-content-schema";
 
 type TinaMarkdownContentLike = Parameters<typeof TinaMarkdown>[0]["content"];
@@ -242,7 +244,13 @@ export function BlogPostPageTemplate({
   const canonicalPath = normalizeCanonicalPath(post.slug, post.canonicalPath);
   const canonicalUrl = `${siteUrl}${canonicalPath}`;
   const publishedIso = toJsonLdDate(post.publishedAt);
-  const articleImage = post.ogImage?.trim() || post.coverImage;
+  const normalizedCoverImage = normalizeSiteImageSrc(post.coverImage);
+  const normalizedArticleImage = normalizeSiteImageSrc(
+    post.ogImage?.trim() || post.coverImage,
+  );
+  const normalizedAuthorAvatar = post.author.avatar?.trim()
+    ? normalizeSiteImageSrc(post.author.avatar)
+    : "";
   const readTime = estimateReadTime(post);
   const headingAnchors = useMemo(
     () => collectHeadingAnchors(post.body),
@@ -378,6 +386,39 @@ export function BlogPostPageTemplate({
         </pre>
       </div>
     ),
+    img: (
+      props:
+        | {
+            url?: string;
+            alt?: string;
+            caption?: string;
+          }
+        | undefined,
+    ) => {
+      const src = props?.url?.trim();
+
+      if (!src) {
+        return null;
+      }
+
+      return (
+        <figure className="mt-10 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/40 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+          <CmsImage
+            alt={props?.alt ?? "Article illustration"}
+            className="h-auto w-full object-cover"
+            height={840}
+            sizes="(min-width: 1024px) 896px, 100vw"
+            src={src}
+            width={1400}
+          />
+          {props?.caption ? (
+            <figcaption className="border-t border-slate-100 px-5 py-3 text-xs font-medium tracking-[0.04em] text-slate-500">
+              {props.caption}
+            </figcaption>
+          ) : null}
+        </figure>
+      );
+    },
     hr: () => <hr className="my-16 border-t-2 border-slate-100/60" />,
   };
 
@@ -433,7 +474,7 @@ export function BlogPostPageTemplate({
         }}
         description={post.seoDescription}
         headline={post.title}
-        image={[articleImage]}
+        image={[normalizedArticleImage]}
         mainEntityOfPage={{
           "@type": "WebPage",
           "@id": canonicalUrl,
@@ -455,7 +496,7 @@ export function BlogPostPageTemplate({
           className="absolute inset-0 h-full w-full object-cover opacity-30 grayscale-[0.4] blur-[2px] transition-transform duration-[10s] hover:scale-105"
           height={1080}
           priority
-          src={post.coverImage}
+          src={normalizedCoverImage}
           width={1920}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/70 to-slate-950/95" />
@@ -623,13 +664,13 @@ export function BlogPostPageTemplate({
             className="flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-left"
             data-tina-field={tinaField(post, "author")}
           >
-            {post.author.avatar ? (
+            {normalizedAuthorAvatar ? (
               <Image
                 alt={post.author.name}
                 className="h-20 w-20 rounded-full border-4 border-white shadow-md grayscale-[0.2] transition-all hover:grayscale-0"
                 data-tina-field={tinaField(post.author, "avatar")}
                 height={80}
-                src={post.author.avatar}
+                src={normalizedAuthorAvatar}
                 width={80}
               />
             ) : (

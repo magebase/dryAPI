@@ -27,6 +27,7 @@ import {
   sortBlogPosts,
   type BlogSortOrder,
 } from "@/lib/blog-article-catalog"
+import { normalizeSiteImageSrc } from "@/lib/site-image"
 import type { BlogPost, SiteConfig } from "@/lib/site-content-schema"
 
 type BlogArticleCatalogProps = {
@@ -94,19 +95,31 @@ type TakumiBlogCoverImageProps = {
 function TakumiBlogCoverImage({ post, className, width, height, priority = false }: TakumiBlogCoverImageProps) {
   const generatedTakumiUrl = useMemo(() => buildBlogTakumiCoverImage(post), [post])
   const hasTakumiCoverInPayload = isTakumiImageUrl(post.ogImage)
-  const [resolvedSrc, setResolvedSrc] = useState<string>(
-    hasTakumiCoverInPayload ? post.ogImage ?? generatedTakumiUrl : post.coverImage
+  const fallbackCoverSrc = useMemo(() => normalizeSiteImageSrc(post.coverImage), [post.coverImage])
+  const normalizedOgImage = useMemo(
+    () => (post.ogImage ? normalizeSiteImageSrc(post.ogImage) : undefined),
+    [post.ogImage],
   )
-  const [isWaitingForGeneratedCover, setIsWaitingForGeneratedCover] = useState<boolean>(!hasTakumiCoverInPayload)
+  const shouldProbeGeneratedCover = !hasTakumiCoverInPayload && fallbackCoverSrc === post.coverImage
+  const [resolvedSrc, setResolvedSrc] = useState<string>(
+    hasTakumiCoverInPayload ? normalizedOgImage ?? generatedTakumiUrl : fallbackCoverSrc
+  )
+  const [isWaitingForGeneratedCover, setIsWaitingForGeneratedCover] = useState<boolean>(shouldProbeGeneratedCover)
 
   useEffect(() => {
     if (hasTakumiCoverInPayload) {
-      setResolvedSrc(post.ogImage ?? generatedTakumiUrl)
+      setResolvedSrc(normalizedOgImage ?? generatedTakumiUrl)
       setIsWaitingForGeneratedCover(false)
       return
     }
 
-    setResolvedSrc(post.coverImage)
+    setResolvedSrc(fallbackCoverSrc)
+
+    if (!shouldProbeGeneratedCover) {
+      setIsWaitingForGeneratedCover(false)
+      return
+    }
+
     setIsWaitingForGeneratedCover(true)
 
     let isDisposed = false
@@ -149,7 +162,7 @@ function TakumiBlogCoverImage({ post, className, width, height, priority = false
     return () => {
       isDisposed = true
     }
-  }, [generatedTakumiUrl, hasTakumiCoverInPayload, post.coverImage, post.ogImage])
+  }, [fallbackCoverSrc, generatedTakumiUrl, hasTakumiCoverInPayload, normalizedOgImage, post.coverImage, shouldProbeGeneratedCover])
 
   return (
     <div className="relative">
@@ -161,9 +174,10 @@ function TakumiBlogCoverImage({ post, className, width, height, priority = false
         src={resolvedSrc}
         width={width}
         onError={() => {
-          if (resolvedSrc !== post.coverImage) {
-            setResolvedSrc(post.coverImage)
+          if (resolvedSrc !== fallbackCoverSrc) {
+            setResolvedSrc(fallbackCoverSrc)
           }
+          setIsWaitingForGeneratedCover(false)
         }}
       />
       {isWaitingForGeneratedCover ? (

@@ -21,6 +21,7 @@
   },
   "registries": {
     "@fonttrio": "https://www.fonttrio.xyz/r/{name}.json",
-    "@react-bits": "https://reactbits.dev/r/{name}.json"
+    "@react-bits": "https://reactbits.dev/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}"
   }
 }

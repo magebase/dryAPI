@@ -24,6 +24,7 @@ type RevealMockProps = {
 
 let articleJsonLdProps: JsonLdProps | null = null;
 let tinaMarkdownContent: BlogPost["body"] | null = null;
+let tinaMarkdownComponents: Record<string, unknown> | null = null;
 
 const bodyFixture = {
   type: "root",
@@ -147,8 +148,15 @@ vi.mock("tinacms/dist/react", () => ({
 }));
 
 vi.mock("tinacms/dist/rich-text", () => ({
-  TinaMarkdown: ({ content }: { content: BlogPost["body"] }) => {
+  TinaMarkdown: ({
+    content,
+    components,
+  }: {
+    content: BlogPost["body"];
+    components?: Record<string, unknown>;
+  }) => {
     tinaMarkdownContent = content;
+    tinaMarkdownComponents = components ?? null;
     return <div data-testid="tina-markdown" />;
   },
 }));
@@ -192,6 +200,7 @@ describe("BlogPostPageTemplate", () => {
     vi.clearAllMocks();
     articleJsonLdProps = null;
     tinaMarkdownContent = null;
+    tinaMarkdownComponents = null;
   });
 
   it("renders with basic metadata and schema", () => {
@@ -223,6 +232,56 @@ describe("BlogPostPageTemplate", () => {
 
     expect(screen.getByTestId("tina-markdown")).toBeInTheDocument();
     expect(tinaMarkdownContent).toEqual(bodyFixture);
+  });
+
+  it("normalizes placeholder media and exposes a custom blog image renderer", () => {
+    const placeholderPost = {
+      ...postFixture,
+      ogImage: "https://picsum.photos/seed/post-og/1200/630",
+      coverImage: "https://picsum.photos/seed/post-cover/1600/900",
+    };
+
+    render(<BlogPostPageTemplate post={placeholderPost} site={siteFixture} />);
+
+    const coverImage = screen
+      .getAllByTestId("mock-next-image")
+      .find((node) => node.getAttribute("data-alt") === placeholderPost.title);
+
+    expect(coverImage?.getAttribute("data-src")).toContain(
+      "images.unsplash.com",
+    );
+    expect((articleJsonLdProps?.image as string[] | undefined)?.[0]).toContain(
+      "images.unsplash.com",
+    );
+
+    const imageRenderer = tinaMarkdownComponents?.img as
+      | ((props: {
+          url?: string;
+          alt?: string;
+          caption?: string;
+        }) => ReactNode)
+      | undefined;
+
+    expect(imageRenderer).toBeTypeOf("function");
+
+    render(
+      <>
+        {imageRenderer?.({
+          url: "https://picsum.photos/seed/body-image/1400/840",
+          alt: "Body media",
+          caption: "Body caption",
+        })}
+      </>,
+    );
+
+    const bodyImage = screen
+      .getAllByTestId("mock-next-image")
+      .find((node) => node.getAttribute("data-alt") === "Body media");
+
+    expect(bodyImage?.getAttribute("data-src")).toContain(
+      "images.unsplash.com",
+    );
+    expect(screen.getByText("Body caption")).toBeInTheDocument();
   });
 
   it("handles missing initials for author name", () => {

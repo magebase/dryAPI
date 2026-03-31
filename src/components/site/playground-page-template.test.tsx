@@ -408,9 +408,26 @@ describe("PlaygroundPageTemplate", () => {
       if (requestUrl === "/api/playground/generate") {
         return Promise.resolve({
           ok: false,
-          status: 400,
+          status: 502,
           json: () => Promise.resolve({
-            error: { message: "Runpod upstream dispatch failed." },
+            error: {
+              code: "upstream_dispatch_failed",
+              message: "Runpod upstream dispatch failed.",
+              details: {
+                status: 402,
+                body: JSON.stringify({
+                  error: {
+                    code: "insufficient_credits",
+                    message: "Insufficient credits",
+                    detail: {
+                      user_id: "anonymous",
+                      balance: 0,
+                      required: 0.0072,
+                    },
+                  },
+                }),
+              },
+            },
           }),
         })
       }
@@ -438,7 +455,7 @@ describe("PlaygroundPageTemplate", () => {
     fireEvent.click(generateButton)
 
     await waitFor(() => {
-      expect(toastErrorMock).toHaveBeenCalledWith("Runpod upstream dispatch failed.")
+      expect(toastErrorMock).toHaveBeenCalledWith("Insufficient credits")
     })
   })
 })

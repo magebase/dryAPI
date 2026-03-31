@@ -31,9 +31,7 @@ type ChatApiResponse = {
   requiresTurnstile?: boolean
 }
 
-const SESSION_WELCOME_KEY = "dryapi-chat-welcome-v1"
 const VISITOR_KEY = "dryapi-chat-visitor-v1"
-const WELCOME_DELAY_MS = 30_000
 const SERVICE_HOURS_LABEL = "Coverage hours: Mon-Fri 8AM-6PM UTC"
 const AVERAGE_REPLY_TIME_LABEL = "Average reply: 2 minutes"
 
@@ -155,26 +153,6 @@ export function AiSalesChatWidget({ pathname }: { pathname: string }) {
 
   useEffect(() => {
     setVisitorId(readOrCreateVisitorId())
-
-    const hasWelcomed = window.sessionStorage.getItem(SESSION_WELCOME_KEY) === "true"
-    if (hasWelcomed) {
-      return
-    }
-
-    const timer = window.setTimeout(() => {
-      setMessages((current) => {
-        if (current.length > 0) {
-          return current
-        }
-        return [greeting]
-      })
-      setIsOpen(true)
-      window.sessionStorage.setItem(SESSION_WELCOME_KEY, "true")
-    }, WELCOME_DELAY_MS)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
   }, [greeting])
 
   function ensureGreeting() {
